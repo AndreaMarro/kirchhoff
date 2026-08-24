@@ -4,8 +4,11 @@ from .catalog import (
     CATALOG,
     IDENTITY_ATTRIBUTES,
     MUTABLE_ATTRIBUTES,
+    SUPPORTED,
+    CatalogOpening,
     TransformationKind,
     mutable_attributes,
+    transformations_supported,
 )
 from .check import (
     DeltaViolation,
@@ -20,8 +23,9 @@ from .engine import CONTROLLI, implemented, transform
 from .result import Boundary, Certificate, Equation, LayoutPatch, TransformResult
 
 __all__ = [
-    "CATALOG", "IDENTITY_ATTRIBUTES", "MUTABLE_ATTRIBUTES", "TransformationKind",
-    "mutable_attributes",
+    "CATALOG", "IDENTITY_ATTRIBUTES", "MUTABLE_ATTRIBUTES", "SUPPORTED",
+    "CatalogOpening", "TransformationKind",
+    "mutable_attributes", "transformations_supported",
     "Delta", "EntityKind", "EntityRef", "StructuralDerivation",
     "DeltaViolation", "attributes_of", "check_delta", "check_transform",
     "entities_of", "preserve_set",

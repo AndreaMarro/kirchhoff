@@ -10,11 +10,25 @@ La riconciliazione non e' una convenzione: `tests/test_delta.py` confronta i due
 insiemi e fallisce se divergono. Un catalogo scritto due volte prima o poi diverge,
 e il posto dove diverge e' invisibile (E-62 dell'error ledger).
 
-Puro: nessuna I/O, nessun orologio, nessuna casualita'.
+## Tre cose distinte, e confonderle costa
+
+- **Il vocabolario** (`CATALOG`) — i sedici nomi che una derivazione puo' portare.
+  Chiuso per sempre: non lo si estende a runtime (AD-2).
+- **Le applicabili** (`SUPPORTED`) — le tre dell'MVP. Un nome del vocabolario che
+  non e' qui **esiste** e **non e' eseguibile**, e il sistema rifiuta invece di
+  improvvisare (FR-43). Si apre solo con una decisione registrata: `CatalogOpening`.
+- **Le implementate** (`engine.implemented()`) — quelle che hanno gia' un corpo.
+  «Non ancora scritta» e «non esiste» sono risposte diverse a chi pianifica.
+
+Puro: nessuna I/O, nessun orologio, nessuna casualita'. Anche la data di una
+decisione di apertura entra come dato: qui non si legge un orologio.
 """
 
 from __future__ import annotations
 
+import re
+from dataclasses import dataclass
+from fractions import Fraction
 from typing import Literal
 
 TransformationKind = Literal[
@@ -112,3 +126,121 @@ def mutable_attributes(operation: str) -> frozenset[str]:
 if set(MUTABLE_ATTRIBUTES) != CATALOG:  # pragma: no cover - invariante di import
     raise RuntimeError(
         "il catalogo e la dichiarazione degli attributi mutabili sono divergenti")
+
+
+# --- FR-43: il Catalogo e' chiuso, e la sua apertura e' una decisione registrata ---
+#
+# Il **vocabolario** e' chiuso e non si estende mai: `CATALOG` e' definitivo, e
+# `transform` rifiuta un nome che non vi appartiene prima di qualunque calcolo.
+#
+# Le Trasformazioni **applicabili** sono un suo sottoinsieme. L'MVP ne supporta
+# *«esattamente tre: serie, parallelo, partitore di tensione»*, e SM-C5 misura quel
+# numero: deve restare tre finche' il kill criterion di Gate A non e' superato,
+# perche' espandere il catalogo e' *«il modo piu' naturale per far salire VVDR
+# senza aver dimostrato la continuita' visuale»* — cioe' per ottimizzare la cosa
+# sbagliata proprio dove il prodotto vive o muore.
+#
+# Un caso di `reference-set` cita anche i nomi non applicabili, e non e' una
+# contraddizione: **descrivere** un percorso risolutivo non e' eseguirlo.
+
+
+def _dentro_il_vocabolario(nomi: frozenset[str], che_cosa: str) -> frozenset[str]:
+    """Rifiuta ogni nome fuori dal vocabolario chiuso.
+
+    Un solo predicato per i due punti che decidono chi e' applicabile — l'insieme
+    dell'MVP e cio' che una decisione apre. E-62: la parte di un gate che decide
+    cosa **non** controllare va calcolata con lo stesso predicato del gate,
+    altrimenti i due si separano nel posto dove nessuno guarda.
+    """
+    fuori = nomi - CATALOG
+    if fuori:
+        raise ValueError(
+            f"{che_cosa}: nomi fuori dal vocabolario chiuso: {', '.join(sorted(fuori))}. "
+            "Una decisione apre il Catalogo, non lo estende (AD-2).")
+    return nomi
+
+
+#: Le tre dell'MVP. Un nome fuori di qui **esiste** nel vocabolario e **non e'
+#: applicabile**: sono due risposte diverse, e confonderle e' precisamente cio' che
+#: porta a improvvisare invece di rifiutare (FR-43).
+SUPPORTED: frozenset[str] = _dentro_il_vocabolario(
+    frozenset({"serie", "parallelo", "partitore_di_tensione"}),
+    "trasformazioni applicabili dell'MVP")
+
+
+_DATA_ISO = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+
+@dataclass(frozen=True, slots=True)
+class CatalogOpening:
+    """La decisione registrata che rende applicabili altre Trasformazioni (FR-43).
+
+    *«L'espansione del Catalogo richiede la decisione registrata che il kill
+    criterion e' passato — non e' una scelta di implementazione. La registrazione
+    contiene almeno: la misura di VCER e SM-18 sui due bracci del confronto, il
+    corpus su cui e' stata presa, chi ha deciso e la data. Una registrazione priva
+    di uno di questi campi non apre il Catalogo.»*
+
+    L'incompletezza ha due forme e vanno chiuse entrambe: un campo **assente** e' un
+    `TypeError` alla costruzione, un campo **presente e vuoto** e' un `ValueError`.
+    La seconda e' quella che passerebbe inosservata, ed e' la ragione per cui le
+    stringhe vuote non sono tollerate.
+
+    `opens` nomina cio' che diventa applicabile e deve stare nel vocabolario: una
+    decisione **apre** il Catalogo, non lo estende.
+
+    `decided_on` e' una data in forma `AAAA-MM-GG` che **arriva da fuori**. Il
+    dominio non legge orologi (AD-2): una registrazione che si datasse da sola
+    sarebbe prodotta dal codice invece che dalla decisione, ed e' la decisione che
+    deve essere registrata.
+
+    Le misure sono `Fraction` come ogni grandezza del dominio: un `float` porterebbe
+    rumore binario dentro il numero che decide se il kill criterion e' passato.
+    """
+
+    vcer_arm_a: Fraction
+    vcer_arm_b: Fraction
+    sm18_arm_a: Fraction
+    sm18_arm_b: Fraction
+    corpus: str
+    decided_by: str
+    decided_on: str
+    opens: frozenset[str]
+
+    def __post_init__(self) -> None:
+        for nome, misura in (
+            ("vcer_arm_a", self.vcer_arm_a), ("vcer_arm_b", self.vcer_arm_b),
+            ("sm18_arm_a", self.sm18_arm_a), ("sm18_arm_b", self.sm18_arm_b),
+        ):
+            if not isinstance(misura, Fraction):
+                raise TypeError(
+                    f"{nome}: {type(misura).__name__}, serve una Fraction. La misura "
+                    "che apre il Catalogo non porta rumore binario.")
+        for nome, testo in (("corpus", self.corpus), ("decided_by", self.decided_by)):
+            if not testo:
+                raise ValueError(
+                    f"decisione di apertura senza {nome}: una registrazione priva di "
+                    "uno di questi campi non apre il Catalogo (FR-43)")
+        if not _DATA_ISO.match(self.decided_on):
+            raise ValueError(
+                f"decisione di apertura datata {self.decided_on!r}: serve una data "
+                "nella forma AAAA-MM-GG")
+        aperte = frozenset(self.opens)
+        if not aperte:
+            raise ValueError("decisione di apertura che non apre nulla")
+        object.__setattr__(
+            self, "opens", _dentro_il_vocabolario(aperte, "decisione di apertura"))
+
+
+def transformations_supported(opening: CatalogOpening | None = None) -> frozenset[str]:
+    """Le Trasformazioni applicabili. La cardinalita' di questo insieme e' SM-C5.
+
+    Senza una decisione di apertura registrata sono le tre dell'MVP. Con una, sono
+    quelle piu' cio' che la decisione apre — e mai nomi nuovi, perche'
+    `CatalogOpening` li ha gia' verificati dentro il vocabolario chiuso.
+
+    Non e' una funzione di configurazione: non legge nulla e non ricorda nulla. Chi
+    vuole il Catalogo aperto esibisce la registrazione a ogni chiamata, che e'
+    esattamente il punto di FR-43.
+    """
+    return SUPPORTED if opening is None else SUPPORTED | opening.opens

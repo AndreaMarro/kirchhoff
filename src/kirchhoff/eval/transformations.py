@@ -4,10 +4,19 @@ Insieme **chiuso**: un generatore che emette un nome non elencato qui e' un erro
 non un'estensione. Il controllo e' un test, non una convenzione.
 
 Questi sono i nomi con cui la sequenza di riferimento di un caso descrive il
-percorso risolutivo atteso (Story 1.1, primo criterio). Il Catalogo vero — quello
-caricato all'avvio, con le funzioni pure `transform(IR, params) -> (IR, Drawing)`
-di AD-2 — nasce con la Story 2.6 e dovra' riconciliarsi con questa lista: qui non
-c'e' comportamento, solo il nome del passo.
+percorso risolutivo atteso (Story 1.1, primo criterio): qui non c'e' comportamento,
+solo il nome del passo.
+
+Il Catalogo autoritativo vive in `domain/transform/catalog.py` — registro chiuso
+caricato all'avvio, con le funzioni pure `transform(IR, params) -> (IR,
+TransformResult) | Refusal` di AD-2 **emendato**: il secondo membro non e' piu' un
+`Drawing`, ritirato il 15 agosto (AD-18 em.). `domain/` non puo' importare `eval/`
+(AD-1), quindi la fonte sta li' e questa lista ne e' il riflesso; la riconciliazione
+non e' una promessa ma un test, e `tests/test_delta.py` confronta i due insiemi.
+
+Un caso di riferimento cita anche nomi che il Catalogo **non rende applicabili**:
+descrivere un percorso risolutivo non e' eseguirlo, e FR-43 tiene a tre le
+Trasformazioni applicabili senza per questo restringere il vocabolario.
 """
 
 from __future__ import annotations
