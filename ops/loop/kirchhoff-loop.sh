@@ -99,8 +99,8 @@ log "iterazioni=$ITERAZIONI prova=$PROVA promuovi=$PROMUOVI watchdog=${WATCHDOG}
 # gia' dimostrato di predire oltre il 70% di fattibilita' dopo aver bruciato il
 # 60% del budget.
 con_watchdog() {
-  local uscita="$1"; shift
-  "$@" > "$uscita" 2>&1 &
+  local uscita="$1"; local ingresso="$2"; shift 2
+  "$@" < "$ingresso" > "$uscita" 2>&1 &
   local pid=$!
   ( sleep "$WATCHDOG"
     kill -0 "$pid" 2>/dev/null && {
@@ -124,14 +124,17 @@ passo_modello() {
     printf '(prova: nessuna invocazione)\n' > "$uscita"
     return 0
   fi
-  con_watchdog "$uscita" env -C "$REPO" claude -p \
+  # Il prompt arriva da STDIN, come in Ardesia (`cat ... | claude -p`). La prima
+  # versione lo passava solo via --append-system-prompt e non dava nessun prompt
+  # utente: `claude -p` sarebbe rimasto senza compito. Trovato prima di spendere,
+  # non dopo.
+  con_watchdog "$uscita" "$prompt_file" env -C "$REPO" claude -p \
       --model "$modello" \
       --effort "$effort" \
       --dangerously-skip-permissions \
       --disallowed-tools Workflow \
       --max-budget-usd "$BUDGET_PASSO" \
-      --setting-sources project,local \
-      --append-system-prompt "$(cat "$prompt_file")"
+      --setting-sources project,local
 }
 
 # =============================================================================
