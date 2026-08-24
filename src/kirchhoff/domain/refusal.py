@@ -18,14 +18,33 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Literal
 
-#: Cause emesse da `domain/validate` (AD-19, riga v1 della tabella).
-#: Le cause di `domain/verify` e di `domain/transform/check` vivranno accanto a
-#: queste quando quegli stadi nasceranno: l'enumerazione e' chiusa, non privata.
-Cause = Literal["topology", "units", "unsolvable"]
+#: Cause emesse da `domain/validate` (AD-19, riga v1 della tabella) e, dalla
+#: Story 2.6, da `domain/transform/check` (righe v2 della stessa tabella).
+#:
+#: Le tre cause di trasformazione arrivano **adesso** e non prima perche' prima non
+#: esisteva lo stadio che le emette: `domain/validate` sta *prima* che una
+#: trasformazione esista, e infatti nessuna delle sue tre cause copriva «una entita'
+#: preservata ha cambiato identita'». Uno stadio obbligato a rifiutare senza una
+#: causa legale degrada a eccezione generica o a `sanity`, e in entrambi i casi
+#: l'utente perde la localizzazione, che e' cio' che K-3 promette (AD-19 em.).
+#:
+#: Le cause di `domain/verify`, `render/`, `domain/truthfulness`, `perception/` e
+#: `corpus/` vivranno accanto a queste quando quegli stadi nasceranno:
+#: l'enumerazione e' chiusa, non privata. Aggiungerne una **non** e' una modifica di
+#: questo modulo: e' una modifica dello spine, gia' scritta nella tabella di AD-19.
+Cause = Literal[
+    # domain/validate — v1
+    "topology", "units", "unsolvable",
+    # domain/transform/check — v2
+    "identity_violation", "preserve_nonmaximal", "empty_boundary",
+]
 
 SubjectKind = Literal["node", "component", "request"]
 
-CAUSES: frozenset[str] = frozenset({"topology", "units", "unsolvable"})
+CAUSES: frozenset[str] = frozenset({
+    "topology", "units", "unsolvable",
+    "identity_violation", "preserve_nonmaximal", "empty_boundary",
+})
 SUBJECT_KINDS: frozenset[str] = frozenset({"node", "component", "request"})
 
 
