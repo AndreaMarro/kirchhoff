@@ -133,56 +133,162 @@ visibile, si paga tutto a prezzo pieno.
 Abbassare l'effort è «l'unico margine reale non sfruttato» misurato, ma **non si applica in modo
 uniforme**. Decisione owner del 15 agosto: *dipende se usiamo agenti; se no, Opus 5 Max*.
 
-**Topologia degli agenti — decisione owner del 24 agosto, sostituisce la tabella precedente.**
+**Topologia degli agenti — decisione owner del 24 agosto, seconda revisione.** Sostituisce sia la
+tabella a tre righe sia l'albero a diciassette agenti: entrambi allocavano il modello più costoso a
+lavoro che non lo richiede.
+
+Il principio non è «il modello più forte dove conta». È **escalation su rischio misurato, con i test
+deterministici come giudice finale**.
 
 ```
-Fable 5 · max              orchestratore di tutto · lavoratore · proprietario del verdetto
-
-  costruzione
-  ├── Opus 5 · max         orchestratore
-  │   ├── Opus 5 · high        lavoratore
-  │   ├── Opus 5 · high        lavoratore
-  │   └── Opus 5 · high        lavoratore
-  ├── Opus 5 · max         orchestratore
-  │   ├── Opus 5 · high        lavoratore
-  │   ├── Opus 5 · high        lavoratore
-  │   └── Opus 5 · high        lavoratore
-  └── Fable 5 · high       lavoratore e orchestratore
-      ├── Opus 5 · high        lavoratore
-      ├── Opus 5 · high        lavoratore
-      ├── Opus 5 · high        lavoratore
-      ├── Opus 5 · high        lavoratore
-      └── Opus 5 · high        lavoratore
-
-  refutazione — contesto pulito, in parallelo, fratelli e non figli
-  ├── Opus 5 · max         revisore avversario
-  └── Fable 5 · high       revisore avversario
+                        BMAD — stato, dipendenze, gate
+                                     │
+                        classificatore di rischio
+                          (deterministico, non LLM)
+                                     │
+          ┌──────────────────┬───────────────────┬──────────────────┐
+          │                  │                   │                  │
+         R0                 R1                  R2                 R3
+      routine             normale            critica          chain-top
+          │                  │                   │                  │
+    Sonnet 5 high      Opus 5 xhigh        Opus 5 max        Opus 5 max
+                                                                   +
+                                                             Fable 5 max
+                                                          (analisi parallele)
+          └──────────────────┴───────────────────┘                  │
+                             ▼                                      │
+                       TEST + GATE                                  │
+                    l'unica certificazione                          │
+                             │                                      │
+              ┌──────────────┴───────────────┐                      │
+              │                              │                      │
+        R0 · R1                          R2                         │
+    Opus 5 high, contesto fresco   Fable 5 max, contesto fresco     │
+         Blind Hunter                  Blind Hunter                 │
+              │                              │                      │
+              └──────────────┬───────────────┘                      │
+                             ▼                                      ▼
+                   i rilievi tornano a Opus                conclusioni a confronto
+                   che li corregge — mai al                        │
+                   revisore che li ha trovati            owner se il disaccordo resta
+                             │
+                       TEST + GATE
+                             │
+                          commit
 ```
 
-**Diciassette agenti**: 1 Fable max · 3 Opus max · 2 Fable high · 11 Opus high. Sono due sopra la
-guida di dimensione dell'ambiente, ed è una decisione dell'owner del 24 agosto, non una scoperta a
-metà run.
+**Il livello di sotto: Sonnet 5 fa il volume, anche dentro una storia di Opus.**
 
-**Perché i due refutatori sono fratelli e non figli.** Un revisore che pende da chi ha orchestrato
-il lavoro riceve, per costruzione, il modello mentale che ha prodotto l'errore, e
-`50-Lezioni-loop/Il revisore che rivede sé stesso.md` misura il difetto: *«Non trova i propri errori
-perché l'errore sta nel modello mentale che ha prodotto entrambi»* — e qui pesa più che altrove,
-perché **Kirchhoff vende la verifica indipendente**. I due refutatori ricevono il diff e l'uscita dei
-gate deterministici. **Mai il ragionamento di chi ha costruito.**
+```
+                       Opus 5 — proprietario della storia
+                      /              |              \
+            Sonnet 5 ricerca   Sonnet 5 test    Sonnet 5 evidenza
+                      \              |              /
+                          Opus 5 integra e decide
+```
 
-**Perché sono due, e di modelli diversi.** Non è ridondanza: è diversità di prospettiva. Due giudici
-dello stesso modello sbagliano insieme; un Opus max e un Fable high hanno modi di fallire diversi, e
-ciò che l'uno non vede è la parte che l'altro può vedere. Il verdetto resta del Fable max in cima —
-**che giudica sui loro rapporti, non rileggendo da sé il diff che ha orchestrato.** Il §4 del loop
-resta il gate: il revisore non parte su un diff che i gate deterministici non hanno approvato.
+Ricerca nel repository, lettura di documenti, inventario, esecuzione dei test, triage di log
+semplici, tracciabilità, fixture, ricevute di evidenza: **Sonnet 5**. Non si spende Opus per trovare
+quaranta riferimenti a `LayoutIR`, e non si spende Fable per niente di tutto questo. **Opus resta
+proprietario della storia**, i sottoagenti no.
 
-**Il rischio che due refutatori introducono, misurato altrove.**
+| Funzione | Modello | Effort |
+|---|---|---|
+| Instradamento e eleggibilità delle storie | **nessun LLM** | deterministico |
+| Search-before-build, inventario, lettura documenti | Sonnet 5 | medium/high |
+| Esecuzione test, triage di log, tracciabilità, ricevute | Sonnet 5 | medium/high |
+| Implementazione ordinaria | **Opus 5** | **xhigh** |
+| Debug difficile, refactor architetturale | Opus 5 | max |
+| Review indipendente ordinaria, contesto fresco | Opus 5 | high |
+| Review di storia critica — Gate A, IR, `Verified` | **Fable 5** | **max** |
+| Arbitraggio di un disaccordo reale | Fable 5 | max |
+| Analisi owner-locked | Fable 5 **+ persona** | max |
+| **PASS/FAIL** | **nessun LLM** | codice deterministico |
+
+**Cosa fa scattare R2**, e sono trigger oggettivi, non giudizio: modifica di `CircuitIR` · un AD ·
+la definizione di `Verified` · semantica di `Refusal` · `PreserveSet` · `Delta` · semantica del
+renderer · `ProofGraph` · holdout ed eval · semantica del primo errore · Gate A · privacy o
+sicurezza · rottura di un contratto pubblico.
+
+**R3 esiste ed è raro.** Modificare `Verified`, un kill criterion, la costituzione, l'identità
+semantica, o qualcosa che invaliderebbe Gate A. Lì **due analisi indipendenti in parallelo**, Opus e
+Fable, e se le conclusioni divergono decide una persona. Non un agente solo.
+
+**Tre regole che la topologia non può violare.**
+
+1. **Il revisore non vede il ragionamento dell'implementatore.** Riceve storia, criteri di
+   accettazione, contesto di progetto, diff, test e riferimenti architetturali. **Non** «ho scelto
+   così perché». `50-Lezioni-loop/Il revisore che rivede sé stesso.md`: *«Non trova i propri errori
+   perché l'errore sta nel modello mentale che ha prodotto entrambi»* — e qui pesa più che altrove,
+   perché **Kirchhoff vende la verifica indipendente**. Contesto fresco anche quando il modello è lo
+   stesso: elimina l'impegno verso l'approccio già scelto, che è la metà del difetto.
+2. **Chi trova un rilievo non lo corregge.** Il finding torna a Opus, che implementa; poi test e
+   gate; poi il revisore rivede. Un revisore che ripara il proprio rilievo e poi dichiara corretta
+   la propria riparazione ha chiuso il cerchio su sé stesso.
+3. **Il modello propone, il sistema certifica.** `pytest`, coverage di dominio, recinti, oracolo di
+   mutazione, round-trip semantico, Gate A e VCER, disciplina dell'holdout **restano gli arbitri**.
+   Un modello può dire «vedo un possibile difetto»; non può dichiarare una storia `done`. È K-1,
+   applicato al loop che costruisce il prodotto che lo vende.
+
+**Il rischio che i refutatori introducono, misurato altrove.**
 `50-Lezioni-loop/Il refutatore è un imputato.md`: su 1 302 traiettorie annotate da esperti,
 **nessun giudice LLM supera il 70% di precisione**, e la valutazione a regole **sottostima il
-successo del 16,7-18,5%**. Alzare il numero di refutatori alza anche il tasso di **falso rifiuto**.
-Quindi la disciplina che la lezione prescrive vale adesso più di prima: prima di riscrivere ciò che
-la review boccia, **prendere a mano un campione dei rifiuti e misurare quanti erano validi.** Un
-gate che boccia tutto non misura niente, esattamente come uno che resta verde sotto mutazione.
+successo del 16,7-18,5%**. Prima di riscrivere ciò che una review boccia, **prendere a mano un
+campione dei rifiuti e misurare quanti erano validi.** Un gate che boccia tutto non misura niente,
+come uno che resta verde sotto mutazione.
+
+**Quattro vincoli che questa topologia eredita da misure già prese**, non da benchmark importati.
+Tutte in `docs/04-ricerca-token-e-automiglioramento.md`.
+
+- **§2.4 · D-4 — «la leva del risparmio token, trovata e non applicata».** Registrata alla lettera:
+  *«Il loop gira tutto a `--effort max`. Non applicato.»* Era già indicata come **l'unico margine
+  reale non sfruttato**. Questa topologia **è** la sua applicazione: `xhigh` come default e `max`
+  come escalation, non `max` ovunque. Non è una scelta di costo importata da fuori — è un difetto
+  del nostro loop, misurato qui, finalmente chiuso.
+- **§2.5 · l'oracolo costa zero token, e il revisore non parte prima.** Architettura obbligatoria
+  `Worker → LocalChecks → Verifier`, dove *«LocalChecks esegue l'oracolo a costo zero token»* e il
+  revisore **non parte mai** su un diff che non lo passa — stato `BLOCKED_BEFORE_REVIEW`. E il
+  tetto misurato: **una review più una riparazione**, poi escalation. Il modello più costoso non
+  legge mai un diff che un test da zero token avrebbe già bocciato.
+- **§2.4 · il parallelo vale per chi cerca e per chi confuta, mai per chi scrive.** Dieci passi in
+  tre tracce parallele portano l'affidabilità end-to-end **dal 60% all'81-86%**, *«ma solo ricerca e
+  confutazione, mai i writer»*. Da qui i Sonnet in parallelo sotto Opus e i refutatori in parallelo,
+  e **un solo implementatore per storia**.
+- **§2.6 · il segnale di stop deve venire da fuori dall'agente.** Misurato: sulle traiettorie fallite
+  i modelli prevedevano **oltre il 70% di fattibilità dopo aver bruciato il 60% del budget**, e
+  l'arresto precoce ha risparmiato **il 28-64% dei token** al costo di 1,6-4,2 punti di successo.
+  *«Non è un principio: è la conseguenza operativa di un bias ottimistico misurato su ogni modello
+  di frontiera testato.»* Per questo l'escalation la decide il router deterministico, non
+  l'implementatore che dichiara di potercela fare.
+
+**Cosa invece non è misurato qui, e va detto.** La distanza di capacità e di prezzo fra Opus 5 e
+Fable 5, e il posizionamento di Sonnet 5 come strato di esecuzione, vengono da fonti esterne
+dell'owner: **in questo repository non sono stati misurati**, e non vanno citati come se lo fossero.
+Valgono da inizializzazione del router, non da verdetto.
+
+**La scadenza.** Dopo 20-30 storie reali il loop calcola per modello: tasso di successo al primo
+passaggio, resa delle review, costo per storia, latenza, regressioni trovate, rilievi falsi. **Il
+router si ritara su quei numeri.** I benchmark esterni scelgono da dove partire; il nostro eval
+sceglie dove restare — ed è la stessa disciplina che §2.1 ha già applicato al costo fisso
+dell'iterazione, portandolo da $0,479 a $0,1451 per rispondere «ok».
+
+**Instradamento delle storie oggi in backlog**, come inizializzazione:
+
+| Storia | Implementazione | Review |
+|---|---|---|
+| 0.1 preflight del runtime BMAD | Opus 5 xhigh | Opus 5 high |
+| 0.2 doctor · status · dry-run | Opus 5 xhigh | Opus 5 high |
+| 0.3 run · resume | Opus 5 max | Fable 5 max |
+| **1.1 identità semantica** | Opus 5 max | **Fable 5 max** — tocca `Verified` |
+| 1.2 vocabolario strutturale | Opus 5 xhigh | Opus 5 high |
+| **1.3 ritenzione del `LayoutIR`** | Opus 5 max | **Fable 5 max** — tocca Gate A |
+| 1.4 serializzatore SVG | Opus 5 xhigh | Opus 5 high |
+| 1.5 recinto `render→adapters` | Sonnet 5 high | Opus 5 high |
+| **1.6 round-trip semantico** | Opus 5 max | **Fable 5 max** |
+| 1.7 trasformazione `serie` | Opus 5 xhigh | Opus 5 high |
+| 1.8 Visual Slice 0 | Opus 5 max | Fable 5 max |
+| **2.1 `StudentTrace`** | Opus 5 max | Fable 5 max |
+| **2.3 primo passo non valido** | Opus 5 max | **Fable 5 max** — semantica del primo errore |
 
 **La regola in una riga: l'effort si abbassa solo su chi non giudica** — e su chi giudica si alza.
 Vedi `docs/04-ricerca-token-e-automiglioramento.md` §2.4 per la misura del costo, e §4 qui sotto per
