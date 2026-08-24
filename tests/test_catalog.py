@@ -86,9 +86,44 @@ class TestDecisioneDiApertura:
         with pytest.raises(ValueError, match="AAAA-MM-GG"):
             _decisione(decided_on="24 agosto 2026")
 
+    @pytest.mark.parametrize("giorno", ["2026-13-99", "2026-02-30", "2026-00-10"])
+    def test_una_data_che_rispetta_la_forma_ma_non_e_un_giorno(self, giorno):
+        """La forma da sola non basta: `2026-13-99` la rispetta e non e' mai esistito.
+
+        Una decisione datata in un mese che non esiste non e' stata presa in alcun
+        momento, e archiviarla come valida rende inverificabile *quando* il kill
+        criterion sarebbe passato.
+        """
+        with pytest.raises(ValueError, match="non e' un giorno del calendario"):
+            _decisione(decided_on=giorno)
+
+    def test_la_verifica_della_data_non_legge_un_orologio(self):
+        """AD-2: il dominio non ha orologi. Una data di ieri e una del 2199 valgono
+        uguale — e' la decisione a datarsi, non il codice."""
+        assert _decisione(decided_on="1999-01-01").decided_on == "1999-01-01"
+        assert _decisione(decided_on="2199-12-31").decided_on == "2199-12-31"
+
     def test_una_decisione_che_non_apre_nulla(self):
         with pytest.raises(ValueError, match="non apre nulla"):
             _decisione(opens=frozenset())
+
+    @pytest.mark.parametrize(
+        "gia_applicabili",
+        [frozenset({"serie"}), frozenset({"serie", "parallelo"}), SUPPORTED])
+    def test_una_decisione_che_apre_solo_cio_che_e_gia_applicabile(self, gia_applicabili):
+        """«Che non apre nulla» non e' la stessa cosa di «vuota».
+
+        Una registrazione che nomina solo Trasformazioni gia' applicabili lascia
+        l'insieme identico: accettarla archivierebbe una decisione come se avesse
+        avuto un effetto che non ha avuto, e SM-C5 resterebbe tre mentre il registro
+        delle decisioni dice il contrario.
+        """
+        with pytest.raises(ValueError, match="non apre nulla"):
+            _decisione(opens=gia_applicabili)
+
+    def test_una_decisione_mista_apre_per_la_parte_nuova(self):
+        aperte = _decisione(opens=frozenset({"serie", "stella_triangolo"}))
+        assert transformations_supported(aperte) == SUPPORTED | {"stella_triangolo"}
 
     def test_una_decisione_apre_il_catalogo_ma_non_lo_estende(self):
         with pytest.raises(ValueError, match="fuori dal vocabolario chiuso"):

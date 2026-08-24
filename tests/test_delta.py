@@ -185,6 +185,34 @@ class TestCoerenzaColCircuito:
         assert check_delta(delta, prima, dopo) == ()
         assert N("n1") in preserve_set(prima, dopo)
 
+    def test_il_nome_riusato_da_una_fusione_non_e_una_falsa_accusa(self):
+        """Il caso R2-A, dal lato di `check_delta`.
+
+        `R1 (a,b) 10Ω` e `R2 (a,b) 20Ω` fondono in una equivalente battezzata
+        `R1 (a,b) 6⅔Ω`. Con `Pₖ` calcolato per solo identificatore — la seconda
+        definizione che viveva in questo modulo — `component:R1` risultava
+        «preservata», quindi la derivazione che la consuma davvero veniva segnalata
+        `preservata_consumata`: un passo corretto accusato di una violazione. Una
+        falsa accusa e' il difetto peggiore di questo prodotto.
+        """
+        prima = _ir(_r("R1", "a", "b", 10), _r("R2", "a", "b", 20),
+                    _r("RL", "b", "0", 5), nodes=("0", "a", "b"))
+        dopo = _ir(_r("R1", "a", "b", F(20, 3)), _r("RL", "b", "0", 5),
+                   nodes=("0", "a", "b"))
+        assert C("R1") not in preserve_set(prima, dopo, operation="parallelo")
+        delta = Delta((StructuralDerivation(
+            "parallelo", (C("R1"), C("R2")), (C("R1"),)),))
+        codici = [v.code for v in check_delta(delta, prima, dopo, operation="parallelo")]
+        assert "preservata_consumata" not in codici
+
+    def test_una_definizione_sola_di_pk_in_questo_modulo(self):
+        """E-62: due predicati per la stessa cosa divergono dove nessuno guarda."""
+        import inspect
+        from kirchhoff.domain.transform import check
+        corpo = inspect.getsource(check.check_delta)
+        assert "preserve_set(" in corpo
+        assert "prima & dopo" not in corpo
+
     def test_le_violazioni_sono_deterministiche(self):
         delta = Delta((StructuralDerivation("serie", (C("R1"),), ()),))
         a = check_delta(delta, self.PRIMA, self.DOPO)

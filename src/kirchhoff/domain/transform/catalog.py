@@ -28,7 +28,9 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from datetime import date
 from fractions import Fraction
+from types import MappingProxyType
 from typing import Literal
 
 TransformationKind = Literal[
@@ -101,9 +103,17 @@ IDENTITY_ATTRIBUTES: tuple[str, ...] = (
 #: consente per quella operazione soltanto. E' la riga da cambiare, e
 #: `test_un_attributo_dichiarato_mutabile_lascia_l_entita_preservata` il posto dove
 #: dichiarare il caso nuovo.
-MUTABLE_ATTRIBUTES: dict[str, frozenset[str]] = {
-    nome: frozenset() for nome in sorted(CATALOG)
-}
+_MUTABILI: dict[str, frozenset[str]] = {nome: frozenset() for nome in sorted(CATALOG)}
+
+#: La dichiarazione e' esposta come **vista di sola lettura**. `CATALOG` e
+#: `SUPPORTED` sono `frozenset`; un `dict` ordinario avrebbe lasciato il
+#: discriminante d'identita' riscrivibile con un'assegnazione — cioe' avrebbe
+#: consentito di cambiare *senza alcuna decisione* il riferimento rispetto a cui
+#: `Pₖ` e' misurato, nel modulo che dichiara il vocabolario chiuso per sempre.
+#: Chi e' misurato non definisce il proprio riferimento (AD-22 v2.1): nemmeno
+#: assegnando a una chiave. La riga da cambiare per dichiarare un attributo
+#: mutabile e' `_MUTABILI` qui sopra, in un commit, non a runtime.
+MUTABLE_ATTRIBUTES: MappingProxyType[str, frozenset[str]] = MappingProxyType(_MUTABILI)
 
 
 def mutable_attributes(operation: str) -> frozenset[str]:
@@ -189,10 +199,20 @@ class CatalogOpening:
     `opens` nomina cio' che diventa applicabile e deve stare nel vocabolario: una
     decisione **apre** il Catalogo, non lo estende.
 
-    `decided_on` e' una data in forma `AAAA-MM-GG` che **arriva da fuori**. Il
-    dominio non legge orologi (AD-2): una registrazione che si datasse da sola
-    sarebbe prodotta dal codice invece che dalla decisione, ed e' la decisione che
-    deve essere registrata.
+    `decided_on` e' un **giorno del calendario** in forma `AAAA-MM-GG` che **arriva
+    da fuori**. Il dominio non legge orologi (AD-2): una registrazione che si datasse
+    da sola sarebbe prodotta dal codice invece che dalla decisione, ed e' la decisione
+    che deve essere registrata. La forma da sola non basta pero': `2026-13-99` la
+    rispetta e non e' un giorno, e una decisione datata in un mese che non esiste non
+    e' stata presa in alcun momento. Si verifica quindi la **forma** con l'espressione
+    regolare — `date.fromisoformat` accetta anche altre sintassi ISO 8601 — e poi
+    l'**esistenza** del giorno. `fromisoformat` interpreta una stringa: non e' un
+    orologio, e nessuna riga di questo modulo chiede che ore sono.
+
+    `opens` deve aprire **qualcosa**: una registrazione che nomina solo Trasformazioni
+    gia' applicabili non apre il Catalogo, e accettarla produrrebbe una decisione
+    archiviata come se avesse avuto un effetto che non ha avuto. E' la stessa forma
+    dell'insieme vuoto, e riceve la stessa risposta.
 
     Le misure sono `Fraction` come ogni grandezza del dominio: un `float` porterebbe
     rumore binario dentro il numero che decide se il kill criterion e' passato.
@@ -225,11 +245,22 @@ class CatalogOpening:
             raise ValueError(
                 f"decisione di apertura datata {self.decided_on!r}: serve una data "
                 "nella forma AAAA-MM-GG")
-        aperte = frozenset(self.opens)
-        if not aperte:
-            raise ValueError("decisione di apertura che non apre nulla")
-        object.__setattr__(
-            self, "opens", _dentro_il_vocabolario(aperte, "decisione di apertura"))
+        try:
+            date.fromisoformat(self.decided_on)
+        except ValueError as errore:
+            raise ValueError(
+                f"decisione di apertura datata {self.decided_on!r}: non e' un giorno "
+                f"del calendario ({errore}). Una decisione presa in un mese che non "
+                "esiste non e' stata presa.") from errore
+        aperte = _dentro_il_vocabolario(
+            frozenset(self.opens), "decisione di apertura")
+        if not aperte - SUPPORTED:
+            raise ValueError(
+                "decisione di apertura che non apre nulla: "
+                f"{', '.join(sorted(aperte)) or 'nessun nome'} — "
+                f"gia' applicabile senza alcuna decisione. Una registrazione che non "
+                "cambia l'insieme delle applicabili non apre il Catalogo (FR-43).")
+        object.__setattr__(self, "opens", aperte)
 
 
 def transformations_supported(opening: CatalogOpening | None = None) -> frozenset[str]:

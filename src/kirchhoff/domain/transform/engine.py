@@ -3,10 +3,20 @@
 Il catalogo e' un **registro chiuso caricato all'avvio**: `_REGISTRO` si costruisce
 al momento dell'import e non espone alcuna funzione per aggiungervi una voce a
 runtime. Chiedere un'operazione che non c'e' fallisce **prima di eseguire qualunque
-calcolo** — la ricerca nel registro e' la prima riga di `transform`, non un
+calcolo** — le tre porte in cima a `transform` sono le sue prime righe, non un
 controllo a valle del lavoro.
 
-## Perche' un'operazione fuori catalogo solleva invece di restituire un `Refusal`
+## Le tre porte, che sono tre risposte diverse
+
+«Non esiste», «esiste e non e' applicabile» (FR-43) e «applicabile ma non ancora
+scritta». Confonderle costa a chi pianifica, ed e' precisamente cio' che il docstring
+di `catalog.py` chiede di non fare. La seconda e' la conseguenza testabile di FR-43 —
+*«il sistema rifiuta invece di improvvisare»* — e vive qui, non solo in un insieme
+esportato: senza questa porta sarebbe un effetto collaterale del registro incompleto,
+e una voce implementata ma non ancora aperta verrebbe eseguita senza che nulla
+protesti.
+
+## Perche' quelle tre sollevano invece di restituire un `Refusal`
 
 AD-19 tiene chiusa l'enumerazione delle cause e assegna a questo pacchetto
 esattamente tre: `identity_violation`, `preserve_nonmaximal`, `empty_boundary`.
@@ -17,25 +27,55 @@ chiama, e degradarla a `sanity` farebbe perdere all'utente la localizzazione che
 promette. Finche' lo spine non nomina una causa per il caso, questo modulo solleva e
 lo dichiara, invece di scegliersene una.
 
+## I Rifiuti che invece escono, e da dove vengono
+
+Due sono di `domain/transform/check` — le tre cause di AD-19 qui sopra. Gli altri
+sono **inoltrati** da `domain/validate`: `Cₖ` gia' rotto e `Cₖ₊₁` che non regge alla
+validazione elettrica portano `topology`, `units` o `unsolvable`, che restano cause
+di chi le emette. Il criterio della storia — *«il `CircuitIR` risultante supera la
+validazione elettrica»* — non discende dai tre controlli strutturali: una riduzione
+legittima puo' lasciare un nodo di grado uno, e senza la validazione del prodotto
+usciva un `Certificate` completo su un circuito irrisolvibile.
+
 Puro: nessuna I/O, nessun orologio, nessuna casualita'.
 """
 
 from __future__ import annotations
 
 from collections.abc import Callable
+from dataclasses import replace
 from fractions import Fraction
 
-from ..ir import IR, Component
+from ..ir import IR, REFERENCE_NODE, Component
 from ..refusal import Refusal
-from .catalog import CATALOG, TransformationKind
+from ..validate import validate
+from .catalog import (
+    CATALOG,
+    CatalogOpening,
+    TransformationKind,
+    transformations_supported,
+)
 from .check import check_transform, preserve_set
 from .delta import Delta, EntityRef, StructuralDerivation
 from .result import Boundary, Certificate, Equation, LayoutPatch, TransformResult
 
-#: I controlli che `check_transform` esegue, nell'ordine in cui li esegue. Il
+#: I controlli eseguiti prima che il prodotto esista, nell'ordine in cui girano. Il
 #: `Certificate` li elenca perche' siano **verificabili**, non perche' siano
 #: rassicuranti: un controllo che non ha girato non compare (E-65).
-CONTROLLI: tuple[str, ...] = ("boundary", "identita'", "massimalita' di preserve")
+#:
+#: I due estremi sono la validazione elettrica, e non sono lo stesso controllo.
+#: Quella su `Cₖ` viene **prima** di tutto: un passo applicato a un circuito gia'
+#: rotto produrrebbe altrimenti una diagnosi che nomina il passo invece del difetto
+#: preesistente — una falsa accusa. Quella su `Cₖ₊₁` e' il criterio della storia
+#: («il `CircuitIR` risultante supera la validazione elettrica») e viene per ultima,
+#: quando c'e' un prodotto da validare.
+CONTROLLI: tuple[str, ...] = (
+    "validazione elettrica di Cₖ",
+    "boundary",
+    "identita'",
+    "massimalita' di preserve",
+    "validazione elettrica di Cₖ₊₁",
+)
 
 
 def _resistore(ir: IR, cid: str) -> Component:
@@ -80,7 +120,19 @@ def _prodotto(
     `empty_boundary` non e' percio' irraggiungibile — e' raggiungibile da dove deve
     esserlo, cioe' da `check_transform`, che e' il controllore e riceve anche
     `boundary` dichiarati da altri produttori.
+
+    **La validazione elettrica gira qui e non in `transform`** perche' e' qui che il
+    `Certificate` nasce: un attestato che elenca un controllo eseguito da un'altra
+    funzione sarebbe vero per convenzione e non per costruzione, e E-65 dice
+    precisamente che un componente non certifica se stesso asserendolo. I due
+    Rifiuti che ne escono portano una causa di `domain/validate` — `topology`,
+    `units`, `unsolvable` — perche' e' `domain/validate` a emetterli: questo modulo
+    li inoltra, non se li attribuisce, e AD-19 resta rispettato senza cause nuove.
     """
+    ingresso = validate(prima)
+    if isinstance(ingresso, Refusal):
+        return ingresso
+
     preservate = preserve_set(prima, dopo, operation=operazione)
     patch = LayoutPatch(
         preserve=tuple(sorted(preservate)),
@@ -93,6 +145,14 @@ def _prodotto(
     rifiuto = check_transform(prima, dopo, operazione, patch, boundary)
     if rifiuto is not None:
         return rifiuto
+
+    # Il criterio della storia: «il `CircuitIR` risultante supera la validazione
+    # elettrica». I tre controlli strutturali non lo implicano — una riduzione puo'
+    # lasciare un nodo di grado uno, che e' un ramo aperto — e senza questa riga il
+    # prodotto usciva **certificato** e non risolvibile.
+    uscita = validate(dopo)
+    if isinstance(uscita, Refusal):
+        return uscita
 
     return dopo, TransformResult(
         preserve=preservate,
@@ -113,6 +173,19 @@ def _serie(ir: IR, primo: str, secondo: str) -> tuple[IR, TransformResult] | Ref
             f"{primo} e {secondo} condividono {len(comune)} nodi: la serie ne vuole "
             "esattamente uno.")
     nodo = comune.pop()
+    if nodo == REFERENCE_NODE:
+        # Elettricamente la coppia e' in serie: la corrente che attraversa la prima
+        # attraversa la seconda. Fondere le due elimina pero' il nodo comune, e quel
+        # nodo e' il **riferimento** — il potenziale rispetto a cui ogni tensione del
+        # circuito e' definita. Il prodotto non sarebbe un circuito con un difetto:
+        # non sarebbe un circuito. Prima di questa guardia il caso moriva due strati
+        # piu' in basso, nel costruttore dell'IR, con «manca il nodo di riferimento»:
+        # una diagnosi vera che non nominava ne' l'operazione ne' la coppia.
+        raise ValueError(
+            f"{primo} e {secondo} si toccano nel nodo di riferimento {nodo}: "
+            "la serie elimina il nodo comune, e quello non si elimina perche' e' il "
+            "potenziale rispetto a cui ogni tensione e' definita. Serve prima un "
+            "altro riferimento, che non e' una Trasformazione del catalogo.")
     tocca = [c.id for c in ir.components if nodo in c.terminals]
     if len(tocca) != 2:
         raise ValueError(
@@ -171,12 +244,49 @@ def _parallelo(ir: IR, primo: str, secondo: str) -> tuple[IR, TransformResult] |
 
 def _senza(ir: IR, componenti: tuple[str, ...], nodi: tuple[str, ...],
            aggiunto: Component) -> IR:
-    """`Cₖ₊₁`: gli stessi campi, meno cio' che e' stato consumato, piu' l'equivalente."""
+    """`Cₖ₊₁`: meno cio' che e' stato consumato, piu' l'equivalente — e **derivato**.
+
+    Tre campi non si copiano invariati, e copiarli produceva un IR che il proprio
+    costruttore rifiutava — cioe' un'eccezione al posto di uno dei due esiti che AD-2
+    em. ammette, su circuiti perfettamente validi.
+
+    **`source_kind` diventa `generated`.** Dice da dove l'IR e' stato *letto*, e
+    `Cₖ₊₁` non e' stato letto da nessuna parte: e' stato calcolato qui. Tenere
+    `image` era la contraddizione piu' visibile — lo schema pretende allora che
+    **ogni** componente porti la propria area di provenienza (FR-5), e l'equivalente
+    non ne ha una: non compare in nessuna fotografia, perche' non c'e' mai stato.
+    Inventargliela sarebbe peggio che non averla, e lo schema lo dice per primo.
+
+    **La provenienza cade con la sorgente.** Un componente che sopravvive la perde
+    perche' `Cₖ₊₁` non e' piu' un IR fotografico, e lo schema vieta un'area di
+    provenienza su una sorgente che non e' un'immagine. Non e' una perdita:
+    l'ancoraggio vive su `C₀`, dove la conferma dell'utente avviene, e il `Delta`
+    tiene il filo fra i due. `provenance` non e' fra gli `IDENTITY_ATTRIBUTES` —
+    «dice da dove il componente e' stato letto, non che cosa e'» — quindi nessuna
+    entita' esce da `Pₖ` per questo.
+
+    **Le richieste seguono il proprio bersaglio.** Una `Request` su un componente che
+    la riduzione consuma non puo' viaggiare su `Cₖ₊₁`: il costruttore la respinge, e
+    ha ragione — quel componente li' non esiste. Ridirigerla sull'equivalente sarebbe
+    molto peggio di un'eccezione: la tensione ai capi di `R1` **non e'** la tensione
+    ai capi di `R1+R2`, e la domanda dell'utente cambierebbe di nascosto. Resta
+    quindi su `Cₖ`, che e' il circuito in cui il suo bersaglio esiste, e non si perde:
+    `Delta.what_happened_to(EntityRef("component", "R1"))` restituisce la derivazione
+    che l'ha consumata, ed e' cosi' che la risalita ritrova la grandezza chiesta dopo
+    aver risolto il circuito ridotto. La lineage e' interrogabile per costruzione
+    (invariante 8 di `Delta`): non serve un settimo membro del risultato.
+    """
+    rimasti = tuple(
+        c if c.provenance is None else replace(c, provenance=None)
+        for c in ir.components if c.id not in componenti
+    )
+    superstiti = {c.id for c in rimasti} | {aggiunto.id}
     return IR(
-        ir.ir_version, ir.domain, ir.source_kind,
+        ir.ir_version, ir.domain, "generated",
         tuple(n for n in ir.nodes if n not in nodi),
-        (*(c for c in ir.components if c.id not in componenti), aggiunto),
-        ir.requests, ir.omega,
+        (*rimasti, aggiunto),
+        tuple(r for r in ir.requests if r.target in superstiti),
+        ir.omega,
     )
 
 
@@ -192,23 +302,63 @@ def implemented() -> frozenset[str]:
     """Le voci del catalogo che hanno gia' un'implementazione.
 
     Il catalogo e' chiuso e completo; le implementazioni arrivano una storia alla
-    volta. Tenere i due insiemi distinti e interrogabili evita che «non ancora
-    scritta» e «non esiste» si confondano — sono due risposte diverse a chi pianifica.
+    volta. Tenere i tre insiemi distinti e interrogabili evita che «non ancora
+    scritta», «non applicabile» e «non esiste» si confondano — sono tre risposte
+    diverse a chi pianifica, e `transform` le tiene su tre porte separate.
+
+    Non e' `SUPPORTED`, e non deve diventarlo per costruzione: l'insieme applicabile
+    lo decide FR-43, questo lo decide il lavoro fatto. Che oggi `implemented()`
+    contenga meno di `SUPPORTED` e' un debito dichiarato, non un difetto nascosto —
+    `partitore_di_tensione` e' applicabile e senza corpo, e chi la chiede riceve
+    esattamente quella risposta.
     """
     return frozenset(_REGISTRO)
 
 
 def transform(
-    ir: IR, operation: TransformationKind, *args: str,
+    ir: IR,
+    operation: TransformationKind,
+    *args: str,
+    opening: CatalogOpening | None = None,
 ) -> tuple[IR, TransformResult] | Refusal:
-    """La firma di AD-2 em. Pura: nessuna I/O, nessun orologio, nessuna casualita'."""
+    """La firma di AD-2 em. Pura: nessuna I/O, nessun orologio, nessuna casualita'.
+
+    Le tre porte in cima sono **tre risposte diverse**, e tenerle distinte e' il
+    punto di FR-43. Nell'ordine in cui si attraversano:
+
+    1. **«non esiste»** — il nome e' fuori dal vocabolario chiuso. Fallisce prima di
+       qualunque calcolo, e il vocabolario non si estende mai.
+    2. **«esiste e non e' applicabile»** — il nome sta nel vocabolario ma non fra le
+       Trasformazioni applicabili. FR-43: *«una trasformazione non nel Catalogo non e'
+       applicabile: il sistema rifiuta invece di improvvisare»*. Questa porta e' la
+       ragione per cui `SUPPORTED` esiste; senza di essa la conseguenza testabile di
+       FR-43 sarebbe solo un effetto collaterale del registro incompleto, e una voce
+       implementata ma non ancora aperta verrebbe eseguita senza che nulla protesti.
+       `opening` e' la registrazione che apre il Catalogo, esibita a ogni chiamata:
+       non c'e' uno stato globale da mettere in una configurazione.
+    3. **«applicabile, non ancora scritta»** — il corpo manca. E' l'unica delle tre
+       che il tempo risolve, e per questo non deve somigliare alle altre due.
+
+    Nessuna delle tre e' un `Refusal`: AD-19 assegna a questo pacchetto tre cause, e
+    nessuna dice «questa operazione non si puo' eseguire». Sono pero' tipi di
+    eccezione **diversi** — `ValueError` per cio' che non si potra' fare,
+    `NotImplementedError` per cio' che non si e' ancora fatto — cosi' che chi chiama
+    possa distinguerle senza leggere un messaggio.
+    """
     if operation not in CATALOG:
         raise ValueError(
             f"operazione {operation!r} fuori dal catalogo chiuso: "
             f"{', '.join(sorted(CATALOG))}. Il catalogo si carica all'avvio e non "
             "si estende a runtime.")
+    applicabili = transformations_supported(opening)
+    if operation not in applicabili:
+        raise ValueError(
+            f"{operation}: nel vocabolario ma non applicabile. Applicabili oggi: "
+            f"{', '.join(sorted(applicabili))}. Il sistema rifiuta invece di "
+            "improvvisare (FR-43); ad aprire il Catalogo e' una decisione registrata "
+            "(`CatalogOpening`), non una scelta di implementazione.")
     if operation not in _REGISTRO:
         raise NotImplementedError(
-            f"{operation}: nel catalogo ma senza implementazione. "
+            f"{operation}: applicabile ma senza implementazione. "
             f"Implementate finora: {', '.join(sorted(_REGISTRO))}.")
     return _REGISTRO[operation](ir, *args)
