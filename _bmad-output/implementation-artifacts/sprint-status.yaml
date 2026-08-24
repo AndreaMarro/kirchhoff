@@ -29,7 +29,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 08-13-2026 16:45
-last_updated: 08-24-2026 13:30
+last_updated: 08-24-2026 14:10
 project: Kirchhoff
 project_key: NOKEY
 tracking_system: file-system
@@ -44,9 +44,13 @@ development_status:
 
   epic-2: in-progress
   2-1-struttura-del-progetto-con-confini-di-dipendenza-verificati: done
+  # done rispetto al contratto v1 (un recinto). AD-21 v2 ne pretende cinque:
+  # il superamento e' una storia distinta, non una riapertura. Audit:
+  # implementation-artifacts/audit-recinti-ad21-2026-08-24.md
+  2-1b-recinti-ad-21-v2-cinque-frecce-vietate: backlog
   2-2-schema-ir-e-canonicalizzazione: done
   2-3-ingestione-da-netlist-e-da-latex: backlog
-  2-4-validazione-elettrica-con-diagnosi-localizzata: backlog
+  2-4-validazione-elettrica-con-diagnosi-localizzata: done
   2-5-percorso-a-analisi-nodale-modificata-simbolica: backlog
   2-6-catalogo-delle-trasformazioni-e-percorso-b: backlog
   2-7-verifica-a-cinque-controlli: backlog

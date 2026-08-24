@@ -19,7 +19,10 @@ build-backend = "hatchling.build"
 packages = ["src/kirchhoff"]
 
 [tool.pytest.ini_options]
-addopts = "-q --cov=kirchhoff --cov-report=term-missing --cov-fail-under=95"
+# --cov-report=json non e' un extra: scripts/check_domain_coverage.py legge
+# coverage.json. Senza, il gate misura un artefatto vecchio e puo' dichiarare
+# 100% su file che non ha mai visto (verificato il 24/08/2026: era fermo all'11 agosto).
+addopts = "-q --cov=kirchhoff --cov-report=term-missing --cov-report=json --cov-fail-under=95"
 testpaths = ["tests"]
 
 [tool.coverage.report]
