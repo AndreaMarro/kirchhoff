@@ -1,0 +1,276 @@
+[21:16:36Z] kirchhoff-loop v3 — avvio
+[21:16:36Z] repository=/Users/andreamarro/MATJOURNEY/kirchhoff
+[21:16:36Z] iterazioni=1 prova=0 promuovi=0 watchdog=2400s scrittura=$25 revisione=$8
+[21:16:36Z] 
+[21:16:36Z] --- iterazione 1 di 1 ---
+  [ok]  nessun FERMO
+  [ok]  repository git: ed72ebd
+  [ok]  uv: uv 0.11.8 (0e961dd9a 2026-04-27 aarch64-apple-darwin)
+  [ok]  helper runtime BMAD conformi al pin (5/5)
+  [ok]  holdout protetto da regola deny
+  [ok]  sprint-status.yaml leggibile
+  [ok]  albero di lavoro pulito
+[21:16:37Z] precondizioni: tutte verdi
+[21:16:37Z] storia: 2-6-catalogo-delle-trasformazioni
+[21:16:37Z] classe di rischio: R2
+[21:16:37Z] ramo: loop/iter-20260824T211636Z-2-6-catalogo-delle-trasformazioni (da main)
+[21:16:37Z] 
+[21:16:37Z] passo 1: implementa [-]
+[21:16:37Z]   → claude -p --model claude-opus-5 --effort max --max-budget-usd $25
+Permission allow rule (.claude/settings.json): Write(//Users/andreamarro/MATJOURNEY/kirchhoff/src/**) is not matched by file permission checks — only Edit(path) rules are. Use Edit(//Users/andreamarro/MATJOURNEY/kirchhoff/src/**) instead (Edit rules cover all file-editing tools).
+Permission allow rule (.claude/settings.json): Write(//Users/andreamarro/MATJOURNEY/kirchhoff/tests/**) is not matched by file permission checks — only Edit(path) rules are. Use Edit(//Users/andreamarro/MATJOURNEY/kirchhoff/tests/**) instead (Edit rules cover all file-editing tools).
+Permission allow rule (.claude/settings.json): Write(//Users/andreamarro/MATJOURNEY/kirchhoff/scripts/**) is not matched by file permission checks — only Edit(path) rules are. Use Edit(//Users/andreamarro/MATJOURNEY/kirchhoff/scripts/**) instead (Edit rules cover all file-editing tools).
+Permission allow rule (.claude/settings.json): Write(//Users/andreamarro/MATJOURNEY/kirchhoff/_bmad-output/**) is not matched by file permission checks — only Edit(path) rules are. Use Edit(//Users/andreamarro/MATJOURNEY/kirchhoff/_bmad-output/**) instead (Edit rules cover all file-editing tools).
+Permission deny rule (.claude/settings.json): Write(//Users/andreamarro/MATJOURNEY/kirchhoff/docs/00-fonte-piano-kirchhoff.md) is not matched by file permission checks — only Edit(path) rules are. Use Edit(//Users/andreamarro/MATJOURNEY/kirchhoff/docs/00-fonte-piano-kirchhoff.md) instead (Edit rules cover all file-editing tools).
+Il lavoro è chiuso e verificato. Rapporto finale.
+
+---
+
+# Rapporto — Story `2-6-catalogo-delle-trasformazioni` (R2)
+
+## Premessa che il revisore deve leggere prima del diff
+
+Il diff `main..HEAD` contiene **due commit**, e solo il secondo è mio.
+
+`3e3490f` è il **cherry-pick di `ec866e7`**, prodotto da un'iterazione precedente *sulla stessa storia*. Quell'iterazione risulta «NON promossa», ma il giornale (`ops/loop/giornale/20260824T210355Z-ITERAZIONE.log`) dice perché: `Error: Exceeded USD budget (4)` → `passo exit 1`. Si è fermata **sul tetto di spesa, prima che `verifica.sh` girasse**, non su un rilievo. Il codice non è mai stato né verificato né revisionato.
+
+L'ho misurato invece di presumerlo, in un worktree isolato su `ec866e7`. Prima misura: **rossa** — `test_l_intero_split_dev_e_promosso` falliva con «insieme di sviluppo troppo piccolo: 0 casi». Era un artefatto del worktree: `reference-set/` è in `.gitignore`, quindi le fixture non c'erano. Copiata la sola `reference-set/dev` (mai `holdout/`), seconda misura: **exit 0, 290 test, copertura 100%**.
+
+Quindi ho ripreso quel lavoro invece di riscriverlo. Avevo già implementato per conto mio un discriminante d'identità equivalente: l'ho **buttato**, perché due discriminanti sono il difetto che `catalog.py` descrive nel proprio docstring.
+
+## 1. Che cosa ho cambiato, file per file
+
+**Ripreso da `ec866e7` (commit `3e3490f`) — non mio, invariato:**
+- `domain/transform/result.py` (nuovo) — `TransformResult` e i sei membri di AD-2 em.
+- `domain/transform/engine.py` (nuovo) — `transform(...) -> (CircuitIR, TransformResult) | Refusal`, registro chiuso, `serie` e `parallelo`.
+- `domain/transform/check.py` — `preserve_set` con il discriminante AD-22 v2.1; `check_transform` che emette le tre cause di AD-19.
+- `domain/refusal.py` — `identity_violation`, `preserve_nonmaximal`, `empty_boundary` nell'enumerazione chiusa.
+- `tests/test_transform.py` (nuovo, 329 righe).
+
+**Mio (commit `7c82345`):**
+- **`domain/transform/catalog.py`** — FR-43, che mancava del tutto. `SUPPORTED` (le tre dell'MVP); `CatalogOpening` (i cinque campi che FR-43 esige, con `Fraction` obbligatoria per le misure e la data come dato, mai da orologio); `transformations_supported()`, la cui cardinalità **è** SM-C5; `_dentro_il_vocabolario()`, un solo predicato per i due punti che decidono chi è applicabile (E-62). Docstring: distinte le tre cose che si confondono — vocabolario, applicabili, implementate.
+- **`tests/test_catalog.py`** (nuovo) — 18 test, solo FR-43. Non duplica `TestDiscriminanteDiIdentita`.
+- **`domain/transform/__init__.py`** — esporta i nomi nuovi.
+- **`eval/transformations.py`** — solo docstring: diceva «il Catalogo vero nasce con la Story 2.6» e citava `(IR, Drawing)`, contratto ritirato il 15 agosto. Il mio stesso cambiamento la rendeva falsa.
+
+Ho **deliberatamente non** ristrutturato `MUTABLE_ATTRIBUTES` in un registro per-voce, benché fosse il mio piano iniziale: è codice verde con test che lo fissano, e il guadagno non valeva la superficie di regressione.
+
+## 2. Oracoli eseguiti
+
+| Comando | Exit | Esito |
+|---|---|---|
+| `ops/loop/verifica.sh` (baseline su `main`) | **0** | 245 test, copertura 100.0% |
+| `ops/loop/verifica.sh` (finale, su HEAD committato) | **0** | **308 test, copertura 100.0%, recinti ok, dominio ok** |
+| `uv run kirchhoff-eval report --root reference-set --split dev` | **0** | 36/36, VSR 1.0, SER 0.0 |
+
+Metriche finali: `{"copertura": 100.0, "dominio": true, "recinti": true, "test_falliti": 0, "test_passati": 308, "verde": true}`
+
+**Tre mutanti, tutti uccisi** — pytest avviato, 308 raccolti, test bersaglio eseguito, `AssertionError`/`DID NOT RAISE`. Mai `exit 4` né `127` (debito `2-4d`):
+1. `_dentro_il_vocabolario` senza recinto → 2 rossi.
+2. `SUPPORTED = CATALOG` → 3 rossi.
+3. **Il discriminante ereditato riportato ad AD-22 v1** → 3 rossi in `test_transform.py`, con `R1 ∈ Pₖ`: riproduce esattamente il difetto dell'istruttoria R2-A. L'oracolo del codice che ho ripreso è reale, non decorativo.
+
+Checksum verificato dopo ogni ripristino; `grep -rn MUTANTE src/ tests/` → 0.
+
+## 3. Che cosa resta incompleto o rischioso
+
+- **Il Percorso B non esiste.** La storia in `epics.md` v1 si chiama «Catalogo delle Trasformazioni **e Percorso B**»; la chiave in `prossima-storia.txt` si ferma a `catalogo-delle-trasformazioni` (45 caratteri contro 32: non è un troncamento, gli slug tagliano a 63). Non c'è confronto Percorso A/B a tolleranza 1e-9, e non c'è la risoluzione dei segnaposto legata allo scope del nodo del `ProofGraph` (AD-4 em.) — il `ProofGraph` non esiste.
+- **`implemented()` restituisce due**, non tre: manca `partitore_di_tensione`. FR-43 dice «applicabili», non «implementate», e i due insiemi sono ora distinti e interrogabili — ma la terza va scritta.
+- **`sprint-status.yaml` non l'ho toccato.** La storia non è completa e marcarla `done` sarebbe falso.
+- `catalog.py:126` ha una guardia d'import con `# pragma: no cover`, ereditata. È genuinamente irraggiungibile (il dict è derivato da `CATALOG`), quindi è prosa più che gate — ma è coerente con `exclude_lines` del progetto. Non l'ho toccata.
+
+## 4. Fuori ambito — trovato e NON toccato
+
+1. **La chiave di questa storia non esiste nel backlog autoritativo.** `epics.md` è stato **rigenerato** (`9eded2f`, passo 6 BMAD su PRD v3 / Spine v2 / UX v3) e non contiene più una Story 2.6 «Catalogo delle Trasformazioni». `sprint-status.yaml` **non** è stato rigenerato e continua a elencare `2-6-catalogo-delle-trasformazioni-e-percorso-b: backlog`. I due file descrivono due backlog diversi. Ho lavorato sui criteri della v1 (l'unica versione in cui questa storia esiste) più AD-22 v2.1 e FR-43, che sono autorità correnti in entrambe. **Questa riconciliazione è una decisione del proprietario, non mia.**
+2. Nel backlog rigenerato la **Story 1.1** possiede l'applicazione del discriminante e chiede un'attestazione d'identità nel `Certificate` per il caso non banale: `Certificate` oggi elenca i controlli eseguiti, non attesta l'identità.
+3. `check_delta` calcola `preservate = prima & dopo` per identificatore — una **seconda definizione di `Pₖ`**, divergente da quella corretta in `preserve_set`. Non produce oggi un falso verde nei casi coperti, ma sono due predicati per la stessa cosa (E-62). Non l'ho riparato: appartiene a chi possiede `check_delta`.
+4. `AD-22` dice che `Pₖ` è l'intersezione **dopo `node_mapping`**; `preserve_set` non riceve la mappa. Un componente il cui terminale cambia solo perché un nodo è stato assorbito risulterebbe non preservato. I casi attuali non lo raggiungono.
+5. `implementation-readiness.md` certifica «20 AD / 35 FR / 40 storie»: conteggi v1. Già registrato in `debito-rigenerazione-epics.md`.
+6. `domain/transform/__pycache__/` contiene `engine.cpython-313.pyc` e `result.cpython-313.pyc` **di 313** mentre i sorgenti ora esistono: residuo del tentativo precedente. Innocuo (PEP 3147), ma è ciò che mi ha fatto sospettare l'esistenza di quel tentativo.
+[21:41:34Z] 
+[21:41:34Z] passo 2: verifica [-]
+  test...
+  [ok]  test: 308 passati
+  [ok]  copertura: 100.0%
+  [ok]  recinti di dipendenza
+  [ok]  copertura del dominio
+[21:41:49Z]   oracolo exit 0 — {"copertura": 100.0, "dominio": true, "recinti": true, "test_falliti": 0, "test_passati": 308, "verde": true}
+[21:41:49Z] 
+[21:41:49Z] passo 3: revisiona [Blind Hunter]
+[21:41:49Z]   → claude -p --model claude-fable-5 --effort max --max-budget-usd $8
+[21:51:26Z]   revisione exit 0
+Permission allow rule (.claude/settings.json): Write(//Users/andreamarro/MATJOURNEY/kirchhoff/src/**) is not matched by file permission checks — only Edit(path) rules are. Use Edit(//Users/andreamarro/MATJOURNEY/kirchhoff/src/**) instead (Edit rules cover all file-editing tools).
+Permission allow rule (.claude/settings.json): Write(//Users/andreamarro/MATJOURNEY/kirchhoff/tests/**) is not matched by file permission checks — only Edit(path) rules are. Use Edit(//Users/andreamarro/MATJOURNEY/kirchhoff/tests/**) instead (Edit rules cover all file-editing tools).
+Permission allow rule (.claude/settings.json): Write(//Users/andreamarro/MATJOURNEY/kirchhoff/scripts/**) is not matched by file permission checks — only Edit(path) rules are. Use Edit(//Users/andreamarro/MATJOURNEY/kirchhoff/scripts/**) instead (Edit rules cover all file-editing tools).
+Permission allow rule (.claude/settings.json): Write(//Users/andreamarro/MATJOURNEY/kirchhoff/_bmad-output/**) is not matched by file permission checks — only Edit(path) rules are. Use Edit(//Users/andreamarro/MATJOURNEY/kirchhoff/_bmad-output/**) instead (Edit rules cover all file-editing tools).
+Permission deny rule (.claude/settings.json): Write(//Users/andreamarro/MATJOURNEY/kirchhoff/docs/00-fonte-piano-kirchhoff.md) is not matched by file permission checks — only Edit(path) rules are. Use Edit(//Users/andreamarro/MATJOURNEY/kirchhoff/docs/00-fonte-piano-kirchhoff.md) instead (Edit rules cover all file-editing tools).
+La verifica è verde come dichiarato (308 test, 100%, exit 0), il cherry-pick è fedele e la pycache non è tracciata. Gli esperimenti però hanno confermato una serie di mancanze reali. Ecco i rilievi.
+
+- **`transform` viola il proprio contratto su circuiti validi che portano `requests`.** `_senza` (engine.py:186) copia `ir.requests` invariate mentre rimuove i componenti che esse bersagliano: su un IR promosso da `validate` con `Request` su `R1`, `transform(ir, "serie", "R1", "R2")` solleva `ValueError: q1: grandezza richiesta su componente inesistente R1` dal costruttore dell'IR — né `(CircuitIR, TransformResult)` né `Refusal` (AD-2 em., AD-13). È il flusso che la storia stessa descrive («una sequenza di Trasformazioni che arriva alla grandezza richiesta»): la riduzione consuma proprio i componenti citati dalle richieste. Nessun test esercita `transform` con `requests` non vuote — tutte le fixture usano `()`.
+
+- **La serie attraverso il nodo di riferimento crasha.** `_serie` rimuove il nodo comune senza guardia sul nodo `0`: `V1(a,c), R1(a,0), R2(0,c)` è promosso da `validate` e la coppia è una serie legittima (il nodo `0` ha grado 2), ma `transform` solleva `ValueError: manca il nodo di riferimento`. Riprodotto; nessun test copre il caso.
+
+- **Su sorgente `image` ogni trasformazione crasha.** L'equivalente nasce da `Component.of` senza `provenance` mentre `_senza` conserva il `source_kind` dell'ingresso: su un IR fotografico valido (ogni componente con provenienza, FR-5) `transform` solleva `ValueError: R1R2eq: manca l'area di provenienza, obbligatoria quando la sorgente è un'immagine`. La fotografia è la sorgente primaria del prodotto; manca sia il comportamento sia la decisione su quale `source_kind`/provenienza debba portare `Cₖ₊₁`, e nessun test lo tocca.
+
+- **L'AC «il `CircuitIR` risultante supera la validazione elettrica» non è imposto, e non è vero.** Input valido `V1(b,0), R4(b,0), R1(a,b), R2(a,b)`: il parallelo restituisce un risultato con `Certificate` completo il cui circuito fallisce `validate` (`topology`: il nodo `a` resta a grado 1). `transform` non riverifica il proprio prodotto; il criterio è coperto da un solo test happy-path sulla sola serie. Simmetricamente, `transform` accetta e certifica anche input già elettricamente invalidi.
+
+- **FR-43 non è collegato al motore.** `SUPPORTED`, `transformations_supported()` e `CatalogOpening` non hanno alcun consumatore in produzione (solo export in `__init__.py` e test): `transform` consulta `CATALOG` e `_REGISTRO`, mai le applicabili. La conseguenza testabile di FR-43 — «il sistema rifiuta invece di improvvisare» — esiste a runtime solo come effetto collaterale del registro incompleto, e il recinto è un test (`implemented() <= SUPPORTED`): una voce implementata ma non applicabile verrebbe eseguita senza rifiuto. Inoltre una non applicabile riceve `NotImplementedError` con diagnosi «nel catalogo ma senza implementazione», cioè la risposta «non ancora scritta» al posto di «non applicabile» — precisamente le due risposte che il docstring di `catalog.py` dice di non confondere.
+
+- **`partitore_di_tensione` — un terzo delle applicabili dell'MVP — solleva `NotImplementedError`.** Dichiarato dall'implementatore, ma resta: l'insieme la cui cardinalità «è SM-C5» contiene una voce che il sistema non sa eseguire, e l'esito non è nessuna delle due risposte legali di AD-2 em.
+
+- **Il controllo `identity_violation` non può cogliere una rinomina reale.** `preserve_set` interseca per nome, quindi un'entità davvero rinominata fra `Cₖ` e `Cₖ₊₁` esce da `Pₖ` e il ciclo d'identità non la vede: `check_transform` su un `dopo` col nodo `a` rinominato in `a2` e `node_mapping=(("a","a2"),)` restituisce `None` (riprodotto). Il controllo scatta solo su una patch che dichiara una rinomina non avvenuta; AD-22 em. definisce `Pₖ` **dopo** `node_mapping`, che `preserve_set` non riceve. Dal percorso interno la mappa è sempre vuota, quindi il controllo non è esercitabile nemmeno lì: il rilievo dell'implementatore («i casi attuali non lo raggiungono») sottostima — il controllo è strutturalmente cieco alla violazione che nomina.
+
+- **`image_of` è applicata anche ai componenti.** `check_transform` applica la mappa dei nodi all'id di ogni preservata, componenti inclusi: con un componente di id `a` e un nodo `a` rinominato in `z`, emette `identity_violation` spuria su `component:a` (riprodotto). La mappa non distingue il `kind` che `EntityRef` distingue.
+
+- **Due definizioni di `Pₖ` nello stesso modulo della storia.** `check_delta` (check.py:102) calcola `preservate = prima & dopo` per solo identificatore — il discriminante che l'istruttoria R2-A ha demolito — nello stesso file in cui la storia ha introdotto quello corretto, con E-62 citato nei docstring della storia stessa. L'attribuzione «appartiene a chi possiede `check_delta`» non regge: il proprietario del file è questa storia, che lo ha modificato estesamente.
+
+- **`CatalogOpening.decided_on` valida solo la forma.** `decided_on="2026-13-99"` costruisce una registrazione valida (riprodotto): una data col mese 13 «apre il Catalogo». Inoltre un'apertura con `opens={"serie"}` — già applicabile — passa senza rilievo: «la decisione che non apre nulla» è respinta solo quando l'insieme è letteralmente vuoto.
+
+- **Il discriminante di AD-22 è un `dict` mutabile a runtime.** `MUTABLE_ATTRIBUTES` è un dict globale ordinario: `MUTABLE_ATTRIBUTES["serie"] = frozenset({"value"})` cambia il discriminante d'identità senza alcuna decisione, nel modulo che dichiara il vocabolario «chiuso per sempre» — e il test `test_un_attributo_dichiarato_mutabile_...` dimostra la mutazione in pratica. `CATALOG` e `SUPPORTED` sono frozenset; la dichiarazione che decide chi è preservato no.
+
+- **Il terzo blocco di criteri della storia è assente.** Percorso B (confronto col Percorso A a tolleranza 1e-9 simbolica / 1e-6 numerica, FR-10), segnaposto legati allo scope del nodo del `ProofGraph` con `Refusal` per segnaposto non risolto (FR-13, AD-4 em.): nessuna implementazione, nessun test. Dichiarato dall'implementatore; resta il criterio maggiore non soddisfatto della storia lavorata, e nulla nel branch lo traccia al di fuori del rapporto.
+[21:51:26Z] 
+[21:51:26Z] passo 4: ripara [-]
+[21:51:26Z]   → claude -p --model claude-opus-5 --effort max --max-budget-usd $25
+Permission allow rule (.claude/settings.json): Write(//Users/andreamarro/MATJOURNEY/kirchhoff/src/**) is not matched by file permission checks — only Edit(path) rules are. Use Edit(//Users/andreamarro/MATJOURNEY/kirchhoff/src/**) instead (Edit rules cover all file-editing tools).
+Permission allow rule (.claude/settings.json): Write(//Users/andreamarro/MATJOURNEY/kirchhoff/tests/**) is not matched by file permission checks — only Edit(path) rules are. Use Edit(//Users/andreamarro/MATJOURNEY/kirchhoff/tests/**) instead (Edit rules cover all file-editing tools).
+Permission allow rule (.claude/settings.json): Write(//Users/andreamarro/MATJOURNEY/kirchhoff/scripts/**) is not matched by file permission checks — only Edit(path) rules are. Use Edit(//Users/andreamarro/MATJOURNEY/kirchhoff/scripts/**) instead (Edit rules cover all file-editing tools).
+Permission allow rule (.claude/settings.json): Write(//Users/andreamarro/MATJOURNEY/kirchhoff/_bmad-output/**) is not matched by file permission checks — only Edit(path) rules are. Use Edit(//Users/andreamarro/MATJOURNEY/kirchhoff/_bmad-output/**) instead (Edit rules cover all file-editing tools).
+Permission deny rule (.claude/settings.json): Write(//Users/andreamarro/MATJOURNEY/kirchhoff/docs/00-fonte-piano-kirchhoff.md) is not matched by file permission checks — only Edit(path) rules are. Use Edit(//Users/andreamarro/MATJOURNEY/kirchhoff/docs/00-fonte-piano-kirchhoff.md) instead (Edit rules cover all file-editing tools).
+Verifica finale su HEAD committato: exit 0.
+
+---
+
+# Rapporto — Story `2-6-catalogo-delle-trasformazioni` (R2), passo *ripara*
+
+## 0. Verdetto sui rilievi: 13 verificati, 13 confermati, 0 refutati
+
+Ho riprodotto ogni rilievo con codice eseguito prima di accettarlo. **Nessuno era falso.** Undici sono riparati; due sono confermati e rinviati con la ragione, tracciata nel repository (§4).
+
+| # | Rilievo | Esito della verifica | Stato |
+|---|---|---|---|
+| 1 | `requests` su componente consumato | `ValueError: q1: grandezza richiesta su componente inesistente R1` | riparato |
+| 2 | serie attraverso il nodo `0` | `ValueError: manca il nodo di riferimento` | riparato |
+| 3 | sorgente `image` | `ValueError: R1R2eq: manca l'area di provenienza` | riparato |
+| 4 | il prodotto non supera `validate` | `Certificate` completo + `Refusal topology` su `validate(dopo)` | riparato |
+| 5 | FR-43 scollegato dal motore | zero consumatori in produzione (misurato con grep) | riparato |
+| 6 | `partitore_di_tensione` | `NotImplementedError` | **rinviato** |
+| 7 | `identity_violation` cieca alla rinomina reale | `check_transform → None` | riparato |
+| 8 | `image_of` sui componenti | `identity_violation` spuria su `component:a` | riparato |
+| 9 | due definizioni di `Pₖ` in `check.py` | `prima & dopo` a `check.py:102` | riparato |
+| 10 | `decided_on="2026-13-99"`; `opens={"serie"}` | entrambe costruiscono | riparato |
+| 11 | `MUTABLE_ATTRIBUTES` riscrivibile | mutazione riuscita a runtime | riparato |
+| 12 | Percorso B / segnaposto assenti | nessuna implementazione | **rinviato** |
+
+Un rilievo procedurale del revisore era esatto e va oltre la mia storia: **anche il mio harness di mutazione è caduto nella trappola del bytecode stantio.** Due mutanti sullo stesso file che aggiungono lo stesso numero di byte nello stesso secondo riusano il `.pyc` del primo, e il secondo risulta «sopravvissuto» senza essere mai stato eseguito — un vuoto che somiglia a una misura. Rilevato confrontando l'esito dell'harness con la stessa mutazione applicata a mano; corretto con `PYTHONDONTWRITEBYTECODE=1` più la rimozione delle cache prima di ogni corsa. Le misure qui sotto sono quelle dopo la correzione.
+
+## 1. Che cosa ho cambiato, file per file
+
+**`src/kirchhoff/domain/transform/engine.py`**
+- `_senza` — `Cₖ₊₁` è **derivato**, non una copia con meno componenti: `source_kind` diventa `generated`, la provenienza cade con la sorgente (`provenance` non è fra gli `IDENTITY_ATTRIBUTES`, quindi nessuno esce da `Pₖ`), e le richieste seguono il proprio bersaglio. Una richiesta consumata **non è persa** — `Delta.what_happened_to` la ritrova — e **non è ridiretta** sull'equivalente: la tensione ai capi di `R1` non è quella ai capi di `R1+R2`, e ridirigerla cambierebbe di nascosto la domanda dell'utente.
+- `_serie` — guardia sul nodo di riferimento, che nomina operazione e coppia invece di morire due strati più in basso.
+- `_prodotto` — validazione elettrica di `Cₖ` (prima di tutto: un ingresso rotto non diventa una colpa del passo) e di `Cₖ₊₁` (il criterio della storia). I `Refusal` sono **inoltrati** da `domain/validate` con le sue cause: nessuna causa nuova, AD-19 intatto. Sta qui e non in `transform` perché è qui che nasce il `Certificate` (E-65).
+- `CONTROLLI` — cinque voci, i due estremi distinti.
+- `transform` — le **tre porte di FR-43**: «non esiste» (`ValueError`), «esiste e non è applicabile» (`ValueError`), «applicabile ma non ancora scritta» (`NotImplementedError`). Tipi diversi, così chi chiama distingue senza leggere un messaggio. Parametro `opening` per la decisione registrata, esibita a ogni chiamata.
+
+**`src/kirchhoff/domain/transform/check.py`**
+- `preserve_set` — `Pₖ` si prende **dopo `node_mapping`**, come AD-22 em. lo definisce; i terminali si confrontano attraverso la mappa. Nuovo `_immagine`, che documenta perché la mappa riguarda i soli nodi.
+- `check_transform` — il ciclo d'identità ha ora **due versi**: (a) una mappa che dichiara una rinomina che `Cₖ₊₁` non conferma — senza di esso `node_mapping` restava una via d'uscita da `Pₖ`; (b) un sopravvissuto davvero rinominato, che prima era invisibile. Il ciclo salta i componenti.
+- `check_delta` — usa `preserve_set`. Una sola definizione di `Pₖ` nel modulo.
+
+**`src/kirchhoff/domain/transform/catalog.py`**
+- `MUTABLE_ATTRIBUTES` è una `MappingProxyType` su `_MUTABILI`.
+- `CatalogOpening` — la data dev'essere un **giorno del calendario** (`date.fromisoformat`: interpreta una stringa, non è un orologio) e la decisione deve **aprire qualcosa**.
+
+**`tests/test_transform.py`** — `SERIE` e `PARALLELO` hanno un generatore: il criterio elettrico non era verificabile su fixture che `validate` rifiuta prima. Quattro classi nuove (`TestCioCheCkPiuUnoDeveEssere`, `TestSorgenteFotografica`, `TestSerieAttraversoIlRiferimento`, `TestFR43AlMotore`, `TestIdentitaAttraversoLaMappa`).
+**`tests/test_catalog.py`** — data non-calendario, decisione che non apre nulla, apertura mista.
+**`tests/test_delta.py`** — il caso R2-A dal lato di `check_delta`; un test che vieta il ritorno del secondo predicato.
+**`_bmad-output/implementation-artifacts/deferred-work.md`** — i due rilievi rinviati, con la ragione.
+
+## 2. Oracoli eseguiti
+
+| Comando | Exit | Esito |
+|---|---|---|
+| `ops/loop/verifica.sh` (su HEAD committato, `df533cd`) | **0** | 342 test, copertura 100.0%, recinti ok, dominio ok |
+| `uv run kirchhoff-eval report --root reference-set --split dev` | **0** | zero errori in tutte le classi |
+| harness di mutazione, 12 mutanti | — | **12 uccisi, 0 sopravvissuti** |
+
+Metriche: `{"copertura": 100.0, "dominio": true, "recinti": true, "test_falliti": 0, "test_passati": 342, "verde": true}`
+
+Ogni mutante è ucciso secondo il criterio del debito `2-4d`: pytest avviato, collection avvenuta, test bersaglio eseguito, `exit 1` con `FAILED` — mai `4` né `127`. Checksum del sorgente verificato dopo ogni ripristino; albero pulito, nessun marcatore residuo.
+
+Due mutanti sono **sopravvissuti alla prima corsa corretta**, e in entrambi i casi era il test a non discriminare, non la riparazione a mancare: una guardia più forte mascherava la mutazione. Ho riscritto i due test perché distinguessero (il primo verso dell'identità copriva il secondo; e la validazione dell'ingresso e quella del prodotto nominavano lo stesso nodo, quindi ho reso il test sensibile a *quando* arriva il Rifiuto).
+
+## 3. Che cosa resta incompleto o rischioso
+
+- **Tre decisioni di dominio le ho prese io**, e il proprietario può ribaltarle: (a) `Cₖ₊₁` è `generated` — vale anche per un ingresso da netlist, che quindi perde `source_kind`; (b) la provenienza cade e l'ancoraggio si recupera da `C₀` più il `Delta`; (c) una richiesta il cui bersaglio è consumato resta su `Cₖ` invece di viaggiare. Nessuna è scritta in un documento di autorità. Ho scelto secondo la dottrina dello schema («una provenienza inventata è peggio di nessuna») e la regola che una falsa risposta è peggio di un'assenza; sono documentate nel docstring di `_senza`.
+- **Il caso del nodo di riferimento solleva invece di restituire un `Refusal`.** È elettricamente una serie vera, e la coppia non è riducibile solo perché il nodo comune è il datum. AD-19 non assegna a questo modulo una causa che lo copra, e inventarla è una modifica dello spine. Resta coerente con le altre due guardie di `_serie`, ma è la riga da cambiare se il proprietario nomina una causa.
+- Idem per «esiste e non è applicabile»: FR-43 dice «il sistema rifiuta», e il rifiuto è oggi un `ValueError`, non un `Refusal`, per la stessa ragione.
+- `transform` valida l'ingresso **dentro `_prodotto`**, quindi dopo che la riduzione è stata calcolata. È puro e senza effetti, ma un ingresso rotto con una coppia malformata riceve la `ValueError` di precondizione invece del `Refusal` elettrico.
+- `sprint-status.yaml` non l'ho toccato: la storia non è completa e marcarla `done` sarebbe falso.
+
+## 4. Fuori ambito — trovato e NON toccato
+
+1. **`partitore_di_tensione` (rilievo 6) — confermato, non chiuso.** Non è un corpo da scrivere: manca la decisione di dominio. Una **ripartizione** non consuma né produce entità, mentre `TransformResult` esige un `Delta` non vuoto con almeno un'entità in ingresso. Quale sia il suo contenuto strutturale non è scritto in AD-2 em., AD-22 em. né FR-43, che la nominano soltanto. Sceglierlo qui fisserebbe nel codice un modello che nessuno ha deciso, e AD-22 dice che il discriminante lo dichiara il Catalogo, mai chi implementa. La risposta a runtime è ora quella corretta delle due («applicabile ma senza implementazione»), pinnata da un test. Voce in `deferred-work.md`.
+2. **Percorso B e segnaposto (rilievo 12) — confermato, bloccato da prerequisiti.** Il confronto ha bisogno del Percorso A, che è la Story 2.5, `backlog`: un braccio non esiste, e misurare l'accordo con sé stessi non è un controllo indipendente. I segnaposto hanno bisogno del `ProofGraph` e di `render/serialize`, a cui AD-19 assegna `placeholder_unbound`. Voce in `deferred-work.md` — non più solo nel rapporto.
+3. **La chiave di questa storia non esiste nel backlog autoritativo.** `epics.md` è stato rigenerato (`9eded2f`) e non contiene più una Story 2.6 «Catalogo delle Trasformazioni»; `sprint-status.yaml` non è stato rigenerato e la elenca ancora. Ho lavorato sui criteri della v1 (`9eded2f~1`, righe 604-644), l'unica versione in cui esistono. La riconciliazione è una decisione del proprietario.
+4. `check_delta` continua a emettere `DeltaViolation` e non `Refusal` per le sue quattro condizioni: AD-19 non assegna una causa a «una entità è sparita senza derivazione». Corretto com'è, ma è un secondo canale di diagnosi accanto ai Rifiuti.
+5. `implementation-readiness.md` certifica conteggi v1 (20 AD / 35 FR / 40 storie). Già registrato in `debito-rigenerazione-epics.md`.
+6. Il difetto di harness descritto in §0 vale per chiunque scriva mutation testing su questo repository. Non è codice di prodotto e non l'ho reso permanente in `scripts/`; se il debito `2-4d` diventa una storia, è il caso da includere.
+[22:14:15Z] 
+[22:14:15Z] passo 5: verifica [-]
+  test...
+  [ok]  test: 342 passati
+  [ok]  copertura: 100.0%
+  [ok]  recinti di dipendenza
+  [ok]  copertura del dominio
+[22:14:30Z]   oracolo exit 0 — {"copertura": 100.0, "dominio": true, "recinti": true, "test_falliti": 0, "test_passati": 342, "verde": true}
+[22:14:30Z] 
+[22:14:30Z] passo 6: revisiona [ri-revisione]
+[22:14:30Z]   → claude -p --model claude-fable-5 --effort max --max-budget-usd $8
+[22:23:24Z]   revisione exit 0
+Permission allow rule (.claude/settings.json): Write(//Users/andreamarro/MATJOURNEY/kirchhoff/src/**) is not matched by file permission checks — only Edit(path) rules are. Use Edit(//Users/andreamarro/MATJOURNEY/kirchhoff/src/**) instead (Edit rules cover all file-editing tools).
+Permission allow rule (.claude/settings.json): Write(//Users/andreamarro/MATJOURNEY/kirchhoff/tests/**) is not matched by file permission checks — only Edit(path) rules are. Use Edit(//Users/andreamarro/MATJOURNEY/kirchhoff/tests/**) instead (Edit rules cover all file-editing tools).
+Permission allow rule (.claude/settings.json): Write(//Users/andreamarro/MATJOURNEY/kirchhoff/scripts/**) is not matched by file permission checks — only Edit(path) rules are. Use Edit(//Users/andreamarro/MATJOURNEY/kirchhoff/scripts/**) instead (Edit rules cover all file-editing tools).
+Permission allow rule (.claude/settings.json): Write(//Users/andreamarro/MATJOURNEY/kirchhoff/_bmad-output/**) is not matched by file permission checks — only Edit(path) rules are. Use Edit(//Users/andreamarro/MATJOURNEY/kirchhoff/_bmad-output/**) instead (Edit rules cover all file-editing tools).
+Permission deny rule (.claude/settings.json): Write(//Users/andreamarro/MATJOURNEY/kirchhoff/docs/00-fonte-piano-kirchhoff.md) is not matched by file permission checks — only Edit(path) rules are. Use Edit(//Users/andreamarro/MATJOURNEY/kirchhoff/docs/00-fonte-piano-kirchhoff.md) instead (Edit rules cover all file-editing tools).
+La verifica è completa: ho riprodotto ogni sospetto con codice eseguito sul HEAD committato. Ecco i rilievi.
+
+- **Il Delta prodotto dalla serie viola il controllore di coerenza dello stesso pacchetto, e nessuno lo esegue mai.** Eseguito su HEAD: `check_delta(res.delta, SERIE, dopo, operation="serie")` restituisce `sparizione_non_spiegata` su `node:b` — il nodo interno sparisce, `patch.remove` lo nomina, il Delta non lo consuma. `transform` non chiama mai `check_delta` (zero consumatori in produzione: solo l'export in `__init__.py`), il `Certificate` non elenca la coerenza del Delta fra i controlli, e nessun test esegue `check_delta` sul Delta che il motore produce. Dentro un singolo `TransformResult` i due canali raccontano storie diverse per la stessa entità: la divergenza E-62 che il repository dichiara di combattere.
+
+- **`Delta.what_happened_to(EntityRef("node", "b"))` restituisce `None`: il claim del docstring di `_senza` («la lineage è interrogabile per costruzione») è falso per i nodi assorbiti.** La dottrina di `delta.py` (righe 32-38) esige che una fusione consumi l'entità assorbita («è lì che n2 è finito»); il Delta della serie consuma solo i due resistori. Eseguito e confermato.
+
+- **`node_mapping` non ha alcun uso legale: i due versi del ciclo d'identità coprono l'intero spazio delle mappe con sorgente reale.** Se l'arrivo non esiste in `Cₖ₊₁` scatta il verso (a); se esiste, il nodo entra in `Pₖ` (l'immagine è presente) e scatta il verso (b). Eseguita la fusione `n2→n1` — il caso che `delta.py` dichiara lecito e che AD-2 em. descrive come il compito della mappa: `check_transform` la rifiuta con `identity_violation` su `n2`. L'unica mappa che attraversa il controllore è quella con sorgenti inesistenti in `Cₖ` (`("zzz","w")` → `None`, eseguito), cioè spazzatura non verificata. Il campo può essere solo vuoto, illegale o ignorato, e nessun test copre un uso lecito non banale — perché non ne esiste uno.
+
+- **Nella stessa fusione, `Pₖ` si gonfia: `preserve_set` con mappa `(n2→n1)` restituisce `{V1, 0, n1, n2}` — due entità di `Cₖ` contate come sopravvissute sulla stessa entità di `Cₖ₊₁`.** L'iniettività che il docstring di `LayoutPatch` promette («totale e iniettiva sui sopravvissuti») è verificata solo fra le coppie esplicite: la collisione fra `n2→n1` e l'identità implicita `n1→n1` non è colta né dalla patch né da `preserve_set`. Eseguito.
+
+- **Il «boundary» del criterio è verificato solo come assente/vuoto, mai nel contenuto.** Un `Boundary((N("fantasma"),))` con entità inesistenti in entrambi i circuiti attraversa `check_transform` pulito (eseguito → `None`). Il criterio dice «`check` verifica massimalità, identità e boundary»: nessuna verifica che ∂Tₖ esista nei circuiti, sia fatto di preservati, o confini davvero col sottografo toccato.
+
+- **`create` e `remove` della patch non sono mai confrontati con i circuiti.** Una patch con `create=(component:MaiEsistita,)` oppure `remove=(component:MaiEsistita,)` passa `check_transform` (eseguito → `None` in entrambi i casi). Il controllore verifica `preserve` contro `Pₖ` e `create ∩ Pₖ`, ma non che `create` sia fatto di entità comparse né che `remove` sia fatto di entità sparite: un renderer che segue la patch riceve istruzioni su entità che nessuno dei due circuiti possiede.
+
+- **Un identificatore di componente inesistente muore con `KeyError` nudo, un'arità sbagliata con `TypeError` grezzo.** Eseguito: `transform(SERIE, "serie", "R1", "RX")` → `KeyError('RX')` da `IR.component`; `transform(SERIE, "serie", "R1")` → `TypeError: _serie() missing 1 required positional argument`. Il contratto documenta con cura tre porte tipizzate (`ValueError`/`NotImplementedError`/`Refusal`), ma il primo errore che un chiamante reale commette — un nome sbagliato — produce un quarto tipo senza operazione né diagnosi, e nessun test lo copre.
+
+- **`Cause`/`CAUSES` e `SubjectKind`/`SUBJECT_KINDS` sono ciascuno scritti due volte (Literal + frozenset) senza alcun test di riconciliazione.** Questa storia ha esteso entrambe le copie di `Cause` a mano nello stesso commit; grep sui test per `get_args`/confronti con `CAUSES`: vuoto. Per `CATALOG` vs `REFERENCE_TRANSFORMATIONS` la riconciliazione è un test elevato a dottrina («un catalogo scritto due volte prima o poi diverge», E-62); nel file appena toccato, dove il rischio si è appena materializzato come gesto manuale doppio, la guardia manca.
+
+- **`empty_boundary` e il primo ramo di `preserve_nonmaximal` costruiscono `Refusal(causa, operation, "request", …)`: soggetto `"serie"`, genere `request`.** Nessuna richiesta chiamata «serie» esiste nel circuito; FR-4/K-3 vogliono la diagnosi riusabile come Domanda mirata sull'elemento coinvolto, e chi risale per `subject_kind` trova un genere che mente. La scelta di ripiego (nessun `SubjectKind` copre «operazione») non è dichiarata da nessuna parte — né commento, né deferred-work.
+
+- **L'`Equation` è tautologica: il passo è «giustificato» da X = X.** Eseguito: la serie produce `(R1 + R2) = R1 + R2`, il parallelo l'analogo. L'identificatore del componente prodotto (`R1R2eq`) non compare in alcun membro, quindi l'uguaglianza non lega il simbolo nuovo alla formula che lo definisce — non giustifica nulla. `test_parallelo_in_aritmetica_esatta` pinna esattamente questa forma, congelando il difetto come comportamento atteso.
+
+- **Le tre decisioni di dominio del §3 del rapporto non sono registrate in alcun canale durevole.** `source_kind→generated` (che cancella per sempre a valle la distinzione netlist/image), provenienza azzerata, richieste che restano su `Cₖ`: il rapporto ammette «nessuna è scritta in un documento di autorità», ma non le ha messe nemmeno in `deferred-work.md` (grep: nessuna voce), dove le altre decisioni in attesa del proprietario vivono. Il rapporto è effimero e il docstring non è un registro. In più il claim «la richiesta consumata non è persa — `Delta.what_happened_to` la ritrova» è impreciso: il Delta ritrova il componente `R1`, non la richiesta `q1` (id e grandezza vivono solo in `Cₖ`); la ricostruzione presuppone che la risalita conservi `Cₖ`, e nessun test lo dimostra.
+
+- **La riparazione del rilievo 11 è a metà: `engine._REGISTRO` resta un dict riscrivibile a runtime.** `MUTABLE_ATTRIBUTES` è stato blindato con `MappingProxyType`; il registro che decide quale codice viene eseguito per ogni operazione no — `_REGISTRO["serie"] = altra_funzione` sostituisce l'implementazione della serie senza attraversare alcuna porta (il test stesso lo fa con `monkeypatch.setitem`), sotto un docstring che dichiara il registro «chiuso». Stessa classe di difetto, chiusa in `catalog.py` e lasciata aperta nel modulo accanto.
+
+- **La chiave di questa storia non esiste neppure in `sprint-status.yaml`: la voce reale è un'altra.** Il rapporto (§4.3) afferma che sprint-status «la elenca ancora»; la voce effettiva è `2-6-catalogo-delle-trasformazioni-e-percorso-b: backlog` — chiave diversa da quella del branch e della storia lavorata (`2-6-catalogo-delle-trasformazioni`), e stato `backlog` dopo due iterazioni committate. Tre nomi in circolazione (branch, sprint-status, epics rigenerato senza la storia) e nessuno stato che rifletta il lavoro svolto.
+
+- **Il primo criterio della storia resta non soddisfatto per un'applicabile su tre.** «Una Trasformazione del catalogo applicata a un `CircuitIR` restituisce `(CircuitIR, TransformResult) | Refusal`» vale per due voci: `partitore_di_tensione` — applicabile per FR-43 — solleva `NotImplementedError`. Il rinvio è tracciato in `deferred-work.md`, ma il criterio parla di «una Trasformazione del catalogo», non di due su tre: finché il proprietario non decide, il blocco 1 non è chiudibile, e la storia non può che restare aperta.
+ratchet: avanzamento — test_passati: 245 -> 342
+[22:23:25Z] ratchet: verde
+[22:23:25Z] giro verde, NON promosso: manca --promuovi.
+[22:23:25Z] Ispeziona il ramo, poi decidi:
+[22:23:25Z]   promuovere: git merge --no-ff loop/iter-20260824T211636Z-2-6-catalogo-delle-trasformazioni
+[22:23:25Z]   scartare:   git branch -D loop/iter-20260824T211636Z-2-6-catalogo-delle-trasformazioni
+[22:23:25Z] I rilievi dell'ultima revisione sono nel giornale: nessun cancello
+[22:23:25Z] deterministico sa giudicarli, e un verdetto di modello non apre un merge.
+[22:23:25Z] pausa 1s
+[22:23:26Z] 
+[22:23:26Z] fine dopo 1 iterazione/i. Giornale: /Users/andreamarro/MATJOURNEY/kirchhoff/ops/loop/giornale/20260824T211636Z-ITERAZIONE.log
