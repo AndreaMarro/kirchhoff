@@ -150,11 +150,61 @@ except Exception: print('non rilevata')
     printf '  \033[2mnessun token speso: nessun processo e stato invocato.\033[0m\n\n'
     ;;
 
-  run|resume)
-    printf 'kirchhoff-loop %s: non ancora implementato.\n' "$comando" >&2
-    printf 'Appartiene alla Story 0.3 (scheduler, watchdog, ratchet, giornale, FERMO).\n' >&2
-    printf 'Oggi disponibili: doctor, status, dry-run.\n' >&2
-    exit 69
+  run)
+    exec bash "$QUI/kirchhoff-loop.sh" "$@"
+    ;;
+
+  resume)
+    # `resume` NON e' una seconda modalita' di esecuzione, e non ha una macchina
+    # a stati propria. E' un RIENTRO SICURO dentro run: ispeziona lo stato
+    # persistito, e se e' ambiguo fallisce chiuso invece di indovinare.
+    printf '\n\033[1mRientro\033[0m\n'
+
+    # 1. Un FERMO e' gia' la risposta: non si rientra, si risolve.
+    if bash "$QUI/fermo.sh" --stato >/dev/null 2>&1; then
+      printf '  %-24s %s\n' "FERMO" "assente"
+    else
+      printf '  %-24s %s\n' "FERMO" "PRESENTE — non si rientra finche non e sciolto"
+      bash "$QUI/fermo.sh" --stato | sed 's/^/    /'
+      exit 12
+    fi
+
+    # 2. Rami di iterazione non fusi: lavoro di un giro che non ha emesso
+    #    verdetto. Ambiguo per definizione — non si indovina se promuoverlo.
+    base="$(git -C "$REPO" rev-parse --abbrev-ref HEAD)"
+    orfani="$(git -C "$REPO" branch --list 'loop/iter-*' --no-merged "$base" 2>/dev/null | wc -l | tr -d ' ')"
+    if [ "$orfani" != "0" ]; then
+      printf '  %-24s %s\n' "rami sospesi" "$orfani non fusi in $base"
+      git -C "$REPO" branch --list 'loop/iter-*' --no-merged "$base" | sed 's/^/    /'
+      printf '\n  Un giro precedente non ha emesso verdetto. Ispeziona il ramo e decidi:\n'
+      printf '    promuovere:  git merge --no-ff <ramo>\n'
+      printf '    scartare:    git branch -D <ramo>\n'
+      printf '  Poi rilancia resume.\n\n'
+      exit 17
+    fi
+    printf '  %-24s %s\n' "rami sospesi" "nessuno"
+
+    # 3. Storia fissata: senza, non c'e' niente in cui rientrare.
+    if [ ! -f "$STATO/prossima-storia.txt" ]; then
+      printf '  %-24s %s\n\n' "storia" "non fissata — usa prima dry-run"
+      exit 64
+    fi
+    printf '  %-24s %s\n' "storia" "$(head -1 "$STATO/prossima-storia.txt")"
+
+    # 4. Ricevuta di rientro, incisa nel giornale prima di ripartire.
+    mkdir -p "$QUI/giornale"
+    ric="$QUI/giornale/$(date -u +%Y%m%dT%H%M%SZ)-RIENTRO.log"
+    {
+      printf 'RIENTRO\n\n'
+      printf 'quando:     %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+      printf 'repository: %s\n' "$(git -C "$REPO" rev-parse HEAD)"
+      printf 'ramo:       %s\n' "$base"
+      printf 'storia:     %s\n' "$(head -1 "$STATO/prossima-storia.txt")"
+      printf 'stato:      nessun FERMO, nessun ramo sospeso\n'
+    } > "$ric"
+    printf '  %-24s %s\n\n' "ricevuta" "$(basename "$ric")"
+
+    exec bash "$QUI/kirchhoff-loop.sh" "$@"
     ;;
 
   ""|-h|--help|help|aiuto)

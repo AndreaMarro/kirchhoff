@@ -1,0 +1,22 @@
+[20:55:17Z] kirchhoff-loop v3 — avvio
+[20:55:17Z] repository=/Users/andreamarro/MATJOURNEY/kirchhoff
+[20:55:17Z] iterazioni=1 prova=0 watchdog=2700s budget/passo=$8
+[20:55:17Z] 
+[20:55:17Z] --- iterazione 1 di 1 ---
+  [ok]  nessun FERMO
+  [ok]  repository git: 407c21d
+  [ok]  uv: uv 0.11.8 (0e961dd9a 2026-04-27 aarch64-apple-darwin)
+  [ok]  helper runtime BMAD conformi al pin (5/5)
+  [ok]  holdout protetto da regola deny
+  [ok]  sprint-status.yaml leggibile
+  [1;31m[NO][0m  albero di lavoro sporco: 8 file non committati all'avvio.
+        |  M ops/loop/kirchhoff-loop
+        | ?? ops/loop/fermo.sh
+        | ?? ops/loop/giornale/20260824T205517Z-ITERAZIONE.log
+        | ?? ops/loop/giornale/20260824T205517Z-RIENTRO.log
+        | ?? ops/loop/iterazione.md
+        | ?? ops/loop/kirchhoff-loop.sh
+        | ?? ops/loop/ratchet.py
+        | ?? ops/loop/verifica.sh
+        Committa o scarta: il revisore deve giudicare lavoro dichiarato.
+[20:55:18Z] precondizioni exit 17. Nessun token speso. Il giro muore qui.
