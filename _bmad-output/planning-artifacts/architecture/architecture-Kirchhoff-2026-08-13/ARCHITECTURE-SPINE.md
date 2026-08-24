@@ -558,8 +558,13 @@ graph LR
     `preserve_nonmaximal`. **Nessuna causa nuova serve**: la Rule qui sotto dice già «diverso da»,
     non «più piccolo di».
   - La dichiarazione preserva CV3 — *preservato non significa immutato*. Un'operazione che modifica
-    in luogo conservando l'identità, come la disattivazione di un generatore indipendente, dichiara
-    l'attributo che le serve, e il controllo lo consente **per quella operazione soltanto**.
+    in luogo conservando l'identità dichiara l'attributo che le serve, e il controllo lo consente
+    **per quella operazione soltanto**.
+    > *Illustrativo, non normativo:* la disattivazione di un generatore indipendente **potrebbe**
+    > essere una di queste — stessa entità, stato cambiato — oppure una sostituzione strutturale con
+    > identità nuova e lineage nel `Delta`. Quale delle due sia dipende dal vocabolario delle
+    > primitive strutturali, che non esiste ancora. La regola generale di AD-22 vale in entrambi i
+    > casi e **non** dipende da come quell'esempio verrà modellato.
 
   Il discriminante è quindi **dichiarato dal Catalogo, non dedotto dalla `Transform` misurata**:
   chi è misurato continua a non definire il proprio riferimento. Decisione owner del 24 agosto 2026;
