@@ -23,11 +23,11 @@ non è chiusa**: le epiche attuali descrivono un prodotto che non è più questo
 | 3 | PRD v3 | `bmad-prd (update)` | ✅ 08-15-2026 03:43 · PRD v3 · MVP = Visual Proof Kernel · reviewer gate pendente | ✓ prd.md «version: 3» |
 | 4 | UX Pro update | `bmad-ux + ui-ux-pro-max:design-system` | ✅ 08-15-2026 05:19 · UX v3: KF-0 journey owner, protocollo A/B, estetica scura Linear-like | ✓ DESIGN.md «version: 3»; EXPERIENCE.md «version: 3» |
 | 5 | Architecture Spine v2 | `bmad-architecture (update)` | ✅ 08-15-2026 05:56 · Spine v2: AD-21..AD-30, quattro AD emendati in loco, lint 0 rilievi | ✓ ARCHITECTURE-SPINE.md «version: 2»; ARCHITECTURE-SPINE.md «LayoutPatch» |
-| 6 | Ribilanciamento epiche → Gate A–G | `bmad-create-epics-and-stories` | ⬜  | — epics.md «Gate A»; epics.md «Gate G» |
+| 6 | Ribilanciamento epiche → Gate A–G | `bmad-create-epics-and-stories` | ✅ 08-24-2026 19:36 · Epiche ribilanciate su Gate A-G: 10 epiche per esito utente, 53/53 FR mappati, 64 storie, percorso critico 15 | ✓ epics.md «Gate A»; epics.md «Gate G» |
 | 7 | Readiness gate | `bmad-sprint-planning (readiness)` | ⬜  | — implementation-readiness.md «version: 3» |
 | 8 | Ship loop | `.claude/loop.md` | ✅ 08-14-2026 12:20 · dedotto dalle prove su disco | ✓ loop.md «BMAD-CHAIN:START»; loop.md «BMAD-CHAIN:END» |
 
-<!-- aggiornata: 08-15-2026 05:56 -->
+<!-- aggiornata: 08-24-2026 19:36 -->
 <!-- BMAD-CHAIN:END -->
 
 **Una iterazione = un passo.**

@@ -551,6 +551,30 @@ drift che questo passo 6 è servito a chiudere.
 
 ---
 
+## Due percorsi di consegna, da non confondere
+
+Il **percorso minimo di integrazione** è ciò che serve per *vedere per la prima volta* la promessa
+funzionare. Il **percorso consegnabile** è ciò che serve perché uno studente vero possa usarlo.
+Non coincidono, e confonderli produce o un ritardo inutile o un prodotto che accusa a torto.
+
+| | Percorso minimo di integrazione | Percorso consegnabile |
+|---|---|---|
+| **Storie** | 0.1–0.3 · 1.1–1.8 · 2.1, 2.2, 2.3, 2.5 → **15** | le 15 **più** 1.9 e 2.4 |
+| **Cosa dimostra** | il meccanismo esiste e si vede | il meccanismo è affidabile davanti a una persona |
+
+Le due storie che separano i percorsi:
+
+- **1.9 — determinismo del rendering.** Fuori dalla catena necessaria per vedere la prima slice, ma
+  AD-35 impone il byte-per-byte: senza, round-trip, incidenza e non-occlusione diventano test
+  intermittenti, e *«la reazione naturale a un test intermittente è spegnerlo»*. **Non può stare
+  fuori dal Done reale del renderer.**
+- **2.4 — tasso di falsa accusa.** Fuori dal minimo per far girare una dimostrazione, ma dentro la
+  Definition of Done pubblicabile di Epic 2. La USP non è *trovare un errore*: è **trovarlo senza
+  inventarlo**. Un prodotto che può accusare un passaggio ambiguo senza guardrail non è pronto per
+  studenti reali, per quanto bene funzioni la demo.
+
+---
+
 ## ⚠️ Disambiguazione: due cose si chiamano «Studio»
 
 Il nome collide, e la collisione può generare la storia sbagliata.
@@ -1064,3 +1088,46 @@ So that il mio caso diventi una fixture invece di restare un aneddoto.
 - **Story 10.3** Proiezione di dominio tempo → fasori come **primitiva distinta**, non come `Delta` strutturale: il circuito fisico non cambia.
 - **Story 10.4** Ritorno nel dominio del tempo, con il `√2` gestito dalla convenzione dichiarata.
 - **Story 10.5** Diagramma fasoriale quando utile, sincronizzato col circuito.
+
+---
+
+## Validazione finale — passo 4 del workflow
+
+Eseguita il 24/08/2026 su `epics.md`. Ogni riga è **calcolata**, non asserita.
+
+| Controllo | Metodo | Esito |
+|---|---|---|
+| Copertura FR | confronto insiemistico fra `^#### FR-(\d+):` nel PRD e `^\| FR-(\d+) \|` nella mappa | **53 nel PRD · 53 mappati · 0 orfani · 0 fantasmi** |
+| Template starter | `grep -ci "starter"` sullo spine | **0 occorrenze** — l'architettura non ne prescrive uno |
+| Prima storia non è setup | lettura di `### Story 1.1` | *«L'identità preservata dev'essere giustificata»* — non «inizializza il progetto» ✅ |
+| Creazione di entità solo quando serve | ispezione delle storie | nessuna storia crea strutture in anticipo ✅ |
+| Placeholder residui | `grep -c "{{"` | **0** |
+| Dipendenze all'indietro | ordine delle storie per epica | `0.1 0.2 0.3 · 1.1…1.9 · 2.1…2.7` — nessuna storia riferisce una successiva ✅ |
+| Indipendenza delle epiche | analisi del grafo | Epic 2 costruisce su Epic 1 e **non richiede Epic 3** ✅ |
+| Percorso critico | calcolato dagli ID, non scritto a mano | **15 storie** |
+
+### Sovrapposizione di file, valutata e non ignorata
+
+Epic 1 ed Epic 5 toccano entrambe `render/`. **Consolidamento considerato e respinto**, con ragione:
+Epic 1 crea `render/serialize` e `render/layout` sotto il vincolo di Gate A, Epic 5 aggiunge
+adattatori di export che **consumano** l'SVG già verificato (AD-10). Sono confini di rischio
+diversi — un *kill criterion* contro una superficie di distribuzione — e fra i due esiste un ciclo di
+feedback reale: l'export non si progetta prima di sapere se la continuità visuale regge.
+
+### Decisioni owner: nessuna risolta in silenzio
+
+`D2` resta aperta e blocca 4.6 · `D5`, `D6`, `D9`, `D10` restano aperte e non toccano il percorso
+critico · `D1` resta aperta e non blocca. `D4` è dichiarata **risolta**, con la catena di autorità che
+la risolve scritta per esteso. `D11` è dichiarata **verificata compatibile**.
+
+**Una tensione resta aperta e va al readiness, non nascosta qui:** `FR-44` si dichiara *«Fuori MVP —
+Gate B»* e questo backlog lo promuove al percorso critico. La riprioritizzazione va accettata
+formalmente dal gate di readiness, oppure il PRD va emendato prima del build. Non può restare un
+conflitto permanente fra due documenti correnti.
+
+### Correzione di un conteggio
+
+Una versione precedente di questo riepilogo dichiarava *«diciassette storie a Demo 0»*. Sono
+**quindici**: `3 + 8 + 4`. Il numero era stato scritto a mano invece che derivato dagli ID — la
+stessa famiglia di difetto che l'error ledger cataloga come *«un conteggio letto da una vista
+adiacente invece che dalla struttura che lo definisce»*. Il conteggio è ora prodotto da un comando.
