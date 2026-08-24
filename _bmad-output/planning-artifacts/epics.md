@@ -13,9 +13,16 @@ inputDocuments:
 > ## ⚠️ AVVISO DI VERSIONE ARCHITETTURALE
 >
 > **Questo documento è derivato dalla v1 dello spine (35 FR / 20 AD) ed è precedente agli
-> emendamenti del 15 agosto 2026.** Dieci decisioni sono state emendate in loco senza essere
-> rinumerate — **AD-1, AD-2, AD-4, AD-5, AD-8, AD-10, AD-11, AD-15, AD-18, AD-19** — e questo
-> testo le cita ancora nel significato v1 in circa 39 punti.
+> emendamenti del 15 agosto 2026.** Il drift ha due facce, entrambe misurate il 24/08/2026:
+>
+> 1. **Dieci decisioni emendate in loco senza rinumerazione** — AD-1, AD-2, AD-4, AD-5, AD-8,
+>    AD-10, AD-11, AD-15, AD-18, AD-19 — che questo testo cita ancora nel significato v1 in circa
+>    39 punti.
+> 2. **Quindici decisioni che questo documento non nomina affatto.** Lo spine v2 contiene
+>    **35 AD** (`grep -c "^### AD-" ARCHITECTURE-SPINE.md` → 35); l'inventario qui sotto ne elenca
+>    20. AD-21 … AD-35 — fra cui le quattro rappresentazioni disgiunte, il `preserve set`, il
+>    `ProofGraph`, il `TruthfulnessGate` e il rendering deterministico — non compaiono in nessuna
+>    Storia.
 >
 > **In caso di conflitto l'autorità è `ARCHITECTURE-SPINE.md`, non questo file.** Ogni Storia va
 > letta secondo il contratto v2 delle decisioni che richiama.
