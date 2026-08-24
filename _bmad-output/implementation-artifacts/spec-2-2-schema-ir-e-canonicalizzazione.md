@@ -2,7 +2,7 @@
 title: 'Storia 2.2 — Schema IR e canonicalizzazione'
 type: 'feature'
 created: '2026-08-13'
-status: 'in-progress'
+status: 'done'
 baseline_commit: 'NO_VCS'
 review_loop_iteration: 0
 context: []
