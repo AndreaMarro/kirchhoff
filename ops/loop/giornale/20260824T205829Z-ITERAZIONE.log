@@ -52,3 +52,6 @@
 [20:58:59Z]     [prova] nessun processo invocato
 [20:58:59Z]   revisione exit 0
 (prova: nessuna invocazione)
+ratchet: nessuna regressione, nessun avanzamento.
+[20:58:59Z] ratchet: verde
+[20:58:59Z] prova: nessuna promozione. Ramo loop/iter-20260824T205829Z-2-6-catalogo-delle-trasformazioni lasciato in piedi.
