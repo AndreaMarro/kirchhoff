@@ -136,8 +136,14 @@ uniforme**. Decisione owner del 15 agosto: *dipende se usiamo agenti; se no, Opu
 | Chi | Modello · effort | Perché |
 |---|---|---|
 | **Loop principale** — sceglie, costruisce, decide | **Opus 5, effort max** | è chi commette gli errori che costano di più |
-| **Sottoagenti che giudicano** — `python-reviewer`, `silent-failure-hunter`, `type-design-analyzer` | **effort alto** | sono la verifica indipendente, cioè ciò che il prodotto vende |
+| **Sottoagenti che giudicano** — `python-reviewer`, `silent-failure-hunter`, `type-design-analyzer`, Blind Hunter | **Fable 5, effort alto**; **effort max** sul giudizio che decide una storia | sono la verifica indipendente, cioè ciò che il prodotto vende |
 | Sottoagenti **meccanici** — ricerca, inventario, lettura, conteggio | effort basso | qui il margine si prende senza toccare nulla che giudichi |
+
+**Aggiornamento owner del 24 agosto.** Il loop principale resta **Opus 5 a effort max** e può
+lanciare **Fable 5 sia ad effort alto sia ad effort max**: alto è la verifica ordinaria, max si
+riserva al giudizio che decide se una storia passa — la review avversariale che può bocciare, non
+quella che annota. La regola sotto non cambia: l'effort si abbassa solo su chi non giudica, e su chi
+giudica adesso si può anche alzare.
 
 **La regola in una riga: l'effort si abbassa solo su chi non giudica.** Senza delega, non si abbassa
 niente. Vedi `docs/04-ricerca-token-e-automiglioramento.md` §2.4 per la misura, e §4 qui sotto per
