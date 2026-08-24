@@ -1,0 +1,161 @@
+#!/usr/bin/env bash
+#
+# kirchhoff-loop — facciata sottile sopra il kernel operativo.
+#
+# NON possiede stato. NON e' una macchina a stati. Ogni verbo qui dentro
+# dispaccia verso una primitiva locale e ne restituisce il codice di uscita
+# senza reinterpretarlo. La macchina a stati vera e' il filesystem piu' git:
+# lo stato si ricostruisce, non si ricorda.
+#
+# La topologia sotto e' quella provata da Ardesia in 381 iterazioni —
+# precondizioni fail-closed, watchdog, ratchet su copia, giornale append-only,
+# FERMO che richiede una persona. La forma della riga di comando e' nostra;
+# il kernel no, ed e' voluto: la parte che ha gia' funzionato non si reinventa.
+#
+#   doctor    precondizioni + controlli di runtime (drift del pin, render BMAD)
+#   status    che cosa sa il sistema di se stesso
+#   dry-run   che cosa farebbe il prossimo giro, senza spendere un token
+#   run       esegue lo scheduler seriale                      [Story 0.3]
+#   resume    rientro sicuro dentro run, non una seconda modalita'  [Story 0.3]
+set -u
+
+QUI="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO="$(cd "$QUI/../.." && pwd)"
+STATO="$QUI/stato"
+
+uso() {
+  cat <<'USO'
+uso: kirchhoff-loop <comando> [argomenti]
+
+  doctor              verifica che si possa lavorare. Nessun token speso.
+  status              stato ricostruito da disco e da git. Sola lettura.
+  dry-run <storia>    piano del prossimo giro: classe di rischio, modelli,
+                      confini di processo. Nessun token speso.
+  run [--iterazioni N] esegue lo scheduler seriale.
+  resume              rientra in run dopo un'interruzione.
+
+Codici di uscita: 0 tutto bene; 64 uso errato; altro = il cancello che ha fermato
+la corsa (vedi ops/loop/precondizioni.sh).
+USO
+}
+
+comando="${1:-}"
+[ $# -gt 0 ] && shift
+
+case "$comando" in
+
+  doctor)
+    printf '\n\033[1mPrecondizioni\033[0m\n'
+    bash "$QUI/precondizioni.sh"
+    pre=$?
+    if [ "$pre" != "0" ]; then
+      printf '\n\033[1;31mdoctor: NON si puo lavorare\033[0m (precondizioni exit %s)\n\n' "$pre"
+      exit "$pre"
+    fi
+
+    printf '\n\033[1mRuntime\033[0m\n'
+
+    # claude CLI: il loop invoca `claude -p` per ogni passo. Senza, non c'e' loop.
+    if command -v claude >/dev/null 2>&1; then
+      printf '  %-24s %s\n' "claude" "$(claude --version 2>/dev/null | head -1)"
+    else
+      printf '  %-24s %s\n' "claude" "ASSENTE — il loop non puo invocare nessun passo"
+      exit 11
+    fi
+
+    # Deriva del plugin. NON e' un errore: la policy e' PINNED. E' un avviso che
+    # deve essere rumoroso, perche' un aggiornamento del plugin puo cambiare come
+    # le skill invocano gli helper mentre gli hash degli helper restano identici.
+    # E' lo skew skill<->helper, e nessun confronto di hash lo vede.
+    PIN="$REPO/_bmad/scripts.pin.json"
+    dichiarata="$(python3 -c "import json;print(json.load(open('$PIN'))['declared_version'])" 2>/dev/null)"
+    cache="$(dirname "$(python3 -c "import json;print(json.load(open('$PIN'))['source_path'])" 2>/dev/null)")"
+    installata="$(python3 -c "
+import json,sys
+try: print(json.load(open('$cache/package.json'))['version'])
+except Exception: print('non rilevata')
+" 2>/dev/null)"
+    printf '  %-24s %s\n' "BMAD dichiarata" "$dichiarata"
+    printf '  %-24s %s\n' "BMAD installata" "$installata"
+    if [ "$dichiarata" = "$installata" ]; then
+      printf '  %-24s %s\n' "runtime helpers" "MATCH"
+    else
+      printf '  %-24s \033[1;33m%s\033[0m\n' "runtime helpers" "PINNED a $dichiarata — nessun aggiornamento automatico"
+      printf '  %-24s %s\n' "" "attenzione: le skill vivono nel plugin ($installata), gli helper nel repo ($dichiarata)."
+      printf '  %-24s %s\n' "" "un confronto di hash NON vede un cambio di contratto nelle skill."
+    fi
+
+    # La prova che conta: bmad-build renderizza davvero, adesso, da questo albero.
+    printf '\n\033[1mFase 4 BMAD\033[0m\n'
+    skill="$cache/src/bmm-skills/ship/bmad-build"
+    if [ -d "$skill" ]; then
+      out="$(cd "$REPO" && uv run --no-cache "$REPO/_bmad/scripts/render_skill.py" \
+             --project-root "$REPO" --skill "$skill" 2>&1)"
+      r=$?
+      if [ "$r" = "0" ]; then
+        printf '  %-24s %s\n' "bmad-build render" "PASS"
+        wf="${out##*follow }"
+        if grep -q "AGENTS.md" "$wf" 2>/dev/null; then
+          printf '  %-24s %s\n' "AGENTS.md nei fatti" "PRESENTE"
+        else
+          printf '  %-24s \033[1;31m%s\033[0m\n' "AGENTS.md nei fatti" "ASSENTE — l'implementatore nascerebbe senza contesto"
+          exit 13
+        fi
+      else
+        printf '  %-24s \033[1;31m%s\033[0m\n' "bmad-build render" "FALLITO (exit $r)"
+        printf '%s\n' "$out" | sed 's/^/    | /'
+        exit 13
+      fi
+    else
+      printf '  %-24s %s\n' "bmad-build" "skill non trovata in $cache"
+      exit 13
+    fi
+
+    printf '\n\033[1;32mdoctor: si puo lavorare\033[0m\n\n'
+    ;;
+
+  status)
+    bash "$QUI/stato.sh"
+    ;;
+
+  dry-run)
+    storia="${1:-}"
+    if [ -z "$storia" ]; then
+      printf 'kirchhoff-loop dry-run: serve la chiave della storia.\n' >&2
+      printf "esempio: kirchhoff-loop dry-run 2-6-catalogo-delle-trasformazioni\n" >&2
+      exit 64
+    fi
+    printf '\n\033[1mPrecondizioni\033[0m\n'
+    bash "$QUI/precondizioni.sh"
+    pre=$?
+    if [ "$pre" != "0" ]; then
+      printf '\n\033[1;31mdry-run: il giro non partirebbe\033[0m (precondizioni exit %s)\n\n' "$pre"
+      exit "$pre"
+    fi
+    printf '\n\033[1mPiano\033[0m\n'
+    python3 "$QUI/router.py" --storia "$storia" "${@:2}" | sed 's/^/  /'
+    r=${PIPESTATUS[0]}
+    [ "$r" != "0" ] && exit "$r"
+    mkdir -p "$STATO"
+    printf '%s\n' "$storia" > "$STATO/prossima-storia.txt"
+    printf '\n  \033[2mprossima storia fissata in ops/loop/stato/prossima-storia.txt\033[0m\n'
+    printf '  \033[2mnessun token speso: nessun processo e stato invocato.\033[0m\n\n'
+    ;;
+
+  run|resume)
+    printf 'kirchhoff-loop %s: non ancora implementato.\n' "$comando" >&2
+    printf 'Appartiene alla Story 0.3 (scheduler, watchdog, ratchet, giornale, FERMO).\n' >&2
+    printf 'Oggi disponibili: doctor, status, dry-run.\n' >&2
+    exit 69
+    ;;
+
+  ""|-h|--help|help|aiuto)
+    uso
+    ;;
+
+  *)
+    printf 'kirchhoff-loop: comando sconosciuto: %s\n\n' "$comando" >&2
+    uso >&2
+    exit 64
+    ;;
+esac

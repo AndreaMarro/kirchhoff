@@ -1,0 +1,2 @@
+# Il giornale e append-only: un file per iterazione, mai riscritto.
+# Questo segnaposto tiene la directory in git finche non ci sono iterazioni.
