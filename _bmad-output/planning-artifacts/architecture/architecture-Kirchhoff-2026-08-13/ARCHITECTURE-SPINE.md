@@ -244,6 +244,24 @@ graph LR
   | `ProofSession` | `domain/proof`, come proiezione di sola lettura verso gli adapter |
   | `InteractionState` | **client**. Non è persistito lato server: non ha riga, quindi non ha scrittore |
 
+  **Emendata il 24 agosto (v2.1) — mancava la ritenzione, e senza VCER non è calcolabile.** La
+  tabella nomina lo scrittore del `LayoutIR` e tace su quanto vive: `CV6` di
+  `reviews/review-continuita-visuale.md` mostra che, nella lettura naturale — applicare un
+  `LayoutPatch` aggiorna il layout in luogo — *«`p_k` non esiste più nel momento in cui servirebbe
+  misurarlo»*, e `eval/` potrebbe solo ricostruirlo rieseguendo la derivazione, il che dipende da
+  SM-20, che a sua volta va letto **prima** di VCER. Dipendenza circolare, mai scritta.
+
+  Dalla v2.1: **un `LayoutIR` per nodo del `ProofGraph`, append-only, mai sovrascritto** per la
+  durata della `ProofSession`. Il proprietario del riferimento è **il nodo**, non la sessione: AD-29
+  definisce i nodi come **stati circuitali**, e il `LayoutIR` è lo stato visuale di quello stato
+  circuitale. Il nodo porta **l'identificatore** del proprio layout, mai la struttura — AD-21 ammette
+  il riferimento per identificatore e vieta il contenimento — e `render/layout` resta **scrittore
+  unico** del `LayoutIR`. Ne segue che `eval/` risolve la coppia `(LayoutIR_k, LayoutIR_{k+1})` dai
+  due nodi adiacenti senza rieseguire nulla, e VCER diventa calcolabile.
+
+  Questa ritenzione è tecnica e **non ha rapporto con la retention dei dati** di
+  `Confini owner-locked`, che è un limite di conservazione di dati personali e resta owner-locked.
+
   **Il `LayoutIR` del braccio 0 non è un secondo `LayoutIR` dello stesso `Cₖ₊₁`.** È un artefatto di
   `experiment/`, con identità propria e prefisso proprio, e non entra mai nella `ProofSession`
   consegnata. Senza questa riga il braccio 0 e `render/layout` sarebbero due scrittori legittimi
@@ -465,6 +483,10 @@ graph LR
   Dalla v2: **`ProofSession` è una proiezione per riferimento**, non un aggregato per valore. Porta
   gli identificatori dei quattro e un'istantanea immutabile di ciò che serve a renderla, mai i
   tipi mutabili. Ricostruirla significa risolvere gli identificatori, non deserializzare uno stato.
+  **Precisata il 24 agosto (v2.1):** dei `LayoutIR` porta **un identificatore per nodo del
+  `ProofGraph`**, non un identificatore singolo. Un riferimento solo renderebbe incalcolabile VCER,
+  che confronta due stati visuali adiacenti (AD-8 em., CV6). Resta una proiezione per riferimento:
+  gli identificatori sono molti, le strutture nessuna.
   `InteractionState` **non vi appartiene**: vive nel client (AD-8), e la sessione non lo trasporta.
 
   **I recinti, per nome.** «Un test fallisce sulla dipendenza inversa» era una promessa ripetuta in
@@ -512,6 +534,36 @@ graph LR
     successivo*. Il round-trip **non lo cattura**: è un controllo *intra*-passo — SVG(`Cₖ₊₁`) contro
     `CircuitIR(Cₖ₊₁)` — mentre questo è *inter*-passo, e una rinomina coerente su entrambi i lati vi
     passerebbe pulita. Violazione ⇒ `identity_violation`.
+
+  **Emendata il 24 agosto (v2.1) — `Pₖ` era ancora un'intersezione per identificatore.** Le due
+  clausole sopra chiudono il verso «una sopravvissuta dichiarata creata». Il verso opposto —
+  `preserve ⊋ Pₖ`, nominato in `reviews/review-invarianti.md` R3 come *«non nominato»* da alcun
+  documento — restava aperto, e per la stessa ragione: `Entities(C)` si confronta per `id`, quindi
+  una `Transform` che battezza col nome di un'entità consumata un'entità nuova la fa entrare in
+  `Pₖ`. Dimostrato eseguendo il controllo su una riduzione in parallelo: `R1 (a,b) 10Ω` e
+  `R2 (a,b) 20Ω` fondono in una equivalente battezzata `R1 (a,b) 6⅔Ω`; tipo e terminali coincidono,
+  cambia il solo valore, e `R1 ∈ Pₖ` risulta vero. In serie i terminali cambierebbero e il difetto
+  non si presenterebbe: **un discriminante che regge su un caso solo non è un discriminante.**
+
+  Dalla v2.1, la coincidenza dell'identificatore è **necessaria e non sufficiente**:
+
+  - **Il Catalogo dichiara, per ciascuna operazione, quali attributi di un'entità possono cambiare
+    mentre la sua identità sopravvive.** L'insieme predefinito è **vuoto**: chi non dichiara nulla
+    non muta nulla.
+  - `x ∈ Pₖ` **solo se** `id_k(x) = id_{k+1}(x)` **e** ogni attributo che l'operazione non dichiara
+    mutabile coincide fra `Cₖ` e `Cₖ₊₁`. Un'entità che fallisce la seconda condizione non è
+    preservata: è una rimozione più una creazione, e come tale deve comparire nel `Delta`.
+  - `serie` e `parallelo` non dichiarano alcun attributo mutabile, quindi la `R1` dell'esempio non
+    entra in `Pₖ`, e un `preserve` che la contenga risulta **diverso da `Pₖ`** ⇒
+    `preserve_nonmaximal`. **Nessuna causa nuova serve**: la Rule qui sotto dice già «diverso da»,
+    non «più piccolo di».
+  - La dichiarazione preserva CV3 — *preservato non significa immutato*. Un'operazione che modifica
+    in luogo conservando l'identità, come la disattivazione di un generatore indipendente, dichiara
+    l'attributo che le serve, e il controllo lo consente **per quella operazione soltanto**.
+
+  Il discriminante è quindi **dichiarato dal Catalogo, non dedotto dalla `Transform` misurata**:
+  chi è misurato continua a non definire il proprio riferimento. Decisione owner del 24 agosto 2026;
+  istruttoria in `implementation-artifacts/R2A-discriminante-mancante-identita.md`.
 
 ### AD-23 — R-Visual-1: l'ordine dei layer è dato, non emergente
 
@@ -745,7 +797,7 @@ graph LR
 | --- | --- |
 | Nomi di dominio | I termini del Glossario del PRD sono i nomi dei tipi, in inglese nel codice e in italiano in UI. `IR`, `Solution`, `Published`, `Refusal`, `Transformation`, `Plan`, `CurriculumProfile`, `Variant`, `SolutionSheet`, `Credit`. Nessun sinonimo. |
 | File e moduli | `snake_case` per moduli Python, `PascalCase` per i tipi, `kebab-case` per i file frontend. Un modulo per stadio della pipeline. |
-| Identificatori | ULID con prefisso per tipo (`ir_`, `sol_`, `var_`, `evt_`). Mai interi auto-incrementali su entità esposte. |
+| Identificatori | ULID con prefisso per tipo (`ir_`, `sol_`, `var_`, `evt_`; dalla v2.1 anche `lay_` per il `LayoutIR` e `patch_` per il `LayoutPatch`, che senza identità non sono citabili da evidenza, replay ed eval). Mai interi auto-incrementali su entità esposte. |
 | Date e tempo | UTC, ISO 8601 con offset esplicito, ovunque. Il tempo di dominio dei transitori è in secondi con unità esplicita nel tipo. |
 | Grandezze fisiche | Sempre coppia magnitudine + unità, mai numero nudo. SI internamente; la conversione è cosa del rendering. |
 | Forma degli errori | `{code, message, subject}` dove `subject` nomina l'elemento coinvolto (nodo, ramo, componente). Il messaggio è per l'utente e segue le regole di microcopy di `EXPERIENCE.md`. |
