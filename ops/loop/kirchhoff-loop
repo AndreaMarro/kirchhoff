@@ -69,7 +69,12 @@ case "$comando" in
     # E' lo skew skill<->helper, e nessun confronto di hash lo vede.
     PIN="$REPO/_bmad/scripts.pin.json"
     dichiarata="$(python3 -c "import json;print(json.load(open('$PIN'))['declared_version'])" 2>/dev/null)"
-    cache="$(dirname "$(python3 -c "import json;print(json.load(open('$PIN'))['source_path'])" 2>/dev/null)")"
+    # source_path punta a <plugin>/src/scripts; la radice del plugin, dove vive
+    # package.json, sta due livelli sopra. Un dirname solo dava <plugin>/src, e
+    # il controllo cercava la skill in src/src: il cancello e fallito chiuso
+    # invece di dichiarare un falso PASS, che e esattamente cio che deve fare.
+    sp="$(python3 -c "import json;print(json.load(open('$PIN'))['source_path'])" 2>/dev/null)"
+    cache="$(dirname "$(dirname "$sp")")"
     installata="$(python3 -c "
 import json,sys
 try: print(json.load(open('$cache/package.json'))['version'])
@@ -125,8 +130,11 @@ except Exception: print('non rilevata')
       printf "esempio: kirchhoff-loop dry-run 2-6-catalogo-delle-trasformazioni\n" >&2
       exit 64
     fi
+    # --avvio: dry-run simula un giro, quindi applica anche il cancello
+    # sull'albero di lavoro. Un dry-run che passa dove `run` fallirebbe non e'
+    # una prova: e' una bugia comoda.
     printf '\n\033[1mPrecondizioni\033[0m\n'
-    bash "$QUI/precondizioni.sh"
+    bash "$QUI/precondizioni.sh" --avvio
     pre=$?
     if [ "$pre" != "0" ]; then
       printf '\n\033[1;31mdry-run: il giro non partirebbe\033[0m (precondizioni exit %s)\n\n' "$pre"
