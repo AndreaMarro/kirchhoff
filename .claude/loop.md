@@ -133,20 +133,43 @@ visibile, si paga tutto a prezzo pieno.
 Abbassare l'effort è «l'unico margine reale non sfruttato» misurato, ma **non si applica in modo
 uniforme**. Decisione owner del 15 agosto: *dipende se usiamo agenti; se no, Opus 5 Max*.
 
-| Chi | Modello · effort | Perché |
-|---|---|---|
-| **Loop principale** — sceglie, costruisce, decide | **Opus 5, effort max** | è chi commette gli errori che costano di più |
-| **Sottoagenti che giudicano** — `python-reviewer`, `silent-failure-hunter`, `type-design-analyzer`, Blind Hunter | **Fable 5, effort alto**; **effort max** sul giudizio che decide una storia | sono la verifica indipendente, cioè ciò che il prodotto vende |
-| Sottoagenti **meccanici** — ricerca, inventario, lettura, conteggio | effort basso | qui il margine si prende senza toccare nulla che giudichi |
+**Topologia degli agenti — decisione owner del 24 agosto, sostituisce la tabella precedente.**
 
-**Aggiornamento owner del 24 agosto.** Il loop principale resta **Opus 5 a effort max** e può
-lanciare **Fable 5 sia ad effort alto sia ad effort max**: alto è la verifica ordinaria, max si
-riserva al giudizio che decide se una storia passa — la review avversariale che può bocciare, non
-quella che annota. La regola sotto non cambia: l'effort si abbassa solo su chi non giudica, e su chi
-giudica adesso si può anche alzare.
+```
+Fable 5 · max          orchestratore di tutto · lavoratore · proprietario del verdetto di review
+├── Opus 5 · max       orchestratore
+│   ├── Opus 5 · high      lavoratore
+│   ├── Opus 5 · high      lavoratore
+│   └── Opus 5 · high      lavoratore
+├── Opus 5 · max       orchestratore
+│   ├── Opus 5 · high      lavoratore
+│   ├── Opus 5 · high      lavoratore
+│   └── Opus 5 · high      lavoratore
+└── Fable 5 · high     lavoratore e orchestratore
+    ├── Opus 5 · high      lavoratore
+    ├── Opus 5 · high      lavoratore
+    ├── Opus 5 · high      lavoratore
+    ├── Opus 5 · high      lavoratore
+    └── Opus 5 · high      lavoratore
+```
 
-**La regola in una riga: l'effort si abbassa solo su chi non giudica.** Senza delega, non si abbassa
-niente. Vedi `docs/04-ricerca-token-e-automiglioramento.md` §2.4 per la misura, e §4 qui sotto per
+Quindici agenti: 1 Fable max · 2 Opus max · 1 Fable high · 11 Opus high. È il tetto della guida di
+dimensione dell'ambiente, non un numero scelto per eleganza — superarlo va deciso, non scoperto.
+
+**Il vincolo che questa topologia non può violare.** Il Fable 5 max è insieme orchestratore e
+proprietario del verdetto di review, e `50-Lezioni-loop/Il revisore che rivede sé stesso.md` misura
+esattamente questo difetto: *«Lo stesso contesto che ha scritto il codice lo rivede. Non trova i
+propri errori perché l'errore sta nel modello mentale che ha prodotto entrambi»*, e aggiunge che
+qui è peggio che altrove perché **Kirchhoff vende la verifica indipendente**.
+
+I due ruoli restano compatibili a una condizione, che è già il §4 del loop: **il verdetto è suo, la
+lettura no.** La review si esegue delegando a sottoagenti a contesto pulito, in parallelo, **senza
+passare loro il proprio ragionamento** — è già il comportamento del `bmad-build` renderizzato, che
+lancia Blind Hunter come *context-free subagent*. Un Fable max che rilegge da sé il diff che ha
+orchestrato è il difetto, non l'architettura.
+
+**La regola in una riga: l'effort si abbassa solo su chi non giudica** — e su chi giudica si alza.
+Vedi `docs/04-ricerca-token-e-automiglioramento.md` §2.4 per la misura del costo, e §4 qui sotto per
 chi sono i sottoagenti che giudicano.
 
 ---
