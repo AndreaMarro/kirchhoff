@@ -56,8 +56,30 @@ mkdir -p "$STATO" "$GIORNALE"
 # una riscrittura si'. Il file si apre PRIMA di qualunque spesa, cosi' che anche
 # un giro che muore sul primo cancello lasci traccia del perche'.
 avvio="$(date -u +%Y%m%dT%H%M%SZ)"
-DIARIO="$GIORNALE/${avvio}-ITERAZIONE.log"
+# Si SCRIVE in stato/ — che git ignora — e si INCIDE in giornale/ alla fine.
+# Scrivere direttamente nell'albero tracciato blocca ogni cambio di ramo: git
+# rifiuta il checkout con un file modificato non committato, e il loop resta
+# appeso sul ramo dell'iterazione. Misurato al primo `run --prova`.
+DIARIO="$STATO/corrente.log"
+: > "$DIARIO"
+INCISO="$GIORNALE/${avvio}-ITERAZIONE.log"
 log() { printf '[%s] %s\n' "$(date -u +%H:%M:%SZ)" "$*" | tee -a "$DIARIO"; }
+
+# Il giornale si incide su OGNI uscita, non solo su quella felice: un giro che
+# muore e' esattamente quello di cui serve la traccia. `trap` garantisce che
+# valga anche per il watchdog e per un'interruzione manuale.
+incidi_giornale() {
+  local codice=$?
+  [ -s "$DIARIO" ] || return 0
+  mkdir -p "$GIORNALE"
+  cp "$DIARIO" "$INCISO"
+  if [ -n "$(git -C "$REPO" status --porcelain -- ops/loop/giornale 2>/dev/null)" ]; then
+    git -C "$REPO" add ops/loop/giornale >/dev/null 2>&1
+    git -C "$REPO" commit -q -m "loop: giornale $avvio (uscita $codice)" \
+        -m "Append-only: un file per iterazione, mai riscritto." >/dev/null 2>&1 || true
+  fi
+}
+trap incidi_giornale EXIT
 
 log "kirchhoff-loop v3 — avvio"
 log "repository=$REPO"
@@ -294,20 +316,10 @@ for i, s in enumerate(p):
     log "promossa su $base; baseline aggiornata"
   fi
 
-  # Il giornale entra in git come EVIDENZA, a fine giro. Ardesia: il giornale
-  # entra in git PRIMA della verifica — la' serviva perche' il proprio log non
-  # committato faceva uscire rossa la CoV. Qui serve per la ragione gemella:
-  # cio' che non e' committato non e' evidenza, e' scratch.
-  if [ -n "$(git -C "$REPO" status --porcelain -- ops/loop/giornale)" ]; then
-    git -C "$REPO" add ops/loop/giornale >/dev/null 2>&1
-    git -C "$REPO" commit -q -m "loop: giornale dell'iterazione $n" \
-        -m "Append-only: un file per iterazione, mai riscritto." >/dev/null 2>&1 || true
-  fi
-
   log "pausa ${PAUSA}s"
   sleep "$PAUSA"
 done
 
 log ""
-log "fine dopo $n iterazione/i. Giornale: $DIARIO"
+log "fine dopo $n iterazione/i. Giornale: $INCISO"
 exit 0
