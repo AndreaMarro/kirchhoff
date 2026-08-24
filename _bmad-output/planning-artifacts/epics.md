@@ -1,1543 +1,1066 @@
 ---
-stepsCompleted: ['step-01-validate-prerequisites', 'step-02-design-epics', 'step-03-create-stories', 'step-04-final-validation']
+stepsCompleted: ['step-01-validate-prerequisites', 'step-02-design-epics', 'step-03-create-stories']
 inputDocuments:
-  - prds/prd-Kirchhoff-2026-08-13/prd.md
-  - architecture/architecture-Kirchhoff-2026-08-13/ARCHITECTURE-SPINE.md
-  - ux-designs/ux-Kirchhoff-2026-08-13/DESIGN.md
-  - ux-designs/ux-Kirchhoff-2026-08-13/EXPERIENCE.md
-  - ../../docs/00-fonte-piano-kirchhoff.md
+  - ../../../KIRCHHOFF-KNOWLEDGE/10-Costituzione/Costituzione Kirchhoff.md   # K-0..K-5, owner-locked
+  - prds/prd-Kirchhoff-2026-08-13/prd.md                                      # PRD v3
+  - architecture/architecture-Kirchhoff-2026-08-13/ARCHITECTURE-SPINE.md      # Spine v2, 35 AD
+  - architecture/architecture-Kirchhoff-2026-08-13/reviews/review-continuita-visuale.md  # CV1-CV7
+  - ux-designs/ux-Kirchhoff-2026-08-13/DESIGN.md                              # UX v3, identita' visiva
+  - ux-designs/ux-Kirchhoff-2026-08-13/EXPERIENCE.md                          # UX v3, comportamento
+  - ../implementation-artifacts/audit-ux-circuitcheck-2026-08-24.md
+  - ../implementation-artifacts/spike-d4-renderer-2026-08-24.md
+  - ../implementation-artifacts/matrice-impatto-cv1-cv6-su-delta.md
+  - ../implementation-artifacts/audit-recinti-ad21-2026-08-24.md
+  - ../implementation-artifacts/riconciliazione-stato-2026-08-24.md
+  - ../implementation-artifacts/sprint-status.yaml                            # realta' brownfield
+supersedes: "epics.md v1 (13 ago 2026) — generato sopra lo spine v1 (35 FR / 20 AD / 40 storie), conservato in git fino a ecc86fd"
+derivedFrom: "PRD v3 · ARCHITECTURE-SPINE v2 · UX v3 — passo 6 della catena BMAD (scripts/bmad_chain.py)"
+brownfieldBaseline: "ecc86fd — 245 test verdi, copertura 100%, gate exit 0"
 ---
 
-# Kirchhoff - Epic Breakdown
-
-> ## ⚠️ AVVISO DI VERSIONE ARCHITETTURALE
->
-> **Questo documento è derivato dalla v1 dello spine (35 FR / 20 AD) ed è precedente agli
-> emendamenti del 15 agosto 2026.** Il drift ha due facce, entrambe misurate il 24/08/2026:
->
-> 1. **Dieci decisioni emendate in loco senza rinumerazione** — AD-1, AD-2, AD-4, AD-5, AD-8,
->    AD-10, AD-11, AD-15, AD-18, AD-19 — che questo testo cita ancora nel significato v1 in circa
->    39 punti.
-> 2. **Quindici decisioni che questo documento non nomina affatto.** Lo spine v2 contiene
->    **35 AD** (`grep -c "^### AD-" ARCHITECTURE-SPINE.md` → 35); l'inventario qui sotto ne elenca
->    20. AD-21 … AD-35 — fra cui le quattro rappresentazioni disgiunte, il `preserve set`, il
->    `ProofGraph`, il `TruthfulnessGate` e il rendering deterministico — non compaiono in nessuna
->    Storia.
->
-> **In caso di conflitto l'autorità è `ARCHITECTURE-SPINE.md`, non questo file.** Ogni Storia va
-> letta secondo il contratto v2 delle decisioni che richiama.
->
-> Il 24 agosto 2026 sono state allineate a v2 **soltanto** le parti che bloccavano l'esecuzione
-> del percorso 2.4 → 2.6 (vedi le note `[v2 · 24/08/2026]` più sotto). Il resto del drift è
-> **debito dichiarato**, non dimenticato: si chiude rigenerando questo documento dallo spine v2
-> (passo 6 della catena BMAD). Vedi `implementation-artifacts/debito-rigenerazione-epics.md`.
->
-> Verificato il 24/08/2026: la Storia 2.4 è risultata **compatibile** con AD-19 v2 e non è stata
-> modificata.
+# CircuitCheck — motore Kirchhoff - Epic Breakdown
 
 ## Overview
 
-Scomposizione completa in epiche e storie per Kirchhoff, derivata dal PRD (35 FR, 7 UJ, status
-final), dallo spine di architettura (20 AD, lint pulito) e dal contratto UX (DESIGN.md +
-EXPERIENCE.md, entrambi final).
-
-**Gli ID sono quelli dei documenti a monte e non vengono rinumerati.** `FR-n` viene dal PRD,
-`AD-n` dallo spine, `UJ-n` dal PRD, `KF-n` da EXPERIENCE.md. La tracciabilità vale più
-dell'uniformità di formato.
-
-**Nessun template starter è specificato dall'architettura.** Lo spine fissa il paradigma
-(ports-and-adapters con nucleo a pipeline deterministica) e l'albero sorgente, ma non appoggia il
-progetto su uno scaffold preconfezionato. Epic 1 Story 1.1 crea quindi la struttura a mano
-secondo l'albero dello spine.
+This document provides the complete epic and story breakdown for CircuitCheck — motore Kirchhoff, decomposing the requirements from the PRD, UX Design if it exists, and Architecture requirements into implementable stories.
 
 ## Requirements Inventory
 
 ### Functional Requirements
 
-| ID | Requisito |
-|---|---|
-| FR-1 | Ingestione multi-formato (immagine, LaTeX, netlist) |
-| FR-2 | Estrazione multi-pass con misura dell'Accordo (K ≥ 3, ≥ 2 assi di variazione) |
-| FR-3 | Ridondanza testuale come secondo canale |
-| FR-4 | Validazione elettrica come gate, con diagnosi localizzata |
-| FR-5 | Anteprima di ricostruzione, sempre, con conferma esplicita |
-| FR-6 | Domanda mirata su Ambiguità residua, con ritaglio ingrandito |
-| FR-7 | Tetto di due giri e degrado all'editor |
-| FR-8 | Ripresa senza perdita e senza doppio addebito |
-| FR-9 | Editor del circuito |
-| FR-10 | Risoluzione a percorsi indipendenti (A e B) con confronto |
-| FR-11 | Verifica a cinque controlli come gate di pubblicazione |
-| FR-12 | Rifiuto di certificazione come esito progettato |
-| FR-13 | Nessun valore numerico generato da modello linguistico |
-| FR-14 | Piano didattico da Catalogo chiuso, eseguito e verificato |
-| FR-15 | Disegno del circuito a ogni passo |
-| FR-16 | Profilo curricolare che restringe le Trasformazioni ammesse |
-| FR-17 | Modalità Studio a rivelazione progressiva |
-| FR-18 | Export multiformato (PDF, LaTeX, SVG, e-learning) |
-| FR-19 | Marcatura di provenienza su ogni artefatto |
-| FR-20 | Superficie assistente con conferma in conversazione |
-| FR-21 | Collegamento dell'account dalla superficie assistente |
-| FR-22 | Generazione di Varianti verificate |
-| FR-23 | Vincoli di generazione |
-| FR-24 | Fogli soluzione separati e verificabili |
-| FR-25 | Banco esercizi del tenant |
-| FR-26 | Consumo di Crediti solo alla Soluzione consegnata |
-| FR-27 | Acquisto di Crediti e piani |
-| FR-28 | Registrazione con dichiarazione di età |
-| FR-29 | Dichiarazione d'uso dell'IA al primo contatto |
-| FR-30 | Cancellazione automatica delle immagini entro 72 ore |
-| FR-31 | Offuscamento delle regioni personali |
-| FR-32 | Consenso esplicito all'uso dei contenuti per il miglioramento |
-| FR-33 | Esercizio dei diritti dell'interessato |
-| FR-34 | Eval harness sul gold set |
-| FR-35 | Segnalazione di errore dall'utente |
+- **FR-1**: Ingestione multi-formato
+- **FR-2**: Estrazione multi-pass con misura dell'Accordo
+- **FR-3**: Ridondanza testuale come secondo canale
+- **FR-4**: Validazione elettrica come gate
+- **FR-5**: Anteprima di ricostruzione, sempre
+- **FR-6**: Domanda mirata su Ambiguità residua
+- **FR-7**: Tetto di due giri e degrado all'editor
+- **FR-8**: Ripresa senza perdita e senza doppio addebito
+- **FR-9**: Editor del circuito
+- **FR-10**: Risoluzione a percorsi indipendenti
+- **FR-11**: Verifica a cinque controlli come gate di pubblicazione
+- **FR-12**: Rifiuto di certificazione come esito progettato
+- **FR-13**: Nessun valore generato da modello linguistico
+- **FR-14**: Piano didattico da Catalogo chiuso
+- **FR-15**: Disegno del circuito a ogni passo
+- **FR-16**: Profilo curricolare
+- **FR-17**: Modalità Studio a rivelazione progressiva
+- **FR-18**: Export multiformato
+- **FR-19**: Marcatura di provenienza su ogni artefatto
+- **FR-20**: Superficie assistente con conferma in conversazione
+- **FR-21**: Collegamento dell'account dalla superficie assistente
+- **FR-22**: Generazione di Varianti verificate
+- **FR-23**: Vincoli di generazione
+- **FR-24**: Fogli soluzione separati e verificabili
+- **FR-25**: Banco esercizi del tenant
+- **FR-26**: Consumo per Soluzione consegnata
+- **FR-27**: Acquisto di Crediti e piani
+- **FR-28**: Registrazione con dichiarazione di età
+- **FR-29**: Dichiarazione d'uso dell'IA al primo contatto
+- **FR-30**: Cancellazione automatica delle immagini
+- **FR-31**: Offuscamento delle regioni personali
+- **FR-32**: Consenso esplicito all'uso dei contenuti per il miglioramento
+- **FR-33**: Esercizio dei diritti dell'interessato
+- **FR-34**: Eval harness sul gold set
+- **FR-35**: Segnalazione di errore dall'utente
+- **FR-36**: Quota per soggetto anonimo
+- **FR-37**: Rappresentazione doppia e persistente
+- **FR-38**: La trasformazione è un `LayoutPatch` con invariante di conservazione
+- **FR-39**: Grammatica obbligatoria del passo
+- **FR-40**: La derivazione è un `ProofGraph`, non una lista
+- **FR-41**: Il round-trip visuale è il controllo primario della topologia
+- **FR-42**: Il gate di veridicità è componente proprietaria, non skill esterna
+- **FR-43**: Catalogo chiuso, e la sua condizione di apertura
+- **FR-44**: `StudentTrace` è ingresso semantico, non immagine
+- **FR-45**: Un kernel, tre adapter — nessun fork
+- **FR-46**: Famiglie di test obbligatorie, e il fallimento sfuggito diventa invariante
+- **FR-47**: I quattro bracci di Gate A, dallo stesso passaggio
+- **FR-48**: `ProofSession` è indipendente dalla superficie
+- **FR-49**: Ispezione del passaggio, ancorata allo stato
+- **FR-50**: Quattro classi di stato visivo, e una sola è vincolata
+- **FR-51**: Registro di provenienza e licenza — oggetto versionato, non foglio amministrativo
+- **FR-52**: Il confine del kernel è `CircuitIR`, e la percezione sta fuori
+- **FR-53**: `TransformOverlay` è un layer separato, e non occlude mai un'entità preservata
+
+<!-- 53 requisiti funzionali estratti da prd.md v3 -->
 
 ### NonFunctional Requirements
 
-| ID | Requisito | Origine |
-|---|---|---|
-| NFR-1 | Latenza end-to-end < 45 s al 90° percentile, domande incluse | PRD §9 |
-| NFR-2 | Anteprima entro 5 s per immagine fino a 5 MP | PRD §5.1 |
-| NFR-3 | Determinismo: a parità di IR confermato, soluzione e passaggi riproducibili | PRD §9 |
-| NFR-4 | Tracciabilità: ogni Soluzione ricostruibile da IR + versione del sistema | PRD §9 |
-| NFR-5 | Indipendenza dal fornitore: ≥ 2 fornitori intercambiabili; la caduta di uno degrada la qualità, non la disponibilità | PRD §9 |
-| NFR-6 | Accessibilità WCAG 2.2 AA su tutte e tre le superfici, pannello assistente incluso | PRD §9, EXPERIENCE.md |
-| NFR-7 | Mobile-first: flusso B2C completabile a 360 px senza scorrimento orizzontale | PRD §9 |
-| NFR-8 | Isolamento fra tenant a livello di database | PRD §9, AD-14 |
-| NFR-9 | Osservabilità: SER, VSR, QPS, TTV, tasso di Rifiuto e correzioni strumentati in produzione | PRD §9 |
-| NFR-10 | Non-regressione: nessuna modifica al nucleo raggiunge la produzione senza eval harness | PRD §9 |
-| NFR-11 | Il gate di pubblicazione non ha bypass, nemmeno amministrativo o di test | PRD §10.1, AD-5 |
-| NFR-12 | Precedenza fra metriche in conflitto: SER prevale su QPS, TTV e VSR, sempre | PRD §10.1 |
-| NFR-13 | Costo di elaborazione per Soluzione consegnata sotto il 10% del prezzo effettivo | PRD §10.3 |
-| NFR-14 | Residenza dei dati e degli artefatti nell'Unione Europea | PRD §12 |
-| NFR-15 | Etichette nei disegni ≥ 11 px effettivi a 360 px di viewport | PRD §5.4, DESIGN.md |
-| NFR-16 | Nessuna soluzione parziale mostrata come completa | PRD §10.1 |
+> **Numerazione derivata dal passo 6, non presente nel PRD.** Il PRD v3 elenca gli NFR in §9 *Cross-Cutting NFRs* come voci puntate senza identificatore. Gli identificatori `NFR-1…NFR-9` sono stati assegnati **qui** per rendere i requisiti citabili dalle storie. Il PRD **non** è stato modificato retroattivamente per introdurli.
+
+
+- **NFR-1 · Budget di latenza end-to-end.** Dal caricamento alla Soluzione consegnata **< 45 s** al 90° percentile, domande incluse. Sopra i 60 s l'utente abbandona.
+- **NFR-2 · Determinismo del calcolo.** A parità di IR confermato, soluzione e passaggi sono riproducibili.
+- **NFR-3 · Tracciabilità.** Ogni Soluzione consegnata è ricostruibile dall'IR e dalla versione di sistema che l'ha prodotta.
+- **NFR-4 · Indipendenza dal fornitore di modelli.** Almeno due fornitori intercambiabili; la caduta di uno degrada la qualità, non la disponibilità.
+- **NFR-5 · Accessibilità.** Superfici interattive usabili da tastiera e screen reader, con alternative testuali per ogni disegno. Non negoziabile per i clienti istituzionali.
+- **NFR-6 · Mobile-first.** Il flusso B2C si completa su schermo telefono senza scorrimento orizzontale.
+- **NFR-7 · Isolamento fra tenant.** Nessun dato di un tenant è raggiungibile da un altro.
+- **NFR-8 · Osservabilità.** Tutte le metriche di §8 — le quattro storiche più le nove della v3, **VCER compresa** — più tasso di Rifiuto e correzioni per soluzione, strumentate in produzione, non solo in eval.
+- **NFR-9 · Non-regressione della qualità.** Nessuna modifica che tocchi estrazione, Validazione elettrica, Trasformazioni o Piano didattico raggiunge la produzione senza esecuzione dell'eval harness.
 
 ### Additional Requirements
 
-Dallo spine di architettura. Ognuno è un vincolo che le storie devono rispettare, non un'attività
-a sé — le storie che li implementano sono indicate nella mappa di copertura.
+Estratti da `ARCHITECTURE-SPINE.md` v2 (**35 AD**, di cui dieci emendati in loco il 15 agosto) e dalle review architetturali. Solo ciò che vincola l'implementazione.
 
-- **AD-1** — L'IR è l'unico contratto fra stadi; firma `(IR, ctx) → IR | Refusal`; nessuno stadio
-  a valle dell'estrazione legge l'immagine sorgente.
-- **AD-2** — Le Trasformazioni sono funzioni pure
-  `transform(CircuitIR, params) → (CircuitIR, TransformResult) | Refusal`; nessuna I/O, nessun
-  orologio, nessuna casualità; catalogo chiuso caricato all'avvio.
-  *[v2 · 24/08/2026]* Il secondo membro non è più un `Drawing`: è un **`TransformResult`** che
-  porta `PreserveSet + Delta + Boundary + LayoutPatch + Equation + Certificate` (AD-22). Il
-  disegno non è un'uscita della Trasformazione — è ciò che il renderer produce applicando il
-  `LayoutPatch` al `LayoutIR` precedente.
-- **AD-3** — I modelli si raggiungono solo attraverso `ModelPort`; nessun SDK di provider sotto
-  `domain/`; almeno due adapter registrati.
-- **AD-4** — Il generatore di testo produce segnaposto `[[q1.value]]`, mai cifre; un testo con
-  cifra letterale è respinto prima della pubblicazione.
-- **AD-5** — Gate di pubblicazione in un unico punto: solo `publish()` produce `Published`; nessun
-  `Solution` è serializzabile verso l'esterno.
-- **AD-6** — Server stateless per richiesta; lo stato multi-giro vive in `resume_ref` firmato
-  HMAC, legato al `subject_id`, TTL 15 min, monouso.
-- **AD-7** — Chiave di idempotenza da `(subject_id, circuit_id, request_hash)` con vincolo di
-  unicità a schema.
-- **AD-8** — Un solo modulo scrive ciascuna entità; `studio` chiama `publish()` ma non scrive mai
-  un `Published`.
-- **AD-9** — TTL immagini imposto dalla lifecycle policy dello storage, non da un job applicativo.
-- **AD-10** — Un solo punto produce artefatti esportabili, e applica la Marcatura di provenienza.
-- **AD-11** — Nessun tipo associa una misura di rendimento a un identificatore di persona.
-- **AD-12** — La cascata di costo può cambiare quali modelli, mai quanti Pass; `K ≥ 3` imposto dal
-  codice.
-- **AD-13** — `Refusal` e `Failure` sono tipi diversi, su canali diversi.
-- **AD-14** — Isolamento tenant via row-level security a livello DB.
-- **AD-15** — L'eval harness gira sul codice di produzione attraverso gli stessi port; nessun ramo
-  `if testing`.
-- **AD-16** — La superficie assistente è un contratto pubblico versionato; ogni risposta con
-  pannello porta anche il riassunto testuale strutturato.
-- **AD-17** — Un solo orologio, iniettato via `ClockPort`.
-- **AD-18** — *[v2 · 24/08/2026]* **`Drawing` non esiste più.** La regola sopravvive nella forma
-  forte: il dominio non produce geometria, non conosce markup, pixel, colori o font — e dalla v2
-  non conosce nemmeno il concetto di **posizione**. `p_k` vive nel `LayoutIR`, di cui
-  `render/layout` è scrittore unico (AD-8 em., AD-21).
-- **AD-19** — `Refusal.cause` da enumerazione chiusa con payload tipizzato che porta sempre
-  `subject`.
-- **AD-20** — Identità come `subject_id` opaco, anonimo incluso; il collegamento account è una
-  fusione esplicita di soggetti.
+**Nessun template starter.** Lo spine non prescrive alcuno scaffold: il progetto è **brownfield** e la struttura esiste già (`src/kirchhoff/{domain,eval,ports,render,adapters,api,pipeline}`). Epic 1 Story 1 **non** è «inizializza il progetto».
 
-Requisiti infrastrutturali derivati:
+**Contratti che governano il codice**
 
-- Bucket object storage in regione UE con lifecycle policy a 72 ore (AD-9, FR-30, NFR-14).
-- PostgreSQL in regione UE con row-level security attiva (AD-14, NFR-8, NFR-14).
-- Registrazione di almeno due adapter di modello prima del primo rilascio (AD-3, NFR-5).
-- Catena LaTeX vincolata: niente `lmodern`, niente babel italiano, label CircuiTikZ con `=` in
-  graffe.
-- **Nessun template starter**: la struttura è creata a mano secondo l'albero sorgente dello spine.
+- **AD-1 · `CircuitIR` è l'unico contratto fra stadi.** Firma `(CircuitIR, ctx) → CircuitIR | Refusal`. Il `LayoutIR` è rappresentazione pari grado e **non compare mai nella firma di uno stadio di calcolo** (AD-21).
+- **AD-2 em. · Le Trasformazioni sono funzioni pure.** `transform(CircuitIR, params) → (CircuitIR, TransformResult) | Refusal`, con `TransformResult = PreserveSet + Delta + Boundary + LayoutPatch + Equation + Certificate`. Il `LayoutPatch` nomina **entità, non coordinate**. Catalogo chiuso caricato all'avvio.
+- **AD-3 · `ModelPort`.** Nessun modulo sotto `domain/` importa un SDK di fornitore. Almeno due adapter registrati; la selezione è configurazione.
+- **AD-4 em. · Nessun numero mostrato all'utente proviene da un modello linguistico.** Segnaposto `[[q.value]]` **legati allo scope del passo**; un segnaposto fuori scope è respinto, uno non risolto produce `Refusal`.
+- **AD-5 em. · Gate di pubblicazione unico.** `publish()` esegue otto controlli: i cinque residui, incidenza geometrica, round-trip, `TruthfulnessGate`.
+- **AD-8 em. · Un solo scrittore per entità.** `CircuitIR`→`ingest` · `LayoutIR`→`render/layout` (**mai** `domain/`) · `ProofGraph`→`domain/proof` · `Claim`→`domain/truthfulness` · `SourceAsset`→`corpus/` · `InteractionState`→client, non persistito.
+- **AD-10 em. · L'SVG semantico verificato è la sorgente unica di ogni altro formato.** PDF e CircuiTikZ **derivano**, non re-interpretano.
+- **AD-13 · `Refusal` e `Failure` sono tipi e canali diversi.** Il Rifiuto non consuma Crediti.
+- **AD-18 em. · `Drawing` non esiste più.** Il dominio non produce geometria e **non conosce il concetto di posizione**.
+- **AD-19 em. · `Refusal.cause` da enumerazione chiusa** con payload che porta sempre `subject`. Cause v2 aggiunte: `identity_violation`, `preserve_nonmaximal`, `empty_boundary`, `render_roundtrip`, `overlay_occlusion`, `claim_unsupported`.
+- **AD-21 · Quattro rappresentazioni disgiunte** — `CircuitIR`, `LayoutIR`, `TransformOverlay`, `InteractionState`. Nessuna contiene un'altra. `ProofSession` è **proiezione per riferimento**, non aggregato.
+- **AD-22 em. · Il `preserve set` deriva dalla `Transform`, mai dal renderer.** `Pₖ = Entities(Cₖ) ∩ Entities(Cₖ₊₁)` dopo `node_mapping`; `node_mapping` **totale e iniettiva sui sopravvissuti**; `id_{k+1}(x) = id_k(x)` per ogni `x ∈ Pₖ` **senza tolleranza**, verificato *fra un passo e il successivo*. Ogni campo del `TransformResult` è non-vuoto o il prodotto non è costruibile.
+- **AD-23 · Ordine dei layer fisso** `0…8`, con R-Visual-1: un'annotazione di trasformazione non occlude mai un'entità semantica preservata.
+- **AD-24 · La percezione sta fuori dal kernel**, dietro `PerceptionCandidate`.
+- **AD-25 · Nessun artefatto entra nel corpus senza `SourceAsset`**; `UNKNOWN` è fail-closed.
+- **AD-27 · Un kernel, tre adapter, dipendenza a senso unico.**
+- **AD-29 · Il `ProofGraph` è un grafo dal primo commit.**
+- **AD-31 · Incidenza geometrica controllata.** Ogni estremo di filo tocca il terminale che l'annotazione dichiara, entro tolleranza dichiarata. **L'annotazione è derivata dalla geometria, mai il contrario.** Sesto controllo di `publish()`.
+- **AD-32 · Il `TruthfulnessGate` è cablato all'uscita**, non solo definito.
+- **AD-35 · Il rendering è deterministico per costruzione.** `render(LayoutIR, TransformOverlay, ArmEncoding) → SVG` è **pura**: stessi byte, niente orologio, niente id a runtime, nessun ordinamento dipendente dall'inserimento in mappa. Fallimento di CI, non `Refusal`.
+
+**Recinti di dipendenza** (`scripts/check_boundaries.py`). AD-21 v2 dice testualmente: *«`scripts/check_boundaries.py` ha oggi **un solo** recinto (`RECINTO = "domain"`). **Deve averne cinque**, ciascuno una freccia vietata»*. Sono **cinque**, non sei — enumerati qui verbatim dalla fonte invece che contati:
+
+| # | Freccia vietata | Ordinato da | Stato oggi |
+|---|---|---|---|
+| 1 | `domain/` → qualunque cosa fuori da `domain/` | AD-1, paradigma | ✅ implementato e testato |
+| 2 | `domain/` → `render/` | AD-18, AD-21 | ✅ coperto per implicazione dal 1 |
+| 3 | `domain/` → `perception/` | AD-24 | ✅ coperto per implicazione dal 1 |
+| 4 | `domain/` ∪ `render/` → `adapters/` | AD-27 | ⚠️ solo la metà `domain/`; `render/` non è scandito |
+| 5 | qualunque cosa fuori da `corpus/` → il filesystem del corpus | AD-25 | ❌ assente |
+
+**Un sesto recinto è raccomandato da CV5 e non è ancora nello spine**: *«nessun percorso di codice del braccio 0 riceve, importa o risolve un `LayoutIR` di `Cₖ` — né per parametro, né per `ctx`, né per lookup su identificatore»*. È una raccomandazione di review, non un requisito di AD-21: emendare AD-21 è prerequisito per renderlo esigibile.
+
+**Rilievi architetturali aperti che vincolano le storie**
+
+- **CV1** (critico) — la codifica di braccio non è tipizzata: un renderer potrebbe ricalcolare `preserve` come complemento della classe «changed», reintroducendo l'autocertificazione che AD-22 chiude. *«Un bug che si legge come dato.»*
+- **CV2** (critico) — il test permanente di A-0 è falso per costruzione sui bracci B e C.
+- **CV3** (critico) — R-Visual-1 non è implicata dall'ordine dei layer, non esiste un predicato di occlusione, e `overlay_occlusion` è una causa di `Refusal` che **nessuno stadio solleva**.
+- **CV6** (alto) — `LayoutIR` e `LayoutPatch` non hanno identificatore né regola di ritenzione, e l'ERD non li conosce: **VCER non è calcolabile**, quindi Gate A non ha un verdetto.
+- **Identità semantica** (verificato il 24/08) — AD-22 impedisce di dichiarare «creata» una sopravvissuta, ma **non** impedisce a una trasformazione di riusare l'id di una vecchia entità per farne apparire preservata una nuova, perché `Pₖ` è l'intersezione **per identificatore**.
+
+**Decisioni owner aperte che bloccano** (`KIRCHHOFF-KNOWLEDGE/30-Decisioni-aperte`)
+
+- **D2** → blocca la storia sul profilo curricolare che restringe il catalogo.
+- **D4 — RISOLTA, superseded il 24/08/2026.** Non blocca più Gate A. La risoluzione non è una preferenza: **AD-10 v2** (l'SVG semantico verificato è la sorgente unica di ogni altro formato), **AD-31 v2** (l'annotazione è derivata dalla geometria, mai il contrario) e **AD-35 v2** (`render(LayoutIR, TransformOverlay, ArmEncoding) → SVG` è pura) determinano insieme lo stack, e l'owner ha ratificato: **SVG semantico deterministico generato da noi come rappresentazione visuale canonica verificabile**; CircuiTikZ resta **export derivato di qualità**, non renderer primario; un graph-layout engine che ricompone da zero **è il braccio 0**, non il braccio A; l'autolayout generale **non blocca** Visual Slice 0.
+  > Il file storico `D4 Renderer stack web vs PDF.md` continua a dichiararsi `stato: aperta`. Non va riscritto: la decisione è stata **risolta a valle** dalle autorità v2, e questo è il record.
+- **D5, D6, D9, D10** → claim commerciali, soglie di lancio, ricavo, condivisione.
+- **D11** → blocca Gate F. **Verificato compatibile**: vieta a Kirchhoff di importare simulatore, memoria studente o shell; non vieta a un prodotto superiore di comporre.
+
+**Realtà brownfield** — `git rev-parse HEAD` = `ecc86fd`, **245 test verdi, copertura 100%**, `check_boundaries` e `check_domain_coverage` exit 0, `kirchhoff-eval report --split dev` VSR 1.0 / SER 0.0 su 36 casi.
 
 ### UX Design Requirements
 
-| ID | Requisito |
-|---|---|
-| UX-DR1 | Sistema di token colore: 32 token, coppie chiaro/scuro complete, tutti esadecimali |
-| UX-DR2 | Scala tipografica a 7 ruoli: `display`, `title`, `body`, `meta`, `quantity`, `residual`, `label-drawing` |
-| UX-DR3 | Cifre tabulari (`font-variant-numeric: tabular-nums`) su ogni quantità, residuo ed etichetta di disegno |
-| UX-DR4 | Componente `badge-verified`: pillola, spunta in cerchio pieno, etichetta "Verificata", apribile sul pannello dei residui |
-| UX-DR5 | Componente `badge-suspended`: pillola, cerchio barrato, etichetta "Non certificata", **mai rosso, mai icona di allarme**, apribile sulla diagnosi |
-| UX-DR6 | Componente `provenance-anchor`: riquadro 2 px sull'immagine sorgente, attivabile da entrambi i lati del confronto |
-| UX-DR7 | Componente `quantity-chip` |
-| UX-DR8 | Componente `residual-row`: cinque righe, ordine fisso e non riordinabile |
-| UX-DR9 | Componente `step-card`: nome Trasformazione, formula letterale, sostituzione numerica, disegno — il disegno è obbligatorio |
-| UX-DR10 | Componente `question-card`: ritaglio ingrandito in cima, alternative grandi, campo libero sempre in coda, contatore giri visibile |
-| UX-DR11 | Componente `disclosure-bar`: persistente, non chiudibile, presente su tutte e tre le superfici |
-| UX-DR12 | Verifica di accessibilità cromatica: ogni schermata resta interpretabile in scala di grigi; nessuno stato portato dal solo colore |
-| UX-DR13 | `Refusal` e `Failure` distinti da colore **e** icona **e** parole, mai da uno solo dei tre |
-| UX-DR14 | Alternativa testuale topologica per ogni disegno (non "schema del circuito", ma la struttura) |
-| UX-DR15 | Percorso completo da tastiera su tutte le superfici, con focus visibile non portato dal solo colore |
-| UX-DR16 | Bersagli di tocco ≥ 44 × 44 px, incluse le alternative nelle Domande mirate |
-| UX-DR17 | Rispetto di `prefers-reduced-motion`: rimozione di ogni transizione non essenziale |
-| UX-DR18 | Progresso a fasi con etichette reali degli stadi, non barra generica |
-| UX-DR19 | Layout responsive: < 768 px colonna singola con controllo a due stati (mai accordion); ≥ 768 px Anteprima a due colonne |
-| UX-DR20 | Modalità scura pari grado alla chiara, non tema secondario |
-| UX-DR21 | Foglio di stile di stampa con Marcatura di provenienza non rimovibile via CSS |
-| UX-DR22 | Superficie "Non certificata" con indirizzo proprio, condivisibile, che sopravvive al ricaricamento |
-| UX-DR23 | Vocabolario UI vincolato ai termini del Glossario del PRD; nessun sinonimo |
-| UX-DR24 | Microcopy secondo le 7 regole di `EXPERIENCE.md` e lista di parole vietate |
-| UX-DR25 | Stati vuoti con un esempio reale caricabile con un tocco, non un'illustrazione |
-| UX-DR26 | Rendering delle formule come matematica accessibile, non come immagini |
+Estratti da `ux-designs/ux-Kirchhoff-2026-08-13/` — `DESIGN.md` v3 (identità visiva) ed `EXPERIENCE.md` v3 (comportamento), letti integralmente. **Entrambi dichiarano `supersedes: v2 — prodotto centrato sull'Anteprima da foto`**: la v2 era il percorso foto di CircuitCheck e la v3 lo ha spostato a Gate C.
+
+**Sistema di design**
+
+- **UX-DR1** — Sistema di token completo a **doppio tema**: 22 token colore scuri più 22 chiari pari grado (`surface-*`, `ink-*`, `rule-*`, `verified`, `suspended`, `fault`, `provenance`, `focus-ring`). **Scuro per default**, chiaro completo e non secondario: è il tema della stampa.
+- **UX-DR2** — Scala di movimento a tre durate (`instant 90ms`, `quick 140ms`, `considered 220ms`) con easing unico. `prefers-reduced-motion` rimuove ogni transizione tranne il cambio di stato del passo, che diventa istantaneo.
+- **UX-DR3** — Sette ruoli tipografici, con **cifre tabulari obbligatorie** (`font-variant-numeric: tabular-nums`) ovunque compaia un numero, disegni inclusi. `label-drawing` a **11 px effettivi minimi** nei disegni: un disegno che scenderebbe sotto va **ricomposto, non rimpicciolito** (vincolo FR-15).
+
+**Diciannove componenti propri** — *«Nessun sistema di UI di terze parti»*, perché l'Anteprima con ancoraggio di provenienza e il pannello dei residui non esistono in nessuna libreria:
+
+- **UX-DR4** — `badge-verified` e `badge-suspended`: **forma, etichetta e colore insieme, mai il colore da solo**; identici per forma e posizione, distinguibili in scala di grigi; **entrambi toccabili** — un badge che non si apre è un'affermazione, uno che si apre è una prova.
+- **UX-DR5** — `provenance-anchor`: riquadro sulla sorgente che lega un componente alla sua area di lettura. Legame **bidirezionale**.
+- **UX-DR6** — `residual-row` e pannello dei residui: **cinque righe fisse, sempre nello stesso ordine** — KCL, KVL, potenza, accordo fra metodi, coerenza fisica. Non riordinabile.
+- **UX-DR7** — `step-card` con i **sei campi di FR-39** nell'ordine `BEFORE · ACTION · AFTER · EQUATION · CERTIFICATE · PROVENANCE`. Un passo senza `CERTIFICATE` **non compare**.
+- **UX-DR8** — `subgraph-highlight`: marca **solo** i componenti che cambiano, stretto attorno alla sagoma, **scope locale per obbligo sperimentale**; compare **prima di qualunque testo**.
+- **UX-DR9** — `boundary-anchor`: overlay effimero al layer 6, `fill: none`, 9 px. Togliendolo il nodo torna identico. Vive nel `TransformOverlay`, non nel `LayoutIR`.
+- **UX-DR10** — `equation-anchor`: l'equazione sta **accanto** al sottografo che l'ha generata, collegata da una linea. *«Un'equazione staccata dal disegno è una spiegazione; attaccata, è una prova.»*
+- **UX-DR11** — `certificate-chip` **quadrato**, distinto dal `badge-verified` **tondo**: uno certifica il passo, l'altro la soluzione.
+- **UX-DR12** — `beforeafter-toggle`: due stati commutabili all'infinito, `{motion.instant}`, **pollice-raggiungibile** su mobile.
+- **UX-DR13** — `proofgraph-rail`: la derivazione come **grafo percorribile**, sempre visibile, con diramazione e ricongiungimento. *«Non è una barra di avanzamento: il rail si usa.»*
+- **UX-DR14** — `question-card` con **ritaglio ingrandito in cima**, alternative grandi, campo libero sempre in coda; **una domanda per volta**.
+- **UX-DR15** — `disclosure-bar` persistente e **non chiudibile**, su ogni superficie, pannello assistente incluso.
+- **UX-DR16** — `attenuation`, `unchanged-marker`, `region-highlight`: **non sono default**. Esistono solo come bracci C e B dell'esperimento di Gate A, cioè come pattern comune da battere.
+
+**Continuità visuale**
+
+- **UX-DR17** — **A-0, Unmarked Preservation Hypothesis**: un'entità preservata non riceve modifica del proprio visual state per comunicare la trasformazione. Invariante **semantico-spaziale, non pixel-perfect**: `id_{k+1}(x) = id_k(x)` senza eccezioni, `p_{k+1}(x) ≈ p_k(x)` salvo necessità geometriche dimostrabili, comunque **misurate e penalizzate da VCER**.
+- **UX-DR18** — **Ordine dei layer 0…8** deterministico, con R-Visual-1.
+- **UX-DR19** — **Quattro classi di stato visivo**, e solo la prima è vincolata da A-0: trasformazione (sì), interazione, accessibilità, ispezione/debug (no).
+
+**Stati e interazione**
+
+- **UX-DR20** — **Undici stati** con regola dominante: *Non certificata* e *Guasto* **non devono mai assomigliarsi** — colore, icona e parole devono distinguerli tutti e tre insieme.
+- **UX-DR21** — **«Non certificata» è una superficie con indirizzo proprio**, condivisibile, che sopravvive al ricaricamento. Non un banner.
+- **UX-DR22** — Sette primitive di interazione: un tocco per confermare · tocco su un valore = provenienza · tocco sul badge = prova · **massimo due giri di domande con contatore visibile** · nessuna azione distruttiva senza annullamento · **nessun auto-avanzamento** · movimento minimo.
+- **UX-DR23** — «Perché posso farlo?» risponde con **quattro campi già calcolati** — terminali, precondizioni, formula, certificato — e **non genera spiegazioni**.
+- **UX-DR24** — Progresso a fasi con **etichette reali** («normalizzo l'immagine», «leggo il circuito», «controllo la rete», «risolvo», «verifico»).
+
+**Accessibilità — pavimento non negoziabile, WCAG 2.2 AA su tutte e tre le superfici**
+
+- **UX-DR25** — **Alternativa testuale della topologia** per ogni disegno: non «schema del circuito» ma la struttura. Requisito di prodotto (FR-15).
+- **UX-DR26** — Flusso intero percorribile da tastiera; **nessuno stato portato dal solo colore** — verifica operativa: la schermata resta interpretabile in scala di grigi; bersagli ≥ 44 × 44 px; formule accessibili **come matematica**; nessun limite di tempo.
+
+**Responsive e superfici**
+
+- **UX-DR27** — < 768 px colonna singola, disegni interi entro 360 px senza scorrimento orizzontale; ≥ 768 px i due stati **affiancati** ma il toggle **resta**; modalità scura pari grado; **foglio di stile di stampa** con marcatura di provenienza non rimovibile via CSS.
+- **UX-DR28** — Superficie assistente `ProofReplay`: **nessuno stato locale** · ogni risposta porta **anche un riassunto testuale strutturato** perché l'assistente non vede il pannello · **parità funzionale sui gate** · accessibilità pari.
+- **UX-DR29** — **La `ProofSession` deve funzionare senza MCP Apps**: il degrado a superficie non interattiva è un percorso **progettato**, non un guasto.
+
+**Voce**
+
+- **UX-DR30** — Sette regole di microcopy, **vocabolario vincolato** al Glossario del PRD, e parole vietate: «magia», «istantaneo», «perfetto», «garantito al 100%», «IA avanzata», «potenziato dall'IA».
+- **UX-DR31** — **Mai il rosso per il Rifiuto di certificazione**: *«è l'errore di design che smonta il posizionamento»*. Nessuna celebrazione sulla soluzione corretta. **Nessun punteggio sulla persona** (K-5).
+
+**Protocollo di ricerca**
+
+- **UX-DR32** — Protocollo A/B di Gate A: quattro bracci su **un asse solo**, disegno **entro-soggetti** a quadrato latino, **sei misure** di cui cinque oggettive e la preferenza soggettiva **in coda**. *«Un braccio che vince solo sulla 6 non ha vinto.»* **Nessuna differenza estetica fra i bracci** — è il vincolo di design che non ammette eccezioni.
+
+---
+
+### Classificazione delle voci UX
+
+Le trentadue voci sopra **non sono omogenee** e vanno lette per genere, non in blocco:
+
+| Genere | Quali | Significato |
+|---|---|---|
+| **UX REQUIREMENT** | UX-DR1…3, 4…16, 20…24, 27…30 | va costruito |
+| **UX CONSTRAINT** | UX-DR17, 18, 19, 25, 26, 31, 32 | vincola *come* si costruisce; violarlo invalida A-0, l'accessibilità o l'esperimento |
+| **UX EXISTING PATTERN** | UX-DR21, 22, 23 | già progettato e riusabile così com'è |
+| **UX GAP** | vedi sotto | **manca**, ed è la voce che genera storie nuove |
+
+### UX GAP
+
+- **UX-GAP-01 — la UX corrente non offre il flusso «Correggi»: non esiste alcun percorso che importi un `StudentTrace` già svolto.**
+
+  **Provenienza del gap, in tre strati:**
+  1. **Il PRD lo richiede già.** `FR-44 — StudentTrace è ingresso semantico, non immagine`: *«Quando il sistema controlla una derivazione prodotta dallo studente, la riceve come struttura semantica — passi, equazioni, grandezze dichiarate»*, e *«un `StudentTrace` è confrontabile col `ProofGraph` di riferimento **passo per passo**, non solo sul risultato finale»*. Il meccanismo del primo errore è **già una conseguenza testabile del PRD**.
+  2. **L'architettura e il dominio non l'hanno mai implementato.** Nessun tipo `StudentTrace` esiste nel codice.
+  3. **La UX ha progettato «Guidami», non «Correggi».** KF-4 è la modalità Studio: il sistema chiede, lo studente risponde **dentro** il sistema. Nessuno dei sette flussi importa un lavoro già svolto.
+
+  **Conseguenza per il backlog:** CircuitCheck non è una deviazione dal progetto. È la concretizzazione di un requisito rimasto **sospeso fra gli strati** — richiesto dal PRD, mai sceso in architettura, mai progettato in UX, quindi mai implementato.
+
+  **Tensione da risolvere nella decomposizione, non da nascondere:** FR-44 si dichiara *«Fuori MVP — Gate B (tutor interattivo)»*, mentre la priorità di prodotto dell'owner mette il primo errore **presto**. La collocazione di Gate va decisa esplicitamente dalle Epic, non ereditata in silenzio.
+
+  **Vincolo di naming (search-before-build eseguito):** il nome autoritativo è **`StudentTrace`**, non `StudentSolutionIR`. Nessun tipo nuovo va introdotto senza aver prima stabilito se `StudentTrace` è già il contenitore cercato.
 
 ### FR Coverage Map
 
-| FR | Epic | Come vi atterra |
-|---|---|---|
-| FR-1 | Epic 2 (netlist/LaTeX) + Epic 3 (immagine) | L'ingestione strutturata arriva col motore; quella da foto con la ricostruzione |
-| FR-2 | Epic 3 | Estrazione multi-pass e misura dell'Accordo |
-| FR-3 | Epic 3 | Ridondanza testuale come secondo canale |
-| FR-4 | Epic 2 | Validazione elettrica come gate, puro codice |
-| FR-5 | Epic 3 | Anteprima di ricostruzione, sempre |
-| FR-6 | Epic 3 | Domanda mirata su Ambiguità residua |
-| FR-7 | Epic 3 | Tetto di due giri e degrado all'editor |
-| FR-8 | Epic 3 | Ripresa senza perdita né doppio addebito |
-| FR-9 | Epic 3 | Editor del circuito |
-| FR-10 | Epic 2 | Percorsi A e B con confronto obbligatorio |
-| FR-11 | Epic 2 | Verifica a cinque controlli, gate di pubblicazione |
-| FR-12 | Epic 2 | Rifiuto di certificazione come esito di dominio |
-| FR-13 | Epic 2 | Nessun numero da modello linguistico |
-| FR-14 | Epic 2 | Piano didattico da Catalogo chiuso |
-| FR-15 | Epic 4 | Disegno del circuito a ogni passo |
-| FR-16 | Epic 2 | Profilo curricolare che restringe il Catalogo |
-| FR-17 | Epic 4 | Modalità Studio a rivelazione progressiva |
-| FR-18 | Epic 4 | Export multiformato |
-| FR-19 | Epic 4 | Marcatura di provenienza |
-| FR-20 | Epic 7 | Superficie assistente con pannello di conferma |
-| FR-21 | Epic 7 | Collegamento dell'account |
-| FR-22 | Epic 6 | Generazione di Varianti verificate |
-| FR-23 | Epic 6 | Vincoli di generazione |
-| FR-24 | Epic 6 | Fogli soluzione con checksum |
-| FR-25 | Epic 6 | Banco esercizi del tenant |
-| FR-26 | Epic 5 | Consumo alla Soluzione consegnata |
-| FR-27 | Epic 5 | Acquisto di Crediti e piani |
-| FR-28 | Epic 5 | Dichiarazione di età al signup |
-| FR-29 | Epic 5 | Dichiarazione d'uso dell'IA |
-| FR-30 | Epic 5 | Cancellazione automatica delle immagini |
-| FR-31 | Epic 5 | Offuscamento delle regioni personali |
-| FR-32 | Epic 5 | Consenso al miglioramento, OFF di default |
-| FR-33 | Epic 5 | Diritti dell'interessato |
-| FR-34 | Epic 1 (harness + insieme strutturato) + Epic 2 (metriche del pipeline) | La struttura di misura precede il pipeline che misura. **Copertura parziale: esclude l'estrazione** |
-| FR-35 | Epic 5 | Segnalazione di errore dall'utente |
-| FR-36 | Epic 5 | Quota per soggetto anonimo — prerequisito di 7.2 in produzione |
+Tutti i **53** requisiti funzionali del PRD v3 hanno un'epica primaria. Nessun orfano.
 
-Copertura: **35/35 FR mappati**, nessun buco.
+| FR | Epica | In una riga |
+|---|---|---|
+| FR-1 | 3 | ingestione multi-formato |
+| FR-2 | 3 | estrazione multi-pass con misura dell'Accordo |
+| FR-3 | 3 | ridondanza testuale come secondo canale |
+| FR-4 | 3 | validazione elettrica come gate — **SATISFIED** |
+| FR-5 | 3 | Anteprima di ricostruzione, sempre |
+| FR-6 | 3 | Domanda mirata su Ambiguità residua |
+| FR-7 | 3 | tetto di due giri e degrado all'editor |
+| FR-8 | 3 | ripresa senza perdita e senza doppio addebito |
+| FR-9 | 3 | editor del circuito |
+| FR-10 | 4 | risoluzione a percorsi indipendenti |
+| FR-11 | 4 | verifica a cinque controlli come gate di pubblicazione |
+| FR-12 | 4 | Rifiuto di certificazione come esito progettato |
+| FR-13 | 4 | nessun valore generato da modello linguistico |
+| FR-14 | 4 | piano didattico da Catalogo chiuso |
+| FR-15 | 1 | disegno del circuito a ogni passo — **K-0** |
+| FR-16 | 4 | profilo curricolare — **bloccato da D2** |
+| FR-17 | 2 | modalità Studio a rivelazione progressiva — «Guidami» |
+| FR-18 | 5 | export multiformato |
+| FR-19 | 5 | marcatura di provenienza su ogni artefatto |
+| FR-20 | 6 | superficie assistente con conferma in conversazione |
+| FR-21 | 6 | collegamento dell'account dalla superficie assistente |
+| FR-22 | 7 | generazione di Varianti verificate |
+| FR-23 | 7 | vincoli di generazione |
+| FR-24 | 7 | fogli soluzione separati e verificabili |
+| FR-25 | 7 | banco esercizi del tenant |
+| FR-26 | 8 | consumo per Soluzione consegnata |
+| FR-27 | 8 | acquisto di Crediti e piani |
+| FR-28 | 8 | registrazione con dichiarazione di età |
+| FR-29 | 8 | dichiarazione d'uso dell'IA al primo contatto |
+| FR-30 | 8 | cancellazione automatica delle immagini |
+| FR-31 | 8 | offuscamento delle regioni personali |
+| FR-32 | 8 | consenso esplicito all'uso dei contenuti |
+| FR-33 | 8 | esercizio dei diritti dell'interessato |
+| FR-34 | 1 | eval harness sul gold set — **SATISFIED** |
+| FR-35 | 2 | segnalazione di errore dall'utente |
+| FR-36 | 8 | quota per soggetto anonimo |
+| FR-37 | 1 | rappresentazione doppia e persistente |
+| FR-38 | 1 | la trasformazione è un `LayoutPatch` con invariante di conservazione |
+| FR-39 | 1 | grammatica obbligatoria del passo — i sei campi |
+| FR-40 | 1 | la derivazione è un `ProofGraph`, non una lista |
+| FR-41 | 1 | il round-trip visuale è il controllo primario della topologia |
+| FR-42 | 4 | il gate di veridicità è componente proprietaria |
+| FR-43 | 1 | catalogo chiuso, e la sua condizione di apertura |
+| FR-44 | 2 | **`StudentTrace` è ingresso semantico** — la USP |
+| FR-45 | 6 | un kernel, tre adapter — nessun fork |
+| FR-46 | 1 | famiglie di test obbligatorie |
+| FR-47 | 1 | i quattro bracci di Gate A |
+| FR-48 | 6 | `ProofSession` indipendente dalla superficie |
+| FR-49 | 1 | ispezione del passaggio, ancorata allo stato |
+| FR-50 | 1 | quattro classi di stato visivo |
+| FR-51 | 5 | registro di provenienza e licenza |
+| FR-52 | 3 | il confine del kernel è `CircuitIR` |
+| FR-53 | 1 | `TransformOverlay` è un layer separato |
+
+**Distribuzione:** Epic 1 → 13 · Epic 2 → 3 · Epic 3 → 10 · Epic 4 → 7 · Epic 5 → 3 · Epic 6 → 4 ·
+Epic 7 → 4 · Epic 8 → 9 · Epic 9 e 10 → estendono, non coprono. **Totale 53.**
+
+### Copertura non-FR
+
+| Requisito | Dove atterra |
+|---|---|
+| **K-0** il circuito è il ragionamento | Epic 1, criterio di accettazione di ogni trasformazione pedagogica |
+| **K-3** il rifiuto è un output valido | Epic 4 — `Refusal` già implementato |
+| **K-5** nessun punteggio sulla persona | Epic 2, vincolo negativo su «Guidami» |
+| **AD-10** SVG sorgente unica | Epic 5, vincolo su tutti gli export |
+| **AD-21** i cinque recinti | Epic 1 (recinto 4 quando nasce `render/`) ed Epic 3 (recinto 3 quando nasce `perception/`) |
+| **AD-22** preserve set e identità | Epic 1, storia bloccante |
+| **AD-31** incidenza geometrica | Epic 1, sesto controllo di `publish()` |
+| **AD-35** rendering deterministico | Epic 1, famiglia di test obbligatoria |
+| **CV1, CV2, CV3** | Epic 1 — toccano la codifica di braccio, il test permanente di A-0 e l'occlusione |
+| **CV6** ritenzione del `LayoutIR` | Epic 1, **prerequisito perché Gate A abbia un verdetto** |
+| **UX-GAP-01** | Epic 2, è la ragione per cui l'epica esiste |
+| **NFR-1…NFR-9** | trasversali; NFR-2 e NFR-8 sono criteri di accettazione in Epic 1 |
+
+### Dipendenze fra epiche
+
+```
+Epic 4 (verifica)  ──┐
+                     ├──> Epic 1 (derivazione visibile)  ──> Epic 2 (correggi)
+Epic 3 (percezione) ─┘                │                          │
+                                      ├──> Epic 5 (export)       │
+                                      └──> Epic 6 (assistente)   │
+                                                                 │
+Epic 7 (docente) ──> Epic 8 (ricavo)          Epic 9, 10 ────────┘ (dominio)
+```
+
+**Nessuna epica richiede una successiva per funzionare.** Epic 2 costruisce su Epic 1 ma **non
+richiede Epic 3**: con un `StudentTrace` strutturato il primo errore funziona senza fotografia. È il
+vincolo di prioritizzazione di prodotto più importante del backlog — mettere la percezione prima del
+primo errore semantico spenderebbe lo sprint sulla parte meno differenziante.
 
 ## Epic List
 
-Sette epiche. Architettura e UX sono già validate, quindi le epiche sono poche e larghe: si divide
-solo dove esiste un vero confine di rischio o dove un riscontro precoce può cambiare direzione a
-ciò che segue.
+## Epic List
 
-Il confine di rischio dominante è **Epic 1**: se la baseline dei modelli frontier è troppo alta, il
-piano cambia e le epiche 3, 4, 5 e 7 vengono riscritte. Per questo Epic 1 è piccola, prima, e
-autonoma.
+Otto epiche di prodotto più due estensioni di dominio differite. Organizzate per **esito utente**,
+non per strato tecnico. Ogni epica dichiara il proprio Gate, il proprio stato brownfield e le
+proprie dipendenze — e nessuna richiede un'epica successiva per funzionare.
 
-### Epic 1: La struttura di misura
-
-Il progetto ottiene l'apparato che misura la qualità del motore per il resto della sua vita: un
-insieme di riferimento di circuiti a risposta nota, e un comando che produce VSR, SER, QPS e TTV
-più la ripartizione degli errori per tipo. Nessuna riga di prodotto dipende da questa epica, ma
-ogni affermazione sulla qualità sì.
-
-**FRs covered:** FR-34 (struttura di misura, copertura piena con 1.3)
-**Vincoli portanti:** AD-15, NFR-9, NFR-10
-**Autonomia:** completa. Non dipende da nessuna epica e non richiede che il prodotto esista.
-
-> **Limite di copertura, dichiarato.** L'insieme di riferimento è **strutturato**, non fotografico:
-> misura la catena a valle dell'IR — solver, Trasformazioni, Verifica — e **non** l'estrazione.
-> SER resta la metrica bloccante ma è cieca sul tratto dove l'errore silenzioso nasce quasi tutto.
-> Conseguenza accettata con la decisione del 13 agosto 2026 (vedi `sprint-change-proposal-2026-08-13.md`).
-
-### Epic 2: Motore verificato da riga di comando
-
-Dato un circuito in forma strutturata, il sistema lo valida, lo risolve per due percorsi
-indipendenti, sottopone il risultato ai cinque controlli, e o consegna una soluzione certificata o
-rifiuta di certificarla dicendo dove si rompe. È il nucleo che nessun concorrente può copiare, ed è
-utilizzabile — da riga di comando — prima che esista qualunque interfaccia.
-
-**FRs covered:** FR-1 (netlist/LaTeX), FR-4, FR-10, FR-11, FR-12, FR-13, FR-14, FR-16, FR-34
-(metriche sul pipeline)
-**Vincoli portanti:** AD-1, AD-2, AD-4, AD-5, AD-8, AD-13, AD-17, AD-18, AD-19; NFR-3, NFR-11,
-NFR-12, NFR-16
-**Autonomia:** completa. Usa la struttura di misura di Epic 1 ma funziona senza.
-
-### Epic 3: Dalla foto al circuito confermato
-
-Uno studente fotografa un esercizio e ottiene una ricostruzione che può verificare con un tocco. Il
-sistema legge più volte in modo indipendente, misura quanto le letture divergono, chiede solo ciò
-che resta davvero ambiguo, e non calcola mai prima che l'utente abbia confermato.
-
-**FRs covered:** FR-1 (immagine), FR-2, FR-3, FR-5, FR-6, FR-7, FR-8, FR-9
-**Vincoli portanti:** AD-3, AD-6, AD-12, AD-20; NFR-1, NFR-2, NFR-5
-**Autonomia:** completa sul proprio dominio. Costruisce sul motore di Epic 2.
-
-### Epic 4: La soluzione che si può mostrare e portare via
-
-La soluzione diventa un documento: passi con il circuito ridisegnato a ogni riduzione, modalità di
-studio a rivelazione progressiva, ed export in PDF, LaTeX e SVG con la marcatura di provenienza che
-li rende riconoscibili.
-
-**FRs covered:** FR-15, FR-17, FR-18, FR-19
-**Vincoli portanti:** AD-10, AD-18, AD-4; NFR-6, NFR-7, NFR-15
-**Autonomia:** completa. Costruisce su Epic 2 (e su Epic 3 quando l'ingresso è una foto).
-
-### Epic 5: Account, Crediti e conformità in prodotto
-
-Un utente si registra, compra Crediti, e paga solo per ciò che ha ottenuto davvero. Gli obblighi di
-trasparenza e i controlli sui dati sono funzionalità implementate e testate, non una pagina legale.
-
-**FRs covered:** FR-26, FR-27, FR-28, FR-29, FR-30, FR-31, FR-32, FR-33, FR-35
-**Vincoli portanti:** AD-7, AD-9, AD-11, AD-20; NFR-13, NFR-14
-**Autonomia:** completa. Richiede da Epic 2 il concetto di Soluzione consegnata.
-
-### Epic 6: Studio — varianti verificate per chi insegna
-
-Un tutor prende un esercizio e ne ottiene N varianti con valori diversi, ognuna con soluzione
-completa verificata e foglio soluzione separato. Le varianti scartate perché non verificate sono
-mostrate, non nascoste.
-
-**FRs covered:** FR-22, FR-23, FR-24, FR-25
-**Vincoli portanti:** AD-5, AD-8, AD-14; NFR-8
-**Autonomia:** completa. Riusa `publish()` di Epic 2 e il rendering di Epic 4.
-
-### Epic 7: Kirchhoff dentro l'assistente
-
-Lo studente risolve senza uscire dalla conversazione che ha già aperto: pannello di conferma reso
-in conversazione, e l'assistente che sa cosa l'utente ha confermato perché riceve anche il
-riassunto testuale.
-
-**FRs covered:** FR-20, FR-21
-**Vincoli portanti:** AD-6, AD-16, AD-20, AD-5
-**Autonomia:** completa. Espone su una superficie nuova ciò che Epic 3 e 4 già fanno.
+> **Il principio che ha guidato la decomposizione.** Il vecchio backlog aveva come obiettivo
+> implicito «completare Kirchhoff». Questo ha come obiettivo **rendere vera, verificabile e
+> pubblicabile una sola promessa**: *«Fammi vedere cosa hai fatto e ti mostro esattamente il primo
+> punto in cui il tuo ragionamento ha smesso di essere corretto.»* Kirchhoff resta il motore
+> verificato che la rende possibile.
 
 ---
 
-**Verifica di sovrapposizione sui file.** Le sette epiche toccano zone distinte dell'albero
-sorgente: Epic 1 e 2 → `eval/` e `domain/`; Epic 3 → `pipeline/` e `adapters/model`; Epic 4 →
-`render/`; Epic 5 → `api/` e `billing`; Epic 6 → `studio`; Epic 7 → `api/assistant`. La condivisione
-è incidentale (tutte leggono l'IR), non "stesso componente end-to-end": nessun consolidamento
-necessario.
+### Epic 1: La derivazione che si vede e che si può controllare
 
-**Dipendenze naturali.** 1 → nessuna · 2 → nessuna (usa 1 per misurarsi) · 3 → 2 · 4 → 2 · 5 → 2 ·
-6 → 2, 4 · 7 → 3, 4. Nessuna epica richiede un'epica *successiva* per funzionare.
+**Gate primario: A** (Visual Proof Kernel — *kill criterion*) · Gate secondario: nessuno
+
+Uno studente segue una riduzione del circuito **senza perdere mentalmente il circuito che stava
+guardando**, e ogni passo porta con sé la prova che è lecito. Al termine non ha una pagina di
+risposta: ha una derivazione percorribile avanti e indietro, in cui può chiedere a ogni elemento da
+dove viene e perché quel passaggio era permesso.
+
+È l'epica su cui il prodotto vive o muore: se la continuità visuale non batte un re-layout completo,
+il catalogo non si espande e il resto non si costruisce.
+
+**FR coperti:** FR-15, FR-34, FR-37, FR-38, FR-39, FR-40, FR-41, FR-43, FR-46, FR-47, FR-49, FR-50, FR-53
+
+**Stato brownfield:** solver esatto e catalogo pedagogico **SATISFIED** · `Delta` e lineage
+**SATISFIED** (`ad29c8e`) · validazione elettrica **SATISFIED** (`265bab1`) · eval harness e holdout
+**SATISFIED** · identità semantica **PARTIAL** (AD-22 chiude una direzione sola) · ritenzione del
+`LayoutIR` **MISSING** (CV6: senza, VCER non è calcolabile) · renderer SVG semantico **MISSING** ·
+recinti 4 e 5 **MISSING**.
 
 ---
 
-## Ordine di esecuzione — MCP-first (14 agosto 2026)
+### Epic 2: «Fammi vedere cosa hai fatto»
 
-**I numeri delle epiche non cambiano** — PRD e spine li referenziano e rinumerarli romperebbe ogni
-riferimento. Cambia **l'ordine in cui si costruiscono**.
+**Gate primario: B** · Gate secondario: **A** (consuma la derivazione verificata come riferimento)
 
-**Perché.** La monetizzazione dentro gli assistenti è chiusa ai servizi digitali: su ChatGPT
-l'approvazione è limitata ai beni fisici, su Claude non esiste rail di pagamento. Ma il piano Free
-di Claude dà **un** connettore, e la directory è self-serve. Per un fondatore senza pubblico, che
-non può permettersi advertising e ha sei mesi di rampa SEO davanti, **la superficie assistente è il
-miglior canale di acquisizione disponibile** — e non serve a niente se arriva ultima.
+Uno studente che ha già risolto l'esercizio **sul proprio foglio** carica ciò che ha fatto, e il
+sistema gli dice **dove il ragionamento ha smesso di essere valido** — non se il risultato è giusto.
+Distingue *«non riesco a leggere questo passaggio»* da *«questo passaggio è sbagliato»*, e preferisce
+dichiarare di non sapere piuttosto che accusare a torto.
 
-```
-1  struttura di misura
-2  motore verificato
-3  dalla foto al circuito confermato
-4  soluzione mostrabile
-   ├─ 7.1  contratto della superficie assistente     ← anticipate
-   └─ 7.2  pannello di conferma in conversazione     ← anticipate
-5  account, crediti, conformità   (5.1 identità · 5.8 quota anonima obbligatorie qui)
-   └─ 7.3  collegamento account                      ← dipende da 5.1
-6  Studio
-```
+È la USP di CircuitCheck, ed è la chiusura di **UX-GAP-01**: il PRD lo richiedeva già con FR-44,
+l'architettura non l'ha mai implementato, la UX ha progettato «Guidami» e non «Correggi».
 
-**Vincoli di precedenza, non opinioni.**
+**FR coperti:** FR-17, FR-35, FR-44
 
-| Storia | Non prima di | Perché |
+**Stato brownfield:** `StudentTrace` **MISSING** in ogni forma · allineamento passo-per-passo col
+`ProofGraph` **MISSING** · modalità Studio «Guidami» **DESIGNED, non implementata** · tassonomia degli
+errori del procedimento **MISSING**.
+
+**Decisione di collocazione da prendere esplicitamente:** FR-44 si dichiara *«Fuori MVP — Gate B»*,
+mentre la priorità di prodotto mette il primo errore **presto**. L'epica va collocata dal readiness
+gate, non ereditata in silenzio.
+
+---
+
+### Epic 3: Dal foglio fotografato al circuito confermato
+
+**Gate primario: C** · Gate secondario: **B** (la stessa conferma serve al procedimento)
+
+Uno studente fotografa l'esercizio e, **prima che il sistema giudichi qualsiasi cosa**, vede cosa ha
+letto e può correggerlo. La conferma non è attrito da minimizzare: è il momento in cui nasce la
+fiducia, ed è la sorveglianza umana che la conformità richiede. Un solo tocco quando non c'è nulla da
+correggere; al massimo due giri di domande; poi l'editor.
+
+**FR coperti:** FR-1, FR-2, FR-3, FR-4, FR-5, FR-6, FR-7, FR-8, FR-9, FR-52
+
+**Stato brownfield:** FR-4 validazione elettrica **SATISFIED** · `Provenance` normalizzata già nel
+contratto dell'IR **SATISFIED** · estrazione, accordo multi-pass, anteprima, domanda mirata, editor
+**MISSING** · `perception/` è un pacchetto vuoto.
+
+---
+
+### Epic 4: Un numero di cui si può rispondere
+
+**Gate primario:** nessuno diretto — è la fondazione che gli altri Gate certificano
+
+L'utente ottiene un risultato **solo** quando ha superato i controlli, e quando non li supera ottiene
+una spiegazione onesta invece di un numero. *«Non ti mostro un numero di cui non posso rispondere»* è
+la promessa detta nel momento in cui costa qualcosa dirla.
+
+**FR coperti:** FR-10, FR-11, FR-12, FR-13, FR-14, FR-16, FR-42
+
+**Stato brownfield:** MNA esatta multi-dominio **SATISFIED** · residui KCL e bilancio di potenza
+**SATISFIED** · `Refusal` come tipo di dominio **SATISFIED** (`265bab1`) · cinque controlli come gate
+unico **PARTIAL** · Percorso B **MISSING** · `TruthfulnessGate` e `Claim` **MISSING** · piano didattico
+da catalogo chiuso **MISSING** · profilo curricolare **BLOCCATO da D2**.
+
+---
+
+### Epic 5: Portarlo via
+
+**Gate primario: D** (distribuzione) · Gate secondario: **A**
+
+Lo studente si porta via la soluzione in una forma che resta leggibile fuori dal prodotto — stampata,
+allegata, condivisa — e **ogni artefatto dichiara da dove viene**. Non è un'aggiunta di comodo: la
+marcatura di provenienza non è retrofittabile e l'art. 50 la impone.
+
+**FR coperti:** FR-18, FR-19, FR-51
+
+**Stato brownfield:** tutto **MISSING**. Vincolo autoritativo AD-10 v2: l'SVG semantico verificato è
+la **sorgente unica**; PDF e CircuiTikZ derivano e non re-interpretano il circuito.
+
+---
+
+### Epic 6: Dentro una conversazione
+
+**Gate primario: D** · Gate secondario: nessuno
+
+Lo stesso lavoro, dentro un assistente di terzi, **senza che il prodotto ci viva dentro**. La
+`ProofSession` funziona anche dove l'iframe interattivo non funziona: il degrado a superficie non
+interattiva è un percorso progettato, non un guasto.
+
+**FR coperti:** FR-20, FR-21, FR-45, FR-48
+
+**Stato brownfield:** tutto **MISSING**. `adapters/` è un pacchetto vuoto. Vincolo: **nessuna logica
+di prodotto dentro il widget** — il core sta nelle API di dominio, la superficie assistente è un
+adapter.
+
+---
+
+### Epic 7: Il banco del docente
+
+**Gate primario: E** (ricavo B2B) · Gate secondario: **A**
+
+Un docente genera dodici varianti verificate del proprio tema d'esame, **e vede anche quelle
+scartate perché non verificate, con il motivo**. Un generatore che consegna 12 su 15 senza dirlo è un
+generatore di cui non ci si fida.
+
+**FR coperti:** FR-22, FR-23, FR-24, FR-25
+
+**Stato brownfield:** generatori dell'insieme di riferimento **SATISFIED come infrastruttura**
+(`eval/generator*.py` producono già casi verificati con risposta nota) · superficie Studio, banco,
+vincoli di generazione, fogli soluzione **MISSING**.
+
+---
+
+### Epic 8: Identità, crediti e dati
+
+**Gate primario: E** · Gate secondario: nessuno
+
+L'utente prova il prodotto **senza registrarsi**, paga solo per ciò che ha ricevuto — un Rifiuto non
+consuma Crediti — e in ogni momento sa cosa il sistema conserva di lui e per quanto.
+
+**FR coperti:** FR-26, FR-27, FR-28, FR-29, FR-30, FR-31, FR-32, FR-33, FR-36
+
+**Stato brownfield:** tutto **MISSING**. Nessun incasso prima del verdetto di Gate A (PRD §7.0):
+questa epica **non si costruisce prima**.
+
+---
+
+### Epic 9 (differita): Oltre il continuo — transitori reali
+
+**Gate primario: G** (secondo dominio) · Gate secondario: **A**
+
+Lo studente vede il circuito **cambiare nel tempo**: la configurazione prima della commutazione, la
+grandezza di stato che deve restare continua attraverso il confine, il circuito a `0⁺`, il regime, e
+la costante di tempo con il circuito da cui si ricava.
+
+Caso dimostrativo prioritario: *«Hai posto v_C(0⁺)=0, ma dal circuito per t<0 risulta v_C(0⁻)=5 V, e
+la tensione del condensatore è continua.»*
+
+**FR coperti:** nessuno in proprio — **estende** FR-10, FR-14, FR-39, FR-43 al dominio dinamico.
+
+**Stato brownfield:** transitori **PARTIAL e solo a stato zero** — `domain/transient.py::initial_state`
+sostituisce gli accumulatori con valore `ZERO` e la sua docstring dichiara *«a t = 0+, a stato zero»*.
+Condizioni iniziali non nulle, commutazione, epoche topologiche e invarianti di stato attraverso il
+confine: **MISSING**. Il contratto `Delta` è stato progettato per **non** rappresentarli: la
+transizione temporale si comporrà accanto, non dentro.
+
+---
+
+### Epic 10 (differita): Oltre il continuo — regime sinusoidale
+
+**Gate primario: G** · Gate secondario: **A**
+
+Lo studente vede il passaggio **al dominio dei fasori** come un cambio di rappresentazione dichiarato,
+non come una trasformazione fisica del circuito, e il ritorno nel tempo alla fine.
+
+**FR coperti:** nessuno in proprio — **estende** FR-10, FR-14, FR-39, FR-43.
+
+**Stato brownfield:** `solve_phasor` e `mna_matrix_at` **SATISFIED** · convenzione RMS/picco **MISSING
+dall'IR** — nulla distingue un'ampiezza di picco da un valore efficace · fase limitata ai **multipli
+di 30°** (`Cyc12` è l'anello ciclotomico dodicesimo, `phase_steps` è un intero): un fasore a −18° non
+è rappresentabile in aritmetica esatta · proiezione di dominio come primitiva **MISSING**.
+
+---
+
+## Nota sulla risoluzione delle storie
+
+Le storie di **Epic 0, 1 e 2** — il percorso critico verso Demo 0 e la USP — sono scritte alla
+risoluzione piena richiesta dal Loop Kirchhoff v3: valore, ambito, non-goal, autorità
+architetturale, realtà brownfield, dipendenze, criteri di accettazione, verifica, **controllo
+dell'oracolo** ed evidenza. Ognuna è consumabile da un agente a **contesto fresco** senza conoscere
+questa conversazione.
+
+Le storie di **Epic 3–10** sono enumerate con titolo, user story e criteri essenziali. Il dettaglio
+pieno si scrive **all'ingresso nello sprint**, non adesso: scriverlo oggi produrrebbe esattamente il
+drift che questo passo 6 è servito a chiudere.
+
+---
+
+## ⚠️ Disambiguazione: due cose si chiamano «Studio»
+
+Il nome collide, e la collisione può generare la storia sbagliata.
+
+| Nome | Cos'è | Stato brownfield |
 |---|---|---|
-| 7.1, 7.2 | Epic 4 completa | Il pannello mostra Anteprima e Soluzione renderizzata: senza, non c'è cosa mostrare |
-| 5.8 | 5.1 | La quota si conta su `subject_id`, che 5.1 introduce |
-| 7.2 in produzione | 5.8 | Una superficie pubblica senza quota è compute gratuito per sconosciuti |
-| 7.3 | 5.1 | Il collegamento è una fusione di soggetti |
+| **Studio** (PRD, Epic 7) | la **superficie B2B per il docente** — banco esercizi, generazione di Varianti, fogli soluzione | **MISSING** come superficie di prodotto |
+| **`~/whiteboard-studio/studio`** | l'applicazione React/Vite esistente — Excalidraw, MathLive, pdfjs, `JournalRecorder`, `ReplayEngine`, `WorkspaceStore`, `toolhost`, bundle `.lesson` | **ESISTE**, 88 test verdi |
 
-**Effetto collaterale che vale l'anticipo.** Il connettore singolo del piano Free lo installa anche
-il **tutor**, che è il cliente Studio da 390 €/anno. La directory non è solo acquisizione B2C: è
-generazione di lead B2B a costo marginale zero.
-
-**La metrica che governa la scelta è SM-11** — conversione da soluzione in conversazione ad account
-collegato. Se resta bassa, la superficie assistente è una perdita e va ridimensionata: porta uso e
-non porta clienti.
+**Nessuna storia di questo backlog dice «costruisci Studio».** Ciò che manca non è l'applicazione:
+è **l'integrazione e la shell specifiche di CircuitCheck** sopra capacità che esistono già.
+Caricamento di immagini e PDF, replay deterministico, composizione di formule, persistenza,
+esportazione a pacchetto e superficie a tool ospitati sono **capability disponibili da adattare**,
+non da riscrivere. Da costruire ci sono i token della UX v3, i diciannove componenti propri, il
+`proofgraph-rail`, la `step-card` e il pannello dei residui — perché *«nessun sistema di UI di terze
+parti»* vale per i componenti centrali, non per l'infrastruttura sotto.
 
 ---
 
-## Epic 1: La struttura di misura
+## Epic 0: L'esecuzione del metodo
 
-Il progetto ottiene l'apparato che misura la qualità del motore per il resto della sua vita.
+**Non ha valore utente, e lo dichiara.** È la condizione perché tutto il resto venga costruito dal
+loop invece che da una conversazione. Non copre alcun FR e non compare nella mappa di copertura.
 
-### Story 1.1: Insieme di riferimento strutturato a risposta nota
+Il metodo esiste già come `.claude/loop.md` — *Loop Kirchhoff v3*, 396 righe, costruito sul modello
+operativo usato per Ardesia. Quello che manca è che sia **eseguibile e ispezionabile da shell**.
 
-As a fondatore,
-I want un insieme di circuiti in forma strutturata con risultato corretto noto, generabile invece
-che raccolto,
-So that esista un oracolo contro cui misurare il motore senza dipendere da una campagna di
-raccolta.
+### Story 0.1: Preflight dell'installazione BMAD
 
-**Acceptance Criteria:**
+As a chi avvia il loop,
+I want sapere prima di partire se questa installazione BMAD può davvero eseguire un ciclo completo,
+So that non scopro al primo build automatico che manca un requisito di runtime.
 
-**Given** un generatore parametrico di circuiti
-**When** l'insieme di riferimento è prodotto
-**Then** copre le quattro classi di dominio in scope — reti resistive in DC, transitori RL/RC/RLC,
-regime sinusoidale, trifase
-**And** ogni elemento porta IR, risultato numerico corretto e sequenza di Trasformazioni di
-riferimento (FR-34).
+**Contesto autoritativo:** `_bmad/config.toml` esiste alla radice; `_bmad/scripts/resolve_customization.py` e `_bmad/bmm/config.yaml`, che le skill v6.11.0 si aspettano, **non esistono**. Il `bmad-build` renderizzato è in `_bmad/render/bmad-build/kirchhoff-d07b09e6efac/`. Il fallback di risoluzione previsto dalle skill ha funzionato per il passo 6, ma non è stato provato per il build.
 
-> **Chiusa il 13 agosto 2026.** Tutte e quattro le classi di dominio implementate e verificate.
-> La metà **fotografica** è stata spostata nella Story 1.3, che è dove vive adesso: qui restava
-> come criterio orfano e contraddiceva `sprint-change-proposal-2026-08-13.md`.
+**Non-goal:** reinstallare o aggiornare BMAD. Prima si misura perché l'installazione è parziale.
 
-**Given** l'insieme prodotto
-**When** viene diviso
-**Then** esiste uno split fra parte di sviluppo e parte trattenuta
-**And** la parte trattenuta è in uno store separato che il flusso di sviluppo non può leggere.
+**Acceptance Criteria**
 
-**Given** un circuito la cui soluzione corretta è ricavata dal generatore stesso
-**When** viene inserito nell'insieme
-**Then** il risultato è verificato in modo indipendente dal generatore che l'ha prodotto — un
-oracolo che si autocertifica non è un oracolo.
+**Given** l'installazione corrente
+**When** si esegue il preflight
+**Then** riporta, per ciascuno, presente o assente con il percorso esatto: risoluzione del workflow · risoluzione della customizzazione · risoluzione del config · handoff di implementazione a contesto fresco · handoff della review Blind Hunter · aggiornamento dello stato di storia · comandi di verifica · handoff di commit
+**And** esce diverso da zero se anche uno solo dei requisiti di runtime del build manca
+**And** non modifica nulla.
 
-### Story 1.2: Script di valutazione con metriche e matrice degli errori
+**Verifica:** esecuzione reale, exit code letto senza pipe. **Oracolo:** il preflight deve essere visto fallire su un requisito rimosso apposta, altrimenti è verde per costruzione. **Evidenza:** output completo con exit code.
 
-As a fondatore,
-I want un comando che, dato l'insieme di riferimento, produca VSR, SER, QPS e TTV più la
-ripartizione degli errori per tipo,
-So that ogni discussione sulla qualità si faccia sui numeri e sia riproducibile.
+### Story 0.2: `doctor`, `status` e `dry-run` da riga di comando
 
-**Acceptance Criteria:**
+As a proprietario del progetto,
+I want interrogare lo stato del loop da terminale senza aprire una sessione di modello,
+So that posso sapere dove siamo e cosa succederebbe, prima di lasciarlo lavorare.
 
-**Given** l'insieme di riferimento e il gold corrispondente
-**When** lo script viene eseguito
-**Then** produce le quattro metriche e una ripartizione degli errori per tipo (topologia, valore,
-unità, grandezza richiesta, irrisolvibile)
-**And** l'esecuzione è riproducibile: stessi input, stesse metriche.
+**Contesto autoritativo:** lo stato **non vive nella memoria della sessione**. Le fonti sono `bmad-chain-status.json` (`scripts/bmad_chain.py`), `sprint-status.yaml`, git, e le ricevute di evidenza.
 
-**Given** una configurazione che punta alla parte trattenuta
-**When** lo script viene eseguito in modalità di sviluppo
-**Then** l'esecuzione fallisce con un messaggio esplicito
-**And** nessuna metrica viene prodotta.
+**Ambito:** un entrypoint CLI che riusa `bmad_chain.py` invece di duplicarne la logica.
+- `doctor` — i controlli della Story 0.1 più: git in uno stato accettabile, deny sull'holdout attivo, measurement gate attivo, boundary gate e domain-coverage gate invocabili, nessuna storia illegittimamente `ready-for-dev`.
+- `status` — passo di catena, sprint, epica, storia, stato, ultimo gate verde, ultimo commit, blocco corrente, **prossima azione permessa**.
+- `dry-run` — *«se partissi ora eseguirei X perché Y»*, con i gate che girerebbero e la stop condition che potrebbe fermarli. Non modifica nulla.
 
-**Given** un rapporto prodotto dallo script
-**When** viene letto
-**Then** dichiara esplicitamente che la copertura esclude l'estrazione da immagine, così che
-nessuna lettura successiva scambi SER parziale per SER complessivo.
+**Non-goal:** implementare `run` e `resume`. Non introdurre Redis, Temporal, code, database o servizi in background.
 
----
+**Acceptance Criteria**
 
-### Story 1.3: Metà fotografica dell'insieme di riferimento
+**Given** un repository in uno stato qualsiasi
+**When** si esegue `doctor`
+**Then** ogni controllo riporta esito e percorso, e l'exit code è diverso da zero se un controllo bloccante fallisce
+**And** `status` ricostruisce lo stato **solo** da artefatti su disco e git
+**And** `dry-run` nomina la prossima storia eleggibile e **la ragione** della sua eleggibilità
+**And** `dry-run` lascia il working tree e gli artefatti byte-identici.
 
-As a fondatore,
-I want un sottoinsieme di fotografie reali di circuiti disegnati a mano, annotate con IR e
-risultato,
-So that SER smetta di essere cieca sull'estrazione — il tratto dove nasce quasi tutto l'errore
-silenzioso.
+**Verifica:** `git status --porcelain` vuoto dopo `dry-run`. **Oracolo:** `status` deve essere visto riportare un blocco reale — si porta lo sprint in uno stato bloccato e si verifica che lo dica. **Evidenza:** le tre uscite salvate.
 
-**Acceptance Criteria:**
+### Story 0.3: `run` e `resume`
 
-**Given** i due dataset a licenza aperta verificati in `docs/01-fonti-esterne.md` — CGHD
-(`cc-by-4.0`, 3.173 immagini, 32 disegnatori) e Digitize-HCD (`CC BY 4.0`, 1.277 immagini, oltre
-150 volontari, con **posizioni dei terminali**)
-**When** si costruisce la metà fotografica
-**Then** almeno 30 immagini portano IR e risultato numerico annotati a mano
-**And** la stratificazione dichiarata è rispettata: le immagini vengono da almeno 10 disegnatori
-diversi, così che il campione non misuri la calligrafia di una persona sola
-**And** nessuna immagine proviene da una fonte con licenza non commerciale — Image2Net
-(`CC BY-NC-ND`) e Fiore (`CC BY-NC-SA`) restano esclusi.
+As a proprietario del progetto,
+I want lanciare il loop e ritrovarlo al punto giusto dopo un'interruzione,
+So that lo sviluppo ordinario proceda senza una lunga conversazione manuale.
 
-**Given** un artefatto che usa o cita i dataset
-**When** viene prodotto
-**Then** porta l'attribuzione richiesta dalla licenza CC-BY, testualmente come indicato in
-`docs/01-fonti-esterne.md`
-**And** l'assenza dell'attribuzione fa fallire un controllo automatico, perché è un obbligo di
-licenza e non una cortesia.
+**Contesto autoritativo:** la gerarchia è `CLI → Loop Kirchhoff v3 → stato BMAD → storia ready-for-dev → bmad-build → contesto fresco → test e gate → Blind Hunter → fix → riverifica → evidenza → stato → commit → prossima storia`. **Il CLI orchestra BMAD, non lo scavalca.**
 
-**Given** la metà fotografica presente nell'insieme di riferimento
-**When** `kirchhoff-eval report` viene eseguito
-**Then** il campo `coverage` smette di dichiarare `PARZIALE` per l'estrazione
-**And** il rapporto riporta VSR e SER separatamente per la metà strutturata e per quella
-fotografica, perché mediarle nasconderebbe esattamente il numero che interessa.
+**Prerequisito di indagine:** confronto esplicito fra il loop Ardesia degli ultimi giorni, `Loop Kirchhoff v3` e BMAD v6.11.0, con classificazione `REUSE / ADAPT / DROP / MISSING` per: entrypoint · status · run · resume · wakeup · recupero dello stato · ricevute · retry · handoff a contesto fresco · review indipendente · esecuzione dei gate · commit · stop condition · automiglioramento. **Riusare ciò che ha funzionato per Ardesia, non reinterpretarlo.** `~/ardesia-loop-control-plane-v2` è **fonte di studio, mai dipendenza di runtime**.
 
-**Given** la metrica di distanza fra grafi definita in Image2Net — NED, distanza di edit fra il
-grafo ricostruito e quello vero, normalizzata su dispositivi, net e porte
-**When** si misura la qualità dell'estrazione
-**Then** il rapporto riporta anche NED accanto a SER
-**And** la formula è reimplementata da noi: si adotta una definizione pubblicata, non si copia un
-dataset con licenza incompatibile.
+**Non-goal:** un secondo scheduler. Se `ScheduleWakeup` è già il meccanismo di continuazione, si riusa.
 
-> **Riferimento pubblicato contro cui misurarsi:** Image2Net dichiara 80,77% di successo e 0,116
-> di NED medio. Non è un obiettivo di v1, è il metro esistente.
+**Acceptance Criteria**
+
+**Given** una storia `ready-for-dev` e i gate verdi
+**When** si esegue `run`
+**Then** il ciclo procede fino al commit **senza chiedere conferma per passaggi già governati da BMAD**
+**And** si ferma **solo** per: `OWNER_DECISION`, `ARCHITECTURE_CONFLICT`, `BREAKING_CONTRACT`, `READINESS_FAILURE`, `REPO_INTEGRITY_RISK`, `HOLDOUT_OR_SECRET_RISK`, `PRODUCT_KILL_CRITERION`, `UNRECOVERABLE_INFRA_FAILURE`
+**And** **non** si ferma per un test rosso, un rilievo di review, un bug, un lint o un debito non bloccante — quelli sono parte dell'iterazione
+
+**Given** un loop interrotto a metà iterazione
+**When** si esegue `resume`
+**Then** lo stato è ricostruito da git, artefatti BMAD, `sprint-status.yaml`, `bmad-chain-status.json` ed evidenze — **mai dalla memoria del modello**
+**And** il lavoro riparte dal punto giusto senza ripetere ciò che era già committato.
+
+**Verifica:** interruzione reale con `SIGINT` a metà iterazione, poi `resume`. **Oracolo:** dopo `resume` in una sessione nuova senza contesto, lo stato ricostruito deve coincidere con quello prima dell'interruzione. **Evidenza:** log delle due esecuzioni e diff dello stato.
 
 ---
 
-## Epic 2: Motore verificato da riga di comando
+## Epic 1: La derivazione che si vede e che si può controllare
 
-Dato un circuito in forma strutturata, il sistema lo valida, lo risolve per due percorsi
-indipendenti, e o consegna una soluzione certificata o rifiuta di certificarla dicendo dove si
-rompe.
+**Gate A — kill criterion.** FR-15, FR-34, FR-37…FR-41, FR-43, FR-46, FR-47, FR-49, FR-50, FR-53.
+UX-DR7…UX-DR13, UX-DR17…UX-DR19, UX-DR25.
 
-### Story 2.1: Struttura del progetto con confini di dipendenza verificati
+### Story 1.1: L'identità preservata dev'essere giustificata, non dichiarata
 
-As a sviluppatore,
-I want una struttura di progetto in cui la regola di dipendenza dello spine è verificata
-automaticamente,
-So that la separazione fra dominio e adapter non dipenda dalla disciplina di chi scrive.
+As a chi si fida di una derivazione,
+I want che un'entità risulti preservata solo se è davvero la stessa entità semantica,
+So that una trasformazione non possa far apparire preservata un'entità nuova riusandone l'identificatore.
 
-**Acceptance Criteria:**
+**Il difetto, verificato il 24/08/2026:** AD-22 chiude una direzione sola — *«un controllore strutturale confronta `Cₖ` e `Cₖ₊₁` per identità e rifiuta se un'entità presente in entrambi compare in `create`»* — ma `Pₖ` è **l'intersezione per identificatore**. Se una trasformazione battezza `R1` la nuova resistenza equivalente, `R1` compare in entrambi i circuiti e **risulta preservata**.
 
-**Given** l'albero sorgente dello spine (`domain/`, `ports/`, `adapters/`, `pipeline/`, `api/`,
-`render/`, `eval/`)
-**When** il progetto viene creato
-**Then** ogni directory esiste con il proprio pacchetto inizializzato
-**And** la configurazione valida all'avvio con schema, e una configurazione non valida impedisce
-l'avvio invece di degradare in silenzio (AD-17, convenzioni).
+**Perché blocca:** `Pₖ` è l'ingresso di VCER, della codifica di braccio e di A-0. Un `Pₖ` falsificabile rende il verdetto di Gate A **leggibile e falso** — CV1: *«un bug che si legge come dato»*.
 
-**Given** un modulo sotto `domain/` che importa qualcosa da `adapters/` o da `ports/`
-**When** il controllo dei confini gira in integrazione continua
-**Then** il controllo fallisce nominando file e import
-**And** il fallimento blocca la fusione (AD-1, paradigma).
+**Autorità:** AD-22 em. · CV1 · CV3 · CV5 (*«il vincolo non è nel tipo»*: guardia a runtime + test, mai annotazione).
 
-### Story 2.2: Schema IR e canonicalizzazione
+**Non-goal:** `preserved == immutable`. CV3 stabilisce che preservato e boundary coesistono e che una preservata **può** cambiare proprietà entro la semantica della trasformazione.
 
-As a sviluppatore,
-I want un IR versionato con provenienza e forma simbolica accanto a ogni valore,
-So that ogni stadio a valle abbia un contratto unico e una soluzione sia riproducibile dal solo IR.
+**Brownfield:** `domain/transform/delta.py` e `check.py` esistono (`ad29c8e`), con `preserve_set` calcolato dai due circuiti. Manca **solo** la giustificazione dell'identità.
 
-**Acceptance Criteria:**
+**Dipendenze:** nessuna. È la prima.
 
-**Given** un IR costruito da qualunque sorgente
-**When** viene validato contro lo schema
-**Then** porta `ir_version` semantica, e ogni componente ha valore con magnitudine **e** unità **e**
-forma simbolica
-**And** ogni componente porta la propria area di provenienza quando la sorgente è un'immagine
-**And** un valore numerico senza unità è respinto dallo schema (convenzione sulle grandezze fisiche).
+**Acceptance Criteria**
 
-**Given** due IR che descrivono lo stesso circuito con ordine di nodi e componenti diverso
-**When** vengono canonicalizzati
-**Then** producono la stessa forma canonica
-**And** il confronto fra i due risulta identico.
+**Given** una trasformazione che produce un'entità nuova riusando l'identificatore di una consumata
+**When** il controllo gira
+**Then** viene rifiutata
+**And** il rifiuto nomina l'entità e la trasformazione
 
-### Story 2.3: Ingestione da netlist e da LaTeX
+**Given** un'entità realmente preservata che cambia una proprietà **ammessa da quella trasformazione**
+**When** il controllo gira
+**Then** passa
+**And** il `Certificate` porta l'attestazione dell'identità per il caso non banale
 
-As a sviluppatore,
-I want fornire un circuito in forma strutturata e ottenere un IR valido,
-So that il motore sia esercitabile e misurabile prima che esista qualunque lettura da immagine.
+**Given** una derivazione `{R1, R2} → {Req}`
+**When** il controllo gira
+**Then** `Req` ha identità nuova e lineage nel `Delta`, e **non** compare in `Pₖ`.
 
-**Acceptance Criteria:**
+**Verifica:** `pytest`, `check_domain_coverage`, `check_boundaries`. **Oracolo:** il test negativo va **visto rosso** rimuovendo la guardia, e il rosso dev'essere un fallimento di asserzione — non `exit 4` da errore d'uso né `127` da comando inesistente (debito `2-4d`). **Evidenza:** output della mutazione e del ripristino.
 
-**Given** una netlist ben formata
-**When** viene ingerita
-**Then** produce un IR che supera la validazione dello schema
-**And** le grandezze richieste dichiarate nella sorgente compaiono in `requests`.
+### Story 1.2: Il vocabolario chiuso delle riscritture strutturali
 
-**Given** una sorgente LaTeX che descrive più di un esercizio
-**When** viene ingerita
-**Then** il sistema restituisce l'elenco degli esercizi trovati e richiede una selezione
-**And** non ne sceglie uno d'ufficio e non li fonde (FR-1).
+As a chi legge un `Delta`,
+I want che ogni derivazione porti un'operazione da un vocabolario chiuso di primitive strutturali,
+So that il catalogo pedagogico non venga contaminato da micro-operazioni e K-0 non imponga un fotogramma a ognuna.
 
-### Story 2.4: Validazione elettrica con diagnosi localizzata
+**Contesto:** il catalogo attuale nomina **passi didattici** — `serie`, `parallelo`, `resistenza_equivalente_di_thevenin`, `circuito_equivalente_a_t0` — mentre `REMOVE_LOAD` o `ZERO_VOLTAGE_SOURCE` sono **sotto-passi**. Oggi `StructuralDerivation.operation` punta al catalogo pedagogico: è il livello sbagliato.
 
-As a sviluppatore,
-I want che ogni IR passi da una batteria di controlli deterministici che, fallendo, nominano
-l'elemento coinvolto,
-So that un fallimento sia un'informazione utilizzabile e non un rifiuto generico.
+**Prerequisito obbligatorio — search-before-build:** cercare per concetto in PRD, spine, UX, `KIRCHHOFF-KNOWLEDGE`, memlog, review e codice: *primitive · rewrite · graph edit · internal transform · source suppression · reduction · substep · micro-step · atomic transform · edit script · operation vocabulary*. **Se un'autorità esiste, si riusa.** Solo se manca si crea.
 
-**Acceptance Criteria:**
+**Non-goal:** aggiungere `REMOVE_LOAD` al catalogo pedagogico. K-0 governa il livello pedagogico.
 
-**Given** un IR con un grafo non connesso, un nodo di grado 1, un loop di soli generatori di
-tensione, un taglio di soli generatori di corrente, un'unità incompatibile col tipo, o un valore
-richiesto inesistente
-**When** la validazione gira
-**Then** produce un `Refusal` con causa dall'enumerazione chiusa e payload che porta `subject` —
-il nodo, il ramo o il componente coinvolto (FR-4, AD-19)
-**And** nessun IR raggiunge lo stato confermato.
+**Acceptance Criteria**
 
-**Given** un valore resistivo fuori dalle serie E12/E24 in un esercizio manoscritto
-**When** la validazione gira
-**Then** l'elemento è segnalato come sospetto senza bloccare
-**And** il sospetto è disponibile a valle come possibile Ambiguità residua.
+**Given** la ricerca conclusa
+**When** non emerge alcun vocabolario autoritativo
+**Then** ne nasce uno chiuso, distinto dal catalogo pedagogico, con un test che rifiuta ogni operazione fuori insieme
 
-**Given** un IR valido
-**When** la validazione gira
-**Then** l'IR è promosso e nessun falso positivo è emesso sul gold set di sviluppo.
+**Given** una trasformazione pedagogica composta da più riscritture
+**When** produce il `TransformResult`
+**Then** il `Delta` porta più `StructuralDerivation`, e resta **un solo** passo pedagogico.
 
-### Story 2.5: Percorso A — analisi nodale modificata simbolica
+### Story 1.3: Un `LayoutIR` recuperabile per ogni stato visuale
 
-As a sviluppatore,
-I want risolvere qualunque IR valido per analisi nodale modificata in forma simbolica,
-So that esista un oracolo generale e robusto contro cui misurare ogni altro metodo.
+As a chi deve emettere il verdetto di Gate A,
+I want poter osservare insieme `LayoutIR_k` e `LayoutIR_{k+1}`,
+So that VCER sia calcolabile e la continuità visuale misurabile invece che asserita.
 
-**Acceptance Criteria:**
+**Il difetto, CV6:** `AD-8` nomina lo scrittore e **tace sulla ritenzione**; le convenzioni elencano i prefissi `ir_`, `sol_`, `var_`, `evt_` e **nessun `lay_` o `patch_`**; `ProofSession` porta **un** identificatore di `LayoutIR`, non uno per nodo; l'ERD non conosce l'entità. *«Con U2, `p_k` non esiste più nel momento in cui servirebbe misurarlo.»*
 
-**Given** un IR valido in regime continuo, sinusoidale, transitorio o trifase
-**When** il Percorso A gira
-**Then** produce un valore per **ogni** grandezza richiesta, non solo per la prima (FR-10)
-**And** la risoluzione avviene prima in forma simbolica e poi per sostituzione dei valori.
+**Direzione decisa dall'owner:** `LayoutIR` **immutabile e versionato per ogni stato visuale persistente**, append-only per l'intera sessione. **Ma il proprietario del riferimento va cercato**, non presupposto: `ProofGraph`, nodo di timeline, stato di replay o struttura già prevista — non si patcha `ProofSession` solo perché è il primo posto disponibile.
 
-**Given** lo stesso IR risolto due volte
-**When** i risultati vengono confrontati
-**Then** coincidono esattamente (NFR-3).
+**Non-goal:** decidere il renderer. Questa storia rende **osservabile**, non disegna.
 
-### Story 2.6: Catalogo delle Trasformazioni e Percorso B
+**Acceptance Criteria**
 
-As a sviluppatore,
-I want un catalogo chiuso di Trasformazioni pure che producono un nuovo `CircuitIR` e un
-`TransformResult` che dichiara *cosa* è cambiato,
-So that esista un secondo percorso risolutivo indipendente, e i passaggi siano quelli che uno
-studente scriverebbe a mano.
+**Given** una derivazione di due passi
+**When** si chiede lo stato visuale del passo `k` dopo che `k+1` è stato prodotto
+**Then** `LayoutIR_k` è ancora recuperabile e non è stato sovrascritto
+**And** `LayoutIR` e `LayoutPatch` hanno un identificatore proprio secondo le convenzioni
+**And** la relazione fra nodo della derivazione e layout è interrogabile in entrambe le direzioni.
 
-**Acceptance Criteria:**
-
-*[v2 · 24/08/2026 — criterio riallineato ad AD-2 em. e AD-18 em.; la formulazione precedente
-chiedeva `(IR, Drawing)`, contratto ritirato il 15 agosto.]*
-
-**Given** una Trasformazione del catalogo applicata a un `CircuitIR`
-**When** viene eseguita
-**Then** restituisce `(CircuitIR, TransformResult) | Refusal` senza alcuna I/O, senza lettura
-dell'orologio e senza casualità (AD-2 em.)
-**And** il `TransformResult` porta `PreserveSet`, `Delta`, `Boundary`, `LayoutPatch`, `Equation`
-e `Certificate` (AD-22)
-**And** il `LayoutPatch` nomina **entità e non coordinate**: `preserve`, `remove`, `create` sono
-insiemi di identificatori, `node_mapping` è una mappa fra identificatori, `reroute_scope` è
-l'insieme dei rami la cui instradatura è libera — nessun numero, nessuna posizione (AD-2 em.)
-**And** il dominio non produce geometria né markup e non conosce il concetto di posizione
-(AD-18 em., AD-21)
-**And** `domain/transform/check` verifica **massimalità, identità e boundary** senza mai leggere
-il `LayoutIR`, ed emette `identity_violation`, `preserve_nonmaximal` o `empty_boundary` quando
-falliscono (AD-19 em.)
-**And** il `CircuitIR` risultante supera la validazione elettrica.
-
-**Given** una richiesta di applicare una Trasformazione non presente nel catalogo
-**When** l'esecuzione viene tentata
-**Then** fallisce prima di eseguire qualunque calcolo
-**And** il catalogo non è estendibile a runtime.
-
-**Given** un IR e una sequenza di Trasformazioni che arriva alla grandezza richiesta
-**When** il Percorso B gira
-**Then** il risultato coincide con quello del Percorso A entro tolleranza relativa 1e-9 simbolica
-e 1e-6 numerica (FR-10)
-**And** nessun valore mostrato all'utente proviene da un modello linguistico: il testo dei passi
-porta segnaposto risolti dal renderer (FR-13, AD-4)
-**And** *[v2 · 24/08/2026]* ogni segnaposto è **legato al passo che lo possiede**: `[[q.value]]`
-risolve solo dentro l'insieme delle grandezze in scope per quel nodo del `ProofGraph`; un
-segnaposto fuori scope è **respinto** e uno non risolto produce `Refusal`, mai una stringa vuota
-o il proprio nome letterale (AD-4 em.).
-
-### Story 2.7: Verifica a cinque controlli
-
-As a sviluppatore,
-I want sottoporre ogni soluzione a cinque controlli indipendenti con residui numerici,
-So that la promessa del prodotto sia dimostrabile e non asserita.
-
-**Acceptance Criteria:**
-
-**Given** una soluzione calcolata
-**When** la Verifica gira
-**Then** produce cinque residui — KCL per nodo, KVL per maglia indipendente, bilancio di potenza,
-accordo fra percorsi, sanità fisica — calcolati **sostituendo** la soluzione ottenuta e non
-ri-derivandola (FR-11)
-**And** ogni residuo è ispezionabile con il proprio valore numerico.
-
-**Given** una soluzione con un errore di segno che soddisfa KCL e KVL
-**When** la Verifica gira
-**Then** il bilancio di potenza lo rileva e la Verifica fallisce.
-
-**Given** una rete puramente passiva
-**When** la sanità fisica gira
-**Then** rileva ogni elemento passivo con potenza negativa e ogni tensione di nodo fuori
-dall'inviluppo dei generatori.
-
-### Story 2.8: Gate di pubblicazione unico e Rifiuto tipizzato
-
-As a sviluppatore,
-I want che una soluzione possa uscire dal sistema solo attraverso un unico punto che esegue la
-Verifica,
-So that nessuna superficie possa mostrare un risultato non certificato, ora o in futuro.
-
-**Acceptance Criteria:**
-
-**Given** una soluzione che supera tutti e cinque i controlli
-**When** `publish()` viene chiamata
-**Then** restituisce un `Published` con i residui allegati, e il Badge Verificata è applicato se e
-solo se tutti e cinque i controlli sono passati (FR-11)
-**And** `Published` è l'unico tipo serializzabile verso l'esterno (AD-5).
-
-**Given** una soluzione che fallisce almeno un controllo
-**When** `publish()` viene chiamata
-**Then** restituisce un `Refusal` con causa dall'enumerazione chiusa e `subject` popolato
-**And** nessun valore di risultato è incluso nella risposta
-**And** `Refusal` non condivide gerarchia di tipi né canale con `Failure` (AD-13, AD-19).
-
-**Given** un tentativo di serializzare un `Solution` non pubblicato da qualunque modulo
-**When** il codice viene compilato o il test di contratto gira
-**Then** fallisce
-**And** non esiste alcun flag che disattivi il gate, nemmeno in configurazione di test (NFR-11).
-
-### Story 2.9: Profilo curricolare che restringe il Catalogo
-
-As a docente o tutor,
-I want che il sistema usi solo i metodi che il mio corso ha già svolto e le mie convenzioni di
-segno,
-So that la soluzione sia utilizzabile dai miei studenti invece di introdurre strumenti che non
-conoscono.
-
-**Acceptance Criteria:**
-
-**Given** un Profilo curricolare che esclude Thévenin
-**When** viene prodotto un Piano didattico sotto quel Profilo
-**Then** nessun passo usa Thévenin (FR-16)
-**And** se nessun piano è raggiungibile con le Trasformazioni ammesse, il sistema lo dichiara
-invece di violare il Profilo.
-
-**Given** un Profilo con convenzione di segno dichiarata
-**When** la soluzione viene prodotta
-**Then** la convenzione è applicata coerentemente a risultato, disegni e testo.
-
-**Given** nessun Profilo associato
-**When** la soluzione viene prodotta
-**Then** viene usato un profilo predefinito dichiarato ed esplicito, non un comportamento implicito.
-
-### Story 2.10: Piano didattico proposto, eseguito e verificato
+### Story 1.4: Serializzatore SVG semantico deterministico, su una fixture a soli resistori
 
 As a studente,
-I want che i passaggi seguano una sequenza sensata e non una derivazione meccanica,
-So that il procedimento sia quello che il professore si aspetta di vedere sul foglio.
+I want che il circuito che vedo sia lo stesso oggetto che il sistema ha verificato,
+So that il disegno faccia parte della prova e non ne sia un'illustrazione.
 
-**Acceptance Criteria:**
+**Autorità:** AD-35 — `render(LayoutIR, TransformOverlay, ArmEncoding) → SVG` **pura**, stessi byte, niente orologio, niente id a runtime, **nessun ordinamento dipendente dall'inserimento in mappa**. AD-31 — l'annotazione è **derivata dalla geometria**, mai il contrario. AD-10 — l'SVG verificato è la **sorgente unica**.
 
-**Given** un IR validato e un Profilo curricolare
-**When** il pianificatore propone una sequenza
-**Then** ogni elemento appartiene al Catalogo, e il sistema la esegue deterministicamente (FR-14)
-**And** il risultato ottenuto coincide con il Percorso A entro tolleranza, altrimenti la soluzione
-non è pubblicabile.
+**Ambito volutamente stretto:** una fixture con soli resistori e un generatore, **`LayoutIR` predefinito**. L'autolayout generale è **non-goal**: serve validare la promessa della trasformazione visuale prima di risolvere il problema del diagram layout.
 
-**Given** una sequenza proposta che non converge o non è applicabile
-**When** l'esecuzione la incontra
-**Then** il sistema ripiega sul piano canonico nodale senza intervento manuale
-**And** l'evento è registrato per l'analisi di qualità.
+**Acceptance Criteria**
 
-### Story 2.11: Metriche del pipeline nell'harness
+**Given** lo stesso `LayoutIR`
+**When** si renderizza due volte
+**Then** i byte coincidono
+**And** ogni componente porta `data-component-id`, ogni terminale `data-terminal-*`, ogni nodo `data-node-id`
+**And** nessun attributo di identità è scritto a mano: è derivato dalla geometria emessa
+**And** ogni disegno porta l'alternativa testuale della **topologia** (UX-DR25, FR-15).
 
-As a fondatore,
-I want che l'harness misuri il nostro pipeline attraverso lo stesso percorso che attraversano gli
-utenti,
-So that VSR e SER non descrivano un codice che nessuno esegue.
+**Oracolo:** il test di determinismo va visto rosso introducendo un ordinamento dipendente da un dizionario.
 
-**Acceptance Criteria:**
+### Story 1.5: Il recinto `render/ → adapters/` nasce con `render/`
 
-**Given** l'harness di Epic 1 e il pipeline di questa epica
-**When** l'eval gira
-**Then** invoca la stessa pipeline degli utenti sostituendo solo gli adapter, e produce VSR, SER,
-QPS e TTV più la ripartizione degli errori per tipo (FR-34, AD-15)
-**And** non esiste alcun ramo condizionale di test nel percorso di dominio.
+As a chi mantiene l'architettura,
+I want che il recinto 4 di AD-21 sia installato nella stessa iterazione che crea `render/`,
+So that non nasca un confine dichiarato e non verificato.
 
-**Given** una modifica a estrazione, validazione, Trasformazioni o Piano didattico
-**When** l'integrazione continua gira
-**Then** l'eval viene eseguito e il risultato è confrontato con la soglia corrente
-**And** una regressione di SER blocca la fusione (NFR-10).
+**Legge del progetto:** *«un gate scoperto ma non cablato non esiste»*. Oggi `check_boundaries.py` ha un solo recinto e non scandisce `render/`.
+
+**Acceptance Criteria**
+
+**Given** `render/` esistente
+**When** gira il controllo dei confini
+**Then** un import da `render/` verso `adapters/` fallisce il gate
+**And** il gate solleva se puntato su una radice inesistente, invece di dichiarare tutto pulito.
+
+### Story 1.6: Round-trip semantico — l'SVG riparsato deve ridare il circuito
+
+As a chi mostra un Badge Verificata,
+I want che il disegno consegnato sia lo stesso che è stato certificato,
+So that «verificato» non significhi «verificato altrove».
+
+**Autorità:** FR-41 (il round-trip è il controllo **primario** della topologia, non un modello che dice «sembra giusto») · AD-31 (incidenza geometrica, sesto controllo di `publish()`) · AD-19 (`render_roundtrip` come causa di `Refusal`).
+
+**Acceptance Criteria**
+
+**Given** un SVG semantico emesso
+**When** viene riparsato e canonicalizzato
+**Then** il grafo ricostruito coincide **esattamente** con il `CircuitIR` atteso
+**And** un filo attaccato al piedino sbagliato **con l'attributo giusto** viene rifiutato dall'incidenza geometrica
+**And** il fallimento produce `Refusal.cause = render_roundtrip`.
+
+### Story 1.7: La prima trasformazione pedagogica, fino al disegno
+
+As a studente,
+I want vedere due resistenze in serie diventare la loro equivalente **restando dov'erano**,
+So that pensi «quelle due sono diventate questa» invece di «mi hanno mostrato un circuito nuovo».
+
+**Perché `serie`:** è la più semplice del catalogo pedagogico esistente. `REMOVE_LOAD` **non** è nel catalogo ed è una primitiva strutturale, non un passo didattico.
+
+**K-0 come criterio di accettazione:** la storia **non è completa** se produce solo `CircuitIR_before → CircuitIR_after`. Deve arrivare allo stato visuale verificato.
+
+**Acceptance Criteria**
+
+**Given** un circuito con `R1` e `R2` in serie
+**When** si applica `serie`
+**Then** il `TransformResult` porta `PreserveSet`, `Delta`, `Boundary`, `LayoutPatch`, `Equation` e `Certificate`, tutti non vuoti
+**And** il `Delta` contiene `{R1, R2} → {Req}` con lineage interrogabile nelle due direzioni
+**And** nel disegno risultante **ciò che appartiene a `preserve` non si è mosso** (A-0)
+**And** l'equazione `R_eq = R1 + R2` compare **accanto** al sottografo, non sotto il disegno (UX-DR10)
+**And** il sottografo evidenziato compare **prima di qualunque testo** (UX-DR8).
+
+### Story 1.8: Visual Slice 0 — prima, azione, dopo, e ripercorribile
+
+As a studente,
+I want percorrere avanti e indietro il passaggio,
+So that possa fissare il cambiamento premendo più volte invece di guardarlo una volta sola.
+
+**Acceptance Criteria**
+
+**Given** la derivazione a un passo della Story 1.7
+**When** si commuta *Prima ↔ Dopo*
+**Then** la commutazione è istantanea, ripetibile all'infinito e senza conferma (UX-DR12)
+**And** toccando `Req` si vede da cosa deriva, toccando un nodo preservato si vede che è lo stesso
+**And** «Perché posso farlo?» risponde con **quattro campi già calcolati** e **non genera prosa** (UX-DR23)
+**And** lo stesso passo è renderizzabile in forma statica per l'export, dalla **stessa** sorgente semantica (AD-10).
+
+### Story 1.9: Determinismo del rendering come famiglia di test obbligatoria
+
+As a chi legge VCER,
+I want che due rendering identici siano identici byte per byte,
+So that round-trip, incidenza e non-occlusione non siano test intermittenti.
+
+**Autorità:** AD-35 — *«un rendering che varia fra due esecuzioni rende rosso a caso ogni controllo che confronta due rendering, e la reazione naturale a un test intermittente è spegnerlo»*. Il fallimento è **di CI, non un `Refusal`**.
+
+**Acceptance Criteria**
+
+**Given** lo stesso ingresso
+**When** si renderizza due volte in processi separati
+**Then** i byte coincidono
+**And** il test appartiene alle famiglie obbligatorie e la sua assenza fa fallire il controllo di completezza (FR-46).
 
 ---
 
-## Epic 3: Dalla foto al circuito confermato
+## Epic 2: «Fammi vedere cosa hai fatto»
 
-Uno studente fotografa un esercizio e ottiene una ricostruzione che può verificare con un tocco.
+**Gate B, e la ragione per cui CircuitCheck esiste.** FR-17, FR-35, FR-44 · UX-GAP-01.
 
-### Story 3.1: Ingestione dell'immagine e selezione dell'esercizio
-
-As a studente,
-I want caricare la foto del mio esercizio anche se storta e in penombra,
-So that non debba rifarla o ritagliarla prima di ottenere una risposta.
-
-**Acceptance Criteria:**
-
-**Given** una foto JPEG, PNG, HEIC o un PDF a pagina singola fino a 20 MB
-**When** viene caricata
-**Then** è accettata e normalizzata — correzione prospettica, raddrizzamento, normalizzazione del
-contrasto, ingrandimento delle regioni ad alta densità di testo
-**And** vengono prodotte tre versioni deliberatamente diverse per l'estrazione a valle.
-
-**Given** una foto che contiene due esercizi
-**When** viene caricata
-**Then** il sistema mostra i candidati e chiede quale
-**And** non ne sceglie uno d'ufficio e non li fonde (FR-1).
-
-**Given** un file che non è interpretabile come esercizio
-**When** viene caricato
-**Then** il messaggio dice cosa manca, non "errore generico" (voce e tono).
-
-### Story 3.2: ModelPort e due adapter di fornitore
-
-As a sviluppatore,
-I want raggiungere i modelli solo attraverso un'interfaccia astratta con almeno due
-implementazioni,
-So that la caduta o il rincaro di un fornitore degradi la qualità e non la disponibilità.
-
-**Acceptance Criteria:**
-
-**Given** l'interfaccia `ModelPort` con `extract`, `plan`, `narrate`
-**When** il progetto viene compilato
-**Then** almeno due adapter di fornitore sono registrati e selezionabili da configurazione
-**And** nessun modulo sotto `domain/` importa un SDK di fornitore (AD-3).
-
-**Given** un fornitore che restituisce un JSON non conforme allo schema d'uscita
-**When** la risposta viene ricevuta
-**Then** viene rifiutata e ritentata con vincolo esplicito
-**And** dopo i tentativi previsti l'esito è un `Failure`, non un IR parziale.
-
-**Given** un fornitore non raggiungibile
-**When** l'estrazione gira
-**Then** il sistema usa i restanti adapter registrati e prosegue
-**And** l'evento di degrado è strumentato (NFR-5).
-
-### Story 3.3: Estrazione multi-pass e misura dell'Accordo
+### Story 2.1: `StudentTrace` — il modello minimo, con gli stati di lettura
 
 As a studente,
-I want che il sistema legga il mio circuito più volte e sappia dove le letture divergono,
-So that mi venga chiesto solo ciò di cui è davvero incerto.
+I want che il sistema rappresenti quello che ho scritto **prima** di giudicarlo,
+So that non venga confuso «non riesco a leggere questo» con «questo è sbagliato».
 
-**Acceptance Criteria:**
+**Autorità:** FR-44 — *«lo riceve come struttura semantica — passi, equazioni, grandezze dichiarate — e non come fotografia»*, e *«il verifier non accetta un'immagine come `StudentTrace`: l'eventuale conversione avviene prima ed è un altro stadio, con il proprio esito di fallimento»*.
 
-**Given** le tre versioni dell'immagine
-**When** l'estrazione gira
-**Then** esegue almeno tre Pass che differiscono per almeno due assi fra modello, preprocessing e
-inquadratura del prompt
-**And** produce un Accordo per componente e complessivo, calcolato confrontando gli IR
-canonicalizzati e **mai** leggendo un campo di confidence emesso da un modello (FR-2, AD-12).
+**Vincolo di naming:** il nome autoritativo è **`StudentTrace`**. Search-before-build prima di introdurre qualunque altro tipo.
 
-**Given** una configurazione che imposta K minore di 3
-**When** il sistema si avvia
-**Then** l'avvio fallisce con messaggio esplicito (AD-12).
+**Ambito:** uno `StudentStep` porta almeno regione di provenienza, trascrizione, forma matematica normalizzata, intento inferito, entità bersaglio, convenzioni dichiarate, confidenza e **stato di lettura**. Gli stati sono **strutturalmente distinti**: `valid · invalid · ambiguous · unreadable · unsupported`.
 
-**Given** un valore illeggibile nell'immagine
-**When** l'estrazione lo incontra
-**Then** lo emette come assente con le alternative osservate
-**And** non emette un valore plausibile inventato — verificato da un caso del gold set con un
-valore deliberatamente cancellato.
+**Il principio, come criterio di accettazione di sistema e non come frase di prompt:** **illeggibile ≠ sbagliato.** Deriva da una lezione misurata dell'error ledger — *«un file che non compila somiglia a un test rosso e non lo è»*.
 
-**Given** due fili che si incrociano senza punto di giunzione
-**When** l'estrazione li legge
-**Then** non li collega.
+**Non-goal:** OCR, percezione, fotografia. L'ingresso è strutturato.
 
-### Story 3.4: Ridondanza testuale come secondo canale
+**Acceptance Criteria**
 
-As a studente,
-I want che il sistema usi i valori scritti nel testo dell'esercizio per confermare quelli letti nel
-disegno,
-So that non mi chieda cose che erano già scritte nero su bianco.
+**Given** un passo con confidenza insufficiente
+**When** il sistema lo classifica
+**Then** lo stato è `unreadable` o `ambiguous`, **mai** `invalid`
+**And** il messaggio dice *«non riesco a leggere con sicurezza questo passaggio»*, non *«questo passaggio è sbagliato»*
+**And** la confidenza è esposta come stato comprensibile, non come numero decimale (UX-DR: *Letto chiaramente · Controlla questo · Non sono sicuro*)
 
-**Acceptance Criteria:**
+**Given** un'immagine passata come `StudentTrace`
+**When** il verifier la riceve
+**Then** la rifiuta con un esito di fallimento proprio, distinto da un errore del procedimento.
 
-**Given** un esercizio in cui i valori compaiono sia nel disegno sia nel testo
-**When** l'estrazione gira
-**Then** i valori testuali sono conservati in un campo distinto e non fusi con le letture dal
-disegno (FR-3)
-**And** una lettura con Accordo basso confermata dal testo non genera Domanda mirata.
-
-**Given** un disaccordo fra testo e disegno
-**When** viene rilevato
-**Then** genera sempre una Domanda mirata, qualunque sia l'Accordo.
-
-### Story 3.5: Fondamenta del sistema di design
-
-As a sviluppatore frontend,
-I want token, scala tipografica e componenti di base implementati secondo il contratto UX,
-So that ogni schermata successiva erediti coerenza e accessibilità invece di ricostruirle.
-
-**Acceptance Criteria:**
-
-**Given** il frontmatter di `DESIGN.md`
-**When** il sistema di design è implementato
-**Then** i 32 token colore esistono con le coppie chiaro/scuro complete, e i 7 ruoli tipografici
-sono definiti (UX-DR1, UX-DR2)
-**And** ogni quantità, residuo ed etichetta di disegno è resa con cifre tabulari (UX-DR3)
-**And** la modalità scura è pari grado alla chiara, non un tema secondario (UX-DR20).
-
-**Given** qualunque schermata costruita sulle fondamenta
-**When** viene resa in scala di grigi
-**Then** resta interpretabile: nessuno stato è portato dal solo colore (UX-DR12).
-
-**Given** il vocabolario del Glossario del PRD
-**When** l'interfaccia mostra un termine di dominio
-**Then** usa esattamente quel termine, senza sinonimi (UX-DR23)
-**And** i testi rispettano le sette regole di microcopy e non contengono parole della lista vietata
-(UX-DR24).
-
-**Given** una superficie con contenuto assente
-**When** viene mostrata
-**Then** offre un esempio reale caricabile con un tocco, non un'illustrazione (UX-DR25).
-
-**Given** navigazione da tastiera su qualunque superficie
-**When** il focus si sposta
-**Then** è sempre visibile e non è portato dal solo colore (UX-DR15)
-**And** ogni bersaglio di tocco misura almeno 44 × 44 px (UX-DR16)
-**And** con `prefers-reduced-motion` attivo ogni transizione non essenziale è rimossa (UX-DR17).
-
-### Story 3.6: Anteprima di ricostruzione con ancoraggio di provenienza
+### Story 2.2: Allineamento passo per passo col `ProofGraph`
 
 As a studente,
-I want vedere il circuito che il sistema ha letto accanto alla mia foto, con ogni componente legato
-al punto da cui viene,
-So that possa accorgermi di un errore prima che il sistema calcoli qualcosa.
+I want che il sistema confronti il **mio** procedimento con la derivazione verificata,
+So that mi dica dove ho deviato e non solo se il risultato finale è giusto.
 
-**Acceptance Criteria:**
+**Autorità:** FR-44 — *«confrontabile col `ProofGraph` di riferimento **passo per passo**, non solo sul risultato finale»*. È una conseguenza testabile del PRD, non un'invenzione.
 
-**Given** un IR ricostruito, con o senza Ambiguità residua
-**When** l'elaborazione arriva a questo punto
-**Then** l'Anteprima è mostrata **sempre** e la conferma esplicita è richiesta
-**And** nessuna soluzione è calcolata prima della conferma (FR-5).
+**Non-goal:** giudicare. Questa storia **allinea**; la successiva decide.
 
-**Given** l'Anteprima mostrata
-**When** l'utente tocca un componente nella ricostruzione o una regione nella foto
-**Then** l'ancoraggio si accende nell'altra vista, in entrambe le direzioni (UX-DR6).
+**Acceptance Criteria**
 
-**Given** nessuna correzione da fare
-**When** l'utente conferma
-**Then** la conferma è una singola azione.
+**Given** uno `StudentTrace` e la derivazione verificata dello stesso esercizio
+**When** gira l'allineamento
+**Then** ogni passo dello studente è associato a un'operazione sul circuito, a un'equazione o a una scelta di metodo — oppure marcato come non allineabile
+**And** un metodo **diverso ma valido** viene allineato, non respinto: se lo studente usa le maglie dove il riferimento usa la nodale, il procedimento resta corretto.
 
-**Given** un viewport di 360 px
-**When** l'Anteprima è mostrata
-**Then** usa una colonna singola con controllo a due stati, mai un accordion; a 768 px o più
-passa a due colonne affiancate (UX-DR19).
-
-**Given** l'elaborazione in corso
-**When** l'utente attende
-**Then** il progresso mostra le etichette reali degli stadi, non una barra generica (UX-DR18).
-
-### Story 3.7: Domanda mirata, tetto di due giri e ripresa
+### Story 2.3: Il primo passo non valido
 
 As a studente,
-I want che il sistema mi chieda solo ciò di cui è incerto, mostrandomi il pezzo di foto in
-questione, e riprenda da dove era,
-So that la correzione costi un tocco e non una ripartenza.
+I want vedere dove il ragionamento ha smesso di essere valido,
+So that possa correggere il pensiero invece del numero.
 
-**Acceptance Criteria:**
+**Il primo caso, deliberatamente semplice:** lo studente riduce come serie due resistenze che **topologicamente non lo sono**.
 
-**Given** un'Ambiguità residua sopravvissuta ad Accordo, Validazione elettrica e Ridondanza
-testuale
-**When** la Domanda mirata viene posta
-**Then** mostra il ritaglio ingrandito della regione, le alternative osservate e sempre un campo
-libero
-**And** il contatore dei giri è visibile (UX-DR10)
-**And** nessuna Domanda è posta per un elemento che ha superato i tre filtri (FR-6).
+**Acceptance Criteria**
 
-**Given** due giri di domande già posti e ambiguità ancora aperte
-**When** il sistema dovrebbe porre un terzo giro
-**Then** apre invece l'editor con l'IR corrente precaricato, preservando tutte le risposte già
-date (FR-7).
+**Given** uno `StudentTrace` con un passo la cui operazione dichiarata è incompatibile col circuito
+**When** gira il rilevatore
+**Then** indica **il primo** passo non valido e si ferma lì, perché tutto ciò che segue potrebbe dipenderne
+**And** «mostrami comunque tutti gli errori» è disponibile ma **non è il default**
+**And** classifica l'errore per genere: segno, topologia, KCL/KVL, modello, scelta del metodo, algebra, valore copiato
 
-**Given** un `resume_ref` valido
-**When** la stessa chiamata viene ri-emessa
-**Then** l'elaborazione riprende dallo stesso punto e produce lo stesso risultato
-**And** un solo addebito è registrato (FR-8, AD-7).
+**Given** un procedimento in cui due errori di segno si compensano e il risultato finale è corretto
+**When** gira il rilevatore
+**Then** **non** dichiara il procedimento corretto: segnala che il valore coincide ma il passaggio `k` non è valido
 
-**Given** un `resume_ref` appartenente a un altro soggetto o non firmato
-**When** viene usato
-**Then** la richiesta è rifiutata e nessun dato altrui è esposto (AD-6, AD-20).
+**Given** un procedimento interamente corretto
+**When** gira il rilevatore
+**Then** non indica alcun errore.
 
-**Given** un `resume_ref` scaduto
-**When** viene usato
-**Then** il messaggio offre di ripartire, non un errore opaco.
+### Story 2.4: Il tasso di falsa accusa come metrica di prima classe
 
-### Story 3.8: Editor del circuito
+As a proprietario del prodotto,
+I want che accusare a torto sia molto peggio che non sapere,
+So that lo studente possa fidarsi della correzione.
+
+**Ambito:** un corpus di casi difficili — procedimenti corretti · metodi alternativi validi · passaggi illeggibili · convenzioni diverse ma coerenti · risultato corretto da ragionamento non valido · risultato errato con percorso corretto fino al passo in esame. Più le metriche: indice del primo errore, **tasso di falsa accusa**, correttezza del rifiuto, tasso di ambiguità.
+
+**Acceptance Criteria**
+
+**Given** il corpus dei casi difficili
+**When** gira la misura
+**Then** il tasso di falsa accusa è riportato separatamente e non aggregato in un punteggio unico
+**And** su un procedimento corretto il sistema **non** indica errori
+**And** quando l'evidenza non basta, dichiara *«non ho evidenza sufficiente per dirti dove hai sbagliato»* invece di indicare un passo.
+
+**Oracolo:** il corpus deve contenere casi che il rilevatore **sbaglia**, altrimenti non misura nulla.
+
+### Story 2.5: «Fino a qui corretto. Qui cambia il ragionamento.»
 
 As a studente,
-I want correggere direttamente ciò che il sistema ha letto male,
-So that un'ambiguità che non si chiude con una domanda non mi blocchi.
+I want vedere l'errore **sul circuito** prima di leggerne la spiegazione,
+So that lo capisca guardando invece che leggendo.
 
-**Acceptance Criteria:**
+**Autorità:** UX-DR8 (il sottografo prima del testo) · UX-DR20 (*Non certificata* e *Guasto* non si assomigliano mai) · UX-DR31 (**mai il rosso** per il rifiuto) · K-5 (nessun punteggio sulla persona).
 
-**Given** un IR ricostruito
-**When** l'utente modifica valore, tipo, collegamento, polarità o grandezza richiesta
-**Then** la modifica è registrata nell'IR come manuale, distinta da una lettura automatica (FR-9)
-**And** è visibile come tale nell'Anteprima.
+**Acceptance Criteria**
 
-**Given** una modifica applicata
-**When** l'utente prova a risolvere
-**Then** la Validazione elettrica è rieseguita e il suo esito è mostrato prima che la risoluzione
-parta.
+**Given** un primo errore individuato
+**When** viene presentato
+**Then** il ramo o il nodo coinvolto si evidenzia sul circuito **prima** che compaia il testo
+**And** il passo dello studente e l'elemento del circuito sono evidenziati insieme
+**And** la spiegazione breve precede quella estesa, che si apre a richiesta
+**And** «Fammi vedere» apre la trasformazione visuale della Epic 1
+**And** un passaggio ambiguo usa un trattamento visivo **diverso** da un passaggio errato.
 
-**Given** l'editor aperto
-**When** l'utente usa solo la tastiera
-**Then** ogni modifica è raggiungibile e completabile (NFR-6).
+### Story 2.6: «Guidami» — la modalità che non rivela
+
+As a studente,
+I want provare io il passo successivo prima che me lo mostrino,
+So that scopra il metodo invece di leggerlo.
+
+**Autorità:** FR-17 · KF-4 · K-5 — nessun punteggio, nessuna percentuale, nessun registro.
+
+**Acceptance Criteria**
+
+**Given** una derivazione in modalità Studio
+**When** lo studente sbaglia la trasformazione proposta
+**Then** prima di rivelare, il sistema mostra **perché** non è applicabile, evidenziando la condizione violata sul disegno
+**And** nessuno stato prosegue da solo dopo un timeout
+**And** non viene registrato né mostrato alcun punteggio.
+
+### Story 2.7: Segnalare un errore del sistema
+
+As a studente,
+I want dire al sistema che si è sbagliato,
+So that il mio caso diventi una fixture invece di restare un aneddoto.
+
+**Acceptance Criteria**
+
+**Given** una correzione che lo studente ritiene errata
+**When** la segnala
+**Then** la segnalazione porta con sé lo `StudentTrace`, il circuito e la derivazione verificata
+**And** entra in un percorso che può trasformarla in caso del corpus (FR-46: *«ogni fallimento sfuggito diventa fixture o invariante permanente»*).
 
 ---
 
-## Epic 4: La soluzione che si può mostrare e portare via
+## Epic 3: Dal foglio fotografato al circuito confermato
 
-La soluzione diventa un documento: passi con il circuito ridisegnato, studio progressivo, ed export
-riconoscibili.
+**Gate C.** FR-1…FR-9, FR-52. **Non è prerequisito di Epic 2.**
 
-### Story 4.1: Passi con il circuito ridisegnato
+- **Story 3.1** Ingestione multi-formato e selezione dell'esercizio quando la foto ne contiene due — il sistema **non sceglie mai e non fonde mai**.
+- **Story 3.2** Estrazione multi-pass con misura dell'Accordo, dietro `PerceptionCandidate`; il recinto 3 di AD-21 nasce con `perception/`.
+- **Story 3.3** Ridondanza testuale come secondo canale.
+- **Story 3.4** Anteprima di ricostruzione con ancoraggio di provenienza **bidirezionale**; un solo controllo primario, *Confermo*.
+- **Story 3.5** Domanda mirata con ritaglio ingrandito in cima, **tetto di due giri con contatore visibile**, poi degrado all'editor.
+- **Story 3.6** Ripresa senza perdita e senza doppio addebito.
+- **Story 3.7** Editor del circuito: ogni modifica manuale resta **marcata come tale** nell'IR.
+- **Story 3.8** Lo stesso percorso di conferma applicato al **procedimento**, non solo al circuito.
 
-As a studente,
-I want vedere il circuito ridisegnato dopo ogni riduzione, non solo la formula,
-So that possa ricopiare il procedimento come lo vuole il professore.
+## Epic 4: Un numero di cui si può rispondere
 
-**Acceptance Criteria:**
+**Fondazione.** FR-10…FR-14, FR-16, FR-42.
 
-**Given** un Piano didattico eseguito
-**When** la soluzione è mostrata
-**Then** ogni passo ha nome della Trasformazione, formula letterale, sostituzione numerica e
-disegno del circuito risultante (UX-DR9)
-**And** un passo senza disegno non esiste: è fuso con il precedente.
+- **Story 4.1** Percorso B come esecutore del piano didattico, indipendente dal Percorso A.
+- **Story 4.2** I cinque controlli come **gate unico** di `publish()`, con gli otto controlli di AD-5.
+- **Story 4.3** `TruthfulnessGate` e `Claim` **cablati all'uscita**, non solo definiti (AD-32).
+- **Story 4.4** Segnaposto legati allo scope del passo; uno fuori scope è **respinto** (AD-4 em.).
+- **Story 4.5** Piano didattico dal catalogo chiuso — il modello sceglie il percorso, **mai il valore né la topologia**.
+- **Story 4.6** Profilo curricolare — **bloccata da D2**, non entra in sprint finché D2 è aperta.
 
-**Given** un viewport di 360 px
-**When** un disegno è mostrato
-**Then** è interamente visibile senza scorrimento orizzontale della pagina
-**And** le etichette dei componenti restano a non meno di 11 px effettivi (FR-15, NFR-15).
+## Epic 5: Portarlo via
 
-**Given** un disegno qualsiasi
-**When** viene letto da uno screen reader
-**Then** l'alternativa testuale descrive la topologia risultante, non "schema del circuito"
-(UX-DR14).
+**Gate D.** FR-18, FR-19, FR-51.
 
-**Given** una formula
-**When** viene resa
-**Then** è composta come matematica accessibile e selezionabile, non come immagine (UX-DR26).
+- **Story 5.1** Export dall'SVG semantico verificato come sorgente unica; nessun secondo modello riscrive la soluzione.
+- **Story 5.2** Marcatura di provenienza non rimovibile via CSS, foglio di stile di stampa incluso.
+- **Story 5.3** Export CircuiTikZ **derivato** dall'SVG verificato, con i vincoli d'ambiente LaTeX già misurati.
+- **Story 5.4** Registro di provenienza e licenza come oggetto versionato.
 
-### Story 4.2: Badge di stato e pannello dei residui
+## Epic 6: Dentro una conversazione
 
-As a studente,
-I want poter controllare la prova con un tocco invece di fidarmi di un'etichetta,
-So that la promessa di verifica sia dimostrata e non affermata.
+**Gate D.** FR-20, FR-21, FR-45, FR-48.
 
-**Acceptance Criteria:**
+- **Story 6.1** `ProofSession` come proiezione per riferimento, indipendente dalla superficie.
+- **Story 6.2** `ProofReplay` alla larghezza minima, che **rifiuta di presentarsi** sotto una soglia invece di degradare.
+- **Story 6.3** Riassunto testuale strutturato in ogni risposta — *l'assistente non vede il pannello*.
+- **Story 6.4** Degrado a superficie non interattiva come percorso **progettato**.
+- **Story 6.5** Collegamento dell'account **dopo** la prima Soluzione consegnata, mai prima.
 
-**Given** una soluzione con Badge Verificata
-**When** l'utente tocca il badge
-**Then** si apre il pannello con cinque righe — sempre le stesse cinque, sempre nello stesso
-ordine, non riordinabili — ciascuna con nome del controllo, residuo in cifre tabulari ed esito
-(UX-DR4, UX-DR8).
+## Epic 7: Il banco del docente
 
-**Given** un Rifiuto di certificazione
-**When** viene mostrato
-**Then** usa la pillola "Non certificata" con cerchio barrato, **mai** rosso e **mai** icona di
-allarme (UX-DR5)
-**And** si distingue da un Guasto per colore **e** icona **e** parole, non per uno solo dei tre
-(UX-DR13)
-**And** nessun valore di risultato è mostrato.
+**Gate E.** FR-22…FR-25.
 
-**Given** un Rifiuto di certificazione
-**When** l'utente arriva alla superficie
-**Then** questa ha un indirizzo proprio, è condivisibile e sopravvive al ricaricamento (UX-DR22)
-**And** nessun Credito risulta addebitato (FR-12).
+- **Story 7.1** Banco esercizi del tenant con isolamento a livello di database.
+- **Story 7.2** Generazione di Varianti verificate, riusando i generatori dell'insieme di riferimento.
+- **Story 7.3** Vincoli di generazione — serie E24, intervallo del risultato.
+- **Story 7.4** Rassegna che mostra **anche le Varianti scartate, col motivo**.
+- **Story 7.5** Fogli soluzione separati e verificabili con checksum.
 
-### Story 4.3: Modalità Studio a rivelazione progressiva
+## Epic 8: Identità, crediti e dati
 
-As a studente che vuole capire,
-I want provare a indovinare il passo successivo prima di vederlo, e capire perché sbaglio,
-So that studiare mi serva più che copiare.
+**Gate E.** FR-26…FR-33, FR-36. **Non si costruisce prima del verdetto di Gate A.**
 
-**Acceptance Criteria:**
+- **Story 8.1** Soggetto opaco, anonimo incluso, con quota.
+- **Story 8.2** Ledger dei Crediti idempotente — un Rifiuto **non addebita**.
+- **Story 8.3** Acquisto di Crediti e piani.
+- **Story 8.4** Dichiarazione d'uso dell'IA su ogni superficie, non chiudibile.
+- **Story 8.5** Ciclo di vita e minimizzazione delle immagini, TTL imposto dallo storage.
+- **Story 8.6** Offuscamento delle regioni personali.
+- **Story 8.7** Consenso esplicito e diritti dell'interessato.
 
-**Given** una soluzione aperta in modalità Studio
-**When** un passo è stato mostrato
-**Then** il successivo non è visibile finché l'utente non ha risposto o esplicitamente saltato
-(FR-17)
-**And** nessuno stato avanza da solo dopo un tempo.
+## Epic 9 (differita): Transitori reali
 
-**Given** una risposta errata
-**When** viene inviata
-**Then** il sistema spiega *perché* è errata, evidenziando l'elemento sul disegno, prima di
-rivelare il passo corretto.
+**Gate G.** Estende FR-10, FR-14, FR-39, FR-43.
 
-**Given** qualunque risposta data in modalità Studio
-**When** la sessione termina
-**Then** nessun punteggio, percentuale o misura di rendimento è associato all'utente né persistito
-(FR-17, AD-11).
+- **Story 9.1** Search-before-build su `circuito_equivalente_a_t0`, `t0`, `0-`, `0+`, condizione iniziale, commutazione, continuità, condensatore, induttore — **il catalogo nomina già `circuito_equivalente_a_t0`**, quindi qualcuno ha già pensato la rappresentazione pedagogica.
+- **Story 9.2** Condizioni iniziali con **provenienza**: dato del testo, soluzione per `t<0`, o inferenza dal regime.
+- **Story 9.3** Commutazione ed epoche topologiche; `initial_state` resta la funzione «a stato zero» e non viene estesa con un flag.
+- **Story 9.4** Invarianti di stato attraverso il confine — `v_C(0⁺)=v_C(0⁻)`, `i_L(0⁺)=i_L(0⁻)` — **verificabili**, non equazioni decorative. Non dentro `Delta`.
+- **Story 9.5** Costante di tempo col circuito da cui si ricava `R_eq`, e andamento sincronizzato col circuito.
 
-### Story 4.4: Export multiformato
+## Epic 10 (differita): Regime sinusoidale
 
-As a studente o tutor,
-I want portare via la soluzione in PDF, LaTeX o SVG,
-So that possa stamparla, allegarla o riusarla nei miei materiali.
+**Gate G.** Estende FR-10, FR-14, FR-39, FR-43.
 
-**Acceptance Criteria:**
-
-**Given** una Soluzione consegnata
-**When** viene esportata
-**Then** il PDF conserva i disegni come grafica vettoriale, e il LaTeX compila senza intervento
-manuale nell'ambiente di riferimento documentato (FR-18)
-**And** il LaTeX prodotto rispetta i vincoli d'ambiente: niente `lmodern`, niente babel italiano,
-label CircuiTikZ con `=` racchiusi in graffe.
-
-**Given** un export che fallisce
-**When** l'errore si verifica
-**Then** la causa è dichiarata e nessun file parziale è prodotto.
-
-**Given** un artefatto prodotto da qualunque modulo
-**When** il controllo di architettura gira
-**Then** verifica che sia passato dall'unico punto di export (AD-10).
-
-### Story 4.5: Marcatura di provenienza e stampa
-
-As a docente,
-I want riconoscere a colpo d'occhio un elaborato prodotto con Kirchhoff,
-So that l'onestà sia facile e la disonestà visibile.
-
-**Acceptance Criteria:**
-
-**Given** un artefatto esportato in qualunque formato
-**When** viene ispezionato
-**Then** contiene metadati leggibili dalla macchina che dichiarano origine assistita da IA,
-versione del sistema, momento di generazione e riferimento verificabile all'IR
-**And** contiene un elemento visibile che dichiara la stessa cosa in linguaggio naturale (FR-19).
-
-**Given** un PDF marcato
-**When** viene copiato o ristampato in PDF
-**Then** la marcatura sopravvive.
-
-**Given** una soluzione stampata dal browser
-**When** il foglio di stile di stampa si applica
-**Then** la marcatura è presente e non rimovibile via CSS (UX-DR21).
-
----
-
-## Epic 5: Account, Crediti e conformità in prodotto
-
-Un utente si registra, compra Crediti, e paga solo per ciò che ha ottenuto davvero.
-
-### Story 5.1: Identità come soggetto opaco, anonimo incluso
-
-As a studente al primo contatto,
-I want provare il prodotto senza registrarmi, e poi conservare quello che ho fatto se decido di
-registrarmi,
-So that l'iscrizione arrivi dopo il valore e non prima.
-
-**Acceptance Criteria:**
-
-**Given** una richiesta da un utente non autenticato
-**When** entra nel sistema
-**Then** porta un `subject_id` opaco legato alla sessione, della stessa forma di quello di un
-utente autenticato (AD-20)
-**And** firma, quota, ledger e chiave di idempotenza usano solo `subject_id`.
-
-**Given** un utente anonimo che ha già ottenuto soluzioni
-**When** collega un account
-**Then** i soggetti sono fusi esplicitamente e la cronologia è trasferita
-**And** nessun Credito o soluzione va perso nella fusione.
-
-### Story 5.2: Registrazione con dichiarazione di età
-
-As a operatore del servizio,
-I want che ogni utente dichiari di avere l'età minima al momento della registrazione,
-So that l'obbligo sull'accesso dei minori sia soddisfatto e documentabile.
-
-**Acceptance Criteria:**
-
-**Given** un modulo di registrazione
-**When** l'utente non dichiara l'età minima
-**Then** la registrazione non si completa (FR-28).
-
-**Given** un account che risulta non conforme
-**When** viene segnalato
-**Then** esiste una procedura documentata di rimozione, ed è eseguibile.
-
-### Story 5.3: Ledger dei Crediti idempotente
-
-As a studente,
-I want pagare solo quando ottengo davvero una soluzione certificata,
-So that un rifiuto, un guasto o una domanda intermedia non mi costino nulla.
-
-**Acceptance Criteria:**
-
-**Given** una Soluzione consegnata con Badge Verificata
-**When** viene mostrata
-**Then** un Credito è consumato e il saldo aggiornato (FR-26).
-
-**Given** un Rifiuto di certificazione, un guasto di sistema, o una ripresa dopo Domanda mirata
-**When** l'operazione si conclude
-**Then** nessun Credito è consumato.
-
-**Given** la stessa operazione addebitabile ripetuta con la stessa chiave di idempotenza
-**When** arriva al ledger
-**Then** il vincolo di unicità a livello di schema impedisce il secondo addebito (AD-7)
-**And** la risposta è identica alla prima.
-
-**Given** un saldo insufficiente
-**When** l'utente sta per iniziare un'elaborazione
-**Then** il saldo e le opzioni sono mostrati **prima** dell'elaborazione, mai dopo aver fatto
-lavorare l'utente.
-
-### Story 5.4: Acquisto di Crediti e piani
-
-As a studente sotto esame,
-I want comprare quello che mi serve in pochi secondi,
-So that l'acquisto non sia l'ostacolo alle due di notte.
-
-**Acceptance Criteria:**
-
-**Given** il listino
-**When** i prezzi sono mostrati a un consumatore
-**Then** includono le imposte applicabili (FR-27)
-**And** un piano a tempo dichiara il proprio limite di uso equo prima dell'acquisto.
-
-**Given** un acquisto completato
-**When** l'utente lo cerca
-**Then** la ricevuta o fattura è disponibile.
-
-### Story 5.5: Dichiarazione d'uso dell'IA su ogni superficie
-
-As a utente,
-I want sapere subito che sto usando un sistema di intelligenza artificiale,
-So that possa valutare quello che leggo con il giusto criterio.
-
-**Acceptance Criteria:**
-
-**Given** il primo contatto con qualunque superficie — web, Studio, pannello assistente
-**When** la superficie viene mostrata
-**Then** la dichiarazione è visibile senza alcuna interazione, prima di qualunque caricamento
-(FR-29, UX-DR11)
-**And** non è chiudibile.
-
-**Given** i soli termini di servizio che contengono la dichiarazione
-**When** la conformità viene verificata
-**Then** questo non è sufficiente: la dichiarazione in prodotto è richiesta.
-
-### Story 5.6: Ciclo di vita e minimizzazione dei dati dell'immagine
-
-As a studente,
-I want che la foto del mio compito sparisca appena non serve più,
-So that il mio nome e la mia matricola non restino su un server.
-
-**Acceptance Criteria:**
-
-**Given** un'immagine sorgente caricata
-**When** sono trascorse 72 ore dall'estrazione dell'IR
-**Then** l'oggetto non esiste più, per effetto della lifecycle policy dello storage e non di un job
-applicativo (FR-30, AD-9)
-**And** un controllo automatico fallisce se trova un oggetto oltre TTL.
-
-**Given** l'IR e la Soluzione
-**When** l'immagine è stata cancellata
-**Then** restano disponibili.
-
-**Given** un'immagine con regioni testuali non circuitali
-**When** l'utente sceglie di offuscarle
-**Then** l'offuscamento avviene **prima** della trasmissione a qualunque fornitore esterno (FR-31)
-**And** l'avviso a non includere dati identificativi è mostrato al caricamento.
-
-**Given** un nuovo account
-**When** l'impostazione di uso dei contenuti per il miglioramento viene letta
-**Then** è disattivata (FR-32)
-**And** la revoca ha effetto sugli usi successivi ed è ispezionabile dall'utente.
-
-### Story 5.7: Diritti dell'interessato e segnalazione di errore
-
-As a utente,
-I want poter accedere ai miei dati, portarli via, cancellarli, e dire quando una soluzione è
-sbagliata,
-So that il controllo resti mio e gli errori del sistema diventino misurabili.
-
-**Acceptance Criteria:**
-
-**Given** una richiesta di accesso, portabilità o cancellazione
-**When** viene presentata
-**Then** è evasa entro il termine di legge (FR-33)
-**And** la cancellazione dell'account rimuove IR e Soluzioni entro il termine dichiarato.
-
-**Given** una Soluzione consegnata che l'utente ritiene sbagliata
-**When** la segnala dall'artefatto stesso
-**Then** la segnalazione allega automaticamente l'IR e l'identificativo della soluzione (FR-35)
-**And** le segnalazioni sono conteggiate per mille Soluzioni consegnate come indicatore
-anticipatore di SER.
-
-### Story 5.8: Quota per soggetto anonimo
-
-As a studente che incontra Kirchhoff dentro una conversazione,
-I want provare il prodotto senza registrarmi e capire chiaramente quando la prova finisce,
-So that l'iscrizione arrivi dopo che il valore è atterrato, non prima.
-
-**Acceptance Criteria:**
-
-**Given** un `subject_id` anonimo senza account
-**When** chiede la prima soluzione
-**Then** la riceve **completa** — badge, residui, passaggi, disegni (FR-36)
-**And** nessun limite gli è mostrato prima di quel momento.
-
-**Given** una quota esaurita
-**When** il soggetto chiede un'altra soluzione
-**Then** la superficie mostra il collegamento al dominio proprio, non un modale di pagamento
-**And** il conteggio è **per soggetto**, non per mese di calendario: in conversazione non esiste
-un account su cui contare un ciclo.
-
-**Given** un soggetto anonimo che ricrea la sessione per azzerare la quota
-**When** torna
-**Then** il sistema lo rileva e la quota non riparte.
-
-**Given** una fusione di soggetti al collegamento dell'account (FR-21)
-**When** avviene
-**Then** la quota consumata segue il soggetto e non si azzera.
-
----
-
-## Epic 6: Studio — varianti verificate per chi insegna
-
-Un tutor prende un esercizio e ne ottiene N varianti con soluzione completa verificata.
-
-### Story 6.1: Banco esercizi del tenant con isolamento a livello di database
-
-As a tutor,
-I want un archivio dei miei esercizi che nessun altro possa vedere,
-So that il mio materiale resti mio.
-
-**Acceptance Criteria:**
-
-**Given** due tenant distinti
-**When** uno interroga il proprio banco
-**Then** nessun record dell'altro è raggiungibile, per effetto della row-level security e non del
-solo filtro applicativo (FR-25, AD-14).
-
-**Given** un esercizio nel banco
-**When** viene etichettato
-**Then** supporta almeno corso, ateneo, argomento e difficoltà, ed è ritrovabile per ciascuno.
-
-### Story 6.2: Generazione di Varianti verificate
-
-As a tutor,
-I want dodici versioni dello stesso esercizio con valori diversi,
-So that i miei studenti non possano passarsi la soluzione.
-
-**Acceptance Criteria:**
-
-**Given** un esercizio sorgente e un numero N di Varianti richieste
-**When** la generazione gira
-**Then** ogni Variante consegnata ha superato la Verifica esattamente come una Soluzione consegnata
-(FR-22, AD-5)
-**And** le Varianti differiscono nei valori e coincidono nella struttura simbolica.
-
-**Given** una Variante che non supera la Verifica
-**When** la generazione si conclude
-**Then** non è consegnata, non è conteggiata verso N, ed è **mostrata** nella rassegna con il
-motivo dello scarto — non nascosta.
-
-**Given** una Variante verificata
-**When** viene persistita
-**Then** `studio` scrive solo il record `Variant`, che referenzia il `Published` per id, e non
-scrive mai un `Published` (AD-8).
-
-### Story 6.3: Vincoli di generazione
-
-As a tutor,
-I want che i valori generati siano realistici e i risultati leggibili,
-So that le varianti sembrino esercizi veri e non numeri casuali.
-
-**Acceptance Criteria:**
-
-**Given** un vincolo di serie di valori, un intervallo, o una proprietà del risultato
-**When** la generazione gira
-**Then** nessuna Variante che li viola è consegnata (FR-23).
-
-**Given** un insieme di vincoli insoddisfacibile
-**When** la generazione gira
-**Then** il sistema lo dichiara esplicitamente
-**And** non produce in silenzio meno Varianti del richiesto.
-
-### Story 6.4: Fogli soluzione separati e verificabili
-
-As a tutor,
-I want un foglio soluzione distinto per ogni variante, con un modo di verificare che sia il suo,
-So that non consegni per errore la soluzione della variante sbagliata.
-
-**Acceptance Criteria:**
-
-**Given** una Variante consegnata
-**When** viene esportata
-**Then** il Foglio soluzione è un artefatto distinto dal testo dell'esercizio ed è esportabile
-separatamente (FR-24).
-
-**Given** un Foglio soluzione e una Variante
-**When** il checksum viene confrontato
-**Then** conferma o smentisce che appartengano alla stessa generazione.
-
-**Given** un insieme di Varianti generate
-**When** l'utente esporta in blocco
-**Then** ottiene testi e fogli soluzione in un'unica operazione, con la Marcatura di provenienza su
-ognuno (AD-10).
-
----
-
-## Epic 7: Kirchhoff dentro l'assistente
-
-Lo studente risolve senza uscire dalla conversazione che ha già aperto.
-
-### Story 7.1: Contratto della superficie assistente
-
-As a sviluppatore di un host assistente,
-I want un contratto minimo, versionato e stabile,
-So that l'integrazione non si rompa senza preavviso.
-
-**Acceptance Criteria:**
-
-**Given** la superficie esposta
-**When** viene ispezionata
-**Then** espone il numero minimo di operazioni che copre il flusso, non il massimo possibile
-(AD-16)
-**And** dichiara la propria versione.
-
-**Given** una modifica che rompe la compatibilità
-**When** viene rilasciata
-**Then** è preceduta da una deprecazione annunciata con periodo di sovrapposizione.
-
-**Given** una risposta che alimenta un pannello
-**When** viene prodotta
-**Then** porta **anche** un riassunto testuale strutturato di ciò che l'utente sta guardando
-(AD-16, FR-20).
-
-### Story 7.2: Pannello di conferma in conversazione
-
-As a studente,
-I want confermare la ricostruzione senza uscire dalla conversazione,
-So that non debba cambiare applicazione a metà di un problema.
-
-**Acceptance Criteria:**
-
-**Given** un'immagine inviata attraverso un assistente
-**When** il flusso parte
-**Then** l'Anteprima e le Domande mirate sono utilizzabili dentro il pannello (FR-20)
-**And** il pannello non conserva alcuno stato locale fra un giro e l'altro (AD-6).
-
-**Given** il pannello in conversazione
-**When** l'utente lo usa
-**Then** la dichiarazione d'uso dell'IA è presente anche qui (FR-29)
-**And** l'accessibilità è pari a quella della superficie web (NFR-6).
-
-**Given** una soluzione prodotta su questa superficie
-**When** attraversa il sistema
-**Then** anteprima obbligatoria, tetto di due giri, gate di verifica e Rifiuto valgono identici,
-senza scorciatoie (FR-20).
-
-### Story 7.3: Collegamento dell'account dalla conversazione
-
-As a studente arrivato da un assistente,
-I want conservare cronologia e Crediti se decido di restare,
-So that il canale mi porti un prodotto e non solo una risposta.
-
-**Acceptance Criteria:**
-
-**Given** un utente non collegato
-**When** ottiene la prima Soluzione consegnata
-**Then** solo allora il collegamento dell'account è proposto, mai prima (FR-21).
-
-**Given** un utente non collegato
-**When** opera sulla superficie
-**Then** vale una quota di prova legata alla sessione.
-
-**Given** un collegamento completato
-**When** l'utente apre la propria cronologia
-**Then** ciò che ha prodotto nella sessione è presente (AD-20).
-
----
-
-## Copertura dei requisiti UX
-
-| UX-DR | Storia che lo copre |
-|---|---|
-| UX-DR1, UX-DR2, UX-DR3, UX-DR20 | 3.5 |
-| UX-DR4, UX-DR8 | 4.2 |
-| UX-DR5, UX-DR13 | 4.2 |
-| UX-DR6, UX-DR19 | 3.6 |
-| UX-DR7 | 3.5 |
-| UX-DR9, UX-DR14, UX-DR26 | 4.1 |
-| UX-DR10 | 3.7 |
-| UX-DR11 | 5.5 |
-| UX-DR12, UX-DR15, UX-DR16, UX-DR17 | 3.5 |
-| UX-DR18 | 3.6 |
-| UX-DR21 | 4.5 |
-| UX-DR22 | 4.2 |
-| UX-DR23, UX-DR24, UX-DR25 | 3.5 |
-
-Copertura: **26/26 UX-DR** assegnati ad almeno una storia.
-
-## Totali
-
-**7 epiche · 40 storie.**
-
-| Epica | Storie |
-|---|---|
-| 1 — La struttura di misura | 2 |
-| 2 — Motore verificato da riga di comando | 11 |
-| 3 — Dalla foto al circuito confermato | 8 |
-| 4 — La soluzione che si può mostrare e portare via | 5 |
-| 5 — Account, Crediti e conformità in prodotto | 7 |
-| 6 — Studio: varianti verificate per chi insegna | 4 |
-| 7 — Kirchhoff dentro l'assistente | 3 |
-
-Nessuna storia dipende da una storia successiva della stessa epica; nessuna epica richiede
-un'epica successiva per funzionare.
-
----
-
-## Validazione finale
-
-Eseguita secondo `step-04-final-validation.md`.
-
-**Copertura FR.** 35/35 citati dentro il corpo delle storie, non solo nella mappa. Otto FR
-(FR-3, FR-4, FR-10, FR-11, FR-13, FR-14, FR-16, FR-34) erano coperti dalla mappa ma non
-richiamati nei criteri di accettazione: **corretto in questa validazione**, perché lo sviluppatore
-legge la storia, non la mappa.
-
-**Copertura UX-DR.** 26/26 assegnati ad almeno una storia.
-
-**Copertura AD.** Tutti e 20 gli AD dello spine sono richiamati da almeno un criterio di
-accettazione. Nessun invariante di architettura resta senza una storia che lo renda verificabile.
-
-**Template starter.** L'architettura non ne specifica nessuno. La struttura è quindi creata a mano
-nella Story 2.1, che include il controllo automatico dei confini di dipendenza — senza quello, il
-paradigma dello spine sarebbe una raccomandazione anziché un vincolo.
-
-**Creazione di entità.** Nessuna storia crea schema in anticipo. Ogni entità nasce nella prima
-storia che ne ha bisogno: `IR` in 2.2, `Published` in 2.8, `CreditLedger` in 5.3, banco e
-`Variant` in 6.1 e 6.2. Non esiste una storia "crea tutte le tabelle".
-
-**Criteri di accettazione.** Tutte le 40 storie hanno almeno un blocco Given/When/Then. Le
-condizioni negative — quelle che verificano che il sistema *non* faccia qualcosa — sono presenti
-dove contano: assenza di bypass del gate (2.8), nessun valore inventato (3.3), nessun punteggio
-persistito (4.3), nessun doppio addebito (5.3), nessun accesso cross-tenant (6.1).
-
-**Dipendenze in avanti.** Nessuna storia richiede una storia successiva della propria epica.
-Verifica per campione sui punti più a rischio: la 3.6 (Anteprima) non richiede la 3.7 (Domanda
-mirata), perché l'Anteprima si mostra anche quando non ci sono ambiguità — ed è precisamente il
-requisito FR-5. La 2.7 (Verifica) non richiede la 2.8 (gate), perché i cinque controlli sono
-calcolabili e testabili prima che esista il punto unico di pubblicazione.
-
-**Indipendenza delle epiche.** Ogni epica funziona senza le successive. Il caso limite è Epic 2,
-che usa la struttura di misura di Epic 1: se Epic 1 non fosse fatta, Epic 2 funzionerebbe comunque
-e resterebbe soltanto non misurata.
-
-**Sovrapposizione sui file.** Le sette epiche insistono su zone distinte dell'albero sorgente. La
-condivisione è incidentale — tutte leggono l'IR — e non è "stesso componente end-to-end": nessun
-consolidamento richiesto.
-
-**Rilievo aperto, non risolvibile qui.** Epic 1 non ha valore per un utente finale: il suo utente è
-il fondatore. È una deviazione consapevole dal principio "ogni epica deve abilitare un risultato
-utente", accettata perché senza apparato di misura nessuna affermazione sulla qualità è
-verificabile.
-
-**Cambio del 13 agosto 2026.** Epic 1 originariamente misurava anche la baseline dei modelli
-frontier ed era il gate di kill del piano. L'utente ha deciso di saltare quella misura. Epic 1 è
-stata ridefinita e tre storie sono state rimosse; il dettaglio, l'impatto e il prezzo della scelta
-sono in `sprint-change-proposal-2026-08-13.md`.
+- **Story 10.1** Convenzione di ampiezza esplicita nell'IR: `peak` o `rms`, dichiarata e non dedotta dal contesto.
+- **Story 10.2** Fase arbitraria — analisi del vincolo `Cyc12` (fasi a multipli di 30°) e proposta che **preservi l'aritmetica esatta dove possibile**, con fallback numerico dichiarato. Non «passiamo tutto a double».
+- **Story 10.3** Proiezione di dominio tempo → fasori come **primitiva distinta**, non come `Delta` strutturale: il circuito fisico non cambia.
+- **Story 10.4** Ritorno nel dominio del tempo, con il `√2` gestito dalla convenzione dichiarata.
+- **Story 10.5** Diagramma fasoriale quando utile, sincronizzato col circuito.
