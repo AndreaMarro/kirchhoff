@@ -47,7 +47,19 @@ development_status:
   # done rispetto al contratto v1 (un recinto). AD-21 v2 ne pretende cinque:
   # il superamento e' una storia distinta, non una riapertura. Audit:
   # implementation-artifacts/audit-recinti-ad21-2026-08-24.md
-  2-1b-recinti-ad-21-v2-cinque-frecce-vietate: backlog
+  2-1b-recinti-ad-21-v2-sei-frecce-vietate: backlog
+  # debiti aperti il 24/08/2026, nessuno implementato:
+  # - taglio di soli generatori di corrente nel caso generale a piu' nodi
+  #   (la 2.4 copre il singolo nodo, limite dichiarato nella sua spec)
+  2-4b-taglio-di-correnti-caso-generale: backlog
+  # - controllo dei segni e delle convenzioni: fuori scope in 2.4 perche' la
+  #   storia non ne definiva la semantica. Serve a StudentSolutionIR.
+  2-4c-controllo-dei-segni-e-delle-convenzioni: backlog
+  # - un mutante ucciso non e' un exit != 0: pytest esce 4 su errore d'uso e la
+  #   shell 127 su comando inesistente. Il 24/08 entrambi sono stati letti come
+  #   rosso atteso. L'harness deve accettare come 'mutante ucciso' solo: pytest
+  #   avviato, collection avvenuta, test bersaglio eseguito, fallimento atteso.
+  2-4d-harness-di-mutazione-distingue-rosso-da-errore-di-invocazione: backlog
   2-2-schema-ir-e-canonicalizzazione: done
   2-3-ingestione-da-netlist-e-da-latex: backlog
   2-4-validazione-elettrica-con-diagnosi-localizzata: done
