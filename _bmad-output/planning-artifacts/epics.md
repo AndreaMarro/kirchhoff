@@ -10,6 +10,24 @@ inputDocuments:
 
 # Kirchhoff - Epic Breakdown
 
+> ## ⚠️ AVVISO DI VERSIONE ARCHITETTURALE
+>
+> **Questo documento è derivato dalla v1 dello spine (35 FR / 20 AD) ed è precedente agli
+> emendamenti del 15 agosto 2026.** Dieci decisioni sono state emendate in loco senza essere
+> rinumerate — **AD-1, AD-2, AD-4, AD-5, AD-8, AD-10, AD-11, AD-15, AD-18, AD-19** — e questo
+> testo le cita ancora nel significato v1 in circa 39 punti.
+>
+> **In caso di conflitto l'autorità è `ARCHITECTURE-SPINE.md`, non questo file.** Ogni Storia va
+> letta secondo il contratto v2 delle decisioni che richiama.
+>
+> Il 24 agosto 2026 sono state allineate a v2 **soltanto** le parti che bloccavano l'esecuzione
+> del percorso 2.4 → 2.6 (vedi le note `[v2 · 24/08/2026]` più sotto). Il resto del drift è
+> **debito dichiarato**, non dimenticato: si chiude rigenerando questo documento dallo spine v2
+> (passo 6 della catena BMAD). Vedi `implementation-artifacts/debito-rigenerazione-epics.md`.
+>
+> Verificato il 24/08/2026: la Storia 2.4 è risultata **compatibile** con AD-19 v2 e non è stata
+> modificata.
+
 ## Overview
 
 Scomposizione completa in epiche e storie per Kirchhoff, derivata dal PRD (35 FR, 7 UJ, status
@@ -95,8 +113,13 @@ a sé — le storie che li implementano sono indicate nella mappa di copertura.
 
 - **AD-1** — L'IR è l'unico contratto fra stadi; firma `(IR, ctx) → IR | Refusal`; nessuno stadio
   a valle dell'estrazione legge l'immagine sorgente.
-- **AD-2** — Le Trasformazioni sono funzioni pure `transform(IR, params) → (IR, Drawing)`; nessuna
-  I/O, nessun orologio, nessuna casualità; catalogo chiuso caricato all'avvio.
+- **AD-2** — Le Trasformazioni sono funzioni pure
+  `transform(CircuitIR, params) → (CircuitIR, TransformResult) | Refusal`; nessuna I/O, nessun
+  orologio, nessuna casualità; catalogo chiuso caricato all'avvio.
+  *[v2 · 24/08/2026]* Il secondo membro non è più un `Drawing`: è un **`TransformResult`** che
+  porta `PreserveSet + Delta + Boundary + LayoutPatch + Equation + Certificate` (AD-22). Il
+  disegno non è un'uscita della Trasformazione — è ciò che il renderer produce applicando il
+  `LayoutPatch` al `LayoutIR` precedente.
 - **AD-3** — I modelli si raggiungono solo attraverso `ModelPort`; nessun SDK di provider sotto
   `domain/`; almeno due adapter registrati.
 - **AD-4** — Il generatore di testo produce segnaposto `[[q1.value]]`, mai cifre; un testo con
@@ -121,8 +144,10 @@ a sé — le storie che li implementano sono indicate nella mappa di copertura.
 - **AD-16** — La superficie assistente è un contratto pubblico versionato; ogni risposta con
   pannello porta anche il riassunto testuale strutturato.
 - **AD-17** — Un solo orologio, iniettato via `ClockPort`.
-- **AD-18** — `Drawing` è descrizione dichiarativa: niente markup, pixel, colori o font nel
-  dominio.
+- **AD-18** — *[v2 · 24/08/2026]* **`Drawing` non esiste più.** La regola sopravvive nella forma
+  forte: il dominio non produce geometria, non conosce markup, pixel, colori o font — e dalla v2
+  non conosce nemmeno il concetto di **posizione**. `p_k` vive nel `LayoutIR`, di cui
+  `render/layout` è scrittore unico (AD-8 em., AD-21).
 - **AD-19** — `Refusal.cause` da enumerazione chiusa con payload tipizzato che porta sempre
   `subject`.
 - **AD-20** — Identità come `subject_id` opaco, anonimo incluso; il collegamento account è una
@@ -572,19 +597,31 @@ So that esista un oracolo generale e robusto contro cui misurare ogni altro meto
 ### Story 2.6: Catalogo delle Trasformazioni e Percorso B
 
 As a sviluppatore,
-I want un catalogo chiuso di Trasformazioni pure che producono un nuovo IR e una descrizione di
-disegno,
+I want un catalogo chiuso di Trasformazioni pure che producono un nuovo `CircuitIR` e un
+`TransformResult` che dichiara *cosa* è cambiato,
 So that esista un secondo percorso risolutivo indipendente, e i passaggi siano quelli che uno
 studente scriverebbe a mano.
 
 **Acceptance Criteria:**
 
-**Given** una Trasformazione del catalogo applicata a un IR
+*[v2 · 24/08/2026 — criterio riallineato ad AD-2 em. e AD-18 em.; la formulazione precedente
+chiedeva `(IR, Drawing)`, contratto ritirato il 15 agosto.]*
+
+**Given** una Trasformazione del catalogo applicata a un `CircuitIR`
 **When** viene eseguita
-**Then** restituisce `(IR, Drawing)` senza alcuna I/O, senza lettura dell'orologio e senza
-casualità (AD-2)
-**And** `Drawing` è dichiarativo: nessun markup, nessun pixel, nessun colore, nessun font (AD-18)
-**And** l'IR risultante supera la validazione elettrica.
+**Then** restituisce `(CircuitIR, TransformResult) | Refusal` senza alcuna I/O, senza lettura
+dell'orologio e senza casualità (AD-2 em.)
+**And** il `TransformResult` porta `PreserveSet`, `Delta`, `Boundary`, `LayoutPatch`, `Equation`
+e `Certificate` (AD-22)
+**And** il `LayoutPatch` nomina **entità e non coordinate**: `preserve`, `remove`, `create` sono
+insiemi di identificatori, `node_mapping` è una mappa fra identificatori, `reroute_scope` è
+l'insieme dei rami la cui instradatura è libera — nessun numero, nessuna posizione (AD-2 em.)
+**And** il dominio non produce geometria né markup e non conosce il concetto di posizione
+(AD-18 em., AD-21)
+**And** `domain/transform/check` verifica **massimalità, identità e boundary** senza mai leggere
+il `LayoutIR`, ed emette `identity_violation`, `preserve_nonmaximal` o `empty_boundary` quando
+falliscono (AD-19 em.)
+**And** il `CircuitIR` risultante supera la validazione elettrica.
 
 **Given** una richiesta di applicare una Trasformazione non presente nel catalogo
 **When** l'esecuzione viene tentata
@@ -596,7 +633,11 @@ casualità (AD-2)
 **Then** il risultato coincide con quello del Percorso A entro tolleranza relativa 1e-9 simbolica
 e 1e-6 numerica (FR-10)
 **And** nessun valore mostrato all'utente proviene da un modello linguistico: il testo dei passi
-porta segnaposto risolti dal renderer (FR-13, AD-4).
+porta segnaposto risolti dal renderer (FR-13, AD-4)
+**And** *[v2 · 24/08/2026]* ogni segnaposto è **legato al passo che lo possiede**: `[[q.value]]`
+risolve solo dentro l'insieme delle grandezze in scope per quel nodo del `ProofGraph`; un
+segnaposto fuori scope è **respinto** e uno non risolto produce `Refusal`, mai una stringa vuota
+o il proprio nome letterale (AD-4 em.).
 
 ### Story 2.7: Verifica a cinque controlli
 
