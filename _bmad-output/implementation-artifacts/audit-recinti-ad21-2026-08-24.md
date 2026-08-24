@@ -16,6 +16,12 @@ AD-21 v2, tabella «I recinti, per nome»:
 | 3 | `domain/` → `perception/` | AD-24 |
 | 4 | `domain/` ∪ `render/` → `adapters/` | AD-27 |
 | 5 | qualunque cosa fuori da `corpus/` → il filesystem del corpus | AD-25 |
+| **6** | **braccio 0 → `LayoutIR` di `Cₖ`** (parametro, `ctx` o lookup) | **CV5, aggiunto il 24/08/2026** |
+
+> **Correzione del 24/08/2026.** AD-21 ne elenca cinque, ma CV5 di `review-continuita-visuale.md`
+> ne richiede un sesto e ne spiega il costo: un braccio 0 che abbia visto il layout precedente e'
+> «piu' continuo del dovuto», il divario 0 ↔ A si assottiglia e **il kill criterion uccide un
+> prodotto valido**. Vedi `matrice-impatto-cv1-cv6-su-delta.md`.
 
 # Cosa è implementato davvero
 

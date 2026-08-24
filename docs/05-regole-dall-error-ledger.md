@@ -4,6 +4,12 @@ created: '2026-08-24'
 fonte: '~/ARDESIA-KNOWLEDGE/40-Capability-Evolution/AGENT-ERROR-LEDGER.md (65 voci, letto integralmente)'
 ---
 
+> **Questo documento non sostituisce `AGENT-ERROR-LEDGER.md`.** In caso di conflitto
+> l'autorita' e' il ledger originale, che e' `ACTIVE_APPEND_ONLY` e continua a ricevere
+> voci. Qui c'e' una **derivazione datata**, non una seconda fonte di verita': derivata il
+> 24/08/2026 dalle 65 voci allora presenti (E-01…E-65). Se il ledger cresce, questa
+> derivazione invecchia e va rifatta — e nel dubbio si legge il ledger, non questo file.
+
 # Perche' questo file esiste qui
 
 Il ledger vive in Ardesia e Kirchhoff non lo legge. La sua stessa lezione piu' dura dice
