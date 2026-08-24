@@ -4,7 +4,7 @@
   "chain": "correct-course chain-top v3",
   "source": "docs/inbox/kirchhoff_01_piano_master_v3.md §25.1",
   "generated": "08-14-2026 12:20",
-  "last_updated": "08-24-2026 19:36",
+  "last_updated": "08-24-2026 19:39",
   "steps": {
     "01-costituzione": {
       "status": "done",
@@ -37,9 +37,9 @@
       "note": "Epiche ribilanciate su Gate A-G: 10 epiche per esito utente, 53/53 FR mappati, 64 storie, percorso critico 15"
     },
     "07-readiness": {
-      "status": "backlog",
-      "at": null,
-      "note": null
+      "status": "done",
+      "at": "08-24-2026 19:39",
+      "note": "Readiness gate eseguito. Verdetto CONCERNS: 4 rimedi nominati (project-context, emendamenti AD-8/21/22, PRD su FR-44, Story 0.1). Pronte adesso: 0.1, 1.2, 1.4, 1.9 - nessuna e' la prima del percorso critico"
     },
     "08-ship-loop": {
       "status": "done",
