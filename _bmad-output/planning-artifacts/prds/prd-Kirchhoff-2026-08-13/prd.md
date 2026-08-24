@@ -464,9 +464,15 @@ semantica — passi, equazioni, grandezze dichiarate — e non come fotografia d
   è un altro stadio, con il proprio esito di fallimento.
 - Un `StudentTrace` è confrontabile col `ProofGraph` di riferimento passo per passo, non solo sul
   risultato finale.
-- **Fuori MVP — Gate B** (tutor interattivo). Scritto qui perché l'addendum §H.4 lo impone come
-  vincolo del verifier, e il verifier si costruisce adesso: accettare immagini dopo costerebbe una
-  riscrittura del confine.
+- **Fuori dall'MVP di Gate A, richiesto dalla prima release rivolta allo studente.** Il Visual
+  Proof Kernel si prova senza: Visual Slice 0 non ha bisogno di un procedimento da correggere. Ma
+  la prima cosa che CircuitCheck pubblica **è** la correzione del procedimento, e senza questo
+  requisito sarebbe un risolutore visuale — non il prodotto.
+  *Provenienza:* fino al 24 agosto 2026 questa riga diceva «Fuori MVP — Gate B (tutor
+  interattivo)». La riprioritizzazione è del 24 agosto ed è registrata in
+  `sprint-change-proposal-2026-08-24.md`; il tutor interattivo e la lavagna restano a Gate B.
+  Scritto qui perché l'addendum §H.4 lo impone come vincolo del verifier, e il verifier si
+  costruisce adesso: accettare immagini dopo costerebbe una riscrittura del confine.
 
 **Notes:** Origine: addendum §H.4, piano master §7.2.
 
@@ -1464,8 +1470,12 @@ lista degli esclusi in §7.2 è il complemento esatto di questa — non un elenc
   necessario a falsificare l'ipotesi del gate. Rientra quando serve a un flusso utente reale.
 - **Studio B2B** (Varianti vincolate, Fogli soluzione, banco del tenant) — Gate E/F. Resta il
   motore di ricavo; non precede la prova che il motore vale.
-- **Tutor interattivo e lavagna** — Gate B. Con essi **FR-44** (`StudentTrace`), scritto ora perché
-  vincola il confine del verifier che si costruisce adesso.
+- **Tutor interattivo e lavagna** — Gate B.
+- **`StudentTrace` — FR-44.** Fuori dall'MVP di Gate A: il kernel visuale si prova senza. **Non**
+  fuori dalla prima release rivolta allo studente, che è la correzione del procedimento e lo
+  richiede. Separato dal tutor il 24 agosto 2026: erano nella stessa riga e condividevano un
+  «Gate B» che per l'uno significa «dopo» e per l'altro «subito dopo Gate A». Scritto già ora
+  perché vincola il confine del verifier che si costruisce adesso.
 - **Millman, Thévenin/Norton, transitori, sinusoidale, trifase** — dopo il kill criterion. Sono
   esattamente ciò che «non espandere il catalogo» significa.
 - **Crediti, pagamenti, posti Studio** — nessun incasso su un kernel non ancora provato.
