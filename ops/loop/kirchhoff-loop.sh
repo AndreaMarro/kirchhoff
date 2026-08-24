@@ -36,11 +36,19 @@ WATCHDOG=2700           # 45 minuti: oltre, si uccide
 PAUSA=20                # respiro fra iterazioni
 ITERAZIONI=1
 PROVA=0
+# La promozione su main NON e' automatica. Il proprietario ha stabilito che il
+# loop diventa il motore normale di sviluppo solo DOPO evidenza positiva: fino
+# ad allora ogni giro finisce su un ramo che una persona ispeziona. E resta la
+# risposta al buco che il collaudo ha reso visibile — l'ultima revisione produce
+# rilievi che nessun cancello deterministico sa giudicare, e un verdetto di
+# modello non puo' aprire un merge.
+PROMUOVI=0
 
 while [ $# -gt 0 ]; do
   case "$1" in
     --iterazioni) shift; ITERAZIONI="${1:-1}" ;;
     --prova)      PROVA=1; ITERAZIONI=1 ;;
+    --promuovi)   PROMUOVI=1 ;;
     --pausa)      shift; PAUSA="${1:-20}" ;;
     --watchdog)   shift; WATCHDOG="${1:-2700}" ;;
     --budget)     shift; BUDGET_PASSO="${1:-8}" ;;
@@ -83,7 +91,7 @@ trap incidi_giornale EXIT
 
 log "kirchhoff-loop v3 — avvio"
 log "repository=$REPO"
-log "iterazioni=$ITERAZIONI prova=$PROVA watchdog=${WATCHDOG}s budget/passo=\$${BUDGET_PASSO}"
+log "iterazioni=$ITERAZIONI prova=$PROVA promuovi=$PROMUOVI watchdog=${WATCHDOG}s budget/passo=\$${BUDGET_PASSO}"
 
 # --- il watchdog --------------------------------------------------------------
 # Ardesia: TERM, dieci secondi di grazia, poi KILL. Il segnale di stop deve
@@ -300,9 +308,18 @@ for i, s in enumerate(p):
   log "ratchet: verde"
 
   # 8. PROMOZIONE -------------------------------------------------------------
-  if [ "$PROVA" = "1" ]; then
-    log "prova: nessuna promozione. Ramo $ramo lasciato in piedi."
+  if [ "$PROVA" = "1" ] || [ "$PROMUOVI" != "1" ]; then
     git -C "$REPO" checkout -q "$base"
+    if [ "$PROVA" = "1" ]; then
+      log "prova: nessuna promozione. Ramo $ramo lasciato in piedi."
+    else
+      log "giro verde, NON promosso: manca --promuovi."
+      log "Ispeziona il ramo, poi decidi:"
+      log "  promuovere: git merge --no-ff $ramo"
+      log "  scartare:   git branch -D $ramo"
+      log "I rilievi dell'ultima revisione sono nel giornale: nessun cancello"
+      log "deterministico sa giudicarli, e un verdetto di modello non apre un merge."
+    fi
   else
     git -C "$REPO" checkout -q "$base"
     git -C "$REPO" merge -q --no-ff "$ramo" -m "loop: promozione iterazione $n — $storia" >>"$DIARIO" 2>&1
