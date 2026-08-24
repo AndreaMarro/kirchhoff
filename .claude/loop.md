@@ -136,37 +136,53 @@ uniforme**. Decisione owner del 15 agosto: *dipende se usiamo agenti; se no, Opu
 **Topologia degli agenti — decisione owner del 24 agosto, sostituisce la tabella precedente.**
 
 ```
-Fable 5 · max          orchestratore di tutto · lavoratore · proprietario del verdetto di review
-├── Opus 5 · max       orchestratore
-│   ├── Opus 5 · high      lavoratore
-│   ├── Opus 5 · high      lavoratore
-│   └── Opus 5 · high      lavoratore
-├── Opus 5 · max       orchestratore
-│   ├── Opus 5 · high      lavoratore
-│   ├── Opus 5 · high      lavoratore
-│   └── Opus 5 · high      lavoratore
-└── Fable 5 · high     lavoratore e orchestratore
-    ├── Opus 5 · high      lavoratore
-    ├── Opus 5 · high      lavoratore
-    ├── Opus 5 · high      lavoratore
-    ├── Opus 5 · high      lavoratore
-    └── Opus 5 · high      lavoratore
+Fable 5 · max              orchestratore di tutto · lavoratore · proprietario del verdetto
+
+  costruzione
+  ├── Opus 5 · max         orchestratore
+  │   ├── Opus 5 · high        lavoratore
+  │   ├── Opus 5 · high        lavoratore
+  │   └── Opus 5 · high        lavoratore
+  ├── Opus 5 · max         orchestratore
+  │   ├── Opus 5 · high        lavoratore
+  │   ├── Opus 5 · high        lavoratore
+  │   └── Opus 5 · high        lavoratore
+  └── Fable 5 · high       lavoratore e orchestratore
+      ├── Opus 5 · high        lavoratore
+      ├── Opus 5 · high        lavoratore
+      ├── Opus 5 · high        lavoratore
+      ├── Opus 5 · high        lavoratore
+      └── Opus 5 · high        lavoratore
+
+  refutazione — contesto pulito, in parallelo, fratelli e non figli
+  ├── Opus 5 · max         revisore avversario
+  └── Fable 5 · high       revisore avversario
 ```
 
-Quindici agenti: 1 Fable max · 2 Opus max · 1 Fable high · 11 Opus high. È il tetto della guida di
-dimensione dell'ambiente, non un numero scelto per eleganza — superarlo va deciso, non scoperto.
+**Diciassette agenti**: 1 Fable max · 3 Opus max · 2 Fable high · 11 Opus high. Sono due sopra la
+guida di dimensione dell'ambiente, ed è una decisione dell'owner del 24 agosto, non una scoperta a
+metà run.
 
-**Il vincolo che questa topologia non può violare.** Il Fable 5 max è insieme orchestratore e
-proprietario del verdetto di review, e `50-Lezioni-loop/Il revisore che rivede sé stesso.md` misura
-esattamente questo difetto: *«Lo stesso contesto che ha scritto il codice lo rivede. Non trova i
-propri errori perché l'errore sta nel modello mentale che ha prodotto entrambi»*, e aggiunge che
-qui è peggio che altrove perché **Kirchhoff vende la verifica indipendente**.
+**Perché i due refutatori sono fratelli e non figli.** Un revisore che pende da chi ha orchestrato
+il lavoro riceve, per costruzione, il modello mentale che ha prodotto l'errore, e
+`50-Lezioni-loop/Il revisore che rivede sé stesso.md` misura il difetto: *«Non trova i propri errori
+perché l'errore sta nel modello mentale che ha prodotto entrambi»* — e qui pesa più che altrove,
+perché **Kirchhoff vende la verifica indipendente**. I due refutatori ricevono il diff e l'uscita dei
+gate deterministici. **Mai il ragionamento di chi ha costruito.**
 
-I due ruoli restano compatibili a una condizione, che è già il §4 del loop: **il verdetto è suo, la
-lettura no.** La review si esegue delegando a sottoagenti a contesto pulito, in parallelo, **senza
-passare loro il proprio ragionamento** — è già il comportamento del `bmad-build` renderizzato, che
-lancia Blind Hunter come *context-free subagent*. Un Fable max che rilegge da sé il diff che ha
-orchestrato è il difetto, non l'architettura.
+**Perché sono due, e di modelli diversi.** Non è ridondanza: è diversità di prospettiva. Due giudici
+dello stesso modello sbagliano insieme; un Opus max e un Fable high hanno modi di fallire diversi, e
+ciò che l'uno non vede è la parte che l'altro può vedere. Il verdetto resta del Fable max in cima —
+**che giudica sui loro rapporti, non rileggendo da sé il diff che ha orchestrato.** Il §4 del loop
+resta il gate: il revisore non parte su un diff che i gate deterministici non hanno approvato.
+
+**Il rischio che due refutatori introducono, misurato altrove.**
+`50-Lezioni-loop/Il refutatore è un imputato.md`: su 1 302 traiettorie annotate da esperti,
+**nessun giudice LLM supera il 70% di precisione**, e la valutazione a regole **sottostima il
+successo del 16,7-18,5%**. Alzare il numero di refutatori alza anche il tasso di **falso rifiuto**.
+Quindi la disciplina che la lezione prescrive vale adesso più di prima: prima di riscrivere ciò che
+la review boccia, **prendere a mano un campione dei rifiuti e misurare quanti erano validi.** Un
+gate che boccia tutto non misura niente, esattamente come uno che resta verde sotto mutazione.
 
 **La regola in una riga: l'effort si abbassa solo su chi non giudica** — e su chi giudica si alza.
 Vedi `docs/04-ricerca-token-e-automiglioramento.md` §2.4 per la misura del costo, e §4 qui sotto per
