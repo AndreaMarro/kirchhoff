@@ -1,0 +1,29 @@
+# Override di team per bmad-build. Superficie di personalizzazione prevista dal metodo:
+# base (skill customize.toml) -> team (questo file) -> user (.user.toml).
+# Regola di merge dichiarata da BMAD: gli array di persistent_facts si APPENDONO,
+# non sostituiscono. Questo file aggiunge, non toglie.
+
+[workflow]
+
+# Perche' questa riga esiste.
+#
+# `bmad-project-context` v6.11.0 scrive il proprio blocco verificato in AGENTS.md
+# ("replaces generated documentation with one verified block in the repository's
+# AGENTS.md", CHANGELOG v6.11.0). Ma `bmad-build`, sia nel default v6.11.0 sia nel
+# render di questo progetto, cerca `**/project-context.md` e non nomina AGENTS.md.
+#
+# Verificato il 24/08/2026:
+#   src/bmm-skills/ship/bmad-build/customize.toml:27  -> file:{project-root}/**/project-context.md
+#   _bmad/render/bmad-build/.../workflow.md:49        -> la stessa riga, gia' renderizzata
+#
+# Conseguenza: senza questa aggiunta l'implementatore a contesto fresco parte con
+# persistent_facts vuoti, che e' esattamente il rilievo R1 del readiness gate.
+#
+# ATTENZIONE — questa riga non ha ancora effetto sul workflow gia' renderizzato:
+# i valori sono compilati dentro `_bmad/render/bmad-build/.../`. Perche' morda serve
+# un re-render, ed e' parte della Story 0.1 (preflight dell'installazione BMAD).
+# Finche' 0.1 non lo dimostra, l'efficacia di questo override e' DICHIARATA, non provata.
+
+persistent_facts = [
+  "file:{project-root}/AGENTS.md",
+]
