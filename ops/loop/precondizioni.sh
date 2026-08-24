@@ -144,12 +144,12 @@ fi
 # --- 7. albero di lavoro — solo prima di un giro ------------------------------
 # Ardesia si e' fermata proprio qui: «il prodotto ha 4 file non committati
 # (erano 0)». Lo stato del loop e' escluso: lo possiede il loop.
-sporchi="$(git -C "$REPO" status --porcelain -- . ':(exclude)ops/loop/stato' 2>/dev/null | wc -l | tr -d ' ')"
+sporchi="$(git -C "$REPO" status --porcelain -- . ':(exclude)ops/loop/stato' ':(exclude)ops/loop/giornale' 2>/dev/null | wc -l | tr -d ' ')"
 if [ "$sporchi" = "0" ]; then
   ok "albero di lavoro pulito"
 elif [ "$avvio" = "1" ]; then
   ko 17 "albero di lavoro sporco: $sporchi file non committati all'avvio."
-  [ "$silenzioso" = "1" ] || git -C "$REPO" status --porcelain -- . ':(exclude)ops/loop/stato' | sed 's/^/        | /' >&2
+  [ "$silenzioso" = "1" ] || git -C "$REPO" status --porcelain -- . ':(exclude)ops/loop/stato' ':(exclude)ops/loop/giornale' | sed 's/^/        | /' >&2
   printf '        Committa o scarta: il revisore deve giudicare lavoro dichiarato.\n' >&2
 else
   avv "albero di lavoro sporco: $sporchi file. Bloccherebbe un giro (--avvio)."

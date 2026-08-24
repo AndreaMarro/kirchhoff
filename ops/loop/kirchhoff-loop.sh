@@ -294,6 +294,16 @@ for i, s in enumerate(p):
     log "promossa su $base; baseline aggiornata"
   fi
 
+  # Il giornale entra in git come EVIDENZA, a fine giro. Ardesia: il giornale
+  # entra in git PRIMA della verifica — la' serviva perche' il proprio log non
+  # committato faceva uscire rossa la CoV. Qui serve per la ragione gemella:
+  # cio' che non e' committato non e' evidenza, e' scratch.
+  if [ -n "$(git -C "$REPO" status --porcelain -- ops/loop/giornale)" ]; then
+    git -C "$REPO" add ops/loop/giornale >/dev/null 2>&1
+    git -C "$REPO" commit -q -m "loop: giornale dell'iterazione $n" \
+        -m "Append-only: un file per iterazione, mai riscritto." >/dev/null 2>&1 || true
+  fi
+
   log "pausa ${PAUSA}s"
   sleep "$PAUSA"
 done

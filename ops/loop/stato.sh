@@ -34,7 +34,7 @@ fi
 titolo "Repository"
 riga "ramo"    "$(git -C "$REPO" rev-parse --abbrev-ref HEAD 2>/dev/null || echo '—')"
 riga "HEAD"    "$(git -C "$REPO" log --oneline -1 2>/dev/null || echo '—')"
-sporchi="$(git -C "$REPO" status --porcelain -- . ':(exclude)ops/loop/stato' 2>/dev/null | wc -l | tr -d ' ')"
+sporchi="$(git -C "$REPO" status --porcelain -- . ':(exclude)ops/loop/stato' ':(exclude)ops/loop/giornale' 2>/dev/null | wc -l | tr -d ' ')"
 if [ "$sporchi" = "0" ]; then riga "albero" "pulito"; else riga "albero" "$sporchi file non committati"; fi
 
 # --- 3. runtime BMAD ----------------------------------------------------------
