@@ -31,7 +31,14 @@ GIORNALE="$QUI/giornale"
 BASELINE="$STATO/ratchet.json"
 
 # Tetti duri. Non sono stime: sono il punto oltre il quale si smette, comunque.
-BUDGET_PASSO=8          # dollari per singola invocazione di claude
+# Il tetto per un passo che SCRIVE viene dal precedente del proprietario su
+# Ardesia: BUDGET=25, alzato deliberatamente il 2026-08-15 («dovrebbero avere
+# piu' tempo»). Un tetto piu' stretto non e' prudenza: e' un'iterazione tagliata
+# a meta'. Misurato il 24/08 con --budget 4: l'implementatore aveva prodotto 977
+# righe su 8 file quando e' stato interrotto, a lavoro incompleto.
+# Le revisioni leggono e non scrivono: tetto separato e piu' basso.
+BUDGET_SCRITTURA=25
+BUDGET_REVISIONE=8
 WATCHDOG=2700           # 45 minuti: oltre, si uccide
 PAUSA=20                # respiro fra iterazioni
 ITERAZIONI=1
@@ -51,7 +58,8 @@ while [ $# -gt 0 ]; do
     --promuovi)   PROMUOVI=1 ;;
     --pausa)      shift; PAUSA="${1:-20}" ;;
     --watchdog)   shift; WATCHDOG="${1:-2700}" ;;
-    --budget)     shift; BUDGET_PASSO="${1:-8}" ;;
+    --budget)     shift; BUDGET_SCRITTURA="${1:-25}" ;;
+    --budget-revisione) shift; BUDGET_REVISIONE="${1:-8}" ;;
     *) printf 'kirchhoff-loop.sh: argomento sconosciuto: %s\n' "$1" >&2; exit 64 ;;
   esac
   shift
@@ -91,7 +99,7 @@ trap incidi_giornale EXIT
 
 log "kirchhoff-loop v3 — avvio"
 log "repository=$REPO"
-log "iterazioni=$ITERAZIONI prova=$PROVA promuovi=$PROMUOVI watchdog=${WATCHDOG}s budget/passo=\$${BUDGET_PASSO}"
+log "iterazioni=$ITERAZIONI prova=$PROVA promuovi=$PROMUOVI watchdog=${WATCHDOG}s scrittura=\$${BUDGET_SCRITTURA} revisione=\$${BUDGET_REVISIONE}"
 
 # --- il watchdog --------------------------------------------------------------
 # Ardesia: TERM, dieci secondi di grazia, poi KILL. Il segnale di stop deve
@@ -117,8 +125,8 @@ con_watchdog() {
 # non veda il ragionamento dell'implementatore: non per buona volonta' del
 # modello, ma perche' quel contesto non esiste nel suo processo.
 passo_modello() {
-  local modello="$1" effort="$2" prompt_file="$3" uscita="$4"
-  log "  → claude -p --model $modello --effort $effort"
+  local modello="$1" effort="$2" prompt_file="$3" uscita="$4" tetto="$5"
+  log "  → claude -p --model $modello --effort $effort --max-budget-usd \$$tetto"
   if [ "$PROVA" = "1" ]; then
     log "    [prova] nessun processo invocato"
     printf '(prova: nessuna invocazione)\n' > "$uscita"
@@ -133,7 +141,7 @@ passo_modello() {
       --effort "$effort" \
       --dangerously-skip-permissions \
       --disallowed-tools Workflow \
-      --max-budget-usd "$BUDGET_PASSO" \
+      --max-budget-usd "$tetto" \
       --setting-sources project,local
 }
 
@@ -227,7 +235,7 @@ for i, s in enumerate(p):
             cat "$STATO/.rilievi.md"
           fi
         } > "$prompt"
-        passo_modello "$modello" "$effort" "$prompt" "$STATO/.uscita-$i.txt"
+        passo_modello "$modello" "$effort" "$prompt" "$STATO/.uscita-$i.txt" "$BUDGET_SCRITTURA"
         e=$?
         cat "$STATO/.uscita-$i.txt" >> "$DIARIO"
         if [ "$e" != "0" ]; then
@@ -261,7 +269,7 @@ for i, s in enumerate(p):
           printf 'Elenco Markdown di soli rilievi. Niente severita, niente classifica.\n'
           printf 'Se non hai rilievi, ricontrolla e continua a pensare: non fermarti su una lista vuota.\n'
         } > "$pacchetto"
-        passo_modello "$modello" "$effort" "$pacchetto" "$STATO/.rilievi.md"
+        passo_modello "$modello" "$effort" "$pacchetto" "$STATO/.rilievi.md" "$BUDGET_REVISIONE"
         e=$?
         log "  revisione exit $e"
         cat "$STATO/.rilievi.md" >> "$DIARIO"
