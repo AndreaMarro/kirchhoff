@@ -1,0 +1,151 @@
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created, ready for development
+#   - in-progress: Developer actively working on implementation
+#   - review: Implementation complete, ready for review
+#   - done: Story completed
+
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+
+# Action Item Status:
+#   - open: Committed during a retrospective, not yet addressed
+#   - in-progress: Actively being worked on
+#   - done: Completed
+
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when its first story starts (via build's sprint sync)
+# - Stories can be worked in parallel if team capacity allows
+# - Developer typically creates the next story after the previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+# - Retrospective appends its action items to action_items; the status view surfaces open ones
+generated: 08-13-2026 16:45
+last_updated: 08-14-2026 09:00
+project: Kirchhoff
+project_key: NOKEY
+tracking_system: file-system
+story_location: 
+  /Users/andreamarro/MATJOURNEY/kirchhoff/_bmad-output/implementation-artifacts
+development_status:
+  epic-1: in-progress
+  1-1-insieme-di-riferimento-strutturato-a-risposta-nota: done
+  1-2-script-di-valutazione-con-metriche-e-matrice-degli-errori: done
+  1-3-metà-fotografica-dell-insieme-di-riferimento: backlog
+  epic-1-retrospective: done
+
+  epic-2: in-progress
+  2-1-struttura-del-progetto-con-confini-di-dipendenza-verificati: done
+  2-2-schema-ir-e-canonicalizzazione: backlog
+  2-3-ingestione-da-netlist-e-da-latex: backlog
+  2-4-validazione-elettrica-con-diagnosi-localizzata: backlog
+  2-5-percorso-a-analisi-nodale-modificata-simbolica: backlog
+  2-6-catalogo-delle-trasformazioni-e-percorso-b: backlog
+  2-7-verifica-a-cinque-controlli: backlog
+  2-8-gate-di-pubblicazione-unico-e-rifiuto-tipizzato: backlog
+  2-9-profilo-curricolare-che-restringe-il-catalogo: backlog
+  2-10-piano-didattico-proposto-eseguito-e-verificato: backlog
+  2-11-metriche-del-pipeline-nell-harness: backlog
+  epic-2-retrospective: optional
+
+  epic-3: backlog
+  3-1-ingestione-dell-immagine-e-selezione-dell-esercizio: backlog
+  3-2-modelport-e-due-adapter-di-fornitore: backlog
+  3-3-estrazione-multi-pass-e-misura-dell-accordo: backlog
+  3-4-ridondanza-testuale-come-secondo-canale: backlog
+  3-5-fondamenta-del-sistema-di-design: backlog
+  3-6-anteprima-di-ricostruzione-con-ancoraggio-di-provenienza: backlog
+  3-7-domanda-mirata-tetto-di-due-giri-e-ripresa: backlog
+  3-8-editor-del-circuito: backlog
+  epic-3-retrospective: optional
+
+  epic-4: backlog
+  4-1-passi-con-il-circuito-ridisegnato: backlog
+  4-2-badge-di-stato-e-pannello-dei-residui: backlog
+  4-3-modalità-studio-a-rivelazione-progressiva: backlog
+  4-4-export-multiformato: backlog
+  4-5-marcatura-di-provenienza-e-stampa: backlog
+  epic-4-retrospective: optional
+
+  epic-5: backlog
+  5-1-identità-come-soggetto-opaco-anonimo-incluso: backlog
+  5-2-registrazione-con-dichiarazione-di-età: backlog
+  5-3-ledger-dei-crediti-idempotente: backlog
+  5-4-acquisto-di-crediti-e-piani: backlog
+  5-5-dichiarazione-d-uso-dell-ia-su-ogni-superficie: backlog
+  5-6-ciclo-di-vita-e-minimizzazione-dei-dati-dell-immagine: backlog
+  5-7-diritti-dell-interessato-e-segnalazione-di-errore: backlog
+  5-8-quota-per-soggetto-anonimo: backlog
+  epic-5-retrospective: optional
+
+  epic-6: backlog
+  6-1-banco-esercizi-del-tenant-con-isolamento-a-livello-di-databa: backlog
+  6-2-generazione-di-varianti-verificate: backlog
+  6-3-vincoli-di-generazione: backlog
+  6-4-fogli-soluzione-separati-e-verificabili: backlog
+  epic-6-retrospective: optional
+
+  epic-7: backlog
+  7-1-contratto-della-superficie-assistente: backlog
+  7-2-pannello-di-conferma-in-conversazione: backlog
+  7-3-collegamento-dell-account-dalla-conversazione: backlog
+  epic-7-retrospective: optional
+action_items:
+  - id: "epic-1-retro-item-1-risolvere-con-bmad-correct-course-il-con"
+    epic: 1
+    action: "Risolvere con bmad-correct-course il conflitto di piano sulla meta fotografica
+      della Story 1.1: i criteri CGHD in epics.md contraddicono la proposta di cambio
+      approvata il 13 agosto 2026"
+    owner: "Andrea"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-08-13.md"
+  - id: "epic-1-retro-item-2-far-girare-i-tre-revisori-indipendenti-s"
+    epic: 1
+    action: "Far girare i tre revisori indipendenti sulla storia 1.1 in sessione separata,
+      dai prompt in review-prompts-1-1.md"
+    owner: "Andrea"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-08-13.md"
+  - id: "epic-1-retro-item-3-ogni-storia-scrive-nella-propria-spec-la"
+    epic: 1
+    action: "Ogni storia scrive nella propria spec la mappa criterio di accettazione
+      -> test prima di entrare in review"
+    owner: "loop di costruzione"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-08-13.md"
+  - id: "epic-1-retro-item-4-all-ingresso-della-story-2-5-riconciliar"
+    epic: 1
+    action: "All ingresso della Story 2.5 riconciliare l ambito: solve_phasor e mna_matrix_at
+      esistono gia in domain/mna.py"
+    owner: "loop di costruzione"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-08-13.md"
+  - id: "epic-1-retro-item-5-alla-story-2-11-allargare-le-grandezze-r"
+    epic: 1
+    action: "Alla Story 2.11 allargare le grandezze richieste dei casi di transitorio
+      a costante di tempo e radici caratteristiche"
+    owner: "loop di costruzione"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-08-13.md"
+  - id: "epic-1-retro-item-6-alla-story-2-7-applicare-il-quinto-contr"
+    epic: 1
+    action: "Alla Story 2.7 applicare il quinto controllo di sanita fisica anche alle
+      classi in regime sinusoidale e trifase"
+    owner: "loop di costruzione"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-08-13.md"
+  - id: "epic-1-retro-item-7-tradurre-in-gate-eseguibili-i-vincoli-d1"
+    epic: 1
+    action: "Tradurre in gate eseguibili i vincoli D1-D12 che toccano il codice e
+      non ne hanno ancora uno"
+    owner: "loop di costruzione"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-08-13.md"

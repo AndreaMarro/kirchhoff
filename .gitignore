@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+*.pyc
+reference-set/
+
+# --- aggiunte al commit baseline (24/08/2026): solo artefatti generati ---
+.pytest_cache/
+.coverage
+coverage.json
+.DS_Store
+# database degli strumenti di agente, non sorgenti del progetto
+*.rvf
+*.rvf.lock
+ruvector.db
+.swarm/
+.claude-flow/

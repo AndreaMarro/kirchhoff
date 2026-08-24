@@ -1,0 +1,409 @@
+<title>Kirchhoff — il passo a metà trasformazione</title>
+<style>
+/* Token dal contratto DESIGN.md v3. Scuro = default (progetto dark-first). */
+:root{
+  --ground:#0F1013; --raised:#17191E; --sunken:#0A0B0D; --overlay:#1F222A;
+  --ink:#F2F3F5; --ink-2:#A6ACB8; --ink-3:#6E747F;
+  --hair:#22252C; --rule:#343841;
+  --verified:#54D19A; --verified-bg:#10241C;
+  --suspended:#E0B168; --suspended-bg:#241D10;
+  --provenance:#7C9BFF; --provenance-bg:#141B31;
+  --focus:#7C9BFF;
+  --instant:90ms; --quick:140ms; --considered:220ms;
+  --ease:cubic-bezier(.2,0,0,1);
+  --sans:ui-sans-serif,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --ground:#FCFCFA; --raised:#FFFFFF; --sunken:#F1F1EC; --overlay:#FFFFFF;
+    --ink:#16181C; --ink-2:#565C66; --ink-3:#878D96;
+    --hair:#E3E3DC; --rule:#C8C8BE;
+    --verified:#1E6A4A; --verified-bg:#E7F1EB;
+    --suspended:#8A6220; --suspended-bg:#F9F0DF;
+    --provenance:#2F51BE; --provenance-bg:#E7ECFA;
+    --focus:#2F51BE;
+  }
+}
+:root[data-theme="light"]{
+  --ground:#FCFCFA; --raised:#FFFFFF; --sunken:#F1F1EC; --overlay:#FFFFFF;
+  --ink:#16181C; --ink-2:#565C66; --ink-3:#878D96;
+  --hair:#E3E3DC; --rule:#C8C8BE;
+  --verified:#1E6A4A; --verified-bg:#E7F1EB;
+  --suspended:#8A6220; --suspended-bg:#F9F0DF;
+  --provenance:#2F51BE; --provenance-bg:#E7ECFA;
+  --focus:#2F51BE;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--sans); font-size:15px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto;padding:28px 20px 64px;display:flex;flex-direction:column;gap:20px}
+
+.masthead{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 16px;border-bottom:1px solid var(--hair);padding-bottom:16px}
+.masthead h1{margin:0;font-size:19px;font-weight:620;letter-spacing:-.015em}
+.masthead .sub{color:var(--ink-3);font-size:13px}
+.stamp{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--ink-3);border:1px solid var(--hair);border-radius:4px;padding:3px 8px;letter-spacing:.04em}
+
+.controls{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end}
+.ctl{display:flex;flex-direction:column;gap:6px}
+.ctl>.lab{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3)}
+.seg{display:inline-flex;background:var(--sunken);border:1px solid var(--rule);border-radius:9999px;padding:3px;gap:2px}
+.seg button{
+  font:inherit;font-size:13px;color:var(--ink-2);background:none;border:0;
+  border-radius:9999px;padding:5px 13px;cursor:pointer;
+  transition:background var(--instant) var(--ease),color var(--instant) var(--ease);
+}
+.seg button:hover{color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--overlay);color:var(--ink);box-shadow:0 1px 0 rgba(0,0,0,.25)}
+.seg button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.armhint{font-size:12.5px;color:var(--ink-3);max-width:44ch;padding-bottom:2px;margin:0}
+
+.stage{display:grid;grid-template-columns:minmax(0,1fr) 268px;gap:16px;align-items:start}
+@media (max-width:860px){.stage{grid-template-columns:minmax(0,1fr)}}
+
+.canvas{background:var(--raised);border:1px solid var(--hair);border-radius:14px;padding:8px;overflow-x:auto}
+svg{display:block;width:100%;height:auto;min-width:560px}
+
+.wire{stroke:var(--ink);stroke-width:1.6;fill:none;stroke-linecap:square}
+.shape{stroke:var(--ink);stroke-width:1.6;fill:var(--raised)}
+.glyphlabel{font-family:var(--sans);font-size:11px;font-weight:520;fill:var(--ink-2)}
+.glyphval{font-family:var(--mono);font-size:10.5px;fill:var(--ink-3)}
+.nodedot{fill:var(--ink)}
+.nodelabel{font-family:var(--sans);font-size:11px;font-weight:620;fill:var(--ink-2)}
+.hit{cursor:pointer}
+.hit:focus-visible{outline:2px solid var(--focus)}
+
+/* stato semantico di trasformazione — braccio A: segnale solo sul delta */
+.delta .wire,.delta .shape{stroke:var(--provenance)}
+.delta .glyphlabel{fill:var(--provenance)}
+.halo{fill:var(--provenance-bg)}
+/* layer 6 — boundary annotation. Sovrapposta al nodo, non al posto del nodo:
+   togliendola, A torna identico perche' non era mai cambiato. */
+.anchor{fill:none;stroke:var(--provenance);stroke-width:1.4;opacity:.85}
+
+/* braccio B — marked preservation */
+svg[data-arm="B"] .keep .shape,svg[data-arm="B"] .keep .wire{stroke-dasharray:2 3;stroke:var(--ink-3)}
+svg[data-arm="B"] .keep .glyphlabel{fill:var(--ink-3)}
+/* braccio C — conventional focus */
+svg[data-arm="C"] .keep{opacity:.38}
+/* stato di interazione: non e' codifica di trasformazione, quindi vale su ogni braccio */
+.sel .shape,.sel .wire{stroke:var(--verified);stroke-dasharray:none}
+.sel .glyphlabel,.sel .nodelabel{fill:var(--verified)}
+.sel{opacity:1}
+
+.eqn{font-family:var(--mono);font-size:12px;fill:var(--ink)}
+.eqnbox{fill:var(--raised);stroke:var(--hair);stroke-width:1}
+.eqnlead{stroke:var(--provenance);stroke-width:1;stroke-dasharray:3 3;fill:none}
+
+.rail{display:flex;flex-direction:column;gap:12px}
+.card{background:var(--raised);border:1px solid var(--hair);border-radius:12px;padding:14px 15px}
+.card h2{margin:0 0 9px;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+.card p{margin:0 0 8px;font-size:13.5px;color:var(--ink-2);line-height:1.5}
+.card p:last-child{margin-bottom:0}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:12.5px;margin:0}
+.kv dt{color:var(--ink-3)}
+.kv dd{margin:0;font-family:var(--mono);font-size:12px;color:var(--ink);font-variant-numeric:tabular-nums}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-family:var(--mono);
+  background:var(--verified-bg);color:var(--verified);border:1px solid var(--verified);
+  border-radius:4px;padding:2px 7px}
+.ask{font:inherit;font-size:13px;width:100%;text-align:left;background:var(--sunken);color:var(--ink);
+  border:1px solid var(--rule);border-radius:8px;padding:8px 11px;cursor:pointer;margin-top:10px;
+  transition:border-color var(--instant) var(--ease)}
+.ask:hover{border-color:var(--provenance)}
+.ask:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.why{margin-top:10px;font-size:12.5px;color:var(--ink-2);display:none}
+.why.on{display:block}
+.why ul{margin:0;padding-left:16px}
+.why li{margin-bottom:3px}
+.why code{font-family:var(--mono);font-size:12px;color:var(--ink)}
+
+.pg{background:var(--sunken);border:1px solid var(--hair);border-radius:12px;padding:12px 16px;
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pg .n{font-family:var(--mono);font-size:12px;color:var(--ink-3);border:1px solid var(--rule);
+  border-radius:9999px;padding:4px 11px;background:var(--ground)}
+.pg .n.cur{color:var(--ink);border-color:var(--provenance);box-shadow:inset 0 0 0 1px var(--provenance)}
+.pg .e{flex:0 0 26px;height:1px;background:var(--rule)}
+.pg .t{font-family:var(--mono);font-size:11px;color:var(--provenance)}
+.pg .cap{margin-left:auto;font-size:12px;color:var(--ink-3)}
+
+.notes{border-top:1px solid var(--hair);padding-top:16px;display:grid;gap:14px;
+  grid-template-columns:repeat(auto-fit,minmax(258px,1fr))}
+.note h3{margin:0 0 5px;font-size:13px;font-weight:620}
+.note p{margin:0;font-size:13px;color:var(--ink-2);line-height:1.5}
+.note code{font-family:var(--mono);font-size:12px;color:var(--ink)}
+@media (prefers-reduced-motion:reduce){*{transition:none}}
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <h1>Il passo a metà trasformazione</h1>
+    <span class="sub">C<sub>k</sub> → T<sub>k</sub> → C<sub>k+1</sub> · mock di lavoro, non visual design finale</span>
+    <span class="stamp">A-0 · GATE A</span>
+  </header>
+
+  <div class="controls">
+    <div class="ctl">
+      <span class="lab" id="armlab">Braccio di rendering</span>
+      <div class="seg" role="group" aria-labelledby="armlab">
+        <button type="button" data-set-arm="0">0 — ri-layout</button>
+        <button type="button" data-set-arm="A" aria-pressed="true">A — non marcato</button>
+        <button type="button" data-set-arm="B">B — marcato</button>
+        <button type="button" data-set-arm="C">C — focus comune</button>
+      </div>
+    </div>
+    <div class="ctl">
+      <span class="lab" id="phlab">Stato</span>
+      <div class="seg" role="group" aria-labelledby="phlab">
+        <button type="button" data-set-phase="before" aria-pressed="true">Prima</button>
+        <button type="button" data-set-phase="after">Dopo</button>
+      </div>
+    </div>
+    <p class="armhint" id="armhint"></p>
+  </div>
+
+  <div class="stage">
+    <div class="canvas"><svg id="sv" viewBox="0 0 620 330" role="img" aria-labelledby="alt"><title id="alt">Rete in continua: sorgente V1 in serie con R1; fra i nodi A e B, R3 e R4 in parallelo.</title></svg></div>
+
+    <aside class="rail">
+      <section class="card" id="insp">
+        <h2>Ispezione</h2>
+        <p>Tocca un'etichetta nel disegno.</p>
+        <p style="color:var(--ink-3)">R34 mostra da cosa deriva; A e B mostrano la continuità attraverso il passo.</p>
+      </section>
+      <section class="card">
+        <h2>Prova del passo</h2>
+        <dl class="kv">
+          <dt>ACTION</dt><dd>parallel(R3,R4)</dd>
+          <dt>EQUATION</dt><dd>R3·R4/(R3+R4)</dd>
+          <dt>preserve</dt><dd id="pcount">V1, R1, A, B</dd>
+          <dt>VCER</dt><dd id="vcer">0,000</dd>
+        </dl>
+        <p style="margin-top:10px"><span class="chip">✓ CERTIFICATE</span></p>
+        <button class="ask" type="button" id="whybtn" aria-expanded="false" aria-controls="why">Perché posso farlo?</button>
+        <div class="why" id="why">
+          <ul>
+            <li><b>Terminali</b> — R3 e R4 condividono esattamente i nodi A e B.</li>
+            <li><b>Precondizione</b> — nessun terzo ramo incide su A o B fra i due.</li>
+            <li><b>Formula</b> — R34 = 60·30/90 = 20 Ω.</li>
+            <li><b>Certificato</b> — l'SVG è stato riparsato e il grafo confrontato con il <code>CircuitIR</code> atteso.</li>
+          </ul>
+        </div>
+      </section>
+    </aside>
+  </div>
+
+  <nav class="pg" aria-label="ProofGraph">
+    <span class="n cur" id="n0">C₀</span><span class="e"></span><span class="t">T₁ ∥</span><span class="e"></span>
+    <span class="n" id="n1">C₁</span><span class="e"></span><span class="t">T₂ partitore</span><span class="e"></span>
+    <span class="n">V<sub>AB</sub></span>
+    <span class="cap">la soluzione è la catena, non una pagina</span>
+  </nav>
+
+  <div class="notes">
+    <div class="note"><h3>Cosa non si muove</h3><p>V1, R1, il tratto a sinistra dei nodi, e i nodi <code>A</code> e <code>B</code>. Nel braccio A non ricevono <em>nessun</em> trattamento: è A-0.</p></div>
+    <div class="note"><h3>Cosa sparisce</h3><p>R3, R4 e il solo instradamento che serviva a raggiungere R4. Il filo che non serve più se ne va: sta in <code>remove</code>, non in <code>preserve</code>.</p></div>
+    <div class="note"><h3>Dove appare l'equazione</h3><p>Accanto al sottografo, con una guida che la lega. Non sotto il disegno: lì tornerebbe a essere una spiegazione invece di una prova.</p></div>
+    <div class="note"><h3>Perché il braccio 0 è equo</h3><p>Stesso renderer, stessi vincoli, stesso circuito — solo senza memoria del layout precedente. Un ri-layout ordinato, non uno costruito per perdere.</p></div>
+  </div>
+</div>
+
+<script>
+var NS="http://www.w3.org/2000/svg";
+var sv=document.getElementById("sv");
+var arm="A", phase="before", why=false;
+
+var HINT={
+ "0":"Ri-layout globale indipendente. Il circuito e' lo stesso e il disegno e' ordinato — ma la memoria spaziale costruita su C₀ non serve piu' a niente.",
+ "A":"Default. Il segnale visivo e' solo sul delta: al resto non succede nulla. E' l'ipotesi A-0.",
+ "B":"Ai preservati viene aggiunta una codifica leggera «unchanged». E' l'esatta negazione di A-0, ed e' qui apposta.",
+ "C":"Il pattern comune: evidenzia il fuoco, attenua il resto. Revocato dal default il 15 agosto — resta come concorrente da battere."
+};
+
+function el(t,a){var n=document.createElementNS(NS,t);for(var k in a){n.setAttribute(k,a[k]);}return n;}
+function wire(d){return el("path",{d:d,"class":"wire"});}
+function txt(x,y,s,cls,anchor){var t=el("text",{x:x,y:y,"class":cls,"text-anchor":anchor||"middle"});t.textContent=s;return t;}
+function res(g,x,y,o,id,val){
+  var w=(o==="h")?66:24, h=(o==="h")?24:66;
+  g.appendChild(el("rect",{x:x-w/2,y:y-h/2,width:w,height:h,rx:2,"class":"shape"}));
+  g.appendChild(txt((o==="h")?x:x+22,(o==="h")?y-19:y-3,id,"glyphlabel",(o==="h")?"middle":"start"));
+  g.appendChild(txt((o==="h")?x:x+22,(o==="h")?y+28:y+12,val,"glyphval",(o==="h")?"middle":"start"));
+}
+function node(g,x,y,id){
+  g.appendChild(el("circle",{cx:x,cy:y,r:3.4,"class":"nodedot"}));
+  g.appendChild(txt(x-13,y-9,id,"nodelabel"));
+}
+function src(g,x,y){
+  g.appendChild(el("circle",{cx:x,cy:y,r:27,"class":"shape"}));
+  g.appendChild(txt(x,y-5,"+","glyphlabel"));
+  g.appendChild(txt(x,y+15,"−","glyphlabel"));
+  g.appendChild(txt(x,y+45,"V1","glyphlabel"));
+  g.appendChild(txt(x,y+59,"12 V","glyphval"));
+}
+function grp(cls){return el("g",{"class":cls});}
+
+function persistent(after){
+  var f=document.createDocumentFragment();
+  // L'alone va DIETRO a tutto: dipinto sopra, coprirebbe le etichette dei nodi
+  // preservati A e B — cioe' esattamente le due cose che non devono sparire.
+  // Layer 1 — region-highlight. NON e' default: un fondo esteso e' una versione morbida
+  // del braccio C e contaminerebbe il confronto A-C. Compare solo dove e' dichiarato.
+  if(arm==="C"){
+    var back=grp("delta");
+    back.appendChild(after
+      ? el("rect",{x:284,y:126,width:52,height:98,rx:10,"class":"halo"})
+      : el("rect",{x:278,y:74,width:196,height:212,rx:10,"class":"halo"}));
+    f.appendChild(back);
+  }
+  var keep=grp("keep");
+  keep.appendChild(wire("M80 148 L80 92 L147 92"));
+  res(keep,180,92,"h","R1","100 Ω");
+  keep.appendChild(wire("M213 92 L310 92"));
+  keep.appendChild(wire("M80 202 L80 268 L310 268"));
+  src(keep,80,175);
+  node(keep,310,92,"A"); node(keep,310,268,"B");
+  f.appendChild(keep);
+
+  var d=grp("delta");
+  if(!after){
+    d.appendChild(wire("M310 92 L310 142"));
+    res(d,310,175,"v","R3","60 Ω");
+    d.appendChild(wire("M310 208 L310 268"));
+    d.appendChild(wire("M310 92 L438 92 L438 142"));
+    res(d,438,175,"v","R4","30 Ω");
+    d.appendChild(wire("M438 208 L438 268 L310 268"));
+  }else{
+    d.appendChild(wire("M310 92 L310 142"));
+    res(d,310,175,"v","R34","20 Ω");
+    d.appendChild(wire("M310 208 L310 268"));
+  }
+  f.appendChild(d);
+
+  // Layer 5+ — equazione. I tratti convergono DAI componenti che la generano:
+  // la causalita' deve leggersi nello spazio, non nella didascalia.
+  var e=grp("eq");
+  var ex=after?396:512, ew=after?168:88;
+  if(after){
+    e.appendChild(el("path",{d:"M336 175 L392 175","class":"eqnlead"}));
+  }else{
+    e.appendChild(el("path",{d:"M326 158 L470 158 L470 172 L508 172","class":"eqnlead"}));
+    e.appendChild(el("path",{d:"M454 158 L470 158","class":"eqnlead"}));
+  }
+  e.appendChild(el("rect",{x:ex,y:157,width:ew,height:36,rx:8,"class":"eqnbox"}));
+  e.appendChild(txt(ex+ew/2,180,after?"R34 = 60·30/90 = 20 Ω":"R3 ∥ R4","eqn"));
+  f.appendChild(e);
+
+  // Layer 6 — boundary annotations, sempre sopra i nodi e mai al loro posto.
+  var ov=grp("overlay");
+  ov.appendChild(el("circle",{cx:310,cy:92,r:7.5,"class":"anchor"}));
+  ov.appendChild(el("circle",{cx:310,cy:268,r:7.5,"class":"anchor"}));
+  f.appendChild(ov);
+  return f;
+}
+
+function relayout(){
+  var f=document.createDocumentFragment();
+  var g=grp("relayout");
+  g.appendChild(wire("M112 148 L112 84 L201 84"));
+  res(g,247,84,"h","R1","100 Ω");
+  g.appendChild(wire("M293 84 L500 84 L500 142"));
+  res(g,500,175,"v","R34","20 Ω");
+  g.appendChild(wire("M500 208 L500 272 L112 272 L112 202"));
+  src(g,112,175);
+  node(g,500,84,"A"); node(g,500,272,"B");
+  f.appendChild(g);
+  return f;
+}
+
+var FACTS={
+ "R34":["R34 — creato in questo passo","Deriva da <b>R3</b> (60 Ω) e <b>R4</b> (30 Ω), che condividevano i nodi A e B. Occupa il posto che aveva R3: è la stessa posizione, non una nuova."],
+ "R3":["R3 — rimosso in questo passo","60 Ω, fra A e B. Confluisce in R34 insieme a R4."],
+ "R4":["R4 — rimosso in questo passo","30 Ω, fra A e B. Con lui se ne va anche l'instradamento che serviva solo a raggiungerlo."],
+ "A":["Nodo A — preservato","Stesso identificatore, stessa posizione, stesso ruolo prima e dopo. <code>id(A)</code> non cambia mai; la posizione può variare solo per necessità geometrica misurata e penalizzata."],
+ "B":["Nodo B — preservato","Come A. È il secondo terminale della trasformazione, e non si muove."],
+ "R1":["R1 — preservato","100 Ω. Non partecipa alla trasformazione e non riceve alcun trattamento: è esattamente il punto di A-0."],
+ "V1":["V1 — preservato","12 V. Fuori dal sottografo trasformato, quindi invariato e non marcato."]
+};
+
+function inspect(id){
+  var i,nodes=sv.querySelectorAll(".sel");
+  for(i=0;i<nodes.length;i++){nodes[i].classList.remove("sel");}
+  var labels=sv.querySelectorAll("text");
+  for(i=0;i<labels.length;i++){
+    if(labels[i].textContent.trim()===id&&labels[i].parentNode){labels[i].parentNode.classList.add("sel");}
+  }
+  var f=FACTS[id]; if(!f){return;}
+  document.getElementById("insp").innerHTML=
+    "<h2>Ispezione</h2><p><b>"+f[0]+"</b></p><p>"+f[1]+"</p>";
+}
+
+function draw(){
+  while(sv.firstChild&&sv.firstChild.nodeName!=="title"){sv.removeChild(sv.firstChild);}
+  var t=sv.querySelector("title");
+  sv.textContent="";
+  if(t){sv.appendChild(t);}
+  sv.setAttribute("data-arm",arm);
+  var after=(phase==="after");
+  sv.appendChild((arm==="0"&&after)?relayout():persistent(after));
+
+  var labels=sv.querySelectorAll("text.glyphlabel,text.nodelabel");
+  for(var i=0;i<labels.length;i++){
+    (function(t){
+      var id=t.textContent.trim();
+      if(!/^(R1|R3|R4|R34|V1|A|B)$/.test(id)){return;}
+      t.setAttribute("class",t.getAttribute("class")+" hit");
+      t.setAttribute("tabindex","0");
+      t.setAttribute("role","button");
+      t.addEventListener("click",function(){inspect(id);});
+      t.addEventListener("keydown",function(ev){
+        if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();inspect(id);}
+      });
+    })(labels[i]);
+  }
+  document.getElementById("armhint").textContent=HINT[arm];
+  document.getElementById("n0").classList.toggle("cur",!after);
+  document.getElementById("n1").classList.toggle("cur",after);
+  var relay=(arm==="0"&&after);
+  document.getElementById("pcount").textContent=relay?"— nessuno":"V1, R1, A, B";
+  document.getElementById("vcer").textContent=relay?"n/d":"0,000";
+}
+
+var armBtns=document.querySelectorAll("[data-set-arm]");
+for(var a=0;a<armBtns.length;a++){
+  (function(b){b.addEventListener("click",function(){
+    arm=b.getAttribute("data-set-arm");
+    for(var j=0;j<armBtns.length;j++){armBtns[j].setAttribute("aria-pressed",String(armBtns[j]===b));}
+    draw();
+  });})(armBtns[a]);
+}
+var phBtns=document.querySelectorAll("[data-set-phase]");
+for(var p=0;p<phBtns.length;p++){
+  (function(b){b.addEventListener("click",function(){
+    phase=b.getAttribute("data-set-phase");
+    for(var j=0;j<phBtns.length;j++){phBtns[j].setAttribute("aria-pressed",String(phBtns[j]===b));}
+    draw();
+  });})(phBtns[p]);
+}
+// Tieni premuto sul disegno = torna a Prima; rilascia = Dopo.
+// Elimina il costo di cercare il bottone mentre si confronta. Da provare, non ancora requisito.
+(function(){
+  var canvas=document.querySelector(".canvas"), held=false;
+  function grab(ev){
+    if(phase!=="after"||held)return;
+    if(ev.target.closest&&ev.target.closest("text.hit"))return;
+    held=true; phase="before"; draw();
+  }
+  function release(){ if(!held)return; held=false; phase="after"; draw(); }
+  canvas.addEventListener("pointerdown",grab);
+  window.addEventListener("pointerup",release);
+  window.addEventListener("pointercancel",release);
+})();
+document.getElementById("whybtn").addEventListener("click",function(){
+  why=!why;
+  document.getElementById("why").classList.toggle("on",why);
+  this.setAttribute("aria-expanded",String(why));
+});
+draw();
+</script>

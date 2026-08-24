@@ -1,0 +1,50 @@
+{
+  "schema": "kirchhoff/bmad-chain@1",
+  "project": "Kirchhoff",
+  "chain": "correct-course chain-top v3",
+  "source": "docs/inbox/kirchhoff_01_piano_master_v3.md §25.1",
+  "generated": "08-14-2026 12:20",
+  "last_updated": "08-15-2026 05:56",
+  "steps": {
+    "01-costituzione": {
+      "status": "done",
+      "at": "08-14-2026 12:20",
+      "note": "dedotto dalle prove su disco"
+    },
+    "02-brief": {
+      "status": "done",
+      "at": "08-14-2026 12:20",
+      "note": "dedotto dalle prove su disco"
+    },
+    "03-prd": {
+      "status": "done",
+      "at": "08-15-2026 03:43",
+      "note": "PRD v3 · MVP = Visual Proof Kernel · reviewer gate pendente"
+    },
+    "04-ux": {
+      "status": "done",
+      "at": "08-15-2026 05:19",
+      "note": "UX v3: KF-0 journey owner, protocollo A/B, estetica scura Linear-like"
+    },
+    "05-spine": {
+      "status": "done",
+      "at": "08-15-2026 05:56",
+      "note": "Spine v2: AD-21..AD-30, quattro AD emendati in loco, lint 0 rilievi"
+    },
+    "06-epiche": {
+      "status": "backlog",
+      "at": null,
+      "note": null
+    },
+    "07-readiness": {
+      "status": "backlog",
+      "at": null,
+      "note": null
+    },
+    "08-ship-loop": {
+      "status": "done",
+      "at": "08-14-2026 12:20",
+      "note": "dedotto dalle prove su disco"
+    }
+  }
+}

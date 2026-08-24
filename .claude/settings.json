@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(uv run:*)",
+      "Bash(uv sync:*)",
+      "Bash(python3:*)",
+      "Bash(pytest:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(wc:*)",
+      "Bash(mkdir:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Read(//Users/andreamarro/MATJOURNEY/kirchhoff/**)",
+      "Write(//Users/andreamarro/MATJOURNEY/kirchhoff/src/**)",
+      "Write(//Users/andreamarro/MATJOURNEY/kirchhoff/tests/**)",
+      "Write(//Users/andreamarro/MATJOURNEY/kirchhoff/scripts/**)",
+      "Write(//Users/andreamarro/MATJOURNEY/kirchhoff/_bmad-output/**)",
+      "Edit(//Users/andreamarro/MATJOURNEY/kirchhoff/**)"
+    ],
+    "deny": [
+      "Bash(git push:*)",
+      "Bash(rm -rf:*)",
+      "Bash(curl:*)",
+      "Bash(npm publish:*)",
+      "Read(//Users/andreamarro/MATJOURNEY/kirchhoff/reference-set/holdout/**)",
+      "Write(//Users/andreamarro/MATJOURNEY/kirchhoff/docs/00-fonte-piano-kirchhoff.md)"
+    ]
+  }
+}
