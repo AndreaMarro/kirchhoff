@@ -80,7 +80,6 @@ from .result import Boundary, Certificate, Equation, LayoutPatch, TransformResul
 CONTROLLI: tuple[str, ...] = (
     "validazione elettrica di Cₖ",
     "boundary",
-    "identita'",
     "massimalita' di preserve",
     "coerenza del Delta",
     "coerenza della LayoutPatch",
@@ -228,13 +227,13 @@ def _prodotto(
     # Sta qui accanto al controllo del Delta perche' e' lo stesso attestato che
     # nasce, e perche' l'incoerenza fra i due canali e' proprio cio' che il
     # controllo del Delta da solo non vedeva.
-    guasti_patch = check_patch(patch, prima, dopo)
+    guasti_patch = check_patch(patch, prima, dopo, operation=operazione)
     if guasti_patch:
         raise PatchIncoerente(
             f"{operazione}: la LayoutPatch emessa viola il proprio controllore — "
             + "; ".join(f"{v.code} su {v.subject} ({v.detail})" for v in guasti_patch))
 
-    guasti_boundary = check_boundary(boundary, patch, prima, dopo)
+    guasti_boundary = check_boundary(boundary, patch, prima, dopo, operation=operazione)
     if guasti_boundary:
         raise BoundaryIncoerente(
             f"{operazione}: il boundary emesso viola il proprio controllore — "

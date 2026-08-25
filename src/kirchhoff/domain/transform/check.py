@@ -165,11 +165,29 @@ def check_delta(
             "sopravvive nel circuito di arrivo e non puo' essere stata consumata"))
 
     # 4 — completezza della lineage, nelle due direzioni.
-    for e in sorted(prima - dopo):
+    #
+    # **Si misura contro `Pₖ`, non contro l'intersezione per identificatore.** La
+    # differenza e' l'entita' MUTATA IN LUOGO: `R1 (a,b) 10Ω` che diventa
+    # `R1 (a,b) 6⅔Ω` sta in entrambi i circuiti per nome, quindi `prima - dopo` non
+    # la vedeva, ma esce da `Pₖ` per il discriminante v2.1. AD-22 v2.1 dice gia' che
+    # cosa e': «Un'entita' che fallisce la seconda condizione non e' preservata: e'
+    # una rimozione piu' una creazione, **e come tale deve comparire nel Delta**».
+    #
+    # Misurato prima della correzione: sul caso fondativo dell'istruttoria R2-A, un
+    # `Delta` che non nominava affatto `R1` passava senza violazioni, e due lineage
+    # contraddittorie erano entrambe benedette.
+    for e in sorted(prima - preservate):
         if e not in delta.consumed:
             trovate.append(DeltaViolation(
                 "sparizione_non_spiegata", str(e),
-                "assente dal circuito di arrivo e nessuna derivazione la consuma"))
+                "non sopravvive al passo e nessuna derivazione la consuma"))
+
+    # 5 — il verso simmetrico: cio' che nasce dev'essere prodotto da qualcuno.
+    for e in sorted(dopo - preservate):
+        if e not in delta.produced:
+            trovate.append(DeltaViolation(
+                "apparizione_non_spiegata", str(e),
+                "non era preservata e nessuna derivazione la produce"))
     for e in sorted(dopo - prima):
         if e not in delta.produced:
             trovate.append(DeltaViolation(
@@ -193,6 +211,8 @@ def check_patch(
     patch: LayoutPatch,
     before: IR,
     after: IR,
+    *,
+    operation: TransformationKind | None = None,
 ) -> tuple[PatchViolation, ...]:
     """`create` e `remove` contro i due circuiti. Vuoto quando la patch regge.
 
@@ -217,8 +237,15 @@ def check_patch(
     Le due riduzioni del catalogo producono gia' l'uguaglianza esatta: questo
     controllo non stringe il contratto, lo rende verificato invece che sperato.
     """
-    apparse = entities_of(after) - entities_of(before)
-    sparite = entities_of(before) - entities_of(after)
+    # **Rispetto a `Pₖ`, non all'intersezione per identificatore.** Un'entita' che
+    # cambia attributi a nome fermo sta in entrambi i circuiti e non e' preservata:
+    # per AD-22 v2.1 e' una rimozione piu' una creazione, e la patch deve dirlo in
+    # entrambi i campi. Misurando per id, quell'entita' non era ne' apparsa ne'
+    # sparita: la patch che taceva passava, e quella che diceva la verita' della
+    # dottrina veniva rifiutata in entrambi i versi.
+    preservate = preserve_set(before, after, operation=operation)
+    apparse = entities_of(after) - preservate
+    sparite = entities_of(before) - preservate
     dichiarate_create = frozenset(patch.create)
     dichiarate_remove = frozenset(patch.remove)
     trovate: list[PatchViolation] = []
@@ -265,6 +292,8 @@ def check_boundary(
     patch: LayoutPatch,
     before: IR,
     after: IR,
+    *,
+    operation: TransformationKind | None = None,
 ) -> tuple[BoundaryViolation, ...]:
     """`∂Tₖ` nel contenuto. Vuoto quando regge.
 
@@ -294,7 +323,11 @@ def check_boundary(
     `node_mapping`. Se `Boundary` debba restare dichiarato o diventare derivato e'
     una decisione di contratto, non un effetto collaterale di un controllo.
     """
-    preservate = preserve_set(before, after)
+    # `operation` come negli altri due controllori: senza, `Pₖ` qui era calcolato
+    # con un discriminante diverso, e il giorno in cui il Catalogo dichiara un
+    # attributo mutabile i controllori darebbero verdetti opposti sull'appartenenza
+    # della stessa entita'.
+    preservate = preserve_set(before, after, operation=operation)
     cambiati = frozenset(patch.remove) | frozenset(patch.create)
     adiacenti = _terminali(before, cambiati) | _terminali(after, cambiati)
     trovate: list[BoundaryViolation] = []

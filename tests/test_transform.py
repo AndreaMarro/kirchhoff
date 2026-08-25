@@ -1079,3 +1079,74 @@ def test_il_registro_non_accetta_voci_nuove_a_runtime():
     from kirchhoff.domain.transform import engine
     with pytest.raises(TypeError):
         engine._REGISTRO["stella_triangolo"] = engine._serie
+
+
+# ---------------------------------------------------------------------------
+# HIGH-1 — un cambiamento di attributi a identificatore stabile.
+#
+# Il caso fondativo dell'istruttoria R2-A, quello che AD-22 v2.1 cita per
+# introdurre il discriminante: `R1 (a,b) 10Ω` e `R2 (a,b) 20Ω` fondono in una
+# equivalente battezzata `R1 (a,b) 6⅔Ω`. `R1` esce da `Pₖ` — corretto — ma per
+# `check_patch` non e' ne' apparsa ne' sparita, perche' quei due insiemi erano
+# calcolati per SOLO IDENTIFICATORE.
+#
+# AD-22 v2.1 lo dice gia': «Un'entita' che fallisce la seconda condizione non e'
+# preservata: e' una rimozione piu' una creazione, e come tale deve comparire nel
+# Delta». I controllori misuravano «appare e sparisce» per id e `Pₖ` per
+# attributi: la fessura fra le due nozioni e' esattamente l'entita' mutata in luogo.
+# ---------------------------------------------------------------------------
+
+
+#: `Cₖ`: R1 e R2 in parallelo fra gli stessi nodi, piu' un carico che tiene il grado.
+R2A_PRIMA = _ir(_v("V1", "a", "0", 12), _r("RL", "a", "0", 100),
+                _r("R1", "a", "0", 10), _r("R2", "a", "0", 20), nodes=("0", "a"))
+#: `Cₖ₊₁`: l'equivalente riusa il nome `R1`. Tipo e terminali coincidono, cambia il valore.
+R2A_DOPO = _ir(_v("V1", "a", "0", 12), _r("RL", "a", "0", 100),
+               _r("R1", "a", "0", F(20, 3)), nodes=("0", "a"))
+
+
+def test_una_mutata_in_luogo_e_sparita_e_apparsa():
+    """`R1` cambia valore a nome fermo: per AD-22 v2.1 e' rimozione piu' creazione."""
+    p = preserve_set(R2A_PRIMA, R2A_DOPO, operation="parallelo")
+    assert C("R1") not in p, "il discriminante v2.1 deve tenerla fuori da Pₖ"
+
+    patch_verace = LayoutPatch(preserve=tuple(sorted(p)), remove=(C("R1"), C("R2")),
+                               create=(C("R1"),), reroute_scope=(N("a"),))
+    assert check_patch(patch_verace, R2A_PRIMA, R2A_DOPO) == (), (
+        "la patch che dice la verita' della dottrina viene rifiutata")
+
+
+def test_una_patch_che_tace_su_una_mutata_in_luogo_e_contestata():
+    """Il verso che conta: il silenzio non deve passare."""
+    p = preserve_set(R2A_PRIMA, R2A_DOPO, operation="parallelo")
+    muta = LayoutPatch(preserve=tuple(sorted(p)), remove=(C("R2"),), create=(),
+                       reroute_scope=(N("a"),))
+    violazioni = check_patch(muta, R2A_PRIMA, R2A_DOPO)
+    soggetti = {v.subject for v in violazioni}
+    assert "component:R1" in soggetti, (
+        "una patch che tace su un componente il cui valore e' cambiato "
+        f"non e' stata contestata: {violazioni}")
+
+
+def test_un_delta_che_tace_su_una_mutata_in_luogo_e_contestato():
+    """«e come tale deve comparire nel Delta» — AD-22 v2.1, non sostenuto da nulla."""
+    from kirchhoff.domain.transform import Delta, StructuralDerivation
+    muto = Delta((StructuralDerivation("parallelo", (C("R2"),), (C("R1"),)),))
+    violazioni = check_delta(muto, R2A_PRIMA, R2A_DOPO, operation="parallelo")
+    assert any("R1" in v.subject for v in violazioni), (
+        f"il Delta non rende conto di R1 e nessuno protesta: {violazioni}")
+
+
+# ---------------------------------------------------------------------------
+# HIGH-2 — il Certificate attesta un controllo che nessuno esegue.
+# ---------------------------------------------------------------------------
+
+
+def test_il_certificato_non_attesta_controlli_rimossi():
+    """`identita'` e' stata rimossa da questo stesso ramo. Un attestato che la
+    elenca fra i controlli ESEGUITI e' falso, e il docstring di `Certificate`
+    fissa lo standard: «un controllo che non ha girato non compare» (E-65).
+    """
+    assert "identita'" not in CONTROLLI, (
+        "CONTROLLI elenca «identita'», ma nessuna riga del pacchetto la verifica: "
+        "i controlli d'identita' sono usciti con node_mapping (AD-22 v2.2)")
