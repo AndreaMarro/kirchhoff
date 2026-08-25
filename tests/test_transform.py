@@ -1305,3 +1305,43 @@ def test_il_reroute_scope_che_le_riduzioni_producono_regge():
     for circuito, operazione in [(SERIE, "serie"), (PARALLELO, "parallelo")]:
         dopo, res = transform(circuito, operazione, "R1", "R2")
         assert check_patch(res.layout_patch, circuito, dopo, operation=operazione) == ()
+
+
+# ---------------------------------------------------------------------------
+# Decisione owner del 25/08/2026 — uscita B.
+#
+# `CONTROLLI` smette di attestare la massimalita' di `preserve` sul percorso
+# interno di `transform()`. Il motore riempie `patch.preserve` con
+# `preserve_set(prima, dopo, op)` e `check_transform` la riconfronta con
+# `preserve_set(before, after, op)`: funzione pura, stessi argomenti, quindi
+# `f(x) != f(x)` non e' mai vero. La non-massimalita' e' **impossibile per
+# costruzione**, non verificata.
+#
+# `check_transform` conserva la capacita' di verificarla quando riceve un prodotto
+# dichiarativo esterno. E' il `Certificate` che smette di affermare di aver
+# verificato indipendentemente cio' che il motore ha costruito da `Pₖ`.
+#
+# Coerente con E-65 e con la scelta gia' fatta per il controllo d'identita'.
+# ---------------------------------------------------------------------------
+
+
+def test_il_certificato_non_attesta_la_massimalita_sul_percorso_interno():
+    assert "massimalita' di preserve" not in CONTROLLI, (
+        "il motore costruisce patch.preserve da Pₖ e check_transform lo riconfronta "
+        "con lo stesso Pₖ: riferimento e misurato sono la stessa variabile, quindi "
+        "il Certificate attesterebbe una verifica indipendente che non e' avvenuta")
+
+
+def test_check_transform_sa_ancora_rifiutare_un_preserve_non_massimale():
+    """La capacita' resta: e' l'attestazione che se ne va, non il controllo.
+
+    Il giorno in cui esistera' un produttore che DICHIARA `preserve` invece di
+    farselo derivare, questa porta lo verifichera'. Oggi nessuno la attraversa dal
+    motore, ed e' precisamente per questo che il `Certificate` tace.
+    """
+    dopo, res = _serie_riuscita()
+    guasta = LayoutPatch(preserve=(N("0"),), remove=res.layout_patch.remove,
+                         create=res.layout_patch.create,
+                         reroute_scope=res.layout_patch.reroute_scope)
+    r = check_transform(SERIE, dopo, "serie", guasta, res.boundary)
+    assert isinstance(r, Refusal) and r.cause == "preserve_nonmaximal"

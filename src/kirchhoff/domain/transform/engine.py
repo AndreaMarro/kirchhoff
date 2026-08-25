@@ -77,10 +77,26 @@ from .result import Boundary, Certificate, Equation, LayoutPatch, TransformResul
 #: preesistente — una falsa accusa. Quella su `Cₖ₊₁` e' il criterio della storia
 #: («il `CircuitIR` risultante supera la validazione elettrica») e viene per ultima,
 #: quando c'e' un prodotto da validare.
+#: **La massimalita' di `preserve` non e' elencata, ed e' una decisione.**
+#: Il motore riempie `patch.preserve` con `preserve_set(prima, dopo, op)` e
+#: `check_transform` la riconfronta con `preserve_set(before, after, op)`: funzione
+#: pura, stessi argomenti, quindi `f(x) != f(x)` non e' mai vero. Sul percorso
+#: interno la non-massimalita' e' **impossibile per costruzione**, non verificata —
+#: e un `Certificate` che la elencasse fra i controlli *eseguiti* affermerebbe una
+#: verifica indipendente che non e' avvenuta (E-65).
+#:
+#: `check_transform` **conserva la capacita'** di rifiutare un `preserve` non
+#: massimale: il giorno in cui esistera' un produttore che lo DICHIARA invece di
+#: farselo derivare, quella porta lo verifichera'. E' l'attestazione che se ne va,
+#: non il controllo.
+#:
+#: Stessa forma della scelta gia' fatta per l'identita'. Decisione owner del
+#: 25/08/2026, uscita B; l'uscita A — le Trasformazioni dichiarano `preserve` —
+#: resta possibile e richiedera' una decisione architetturale esplicita se un
+#: produttore esterno arrivera' davvero.
 CONTROLLI: tuple[str, ...] = (
     "validazione elettrica di Cₖ",
     "boundary",
-    "massimalita' di preserve",
     "coerenza del Delta",
     "coerenza della LayoutPatch",
     "contenuto del boundary",

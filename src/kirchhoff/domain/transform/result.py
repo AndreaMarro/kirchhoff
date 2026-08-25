@@ -26,7 +26,7 @@ leggerebbe come «niente da controllare» invece che come «controllo mancante»
 
 I suoi campi nominano **entita', non coordinate**: `preserve`, `remove`, `create`
 sono insiemi di identificatori, `node_mapping` e' una mappa fra identificatori,
-`reroute_scope` e' l'insieme dei rami la cui instradatura e' libera. Nessun numero,
+`reroute_scope` delimita cio' che il renderer puo' reinstradare. Nessun numero,
 nessuna posizione. Il dominio non sa cosa sia un pixel — e dalla v2 non sa nemmeno
 cosa sia una posizione (AD-18 em., AD-21).
 
@@ -80,6 +80,25 @@ class LayoutPatch:
     preserve: tuple[EntityRef, ...]
     remove: tuple[EntityRef, ...]
     create: tuple[EntityRef, ...]
+    #: **L'unita' semantica di questo campo e' DIFFERITA alla Story 1.4.**
+    #:
+    #: Il docstring lo descriveva come «l'insieme dei rami la cui instradatura e'
+    #: libera», mentre il motore vi scrive il componente creato piu' i **nodi** del
+    #: boundary: due letture che non coincidono, e nemmeno il produttore interno
+    #: rispettava quella dichiarata. La descrizione e' stata resa fedele al fatto —
+    #: «delimita cio' che il renderer puo' reinstradare» — invece di continuare a
+    #: contraddirlo.
+    #:
+    #: La domanda di accettazione, da rispondere in 1.4 e non prima:
+    #:
+    #:     Qual e' l'unita' semantica contenuta in `reroute_scope`: componenti,
+    #:     nodi, branch/edge renderizzabili, o altro?
+    #:
+    #: Non e' oziosa: FR-38 lo usa come vincolo NORMATIVO del renderer — «il numero
+    #: di elementi con coordinate cambiate e' limitato allo `reroute_scope`
+    #: dichiarato» — quindi un renderer che lo rispetti ha bisogno di sapere che cosa
+    #: sta contando. `check_patch` verifica gia' cio' che e' verificabile senza la
+    #: risposta: nessun fantasma, insieme non vuoto.
     reroute_scope: tuple[EntityRef, ...]
 
     def __post_init__(self) -> None:

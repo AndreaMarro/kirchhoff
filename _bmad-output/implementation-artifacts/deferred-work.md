@@ -96,3 +96,36 @@ fatta emergere. Nessuna viene lasciata cadere in silenzio.
     `q1`, il cui identificatore e la cui grandezza vivono solo su `Cₖ`. La ricostruzione presuppone
     quindi che chi risale conservi `Cₖ`, e nessun test lo dimostra. Precisato nel docstring;
     chi debba conservare la catena dei circuiti resta una decisione aperta.
+
+- source_spec: `escalation-cause-v2-irraggiungibili.md` (decisione owner del 25/08/2026, uscita B)
+  summary: `identity_violation` resta dichiarata in `Cause` e senza alcun produttore in tutto
+    `src/`, dopo che il ritiro di `node_mapping` (AD-22 v2.2) ha reso l'uguaglianza degli
+    identificatori su `Pₖ` vera per costruzione.
+  evidence: Rimuoverla dall'enumerazione tocca la tabella di AD-19, che è spine: è una decisione
+    architetturale, non un effetto collaterale di una patch. Fino ad allora tre docstring
+    affermano un'emissione che non avviene — `check.py` in testa al modulo, `refusal.py` nella
+    motivazione dell'aggiunta, e la riga della tabella. La causa non è dannosa: è una superficie
+    dichiarata e irraggiungibile, che il prossimo lettore cercherà di produrre senza riuscirci.
+
+- source_spec: `escalation-cause-v2-irraggiungibili.md` (decisione owner del 25/08/2026, uscita B)
+  summary: L'uscita A — le Trasformazioni **dichiarano** `preserve` invece di farselo derivare —
+    resta possibile e non è stata implementata.
+  evidence: Oggi `transform()` è l'unico produttore reale del contratto e `check_transform` ha un
+    solo consumatore in produzione: pagare 16 dichiarazioni duplicate costruirebbe un meccanismo
+    per un produttore esterno che non esiste. La pipeline di percezione dovrà produrre una
+    rappresentazione semantica **da confermare**, e il renderer deve **consumare** `LayoutPatch`,
+    non diventare un secondo produttore della verità trasformativa. Se un vero produttore
+    dichiarativo comparirà, servirà una decisione architetturale esplicita — e con essa il
+    `Certificate` potrà tornare ad attestare la massimalità, perché a quel punto sarà verificata.
+
+- source_spec: `spec-2-6` → **Story 1.4** (differimento esplicito, 25/08/2026)
+  summary: L'unità semantica di `reroute_scope` non è decisa. Domanda di accettazione per 1.4:
+    *«Qual è l'unità semantica contenuta in `reroute_scope`: componenti, nodi, branch/edge
+    renderizzabili, o altro?»*
+  evidence: Il docstring lo definiva «l'insieme dei rami la cui instradatura è libera» mentre il
+    motore vi scrive il componente creato più i **nodi** del boundary: nemmeno il produttore
+    interno rispettava la semantica dichiarata. La descrizione è stata resa fedele al fatto invece
+    di continuare a contraddirlo, e `check_patch` verifica ciò che è verificabile senza la
+    risposta — nessun fantasma, insieme non vuoto. È un blocker reale di 1.4 perché FR-38 lo usa
+    come vincolo **normativo** del renderer. Se arrivare a 1.4 richiedesse questa decisione prima,
+    il loop deve fermarsi con `ARCHITECTURE_CONFLICT` invece di indovinare.
