@@ -140,6 +140,31 @@ except Exception: print('non rilevata')
       printf '\n\033[1;31mdry-run: il giro non partirebbe\033[0m (precondizioni exit %s)\n\n' "$pre"
       exit "$pre"
     fi
+    # **La chiave dev'essere quella corrente**, derivata dall'artefatto che possiede
+    # la Story. Il difetto che questo cancello impedisce e' misurato: un giro e'
+    # stato eseguito su `2-6-catalogo-delle-trasformazioni` mentre nell'`epics.md`
+    # corrente il numero `2.6` appartiene a una storia diversa. Il lavoro era buono
+    # e non chiudeva niente.
+    #
+    # Si accetta anche il numero — `1.1` — e lo si risolve: chi lavora non deve
+    # ricostruire a mano uno slug di sessanta caratteri, ed e' ricostruendolo a mano
+    # che sono nati i tre nomi.
+    if printf '%s' "$storia" | grep -qE '^[0-9]+[.-][0-9]+[a-z]?$'; then
+      risolta="$(python3 "$QUI/chiave.py" --risolvi "$storia" 2>/dev/null)"
+      if [ -z "$risolta" ]; then
+        printf '\n\033[1;31mdry-run: %s non e una Story corrente\033[0m\n' "$storia" >&2
+        python3 "$QUI/chiave.py" --elenco >&2
+        exit 64
+      fi
+      printf '\n  \033[2m%s → %s\033[0m\n' "$storia" "$risolta"
+      storia="$risolta"
+    elif ! python3 "$QUI/chiave.py" --verifica "$storia" 2>/dev/null; then
+      printf '\n\033[1;31mdry-run: «%s» non e una chiave corrente\033[0m\n' "$storia" >&2
+      printf '  Le chiavi si derivano da epics.md, non si scrivono a mano.\n' >&2
+      python3 "$QUI/chiave.py" --elenco >&2
+      exit 64
+    fi
+
     printf '\n\033[1mPiano\033[0m\n'
     python3 "$QUI/router.py" --storia "$storia" "${@:2}" | sed 's/^/  /'
     r=${PIPESTATUS[0]}
