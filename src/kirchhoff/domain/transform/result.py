@@ -182,3 +182,38 @@ class TransformResult:
             raise ValueError(
                 "TransformResult con `delta` vuoto: un passo che non deriva nulla "
                 "non e' un passo")
+
+        # **`layout_patch` non era in nessuna delle due liste.** Il docstring di
+        # AD-22 dichiara «ogni campo e' non-vuoto o il prodotto non e' costruibile,
+        # non solo Certificate», e `boundary` e `certificate` si difendono da soli —
+        # ma una `LayoutPatch((), (), (), ())` interamente vuota si costruiva senza
+        # proteste, e uno stadio a valle l'avrebbe letta come «niente da conservare,
+        # togliere o creare».
+        if not (self.layout_patch.preserve or self.layout_patch.remove
+                or self.layout_patch.create):
+            raise ValueError(
+                "TransformResult con `layout_patch` vuota: una patch che non "
+                "conserva, non toglie e non crea non descrive alcun passo (AD-22).")
+
+        # **`Pₖ` e' scritto due volte dentro lo stesso prodotto**, e nessun
+        # controllore li confrontava: `check_transform` vede la patch, mai il
+        # risultato. Il motore li teneva allineati per disciplina, riempiendoli dalla
+        # stessa variabile — che e' esattamente il gesto che E-62 descrive: la stessa
+        # cosa scritta due volte, tenuta uguale da chi scrive e non da un controllo.
+        if frozenset(self.layout_patch.preserve) != self.preserve:
+            solo_qui = sorted(self.preserve - frozenset(self.layout_patch.preserve))
+            solo_patch = sorted(frozenset(self.layout_patch.preserve) - self.preserve)
+            raise ValueError(
+                "TransformResult: `preserve` e `layout_patch.preserve` divergono. "
+                f"Solo nel risultato: {', '.join(str(e) for e in solo_qui) or 'nessuna'}. "
+                f"Solo nella patch: {', '.join(str(e) for e in solo_patch) or 'nessuna'}.")
+
+        # Il `Certificate` attesta i controlli di **un'operazione**; le derivazioni
+        # del `Delta` ne nominano una. Se non e' la stessa, l'attestato certifica un
+        # passo diverso da quello compiuto.
+        operazioni = {d.operation for d in self.delta.derivations}
+        if operazioni != {self.certificate.operation}:
+            raise ValueError(
+                f"TransformResult: il certificato attesta l'operazione "
+                f"«{self.certificate.operation}», il Delta ne deriva "
+                f"{', '.join(sorted(f'«{o}»' for o in operazioni))}.")

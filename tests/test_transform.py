@@ -1150,3 +1150,53 @@ def test_il_certificato_non_attesta_controlli_rimossi():
     assert "identita'" not in CONTROLLI, (
         "CONTROLLI elenca «identita'», ma nessuna riga del pacchetto la verifica: "
         "i controlli d'identita' sono usciti con node_mapping (AD-22 v2.2)")
+
+
+# ---------------------------------------------------------------------------
+# Ri-revisione — due rilievi, uno dei quali introdotto dalla correzione precedente.
+# ---------------------------------------------------------------------------
+
+
+def test_una_comparsa_non_spiegata_produce_una_sola_violazione():
+    """La chiusura del vecchio HIGH aveva aggiunto un ciclo accanto a uno esistente.
+
+    `preservate ⊆ prima` per costruzione, quindi `dopo - prima ⊆ dopo - preservate`:
+    il ciclo vecchio non poteva mai scattare da solo e, quando scattava, duplicava.
+    Due voci di vocabolario per lo stesso difetto sono il gesto E-62 che il ramo
+    dichiara di chiudere altrove.
+    """
+    from kirchhoff.domain.transform import Delta, StructuralDerivation
+    dopo, _ = _serie_riuscita()
+    muto = Delta((StructuralDerivation("serie", (C("R1"), C("R2"), N("b")), (C("V1"),)),))
+    v = check_delta(muto, SERIE, dopo, operation="serie")
+    su_eq = [x for x in v if "R1R2eq" in x.subject]
+    assert len(su_eq) == 1, f"stesso difetto contestato {len(su_eq)} volte: {su_eq}"
+
+
+def test_un_risultato_con_patch_vuota_non_e_costruibile():
+    """AD-22: «Ogni campo e' non-vuoto o il prodotto non e' costruibile»."""
+    dopo, res = _serie_riuscita()
+    with pytest.raises(ValueError, match="layout_patch"):
+        TransformResult(
+            preserve=res.preserve, delta=res.delta, boundary=res.boundary,
+            layout_patch=LayoutPatch((), (), (), ()),
+            equation=res.equation, certificate=res.certificate)
+
+
+def test_due_dichiarazioni_di_pk_nello_stesso_prodotto_non_possono_divergere():
+    """`preserve` e `layout_patch.preserve` sono la stessa cosa scritta due volte."""
+    dopo, res = _serie_riuscita()
+    with pytest.raises(ValueError, match="preserve"):
+        TransformResult(
+            preserve=frozenset({N("0")}), delta=res.delta, boundary=res.boundary,
+            layout_patch=res.layout_patch,
+            equation=res.equation, certificate=res.certificate)
+
+
+def test_il_certificato_e_il_delta_non_possono_nominare_operazioni_diverse():
+    dopo, res = _serie_riuscita()
+    with pytest.raises(ValueError, match="operazione"):
+        TransformResult(
+            preserve=res.preserve, delta=res.delta, boundary=res.boundary,
+            layout_patch=res.layout_patch, equation=res.equation,
+            certificate=Certificate("parallelo", CONTROLLI))

@@ -183,12 +183,14 @@ def check_delta(
                 "non sopravvive al passo e nessuna derivazione la consuma"))
 
     # 5 — il verso simmetrico: cio' che nasce dev'essere prodotto da qualcuno.
+    #
+    # **Misurato contro `Pₖ`, come il verso 4.** Il ciclo era `dopo - prima` e la
+    # correzione precedente ne aveva aggiunto uno accanto invece di cambiarlo: due
+    # voci di vocabolario per lo stesso difetto, e la vecchia che non poteva mai
+    # scattare da sola — `preservate ⊆ prima`, quindi `dopo - prima ⊆ dopo - preservate`.
+    # Un controllo che non puo' fallire indipendentemente non protegge; duplicarlo
+    # e' il gesto E-62 che questo pacchetto chiude altrove.
     for e in sorted(dopo - preservate):
-        if e not in delta.produced:
-            trovate.append(DeltaViolation(
-                "apparizione_non_spiegata", str(e),
-                "non era preservata e nessuna derivazione la produce"))
-    for e in sorted(dopo - prima):
         if e not in delta.produced:
             trovate.append(DeltaViolation(
                 "comparsa_non_spiegata", str(e),
