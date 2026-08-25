@@ -1,0 +1,100 @@
+[17:43:06Z] kirchhoff-loop v3 — avvio
+[17:43:06Z] repository=/Users/andreamarro/MATJOURNEY/kirchhoff
+[17:43:06Z] iterazioni=1 prova=0 promuovi=0 watchdog=2700s scrittura=$25 revisione=$8
+[17:43:06Z] 
+[17:43:06Z] --- iterazione 1 di 1 ---
+  [ok]  nessun FERMO
+  [ok]  repository git: dda6c9d
+  [ok]  uv: uv 0.11.8 (0e961dd9a 2026-04-27 aarch64-apple-darwin)
+  [ok]  helper runtime BMAD conformi al pin (5/5)
+  [ok]  holdout protetto da regola deny
+  [ok]  sprint-status.yaml leggibile
+  [ok]  albero di lavoro pulito
+[17:43:06Z] precondizioni: tutte verdi
+[17:43:06Z] storia: 1-1-l-identità-preservata-dev-essere-giustificata-non-dichiarata
+[17:43:06Z] classe di rischio: R2
+[17:43:06Z] ramo: loop/iter-20260825T174306Z-1-1-l-identità-preservata-dev-essere-giustificata-non-dichiarat (da main)
+[17:43:06Z] 
+[17:43:06Z] passo 1: implementa [-]
+[17:43:07Z]   → claude -p --model claude-opus-5 --effort max --max-budget-usd $25
+Permission allow rule (.claude/settings.json): Write(//Users/andreamarro/MATJOURNEY/kirchhoff/src/**) is not matched by file permission checks — only Edit(path) rules are. Use Edit(//Users/andreamarro/MATJOURNEY/kirchhoff/src/**) instead (Edit rules cover all file-editing tools).
+Permission allow rule (.claude/settings.json): Write(//Users/andreamarro/MATJOURNEY/kirchhoff/tests/**) is not matched by file permission checks — only Edit(path) rules are. Use Edit(//Users/andreamarro/MATJOURNEY/kirchhoff/tests/**) instead (Edit rules cover all file-editing tools).
+Permission allow rule (.claude/settings.json): Write(//Users/andreamarro/MATJOURNEY/kirchhoff/scripts/**) is not matched by file permission checks — only Edit(path) rules are. Use Edit(//Users/andreamarro/MATJOURNEY/kirchhoff/scripts/**) instead (Edit rules cover all file-editing tools).
+Permission allow rule (.claude/settings.json): Write(//Users/andreamarro/MATJOURNEY/kirchhoff/_bmad-output/**) is not matched by file permission checks — only Edit(path) rules are. Use Edit(//Users/andreamarro/MATJOURNEY/kirchhoff/_bmad-output/**) instead (Edit rules cover all file-editing tools).
+Permission deny rule (.claude/settings.json): Write(//Users/andreamarro/MATJOURNEY/kirchhoff/docs/00-fonte-piano-kirchhoff.md) is not matched by file permission checks — only Edit(path) rules are. Use Edit(//Users/andreamarro/MATJOURNEY/kirchhoff/docs/00-fonte-piano-kirchhoff.md) instead (Edit rules cover all file-editing tools).
+Story 1.1 implementata e verificata. Rapporto.
+
+---
+
+## 1. Che cosa ho cambiato, file per file
+
+**`src/kirchhoff/domain/transform/check.py`**
+- `_divergenti(prima, dopo)` — estratto dal corpo di `preserve_set`: il confronto degli attributi sostanziali (terminali orientati su entrambi i lati) ora esiste una volta sola. Due funzioni lo interrogano con domande diverse; scriverlo due volte lo farebbe divergere (E-62). Nessun cambiamento di comportamento: `preserve_set` chiama l'estratto.
+- `identita_riusate(before, after, *, operation)` — `(Entities(Cₖ) ∩ Entities(Cₖ₊₁)) − Pₖ`. Gli identificatori che sopravvivono al passo mentre l'entità non sopravvive. **Si misura dai due circuiti, mai dal `Delta`**: chi è misurato non definisce il proprio riferimento.
+- `identita_giustificate(before, after, *, operation)` — le preservate che stanno in `Pₖ` **avendo cambiato** un attributo che quell'operazione dichiara mutabile. È il «caso non banale» di AC2. Vuoto su tutto il catalogo di oggi, perché `_MUTABILI` non dichiara nulla.
+- `ATTESTAZIONE_IDENTITA` e `attestazioni_di_identita(...)` — l'attestazione, se e solo se c'è stato qualcosa da giustificare.
+- `check_transform` — **nuova guardia che emette `identity_violation`**, fra `empty_boundary` e `preserve_nonmaximal`. L'ordine è argomentato nel docstring: l'identità misura il *riferimento* rispetto a cui la massimalità è giudicata, quindi viene prima.
+- Docstring aggiornati dove affermavano il falso: il modulo e `check_transform` dicevano che `identity_violation` era «dichiarata e senza produttori». Ora ne ha uno, ed è l'altro verso rispetto a quello uscito con `node_mapping`.
+
+**`src/kirchhoff/domain/transform/engine.py`** — il `Certificate` porta `CONTROLLI` più l'attestazione condizionata. La condizione non la decide il motore: la decide il controllore, che è l'unico a sapere se il controllo ha avuto un oggetto.
+
+**`src/kirchhoff/domain/transform/__init__.py`** — quattro nomi nuovi esportati.
+
+**`tests/test_transform.py`** — classe `TestIdentitaGiustificata` (13 test) più un test a livello di modulo; in testa la mappa **criterio di accettazione → test** richiesta dall'azione aperta della retro di Epic 1. Ho anche dovuto separare una fixture esistente: `test_un_preserve_che_rivendica_il_nome_vecchio_e_rifiutato` girava su `RINOMINATO`, dove `b → z` trascina i terminali di `R1` e `R2` — quindi ora quel passo è rifiutato per identità *prima* della massimalità. Ho aggiunto `RINOMINATO_PER_INTERO` (rinomina completa, identificatori nuovi) per isolare la verifica originale, e un test nuovo che misura il verdetto sul fixture vecchio. **Nessuna verifica preesistente è stata persa.**
+
+## 2. Oracoli eseguiti, con exit code
+
+| Oracolo | Exit |
+|---|---|
+| `ops/loop/verifica.sh` | **0** — `{"copertura": 100.0, "dominio": true, "recinti": true, "test_falliti": 0, "test_passati": 404, "verde": true}` |
+| `pytest tests` | **0** — 404 passati (baseline misurata via `git stash`: 390) |
+| `scripts/check_boundaries.py` | **0** — «domain/ non importa nulla del progetto fuori da sé» |
+| `scripts/check_domain_coverage.py` | **0** — «domain/ al 100%» (rami compresi) |
+
+**Il difetto, eseguito prima della guardia.** Sul caso R2-A con `Delta` `{R1,R2} --parallelo--> {R1}`: `check_transform → None`, `check_delta → ()`, `check_patch → ()`, `check_boundary → ()`. `Pₖ` era già corretto (`R1` ne era fuori) e non bastava: uscire da `Pₖ` non è un rifiuto.
+
+**Mutazione e ripristino** (debito `2-4d` rispettato — exit code letti su riga separata, mai dopo una pipe):
+
+| | mutante | ripristino |
+|---|---|---|
+| exit code | **1** (non 4, non 127) | **0** |
+| pytest avviato | `test session starts` | idem |
+| collection | `collected 1 item` | `collected 1 item` |
+| bersaglio | `..._e_rifiutato FAILED` | `..._e_rifiutato PASSED` |
+| natura del rosso | `E AssertionError: un'entita' nuova ha riusato l'identificatore di una consumata e nessun controllore ha protestato` — `isinstance(None, Refusal)` | — |
+
+`diff` fra il file ripristinato e il file integro: identico.
+
+## 3. Che cosa resta incompleto o rischioso
+
+- **La guardia irrigidisce il contratto oltre la lettera di AD-22 v2.1.** Quella diceva che un'entità mutata in luogo «deve comparire nel `Delta`»; AC1 dice «viene rifiutata». Ho implementato AC1. Conseguenza: nel contratto corrente una mutazione in luogo di un attributo non dichiarato mutabile **non è più esprimibile**, nemmeno con una lineage impeccabile. La valvola resta `_MUTABILI` nel Catalogo. Questa è la clausola che vale la pena rileggere per prima.
+- **`identity_violation` è riusata per il verso opposto a quello che AD-19 descrive.** La riga della tabella dice `id_{k+1}(x) ≠ id_k(x)` per un `x ∈ Pₖ`; il mio produttore emette la stessa causa per «stesso nome, entità diversa». L'enumerazione è chiusa e delle tre assegnate a questo modulo è l'unica che parli di identità — `preserve_nonmaximal` non descriverebbe il difetto, perché qui `preserve` può essere *esattamente* `Pₖ`. Se il proprietario ritiene che serva una causa distinta, è una modifica dello spine e non l'ho fatta.
+- **L'attestazione di AC2 non è raggiungibile dal percorso interno di `transform()`.** Nessuna voce del catalogo dichiara attributi mutabili, quindi `serie` e `parallelo` non producono mai il caso non banale. È testata direttamente sulle funzioni pure e con `monkeypatch` su `_MUTABILI` (precedente già in uso nel file). La riga del motore che la compone è esercitata da ogni passo, con attestazione vuota.
+- `identita_riusate` può segnalare solo componenti: un nodo è il proprio nome, quindi non è falsificabile. Voluto e documentato, ma è un limite reale della copertura della guardia.
+
+## 4. Fuori ambito — trovato e non toccato
+
+- **`sprint-status.yaml` non conosce questa storia.** La sua `epic-1` è ancora quella vecchia (`1-1-insieme-di-riferimento-strutturato-a-risposta-nota`, `done`), mentre `epics.md` la Epic 1 la ha riscritta come «La derivazione che si vede e che si può controllare». Le due fonti sono divergenti sulla numerazione, e lo stato di questa storia non è registrabile senza risolverla. Non ho scritto in `_bmad-output/planning-artifacts/`.
+- **`ops/loop/stato/ratchet.json` è stantio**: `test_passati: 245` contro 390 misurati a HEAD prima del mio lavoro. Non l'ho toccato — `ops/loop/` è l'infrastruttura che mi esegue.
+- `reroute_scope` ha ancora due letture non coincidenti (già registrato in `deferred-work.md` dal docstring di `check_patch`).
+- Il testo di AD-22 v2.1 nello spine continua a descrivere la mutazione in luogo come rappresentabile nel `Delta`; dopo questa storia non lo è più. È un documento d'autorità e non l'ho modificato.
+[17:59:21Z] 
+[17:59:21Z] passo 2: verifica [-]
+  test...
+  [ok]  test: 404 passati
+  [ok]  copertura: 100.0%
+  [ok]  recinti di dipendenza
+  [ok]  copertura del dominio
+[17:59:41Z]   oracolo exit 0 — {"copertura": 100.0, "dominio": true, "recinti": true, "test_falliti": 0, "test_passati": 404, "verde": true}
+[17:59:41Z] 
+[17:59:41Z] passo 3: revisiona [Blind Hunter]
+[17:59:41Z]   → claude -p --model claude-fable-5 --effort max --max-budget-usd $8
+[18:06:19Z]   revisione exit 1
+Permission allow rule (.claude/settings.json): Write(//Users/andreamarro/MATJOURNEY/kirchhoff/src/**) is not matched by file permission checks — only Edit(path) rules are. Use Edit(//Users/andreamarro/MATJOURNEY/kirchhoff/src/**) instead (Edit rules cover all file-editing tools).
+Permission allow rule (.claude/settings.json): Write(//Users/andreamarro/MATJOURNEY/kirchhoff/tests/**) is not matched by file permission checks — only Edit(path) rules are. Use Edit(//Users/andreamarro/MATJOURNEY/kirchhoff/tests/**) instead (Edit rules cover all file-editing tools).
+Permission allow rule (.claude/settings.json): Write(//Users/andreamarro/MATJOURNEY/kirchhoff/scripts/**) is not matched by file permission checks — only Edit(path) rules are. Use Edit(//Users/andreamarro/MATJOURNEY/kirchhoff/scripts/**) instead (Edit rules cover all file-editing tools).
+Permission allow rule (.claude/settings.json): Write(//Users/andreamarro/MATJOURNEY/kirchhoff/_bmad-output/**) is not matched by file permission checks — only Edit(path) rules are. Use Edit(//Users/andreamarro/MATJOURNEY/kirchhoff/_bmad-output/**) instead (Edit rules cover all file-editing tools).
+Permission deny rule (.claude/settings.json): Write(//Users/andreamarro/MATJOURNEY/kirchhoff/docs/00-fonte-piano-kirchhoff.md) is not matched by file permission checks — only Edit(path) rules are. Use Edit(//Users/andreamarro/MATJOURNEY/kirchhoff/docs/00-fonte-piano-kirchhoff.md) instead (Edit rules cover all file-editing tools).
+Error: Exceeded USD budget (8)[18:06:19Z]   revisore non ha concluso
+[18:06:19Z] 
+[18:06:19Z] iterazione 1 NON promossa. Il ramo loop/iter-20260825T174306Z-1-1-l-identità-preservata-dev-essere-giustificata-non-dichiarat resta per l'ispezione.
