@@ -382,11 +382,19 @@ def _senza(ir: IR, componenti: tuple[str, ...], nodi: tuple[str, ...],
     ha ragione — quel componente li' non esiste. Ridirigerla sull'equivalente sarebbe
     molto peggio di un'eccezione: la tensione ai capi di `R1` **non e'** la tensione
     ai capi di `R1+R2`, e la domanda dell'utente cambierebbe di nascosto. Resta
-    quindi su `Cₖ`, che e' il circuito in cui il suo bersaglio esiste, e non si perde:
-    `Delta.what_happened_to(EntityRef("component", "R1"))` restituisce la derivazione
-    che l'ha consumata, ed e' cosi' che la risalita ritrova la grandezza chiesta dopo
-    aver risolto il circuito ridotto. La lineage e' interrogabile per costruzione
-    (invariante 8 di `Delta`): non serve un settimo membro del risultato.
+    quindi su `Cₖ`, che e' il circuito in cui il suo bersaglio esiste.
+
+    **Precisione dovuta.** Questo docstring diceva che la richiesta «non si perde:
+    `what_happened_to` la ritrova». Impreciso: il `Delta` ritrova il **componente**
+    `R1`, non la **richiesta** `q1`, il cui identificatore e la cui grandezza vivono
+    solo su `Cₖ`. Cio' che la lineage garantisce e' che si sappia **dove `R1` e'
+    finito**; la richiesta si ritrova solo se chi risale conserva `Cₖ`, e nessun test
+    lo dimostra oggi. Registrato in `deferred-work.md`.
+
+    Le tre decisioni di questo docstring — `source_kind`, provenienza, richieste —
+    sono decisioni di **dominio** prese qui e non scritte in alcun documento di
+    autorita'. Ora sono in `deferred-work.md`, dove vivono le decisioni in attesa del
+    proprietario, invece che soltanto in un commento che nessun processo legge.
     """
     rimasti = tuple(
         c if c.provenance is None else replace(c, provenance=None)

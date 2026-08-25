@@ -65,3 +65,34 @@ fatta emergere. Nessuna viene lasciata cadere in silenzio.
     `domain/transform` sarebbe una modifica dello spine. Questa storia chiude i primi
     due blocchi di criteri; il terzo si riapre quando 2.5 è fatta e il `ProofGraph`
     esiste.
+
+- source_spec: `spec-2-6-catalogo-delle-trasformazioni.md` (riparazione P1-6, 25/08/2026)
+  summary: `_senza` porta `source_kind` a `generated` su ogni `Cₖ₊₁`, e la distinzione fra un
+    circuito letto da netlist e uno letto da fotografia sparisce per sempre a valle del primo
+    passo di riduzione.
+  evidence: La decisione è argomentata nel docstring di `_senza` ed è corretta rispetto allo
+    schema — `Cₖ₊₁` non è stato letto da nessuna parte, è stato calcolato — ma nessun documento
+    di autorità la registra. La conseguenza non è locale: `domain/validate` emette il sospetto
+    E12/E24 sui resistori fuori serie **solo** quando `source_kind == "image"`, quindi dopo una
+    riduzione quel sospetto non nasce più, anche su un circuito che viene da una fotografia.
+    Se la distinzione debba sopravvivere alla riduzione — per esempio con un campo che ricorda
+    l'origine della catena — è una decisione di contratto, non di implementazione.
+
+- source_spec: `spec-2-6-catalogo-delle-trasformazioni.md` (riparazione P1-6, 25/08/2026)
+  summary: La provenienza fotografica dei componenti sopravvissuti viene azzerata su `Cₖ₊₁`.
+  evidence: Segue dalla decisione precedente: lo schema vieta un'area di provenienza su una
+    sorgente che non è un'immagine. Il docstring sostiene che non è una perdita perché
+    «l'ancoraggio vive su `C₀`, dove la conferma dell'utente avviene, e il `Delta` tiene il filo
+    fra i due». È vero per i componenti, ed è verificato. Ma la risalita a `C₀` attraverso una
+    catena di più passi non è né implementata né testata: `Delta` è per passo, e nessun oggetto
+    tiene oggi la catena. FR-40 (ancoraggio di provenienza) ne dipende.
+
+- source_spec: `spec-2-6-catalogo-delle-trasformazioni.md` (riparazione P1-6, 25/08/2026)
+  summary: Una `Request` il cui bersaglio viene consumato resta su `Cₖ` e non viaggia su `Cₖ₊₁`.
+  evidence: La decisione è giusta e ben argomentata — ridirigere la richiesta sull'equivalente
+    cambierebbe di nascosto la domanda dell'utente, perché la tensione ai capi di `R1` non è
+    quella ai capi di `R1+R2`. Ma il docstring affermava che «non si perde: `what_happened_to` la
+    ritrova», e questo è impreciso: il `Delta` ritrova il **componente** `R1`, non la **richiesta**
+    `q1`, il cui identificatore e la cui grandezza vivono solo su `Cₖ`. La ricostruzione presuppone
+    quindi che chi risale conservi `Cₖ`, e nessun test lo dimostra. Precisato nel docstring;
+    chi debba conservare la catena dei circuiti resta una decisione aperta.
