@@ -38,7 +38,13 @@ BASELINE="$STATO/ratchet.json"
 # righe su 8 file quando e' stato interrotto, a lavoro incompleto.
 # Le revisioni leggono e non scrivono: tetto separato e piu' basso.
 BUDGET_SCRITTURA=25
-BUDGET_REVISIONE=8
+# **15, non 8.** Il primo giro di prodotto e morto qui: il Blind Hunter ha colpito
+# il tetto dopo 6m38s con «Exceeded USD budget (8)» e il giro e stato buttato dopo
+# aver gia pagato l'implementazione. Le tornate manuali dello stesso revisore, sullo
+# stesso modello e sullo stesso effort, giravano a 12 e completavano. Un tetto che
+# uccide il passo incaricato di dire se il lavoro e buono non protegge: spreca il
+# passo precedente.
+BUDGET_REVISIONE=15
 WATCHDOG=2700           # 45 minuti: oltre, si uccide
 PAUSA=20                # respiro fra iterazioni
 ITERAZIONI=1
@@ -108,7 +114,12 @@ log "iterazioni=$ITERAZIONI prova=$PROVA promuovi=$PROMUOVI watchdog=${WATCHDOG}
 # 60% del budget.
 con_watchdog() {
   local uscita="$1"; local ingresso="$2"; shift 2
-  "$@" < "$ingresso" > "$uscita" 2>&1 &
+  # **stderr in un file suo.** Con `2>&1` il messaggio «Exceeded USD budget» e
+  # finito DENTRO `.rilievi.md`, cioe nel file che il passo di riparazione legge
+  # come «rilievi da riparare»: un errore travestito da rilievo. Ora l'uscita del
+  # modello e il suo rumore restano separati, e il rumore viene mostrato quando
+  # serve — cioe quando il passo fallisce.
+  "$@" < "$ingresso" > "$uscita" 2> "$uscita.err" &
   local pid=$!
   ( sleep "$WATCHDOG"
     kill -0 "$pid" 2>/dev/null && {
@@ -285,7 +296,13 @@ for i, s in enumerate(p):
         e=$?
         log "  revisione exit $e"
         cat "$STATO/.rilievi.md" >> "$DIARIO"
-        if [ "$e" != "0" ]; then log "  revisore non ha concluso"; fallito=1; break; fi
+        if [ "$e" != "0" ]; then
+          log "  revisore non ha concluso"
+          # Il PERCHE, non solo il fatto. La prima corsa diceva «non ha concluso» e
+          # basta: la causa — un tetto di budget — stava in un file che nessuno apriva.
+          [ -s "$STATO/.rilievi.md.err" ] && log "  causa: $(tail -1 "$STATO/.rilievi.md.err")"
+          fallito=1; break
+        fi
         ;;
 
       analizza|confronta)
