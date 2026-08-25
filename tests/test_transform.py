@@ -547,8 +547,14 @@ class TestFR43AlMotore:
         Con il solo recinto statico, una voce che entrasse nel registro senza essere
         applicabile sarebbe stata eseguita senza che nulla protestasse.
         """
+        from types import MappingProxyType
+
         from kirchhoff.domain.transform import engine
-        monkeypatch.setitem(engine._REGISTRO, "stella_triangolo", engine._serie)
+
+        # Si sostituisce il LEGAME, non si muta la mappa: il registro e' chiuso
+        # (P1-5) e il test non deve essere la ragione per cui resta apribile.
+        monkeypatch.setattr(engine, "_REGISTRO", MappingProxyType(
+            {**engine._REGISTRO, "stella_triangolo": engine._serie}))
         with pytest.raises(ValueError, match="non applicabile"):
             transform(SERIE, "stella_triangolo", "R1", "R2")
 
@@ -1047,3 +1053,29 @@ def test_un_rifiuto_che_nomina_l_operazione_ne_dichiara_il_genere(costruisci):
 # stessa imprecisione dei due rifiuti corretti qui sopra, in un terzo posto che
 # nessuno dei quattordici rilievi nomina. Non toccata: allargare la Story mentre la
 # si ripara e' il modo di renderla non verificabile.
+
+
+# ---------------------------------------------------------------------------
+# P1-5 — il registro e' chiuso anche a runtime, non solo a parole.
+#
+# Il docstring del modulo dichiara «registro chiuso caricato all'avvio: non espone
+# alcuna funzione per aggiungervi una voce a runtime». Vero, e insufficiente: un
+# `dict` non ha bisogno che gliela si esponga. `_REGISTRO["serie"] = altra` sostituiva
+# l'implementazione della serie senza attraversare nessuna delle quattro porte.
+#
+# `MUTABLE_ATTRIBUTES` era gia' blindato con `MappingProxyType` nello stesso
+# pacchetto: il registro che decide QUALE CODICE viene eseguito no. Stessa classe di
+# difetto, chiusa in un modulo e lasciata aperta in quello accanto.
+# ---------------------------------------------------------------------------
+
+
+def test_il_registro_non_si_puo_riscrivere_a_runtime():
+    from kirchhoff.domain.transform import engine
+    with pytest.raises(TypeError):
+        engine._REGISTRO["serie"] = engine._parallelo
+
+
+def test_il_registro_non_accetta_voci_nuove_a_runtime():
+    from kirchhoff.domain.transform import engine
+    with pytest.raises(TypeError):
+        engine._REGISTRO["stella_triangolo"] = engine._serie

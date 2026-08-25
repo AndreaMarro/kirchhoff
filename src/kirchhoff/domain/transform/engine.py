@@ -42,10 +42,11 @@ Puro: nessuna I/O, nessun orologio, nessuna casualita'.
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import replace
 from fractions import Fraction
 from inspect import signature
+from types import MappingProxyType
 
 from ..ir import IR, REFERENCE_NODE, Component
 from ..refusal import Refusal
@@ -403,10 +404,28 @@ def _senza(ir: IR, componenti: tuple[str, ...], nodi: tuple[str, ...],
 
 #: Il registro chiuso, costruito all'import. Non esiste una `register()`: estenderlo
 #: e' una modifica del catalogo, non una chiamata.
-_REGISTRO: dict[str, Callable[..., tuple[IR, TransformResult] | Refusal]] = {
+#: Le implementazioni, per nome. **Chiuso anche a runtime, non solo a parole.**
+#:
+#: Il docstring del modulo dichiarava «non espone alcuna funzione per aggiungervi una
+#: voce a runtime»: vero, e insufficiente — un `dict` non ha bisogno che gliela si
+#: esponga. `_REGISTRO["serie"] = altra` sostituiva l'implementazione della serie
+#: senza attraversare nessuna delle quattro porte di `transform`, sotto un docstring
+#: che lo dichiarava chiuso.
+#:
+#: `MUTABLE_ATTRIBUTES` era gia' blindato cosi' in `catalog.py`. Il registro che
+#: decide **quale codice viene eseguito** no: stessa classe di difetto, chiusa in un
+#: modulo e lasciata aperta in quello accanto.
+#:
+#: Nessun caso legittimo di registrazione tardiva esiste — il registro e' un letterale
+#: costruito una volta all'import, non un punto di estensione — quindi blindarlo non
+#: toglie niente a nessuno.
+_IMPLEMENTAZIONI: dict[str, Callable[..., tuple[IR, TransformResult] | Refusal]] = {
     "serie": _serie,
     "parallelo": _parallelo,
 }
+
+_REGISTRO: Mapping[str, Callable[..., tuple[IR, TransformResult] | Refusal]] = (
+    MappingProxyType(_IMPLEMENTAZIONI))
 
 
 def implemented() -> frozenset[str]:
