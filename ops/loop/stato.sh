@@ -65,7 +65,8 @@ fi
 # --- 4. il ledger BMAD --------------------------------------------------------
 titolo "Ledger"
 if [ -f "$LEDGER" ]; then
-  python3 - "$LEDGER" <<'PY' 2>/dev/null || printf '  %-22s %s\n' "sprint-status" "illeggibile"
+  python3 - "$LEDGER" "$QUI" <<'PY' 2>/dev/null || printf '  %-22s %s\n' "sprint-status" "illeggibile"
+import re as _re
 import sys
 try:
     import yaml
@@ -84,6 +85,30 @@ for k, v in ds.items():
         c[v] = c.get(v, 0) + 1
 print('  %-22s %s' % ('aggiornato', d.get('last_updated', '—')))
 print('  %-22s %s' % ('stati', ', '.join(f'{k}: {n}' for k, n in sorted(c.items())) or '—'))
+
+# **Il ledger e' allineato con l'epics corrente?** Il loop NON seleziona da qui —
+# la chiave si deriva da `epics.md` via `chiave.py` — ma presentare questi conteggi
+# senza dire a quali chiavi si riferiscono e' esattamente la confusione che ha fatto
+# lavorare un giro su una Story diversa da quella corrente. Si misura la
+# sovrapposizione invece di migrare gli stati: la migrazione e' una decisione del
+# proprietario, questo e' solo smettere di mentire.
+import sys as _s
+_s.path.insert(0, sys.argv[2])   # ops/loop, passato dal chiamante
+try:
+    import chiave as _C
+    correnti = {k for _, k, _ in _C.chiavi()}
+    nel_ledger = {k for k in ds if isinstance(ds[k], str)}
+    storie = {k for k in nel_ledger if _re.match(r'^\d+-\d+[a-z]?-', k)}
+    comuni = storie & correnti
+    if storie and not comuni:
+        print('  %-22s \033[1;33m%s\033[0m' % ('allineamento', f'NESSUNA delle {len(storie)} chiavi e corrente'))
+        print('  %-22s %s' % ('', 'le chiavi sono v1; epics.md e v2. La selezione usa epics.md.'))
+    elif storie and len(comuni) < len(storie):
+        print('  %-22s \033[1;33m%s\033[0m' % ('allineamento', f'{len(comuni)}/{len(storie)} chiavi correnti'))
+    elif storie:
+        print('  %-22s %s' % ('allineamento', 'tutte le chiavi sono correnti'))
+except Exception as _e:
+    print('  %-22s %s' % ('allineamento', f'non misurabile ({_e.__class__.__name__})'))
 PY
 else
   riga "sprint-status" "assente"
