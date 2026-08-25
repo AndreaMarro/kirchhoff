@@ -340,7 +340,7 @@ def check_transform(
     """
     if boundary is None:
         return Refusal(
-            "empty_boundary", operation, "request",
+            "empty_boundary", operation, "operation",
             f"{operation}: ∂Tₖ = ∅. Un sottografo che non confina con nulla non e' "
             "un passo della derivazione: e' una riscrittura dell'intera rete.")
 
@@ -368,7 +368,7 @@ def check_transform(
         mancanti = sorted(preservate - dichiarate)
         eccedenti = sorted(dichiarate - preservate)
         return Refusal(
-            "preserve_nonmaximal", operation, "request",
+            "preserve_nonmaximal", operation, "operation",
             f"{operation}: `preserve` diverso da `Pₖ`. "
             f"Sopravvissute non dichiarate: "
             f"{', '.join(str(e) for e in mancanti) or 'nessuna'}. "

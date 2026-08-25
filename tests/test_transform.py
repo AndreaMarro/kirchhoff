@@ -998,3 +998,52 @@ def test_gli_argomenti_giusti_non_sono_disturbati():
     """Discriminazione positiva: la porta nuova non deve accusare il caso sano."""
     esito = transform(SERIE, "serie", "R1", "R2")
     assert not isinstance(esito, Refusal)
+
+
+# ---------------------------------------------------------------------------
+# P1-4 — il genere del soggetto non deve mentire.
+#
+# `empty_boundary` e il primo ramo di `preserve_nonmaximal` costruivano
+# `Refusal(causa, operation, "request", ...)`: soggetto «serie», genere `request`.
+# Nessuna richiesta chiamata «serie» esiste nel circuito.
+#
+# Non e' cosmesi. FR-4 e K-3 vogliono la diagnosi riusabile come Domanda mirata
+# **sull'elemento coinvolto**: chi risale per `subject_kind` per costruirla trova
+# un genere che mente, e cerchera' fra le richieste un'entita' che non c'e'. Il
+# ripiego — nessun `SubjectKind` copriva «operazione» — non era dichiarato da
+# nessuna parte, quindi era indistinguibile da una svista.
+# ---------------------------------------------------------------------------
+
+
+def _refusal_empty_boundary():
+    dopo, res = _serie_riuscita()
+    return check_transform(SERIE, dopo, "serie", res.layout_patch, None)
+
+
+def _refusal_preserve_nonmaximal():
+    dopo, res = _serie_riuscita()
+    guasta = LayoutPatch(preserve=(), remove=res.layout_patch.remove,
+                         create=res.layout_patch.create,
+                         reroute_scope=res.layout_patch.reroute_scope)
+    return check_transform(SERIE, dopo, "serie", guasta, res.boundary)
+
+
+@pytest.mark.parametrize("costruisci", [
+    _refusal_empty_boundary,
+    _refusal_preserve_nonmaximal,
+])
+def test_un_rifiuto_che_nomina_l_operazione_ne_dichiara_il_genere(costruisci):
+    r = costruisci()
+    assert isinstance(r, Refusal)
+    assert r.subject == "serie"
+    assert r.subject_kind == "operation", (
+        f"soggetto «{r.subject}» dichiarato di genere «{r.subject_kind}»: "
+        "nessuna richiesta con quel nome esiste nel circuito")
+
+
+# **Osservazione, non correzione.** `domain/validate` costruisce
+# `Refusal("unsolvable", r.target, "request", ...)`: il soggetto e' il TARGET della
+# richiesta — un componente che non esiste — mentre il genere dice `request`. E' la
+# stessa imprecisione dei due rifiuti corretti qui sopra, in un terzo posto che
+# nessuno dei quattordici rilievi nomina. Non toccata: allargare la Story mentre la
+# si ripara e' il modo di renderla non verificabile.

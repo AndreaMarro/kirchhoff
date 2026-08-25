@@ -39,7 +39,20 @@ Cause = Literal[
     "identity_violation", "preserve_nonmaximal", "empty_boundary",
 ]
 
-SubjectKind = Literal["node", "component", "request"]
+#: Il genere dell'elemento che il rifiuto nomina. Serve a FR-4 e K-3: la diagnosi
+#: dev'essere riusabile come Domanda mirata **sull'elemento coinvolto**, e chi la
+#: costruisce risale per il genere per sapere dove cercare quell'elemento.
+#:
+#: `operation` esiste perche' due rifiuti nominano legittimamente l'operazione e non
+#: un'entita' del circuito: `empty_boundary` — dove il boundary e' vuoto, quindi non
+#: c'e' nessuna entita' da nominare — e `preserve_nonmaximal`, dove il difetto e'
+#: dell'insieme dichiarato e non di un suo elemento. Prima usavano `request` come
+#: ripiego, e il ripiego non era dichiarato da nessuna parte: chi risaliva per il
+#: genere cercava fra le richieste un'entita' che non esisteva.
+#:
+#: A differenza di `Cause`, questa enumerazione **non** e' governata dallo spine:
+#: AD-19 assegna le cause, non i generi.
+SubjectKind = Literal["node", "component", "request", "operation"]
 
 # **Una sola fonte autoritativa.** Questi due insiemi erano scritti a mano accanto
 # ai `Literal` e tenuti allineati dalla disciplina di chi modificava: e' il gesto
