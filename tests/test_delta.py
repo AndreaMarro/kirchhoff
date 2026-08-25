@@ -181,9 +181,50 @@ class TestCoerenzaColCircuito:
         """Unione di nodi: `n2` sparisce dentro `n1`, che sopravvive."""
         prima = _ir(_r("R1", "n1", "0", 10), _r("R2", "n2", "0", 20), nodes=("0", "n1", "n2"))
         dopo = _ir(_r("R1", "n1", "0", 10), _r("R2", "n1", "0", 20), nodes=("0", "n1"))
-        delta = Delta((StructuralDerivation("parallelo", (N("n2"),), (N("n1"),)),))
+        # `R2` passa da `(n2,0)` a `(n1,0)`: i terminali cambiano perche' il nodo che
+        # tocca viene assorbito. Sotto AD-22 **v2.2** non e' piu' preservata — e' la
+        # conseguenza dichiarata del ritiro di `node_mapping`, gia' fissata da
+        # `test_un_componente_i_cui_terminali_cambiano_non_e_preservato`. Il `Delta`
+        # deve quindi renderne conto: «una rimozione piu' una creazione, e come tale
+        # deve comparire nel Delta» (AD-22 v2.1).
+        #
+        # Prima della correzione degli insiemi, `prima - dopo` era calcolato per solo
+        # identificatore e `R2` non compariva: il `Delta` che la ignorava passava.
+        delta = Delta((
+            StructuralDerivation("parallelo", (N("n2"),), (N("n1"),)),
+            StructuralDerivation("parallelo", (C("R2"),), (C("R2"),)),
+        ))
         assert check_delta(delta, prima, dopo) == ()
         assert N("n1") in preserve_set(prima, dopo)
+        assert C("R2") not in preserve_set(prima, dopo)
+
+    def test_il_nome_riusato_da_una_fusione_non_e_una_falsa_accusa(self):
+        """Il caso R2-A, dal lato di `check_delta`.
+
+        `R1 (a,b) 10Ω` e `R2 (a,b) 20Ω` fondono in una equivalente battezzata
+        `R1 (a,b) 6⅔Ω`. Con `Pₖ` calcolato per solo identificatore — la seconda
+        definizione che viveva in questo modulo — `component:R1` risultava
+        «preservata», quindi la derivazione che la consuma davvero veniva segnalata
+        `preservata_consumata`: un passo corretto accusato di una violazione. Una
+        falsa accusa e' il difetto peggiore di questo prodotto.
+        """
+        prima = _ir(_r("R1", "a", "b", 10), _r("R2", "a", "b", 20),
+                    _r("RL", "b", "0", 5), nodes=("0", "a", "b"))
+        dopo = _ir(_r("R1", "a", "b", F(20, 3)), _r("RL", "b", "0", 5),
+                   nodes=("0", "a", "b"))
+        assert C("R1") not in preserve_set(prima, dopo, operation="parallelo")
+        delta = Delta((StructuralDerivation(
+            "parallelo", (C("R1"), C("R2")), (C("R1"),)),))
+        codici = [v.code for v in check_delta(delta, prima, dopo, operation="parallelo")]
+        assert "preservata_consumata" not in codici
+
+    def test_una_definizione_sola_di_pk_in_questo_modulo(self):
+        """E-62: due predicati per la stessa cosa divergono dove nessuno guarda."""
+        import inspect
+        from kirchhoff.domain.transform import check
+        corpo = inspect.getsource(check.check_delta)
+        assert "preserve_set(" in corpo
+        assert "prima & dopo" not in corpo
 
     def test_le_violazioni_sono_deterministiche(self):
         delta = Delta((StructuralDerivation("serie", (C("R1"),), ()),))

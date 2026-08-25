@@ -570,6 +570,40 @@ graph LR
   chi è misurato continua a non definire il proprio riferimento. Decisione owner del 24 agosto 2026;
   istruttoria in `implementation-artifacts/R2A-discriminante-mancante-identita.md`.
 
+  **Emendata il 25 agosto (v2.2) — `node_mapping` è DIFFERITA.** Le clausole della v2 e della v2.1,
+  prese insieme, rendono il campo inutilizzabile: `Pₖ` è preso *dopo* `node_mapping`, quindi un nodo
+  mappato con successo entra in `Pₖ`, e lì `id_{k+1}(x) = id_k(x)` **senza tolleranza** gli vieta di
+  avere un nome diverso. Non è un difetto d'implementazione — è il prodotto logico di tre clausole
+  dello stesso emendamento. Misurato eseguendo il controllore: una rinomina vera (`b → z`, con `b`
+  che sopravvive col nome `z`) è **rifiutata** con `identity_violation`; l'unica mappa che
+  attraversava il controllore aveva sorgente inesistente in `Cₖ`, cioè era un riferimento a nulla.
+  Istruttoria in `implementation-artifacts/escalation-node-mapping-ad22.md`.
+
+  Delle due uscite possibili — indebolire l'identità in `id_{k+1}(map(x)) = map(id_k(x))`, oppure
+  ritirare il campo — la decisione owner del 25 agosto 2026 sceglie la seconda. La prima
+  introdurrebbe una **seconda nozione di identità** («stesso id» accanto a «stessa entità dopo una
+  rinomina») e renderebbe molto più difficile stabilire `Pₖ` in modo indipendente. Nel punto più
+  delicato di Gate A si preferisce una semantica più piccola e verificabile a una più espressiva e
+  ambigua.
+
+  Dalla v2.2:
+  - **`node_mapping` è ritirata dal contratto runtime corrente.** Non è sostituita da un altro
+    campo né da un altro nome: nessuna `IdentityMap`, `RenameMap`, `SemanticAlias` o `SurvivorMap`
+    finché non esiste un caso d'uso concreto.
+  - **Nel contratto corrente la preservazione richiede identità semantica stabile *e* identificatore
+    semantico stabile.** `Pₖ = Entities(Cₖ) ∩ Entities(Cₖ₊₁)`, senza strato di mappatura, con il
+    solo discriminante per-operazione della v2.1.
+  - **`rinomina ≠ preservazione`.** Una trasformazione che fonde, sostituisce o ricostruisce
+    un'entità usa `consume` / `create` più la lineage nel `Delta`. È la stessa direzione già presa
+    per `R1 ∥ R2 → Req`, dove `Req` è un'entità nuova con lineage e non `R1` travestita.
+  - **Una futura esigenza reale di equivalenza sotto rinomina richiederà una nuova decisione
+    architetturale e un discriminante indipendente dimostrabile.** Non è implicita nel contratto
+    attuale, e non si riapre aggiungendo un campo.
+
+  Le clausole della v2 che riguardavano `node_mapping` — totalità e iniettività sui sopravvissuti —
+  restano scritte qui sopra come **provenienza**: descrivono un contratto che ha smesso di essere
+  corrente, non un errore da cancellare. Stato: **DIFFERITA**, non ritirata per sempre.
+
 ### AD-23 — R-Visual-1: l'ordine dei layer è dato, non emergente
 
 - **Binds:** `render/`, FR-53, FR-46

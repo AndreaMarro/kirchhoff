@@ -838,6 +838,13 @@ As a studente,
 I want percorrere avanti e indietro il passaggio,
 So that possa fissare il cambiamento premendo più volte invece di guardarlo una volta sola.
 
+**Autorità:** A-0 · AD-10 · AD-35 · UX-DR12 · UX-DR23 — è qui che la continuità visuale
+smette di essere una promessa e diventa misurabile: ciò che sta in `preserve` non si muove
+fra i due stati (A-0), i due stati e l'export nascono dalla **stessa** sorgente semantica
+(AD-10), e il rendering è puro, quindi la commutazione ripetuta all'infinito produce gli
+stessi byte (AD-35). È il primo punto in cui Gate A ha qualcosa di concreto da misurare;
+il gate non è però un'autorità che questa storia implementa, come in 1.1.
+
 **Acceptance Criteria**
 
 **Given** la derivazione a un passo della Story 1.7

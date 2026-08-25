@@ -23,7 +23,19 @@ from .schema import IR, Component
 SYMMETRIC: frozenset[str] = frozenset({"resistor", "capacitor", "inductor"})
 
 
-def _orienta(c: Component) -> Component:
+def orienta(c: Component) -> Component:
+    """L'orientamento canonico di un bipolo simmetrico. Identita' per gli altri.
+
+    **Pubblica perche' serve fuori di qui.** `domain/transform/check` deve
+    confrontare i terminali di due componenti per decidere se sono la stessa
+    entita', e farlo per uguaglianza sintattica di tupla contraddiceva questo
+    stesso modulo: due IR che `canonicalize` dichiara identici davano `Pₖ` diversi,
+    e un passo che non toccava nulla riceveva quattro violazioni. Una falsa accusa.
+
+    Riusare la regola invece di riscriverla e' E-62: due definizioni della stessa
+    simmetria divergerebbero nel posto dove nessuno guarda, e questa decide se
+    un'entita' e' la stessa.
+    """
     if c.type in SYMMETRIC and c.terminals[1] < c.terminals[0]:
         return replace(c, terminals=(c.terminals[1], c.terminals[0]))
     return c
@@ -32,7 +44,7 @@ def _orienta(c: Component) -> Component:
 def canonicalize(ir: IR) -> IR:
     """La forma su cui due IR dello stesso circuito devono coincidere."""
     componenti = tuple(sorted(
-        (_orienta(c) for c in ir.components),
+        (orienta(c) for c in ir.components),
         key=lambda c: (c.type, c.id, c.terminals),
     ))
     return IR(

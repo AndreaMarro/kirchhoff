@@ -45,6 +45,7 @@ import json
 import re
 import sys
 from pathlib import Path
+from pathlib import Path
 
 # --- la topologia -------------------------------------------------------------
 # Ardesia gira incondizionatamente a --model claude-opus-5 --effort max
@@ -138,20 +139,52 @@ def classifica(chiave: str, testo: str, forzata: str | None) -> tuple[str, str]:
 
     basso = (chiave + " " + testo).lower()
 
+    # I riferimenti alle decisioni si confrontano con un confine di parola: «AD-2»
+    # e' una sottostringa di «AD-22», e senza confine la Story 1.1 — che dichiara
+    # «AD-22 em.» — usciva classificata giusta ma con la diagnosi sbagliata,
+    # accusando AD-2. La classe era corretta per caso, e una diagnosi vera per caso
+    # non e' una diagnosi.
+    def tocca(superficie: str) -> bool:
+        if re.fullmatch(r"AD-\d+", superficie):
+            return re.search(rf"\b{re.escape(superficie.lower())}\b", basso) is not None
+        return superficie.lower() in basso
+
     for s in SUPERFICI_R3:
-        if s.lower() in basso:
+        if tocca(s):
             return "R3", f"tocca una superficie di proprieta': «{s}»"
     for s in SUPERFICI_R2:
-        if s.lower() in basso:
+        if tocca(s):
             return "R2", f"tocca un contratto architetturale: «{s}»"
     for s in SUPERFICI_R0:
-        if s.lower() in basso:
+        if tocca(s):
             return "R0", f"lavoro meccanico o documentale: «{s}»"
 
     # Default conservativo: chi non si riconosce vale come codice di prodotto.
     # Sbagliare verso l'alto costa token; sbagliare verso il basso costa
     # correttezza, ed e' l'errore che non vogliamo.
     return "R1", "nessuna superficie speciale riconosciuta: default conservativo"
+
+
+def _autorita_dichiarata(chiave: str) -> str:
+    """La riga **Autorita:** della Story, dalla stessa sorgente della chiave.
+
+    Il router classificava sulla sola chiave, cioe' su uno slug. Misurato il
+    25/08/2026: la Story 1.1 dichiara «AD-22 em. · CV1 · CV3 · CV5», e' l'ingresso
+    di VCER e di Gate A, e usciva **R1** — Opus xhigh con revisione Opus — invece
+    di R2, perche' il suo titolo non nomina nessuna di quelle autorita'. Sarebbe
+    stata la prima storia della catena verso il Visual Slice, sotto-revisionata.
+
+    La sorgente e' `epics.md`, la stessa da cui la chiave deriva: il router non
+    guadagna una seconda fonte, smette di indovinare dalla prima.
+    """
+    try:
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        import chiave as C
+        return C.autorita(chiave)
+    except Exception:
+        # Fuori dal repository, o con un `epics.md` irraggiungibile, si classifica
+        # sulla sola chiave: piu' povero, mai piu' permissivo del default.
+        return ""
 
 
 def main() -> int:
@@ -162,7 +195,8 @@ def main() -> int:
     p.add_argument("--json", action="store_true", help="emette JSON invece del riassunto leggibile")
     a = p.parse_args()
 
-    classe, motivo = classifica(a.storia, a.testo, a.classe)
+    testo = a.testo or _autorita_dichiarata(a.storia)
+    classe, motivo = classifica(a.storia, testo, a.classe)
 
     if classe == "MANUALE":
         out = {

@@ -16,17 +16,51 @@ Puro: nessuna I/O, nessun orologio, nessuna casualita'.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal
+from typing import Literal, get_args
 
-#: Cause emesse da `domain/validate` (AD-19, riga v1 della tabella).
-#: Le cause di `domain/verify` e di `domain/transform/check` vivranno accanto a
-#: queste quando quegli stadi nasceranno: l'enumerazione e' chiusa, non privata.
-Cause = Literal["topology", "units", "unsolvable"]
+#: Cause emesse da `domain/validate` (AD-19, riga v1 della tabella) e, dalla
+#: Story 2.6, da `domain/transform/check` (righe v2 della stessa tabella).
+#:
+#: Le tre cause di trasformazione arrivano **adesso** e non prima perche' prima non
+#: esisteva lo stadio che le emette: `domain/validate` sta *prima* che una
+#: trasformazione esista, e infatti nessuna delle sue tre cause copriva «una entita'
+#: preservata ha cambiato identita'». Uno stadio obbligato a rifiutare senza una
+#: causa legale degrada a eccezione generica o a `sanity`, e in entrambi i casi
+#: l'utente perde la localizzazione, che e' cio' che K-3 promette (AD-19 em.).
+#:
+#: Le cause di `domain/verify`, `render/`, `domain/truthfulness`, `perception/` e
+#: `corpus/` vivranno accanto a queste quando quegli stadi nasceranno:
+#: l'enumerazione e' chiusa, non privata. Aggiungerne una **non** e' una modifica di
+#: questo modulo: e' una modifica dello spine, gia' scritta nella tabella di AD-19.
+Cause = Literal[
+    # domain/validate — v1
+    "topology", "units", "unsolvable",
+    # domain/transform/check — v2
+    "identity_violation", "preserve_nonmaximal", "empty_boundary",
+]
 
-SubjectKind = Literal["node", "component", "request"]
+#: Il genere dell'elemento che il rifiuto nomina. Serve a FR-4 e K-3: la diagnosi
+#: dev'essere riusabile come Domanda mirata **sull'elemento coinvolto**, e chi la
+#: costruisce risale per il genere per sapere dove cercare quell'elemento.
+#:
+#: `operation` esiste perche' due rifiuti nominano legittimamente l'operazione e non
+#: un'entita' del circuito: `empty_boundary` — dove il boundary e' vuoto, quindi non
+#: c'e' nessuna entita' da nominare — e `preserve_nonmaximal`, dove il difetto e'
+#: dell'insieme dichiarato e non di un suo elemento. Prima usavano `request` come
+#: ripiego, e il ripiego non era dichiarato da nessuna parte: chi risaliva per il
+#: genere cercava fra le richieste un'entita' che non esisteva.
+#:
+#: A differenza di `Cause`, questa enumerazione **non** e' governata dallo spine:
+#: AD-19 assegna le cause, non i generi.
+SubjectKind = Literal["node", "component", "request", "operation"]
 
-CAUSES: frozenset[str] = frozenset({"topology", "units", "unsolvable"})
-SUBJECT_KINDS: frozenset[str] = frozenset({"node", "component", "request"})
+# **Una sola fonte autoritativa.** Questi due insiemi erano scritti a mano accanto
+# ai `Literal` e tenuti allineati dalla disciplina di chi modificava: e' il gesto
+# che E-62 descrive — un vocabolario scritto due volte diverge, e diverge nel posto
+# dove nessuno guarda. Derivandoli, la divergenza non e' piu' evitata: e' impossibile.
+# `get_args` su un `Literal` restituisce i suoi membri nell'ordine di dichiarazione.
+CAUSES: frozenset[str] = frozenset(get_args(Cause))
+SUBJECT_KINDS: frozenset[str] = frozenset(get_args(SubjectKind))
 
 
 @dataclass(frozen=True, slots=True)
