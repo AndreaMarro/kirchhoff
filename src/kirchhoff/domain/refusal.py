@@ -16,7 +16,7 @@ Puro: nessuna I/O, nessun orologio, nessuna casualita'.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal
+from typing import Literal, get_args
 
 #: Cause emesse da `domain/validate` (AD-19, riga v1 della tabella) e, dalla
 #: Story 2.6, da `domain/transform/check` (righe v2 della stessa tabella).
@@ -41,11 +41,13 @@ Cause = Literal[
 
 SubjectKind = Literal["node", "component", "request"]
 
-CAUSES: frozenset[str] = frozenset({
-    "topology", "units", "unsolvable",
-    "identity_violation", "preserve_nonmaximal", "empty_boundary",
-})
-SUBJECT_KINDS: frozenset[str] = frozenset({"node", "component", "request"})
+# **Una sola fonte autoritativa.** Questi due insiemi erano scritti a mano accanto
+# ai `Literal` e tenuti allineati dalla disciplina di chi modificava: e' il gesto
+# che E-62 descrive — un vocabolario scritto due volte diverge, e diverge nel posto
+# dove nessuno guarda. Derivandoli, la divergenza non e' piu' evitata: e' impossibile.
+# `get_args` su un `Literal` restituisce i suoi membri nell'ordine di dichiarazione.
+CAUSES: frozenset[str] = frozenset(get_args(Cause))
+SUBJECT_KINDS: frozenset[str] = frozenset(get_args(SubjectKind))
 
 
 @dataclass(frozen=True, slots=True)

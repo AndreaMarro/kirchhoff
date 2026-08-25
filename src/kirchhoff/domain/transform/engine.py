@@ -55,7 +55,7 @@ from .catalog import (
     TransformationKind,
     transformations_supported,
 )
-from .check import check_transform, preserve_set
+from .check import check_delta, check_transform, preserve_set
 from .delta import Delta, EntityRef, StructuralDerivation
 from .result import Boundary, Certificate, Equation, LayoutPatch, TransformResult
 
@@ -74,8 +74,23 @@ CONTROLLI: tuple[str, ...] = (
     "boundary",
     "identita'",
     "massimalita' di preserve",
+    "coerenza del Delta",
     "validazione elettrica di Cₖ₊₁",
 )
+
+
+class DeltaIncoerente(AssertionError):
+    """Il `Delta` emesso non regge il proprio controllore: il motore ha un difetto.
+
+    **Non e' un `Refusal`, ed e' deliberato.** Un Rifiuto e' un atto di onesta' del
+    sistema verso una richiesta che non si puo' soddisfare; qui la richiesta era
+    soddisfacibile e il motore ha prodotto un attestato incoerente con cio' che ha
+    fatto. AD-13 chiama guasto esattamente questo, e un guasto non si travestre da
+    diagnosi di dominio.
+
+    Non si aggiunge una causa a `Cause` per ospitarlo: l'enumerazione di AD-19 e'
+    chiusa e vive nello spine, non in questo modulo.
+    """
 
 
 def _resistore(ir: IR, cid: str) -> Component:
@@ -146,6 +161,22 @@ def _prodotto(
     if rifiuto is not None:
         return rifiuto
 
+    # **Il Delta attraversa il proprio controllore, e lo fa QUI.** Prima non lo
+    # attraversava mai: `check_delta` esisteva nel pacchetto con zero consumatori in
+    # produzione, e i sei membri potevano raccontare storie incompatibili sulla stessa
+    # entita' — `LayoutPatch.remove` nominava il nodo assorbito, il `Delta` no.
+    #
+    # Il punto e' questo e non un altro per la stessa ragione che il docstring qui
+    # sopra da' alla validazione elettrica: e' qui che il `Certificate` nasce, e un
+    # attestato che elenca un controllo eseguito altrove sarebbe vero per convenzione
+    # invece che per costruzione (E-65).
+    delta = Delta((StructuralDerivation(operazione, consumati, (prodotto,)),))
+    violazioni = check_delta(delta, prima, dopo, operation=operazione)
+    if violazioni:
+        raise DeltaIncoerente(
+            f"{operazione}: il Delta emesso viola il proprio controllore — "
+            + "; ".join(f"{v.code} su {v.subject} ({v.detail})" for v in violazioni))
+
     # Il criterio della storia: «il `CircuitIR` risultante supera la validazione
     # elettrica». I tre controlli strutturali non lo implicano — una riduzione puo'
     # lasciare un nodo di grado uno, che e' un ramo aperto — e senza questa riga il
@@ -156,7 +187,7 @@ def _prodotto(
 
     return dopo, TransformResult(
         preserve=preservate,
-        delta=Delta((StructuralDerivation(operazione, consumati, (prodotto,)),)),
+        delta=delta,
         boundary=boundary,
         layout_patch=patch,
         equation=equazione,
@@ -204,13 +235,24 @@ def _serie(ir: IR, primo: str, secondo: str) -> tuple[IR, TransformResult] | Ref
 
     return _prodotto(
         ir, dopo, "serie",
-        consumati=(EntityRef("component", primo), EntityRef("component", secondo)),
+        # **Il nodo comune e' consumato, non solo rimosso.** `rimossi` lo nominava
+        # gia'; `consumati` no, e i due canali raccontavano storie diverse sulla
+        # stessa entita'. La lineage che `delta.py` promette — «e' li' che n2 e'
+        # finito» — era interrogabile per i componenti e muta per il nodo assorbito:
+        # `what_happened_to(node:b)` rispondeva `None` su un nodo che la fusione ha
+        # inghiottito. Assorbire e' consumare.
+        consumati=(EntityRef("component", primo), EntityRef("component", secondo),
+                   EntityRef("node", nodo)),
         prodotto=EntityRef("component", eq.id),
         rimossi=(EntityRef("component", primo), EntityRef("component", secondo),
                  EntityRef("node", nodo)),
         boundary=Boundary((EntityRef("node", estremi[0]),
                            EntityRef("node", estremi[1]))),
-        equazione=Equation(eq.symbolic, f"{a.symbolic} + {b.symbolic}"),
+        # Il soggetto e' l'IDENTIFICATORE dell'equivalente, non la sua espressione.
+        # Passando `eq.symbolic` l'uguaglianza diceva «(R1 + R2) = R1 + R2»: vera,
+        # tautologica, e muta sul simbolo che il passo introduce. Chi legge la
+        # derivazione deve poter risalire da `R1R2eq` alla formula che lo definisce.
+        equazione=Equation(eq.id, f"{a.symbolic} + {b.symbolic}"),
     )
 
 
@@ -237,7 +279,7 @@ def _parallelo(ir: IR, primo: str, secondo: str) -> tuple[IR, TransformResult] |
         boundary=Boundary((EntityRef("node", a.terminals[0]),
                            EntityRef("node", a.terminals[1]))),
         equazione=Equation(
-            eq.symbolic,
+            eq.id,
             f"{a.symbolic}·{b.symbolic} / ({a.symbolic} + {b.symbolic})"),
     )
 

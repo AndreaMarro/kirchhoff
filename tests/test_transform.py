@@ -7,7 +7,13 @@ from fractions import Fraction
 import pytest
 
 from kirchhoff.domain.ir import IR, Component, Provenance, Request
-from kirchhoff.domain.refusal import CAUSES, Refusal
+from kirchhoff.domain.refusal import (
+    CAUSES,
+    SUBJECT_KINDS,
+    Cause,
+    Refusal,
+    SubjectKind,
+)
 from kirchhoff.domain.transform import (
     CATALOG,
     CONTROLLI,
@@ -21,6 +27,7 @@ from kirchhoff.domain.transform import (
     LayoutPatch,
     TransformResult,
     attributes_of,
+    check_delta,
     check_transform,
     implemented,
     mutable_attributes,
@@ -286,13 +293,22 @@ class TestContrattoDiTransform:
         dopo, res = esito
         eq = _eq(dopo, "V1", "RL")
         assert eq.value.amount == F(20, 3)
-        assert str(res.equation).startswith("(R1·R2 / (R1 + R2))")
+        # L'aspettativa precedente pinnava la forma tautologica: il primo membro
+        # portava l'espressione invece dell'identificatore, e l'uguaglianza leggeva
+        # «(R1·R2 / (R1 + R2)) = R1·R2 / (R1 + R2)». Ora nomina cio' che definisce.
+        assert res.equation.subject == eq.id
+        assert str(res.equation) == f"{eq.id} = R1·R2 / (R1 + R2)"
 
     def test_l_equivalente_ha_identita_nuova_e_lineage_nelle_due_direzioni(self):
         dopo, res = _serie_riuscita()
         nuova = C(_eq(dopo, "V1").id)
         assert nuova not in res.preserve
-        assert res.delta.derived_from(nuova) == (C("R1"), C("R2"))
+        # Il nodo assorbito entra fra le origini: l'equivalente esiste perche' i due
+        # resistori **e** il nodo comune sono stati consumati. L'aspettativa
+        # precedente — solo i due componenti — pinnava una lineage incompleta, e la
+        # stessa incompletezza faceva fallire `check_delta` con
+        # `sparizione_non_spiegata su node:b`.
+        assert res.delta.derived_from(nuova) == (C("R1"), C("R2"), N("b"))
         assert res.delta.what_happened_to(C("R1")).outputs == (nuova,)
 
     def test_il_circuito_risultante_supera_la_validazione_elettrica(self):
@@ -629,3 +645,142 @@ class TestIdentitaAttraversoLaMappa:
         r = check_transform(prima, dopo, "serie", patch, Boundary((N("b"),)))
         assert isinstance(r, Refusal) and r.cause == "identity_violation"
         assert r.subject == "a" and r.subject_kind == "node"
+
+
+# ---------------------------------------------------------------------------
+# P0-A — il Delta emesso deve attraversare il proprio controllore.
+#
+# Il pacchetto possiede `check_delta` e la produzione non lo eseguiva mai: i sei
+# membri di un `TransformResult` potevano raccontare storie incompatibili sulla
+# stessa entita' senza che nulla lo impedisse. E-65 — un componente non certifica
+# se stesso asserendolo — vale anche quando il verificatore esiste ma non e'
+# cablato: un controllore non chiamato e' un controllo che non c'e'.
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("circuito, operazione", [
+    (SERIE, "serie"),
+    (PARALLELO, "parallelo"),
+])
+def test_il_delta_emesso_supera_il_proprio_controllore(circuito, operazione):
+    esito = transform(circuito, operazione, "R1", "R2")
+    assert not isinstance(esito, Refusal), esito
+    dopo, res = esito
+    violazioni = check_delta(res.delta, circuito, dopo, operation=operazione)
+    assert violazioni == (), (
+        f"il Delta emesso da «{operazione}» viola il proprio controllore: "
+        + "; ".join(f"{v.code} su {v.subject}" for v in violazioni))
+
+
+# ---------------------------------------------------------------------------
+# P1 — il vocabolario degli errori ha UNA fonte autoritativa.
+#
+# `Cause` e `CAUSES` erano scritti due volte e tenuti allineati a mano; questa
+# storia ha esteso entrambe le copie nello stesso commit, che e' precisamente il
+# gesto che E-62 descrive: un vocabolario scritto due volte prima o poi diverge,
+# e diverge nel posto dove nessuno guarda. Per `CATALOG` la riconciliazione e'
+# gia' dottrina; qui mancava.
+#
+# `CAUSES` ora si DERIVA da `Cause`: la divergenza non e' piu' evitata per
+# disciplina, e' impossibile per costruzione. Questi test pinnano l'invariante.
+# ---------------------------------------------------------------------------
+
+
+def test_causes_coincide_con_il_literal():
+    from typing import get_args
+    assert set(get_args(Cause)) == CAUSES
+
+
+def test_subject_kinds_coincide_con_il_literal():
+    from typing import get_args
+    assert set(get_args(SubjectKind)) == SUBJECT_KINDS
+
+
+def test_la_lineage_risponde_anche_per_il_nodo_assorbito():
+    """`delta.py` promette che la lineage sia interrogabile per costruzione.
+
+    Era vera per i componenti e muta per il nodo che la fusione inghiotte:
+    `what_happened_to(node:b)` rispondeva `None` su un'entita' sparita. Una
+    promessa che vale per alcune entita' e non per altre non e' un contratto.
+    """
+    esito = transform(SERIE, "serie", "R1", "R2")
+    assert not isinstance(esito, Refusal), esito
+    _, res = esito
+    derivazione = res.delta.what_happened_to(N("b"))
+    assert derivazione is not None, "il nodo assorbito non ha lineage"
+    assert derivazione.operation == "serie"
+    assert N("b") in derivazione.inputs
+
+
+# ---------------------------------------------------------------------------
+# P0-B — l'equazione deve nominare l'entita' che definisce.
+#
+# La forma emessa era `(R1 + R2) = R1 + R2`: il primo membro portava
+# l'ESPRESSIONE dell'equivalente invece del suo identificatore, quindi
+# l'uguaglianza non legava il simbolo nuovo alla formula che lo definisce e non
+# giustificava nulla. Il contratto lo diceva gia': il campo si chiama `subject` e
+# rifiutarsi di esistere vuoto porta il messaggio «non si sa cosa definisce».
+#
+# Un test pinnava la forma difettosa come comportamento atteso. E-xx: un test mai
+# visto fallire e' un test possibilmente vacuo — e questo certificava il bug.
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("circuito, operazione", [
+    (SERIE, "serie"),
+    (PARALLELO, "parallelo"),
+])
+def test_l_equazione_nomina_l_entita_che_definisce(circuito, operazione):
+    esito = transform(circuito, operazione, "R1", "R2")
+    assert not isinstance(esito, Refusal), esito
+    _, res = esito
+    prodotta = res.delta.derivations[0].outputs[0]
+    assert res.equation.subject == prodotta.id, (
+        f"l'equazione definisce «{res.equation.subject}», ma il passo produce "
+        f"«{prodotta.id}»: il simbolo nuovo non compare nell'uguaglianza")
+
+
+@pytest.mark.parametrize("circuito, operazione", [
+    (SERIE, "serie"),
+    (PARALLELO, "parallelo"),
+])
+def test_l_equazione_non_e_tautologica(circuito, operazione):
+    """Discriminazione negativa: `X = X` non giustifica un passo."""
+    esito = transform(circuito, operazione, "R1", "R2")
+    assert not isinstance(esito, Refusal), esito
+    _, res = esito
+    assert res.equation.subject != res.equation.expression, (
+        f"equazione tautologica: {res.equation}")
+
+
+def test_un_delta_che_mente_e_un_guasto_non_un_rifiuto():
+    """Discriminazione negativa: la guardia deve mordere, non decorare.
+
+    Si chiama l'assemblatore interno perche' dopo la correzione **non esiste piu'
+    una via pubblica** per produrre un Delta incoerente: le due riduzioni ora
+    dichiarano correttamente cio' che consumano. Un guard senza un test che lo
+    veda scattare e' un guard di cui nessuno sa se funziona — ed e' proprio la
+    classe di difetto che questa storia sta chiudendo.
+
+    L'esito e' un'eccezione e non un `Refusal`: la richiesta era soddisfacibile e
+    il motore ha prodotto un attestato incoerente con cio' che ha fatto. AD-13
+    chiama guasto esattamente questo.
+    """
+    from kirchhoff.domain.transform.engine import DeltaIncoerente, _prodotto, _senza
+
+    eq = Component.of("R1R2eq", "resistor", ("a", "0"), F(30), "(R1 + R2)")
+    dopo = _senza(SERIE, ("R1", "R2"), ("b",), eq)
+
+    with pytest.raises(DeltaIncoerente) as scoppio:
+        _prodotto(
+            SERIE, dopo, "serie",
+            # il nodo assorbito NON e' dichiarato: e' esattamente la forma che il
+            # difetto aveva prima della correzione
+            consumati=(C("R1"), C("R2")),
+            prodotto=C("R1R2eq"),
+            rimossi=(C("R1"), C("R2"), N("b")),
+            boundary=Boundary((N("a"), N("0"))),
+            equazione=Equation("R1R2eq", "R1 + R2"),
+        )
+    assert "sparizione_non_spiegata" in str(scoppio.value)
+    assert "node:b" in str(scoppio.value)
