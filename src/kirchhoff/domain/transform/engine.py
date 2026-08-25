@@ -55,7 +55,13 @@ from .catalog import (
     TransformationKind,
     transformations_supported,
 )
-from .check import check_delta, check_patch, check_transform, preserve_set
+from .check import (
+    check_boundary,
+    check_delta,
+    check_patch,
+    check_transform,
+    preserve_set,
+)
 from .delta import Delta, EntityRef, StructuralDerivation
 from .result import Boundary, Certificate, Equation, LayoutPatch, TransformResult
 
@@ -76,40 +82,52 @@ CONTROLLI: tuple[str, ...] = (
     "massimalita' di preserve",
     "coerenza del Delta",
     "coerenza della LayoutPatch",
+    "contenuto del boundary",
     "validazione elettrica di Cₖ₊₁",
 )
 
 
-class DeltaIncoerente(AssertionError):
-    """Il `Delta` emesso non regge il proprio controllore: il motore ha un difetto.
+class AttestazioneIncoerente(AssertionError):
+    """Il motore ha prodotto un'attestazione incoerente con cio' che ha fatto.
+
+    **Un solo invariante, tre canali.** Il proprietario l'ha enunciato cosi':
+
+        cio' che appare e sparisce nel `CircuitIR`
+          <-> cio' che dice il `Delta`
+          <-> cio' che dice la `LayoutPatch`
+
+    e il `Boundary` e' il quarto vertice — dice dove i tre si toccano col resto
+    della rete. Tre eccezioni scorrelate suggerirebbero tre problemi diversi; sono
+    lo stesso, visto da tre canali, e le sottoclassi servono solo a nominare quale
+    ha parlato.
 
     **Non e' un `Refusal`, ed e' deliberato.** Un Rifiuto e' un atto di onesta' del
     sistema verso una richiesta che non si puo' soddisfare; qui la richiesta era
-    soddisfacibile e il motore ha prodotto un attestato incoerente con cio' che ha
-    fatto. AD-13 chiama guasto esattamente questo, e un guasto non si travestre da
-    diagnosi di dominio.
-
-    Non si aggiunge una causa a `Cause` per ospitarlo: l'enumerazione di AD-19 e'
-    chiusa e vive nello spine, non in questo modulo.
+    soddisfacibile. AD-13 chiama guasto esattamente questo, e un guasto non si
+    traveste da diagnosi di dominio. Non si aggiunge una causa a `Cause` per
+    ospitarlo: l'enumerazione di AD-19 e' chiusa e vive nello spine.
     """
 
 
-class PatchIncoerente(AssertionError):
-    """La `LayoutPatch` emessa non regge il proprio controllore.
+class DeltaIncoerente(AttestazioneIncoerente):
+    """Il `Delta` emesso non regge `check_delta`: la lineage contraddice i circuiti."""
 
-    Stessa classificazione di `DeltaIncoerente`, e per la stessa ragione: la
-    richiesta era soddisfacibile e il motore ha prodotto un'attestazione incoerente
-    con cio' che ha fatto. AD-13 chiama guasto esattamente questo.
+
+class PatchIncoerente(AttestazioneIncoerente):
+    """`create` o `remove` contraddicono cio' che e' apparso e sparito fra i circuiti.
 
     **La lettura alternativa e' stata considerata.** Il progetto tratta gia' una
     patch non conforme come `Refusal` — `preserve_nonmaximal` — quindi si poteva
-    seguire quel precedente. Non si e' fatto per due ragioni: il difetto e' della
-    stessa famiglia di quello del `Delta`, che il proprietario ha descritto come
-    «due canali che raccontano storie diverse sulla stessa entita'»; e ospitarlo in
-    `Cause` richiederebbe una causa nuova, mentre l'enumerazione di AD-19 e' chiusa
-    e vive nello spine. Se un produttore esterno arrivera' a fornire patch, la
-    classificazione andra' rivista: e' scritto qui perche' non si scopra dopo.
+    seguire quel precedente. Non si e' fatto perche' il difetto e' della stessa
+    famiglia di quello del `Delta`, e perche' ospitarlo in `Cause` richiederebbe una
+    causa nuova in un'enumerazione chiusa. Se un produttore esterno arrivera' a
+    fornire patch, la classificazione andra' rivista: e' scritto qui perche' non si
+    scopra dopo.
     """
+
+
+class BoundaryIncoerente(AttestazioneIncoerente):
+    """`∂Tₖ` nomina entita' che non sopravvivono, o che non confinano col passo."""
 
 
 def _resistore(ir: IR, cid: str) -> Component:
@@ -197,6 +215,12 @@ def _prodotto(
         raise PatchIncoerente(
             f"{operazione}: la LayoutPatch emessa viola il proprio controllore — "
             + "; ".join(f"{v.code} su {v.subject} ({v.detail})" for v in guasti_patch))
+
+    guasti_boundary = check_boundary(boundary, patch, prima, dopo)
+    if guasti_boundary:
+        raise BoundaryIncoerente(
+            f"{operazione}: il boundary emesso viola il proprio controllore — "
+            + "; ".join(f"{v.code} su {v.subject} ({v.detail})" for v in guasti_boundary))
 
     delta = Delta((StructuralDerivation(operazione, consumati, (prodotto,)),))
     violazioni = check_delta(delta, prima, dopo, operation=operazione)

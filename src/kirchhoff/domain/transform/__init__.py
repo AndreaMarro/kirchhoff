@@ -11,7 +11,9 @@ from .catalog import (
     transformations_supported,
 )
 from .check import (
+    BoundaryViolation,
     PatchViolation,
+    check_boundary,
     check_patch,
     DeltaViolation,
     attributes_of,
@@ -33,5 +35,6 @@ __all__ = [
     "entities_of", "preserve_set",
     "Boundary", "Certificate", "Equation", "LayoutPatch", "TransformResult",
     "PatchViolation", "check_patch",
+    "BoundaryViolation", "check_boundary",
     "CONTROLLI", "implemented", "transform",
 ]

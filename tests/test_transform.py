@@ -28,6 +28,7 @@ from kirchhoff.domain.transform import (
     TransformResult,
     attributes_of,
     check_delta,
+    check_boundary,
     check_patch,
     check_transform,
     implemented,
@@ -882,3 +883,77 @@ def test_una_patch_che_mente_e_un_guasto_non_un_rifiuto():
     messaggio = str(scoppio.value)
     assert "remove_non_sparita" in messaggio and "MaiEsistita" in messaggio
     assert "sparita_non_dichiarata" in messaggio
+
+
+# ---------------------------------------------------------------------------
+# P1-2 — il `Boundary` verificato nel CONTENUTO.
+#
+# `∂Tₖ` dice «dove guardare per sapere che la trasformazione e' locale». Era
+# verificato solo come vuoto/non vuoto: `Boundary((N("fantasma"),))` — entita'
+# inesistente in entrambi i circuiti — attraversava `check_transform` pulito.
+#
+# Due condizioni necessarie, misurate vere su entrambe le riduzioni del catalogo
+# prima di essere imposte:
+#   1. ogni entita' del boundary sopravvive — sta in `Pₖ`. Cio' che non sopravvive
+#      non e' un punto di contatto col resto della rete: e' dentro il sottografo.
+#   2. ogni entita' del boundary e' adiacente al cambiamento — e' terminale di
+#      qualcosa che e' stato tolto o creato. Un nodo lontano che sopravvive non
+#      confina con niente di trasformato.
+# ---------------------------------------------------------------------------
+
+
+#: serie di R1,R2 dentro una rete piu' grande: `0` sopravvive e NON confina col passo.
+CATENA = _ir(_v("V1", "a", "0", 12), _r("R1", "a", "b", 10),
+             _r("R2", "b", "c", 20), _r("R3", "c", "0", 30),
+             nodes=("0", "a", "b", "c"))
+
+
+def test_un_boundary_fantasma_e_contestato():
+    dopo, res = transform(CATENA, "serie", "R1", "R2")
+    violazioni = check_boundary(Boundary((N("fantasma"),)), res.layout_patch,
+                                CATENA, dopo)
+    assert violazioni, "un boundary su un'entita' inesistente non e' stato contestato"
+    assert any(v.code == "fuori_da_pk" for v in violazioni)
+
+
+def test_un_boundary_lontano_dal_cambiamento_e_contestato():
+    """`node:0` sopravvive, ma tocca V1 e R3: non confina col passo."""
+    dopo, res = transform(CATENA, "serie", "R1", "R2")
+    violazioni = check_boundary(Boundary((N("0"),)), res.layout_patch, CATENA, dopo)
+    assert any(v.code == "non_adiacente" for v in violazioni), violazioni
+
+
+def test_il_boundary_che_le_riduzioni_producono_regge():
+    """Discriminazione positiva: il controllore non accusa il caso sano."""
+    for circuito, operazione in [(SERIE, "serie"), (PARALLELO, "parallelo"),
+                                 (CATENA, "serie")]:
+        dopo, res = transform(circuito, operazione, "R1", "R2")
+        assert check_boundary(res.boundary, res.layout_patch, circuito, dopo) == ()
+
+
+def test_un_boundary_che_mente_e_un_guasto_non_un_rifiuto():
+    """Terza discriminazione attraverso il motore, sorella delle altre due.
+
+    `node:0` sopravvive alla serie di `R1,R2` dentro `CATENA`, ma tocca `V1` e
+    `R3`: non confina con niente di trasformato. Dichiararlo allargherebbe la zona
+    che il renderer annota senza che nulla lo giustifichi.
+    """
+    from kirchhoff.domain.transform.engine import (
+        AttestazioneIncoerente, BoundaryIncoerente, _prodotto, _senza,
+    )
+
+    eq = Component.of("R1R2eq", "resistor", ("a", "c"), F(30), "(R1 + R2)")
+    dopo = _senza(CATENA, ("R1", "R2"), ("b",), eq)
+
+    with pytest.raises(BoundaryIncoerente) as scoppio:
+        _prodotto(
+            CATENA, dopo, "serie",
+            consumati=(C("R1"), C("R2"), N("b")),
+            prodotto=C("R1R2eq"),
+            rimossi=(C("R1"), C("R2"), N("b")),
+            boundary=Boundary((N("0"),)),      # sopravvive, ma non confina
+            equazione=Equation("R1R2eq", "R1 + R2"),
+        )
+    assert "non_adiacente" in str(scoppio.value)
+    # un solo invariante, tre canali: le tre eccezioni condividono la base
+    assert isinstance(scoppio.value, AttestazioneIncoerente)

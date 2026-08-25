@@ -243,6 +243,78 @@ def check_patch(
     return tuple(trovate)
 
 
+@dataclass(frozen=True, slots=True, order=True)
+class BoundaryViolation:
+    code: str
+    subject: str
+    detail: str
+
+
+def _terminali(ir: IR, componenti: frozenset[EntityRef]) -> frozenset[EntityRef]:
+    """I nodi che i componenti indicati toccano, come `EntityRef`."""
+    return frozenset(
+        EntityRef("node", t)
+        for c in ir.components
+        if EntityRef("component", c.id) in componenti
+        for t in c.terminals
+    )
+
+
+def check_boundary(
+    boundary: Boundary,
+    patch: LayoutPatch,
+    before: IR,
+    after: IR,
+) -> tuple[BoundaryViolation, ...]:
+    """`∂Tₖ` nel contenuto. Vuoto quando regge.
+
+    Il boundary era verificato solo come vuoto o non vuoto — `empty_boundary`. Non
+    bastava: `Boundary((node:fantasma,))`, con un'entita' che nessuno dei due
+    circuiti possiede, attraversava il controllore pulito. Un boundary che nomina
+    entita' inesistenti non dice **dove guardare**: dice dove non c'e' niente.
+
+    Due condizioni **necessarie**, misurate vere su tutte le riduzioni del catalogo
+    prima di essere imposte:
+
+    1. **Sopravvivenza.** `∂Tₖ ⊆ Pₖ`. Cio' che non sopravvive al passo non e' un
+       punto di contatto col resto della rete: e' dentro il sottografo trasformato.
+       Il nodo assorbito da una serie ne e' l'esempio — sparisce, quindi non
+       confina.
+    2. **Adiacenza.** Ogni entita' del boundary e' terminale di qualcosa che il
+       passo ha tolto o creato. Un nodo lontano che sopravvive non confina con
+       niente di trasformato, e dichiararlo allargherebbe la zona che il renderer
+       annota senza che nulla lo giustifichi.
+
+    **Necessarie, non sufficienti — e la scelta e' deliberata.** L'insieme
+    `terminali(rimossi ∪ creati) ∩ Pₖ` coincide, su entrambe le riduzioni, con il
+    boundary che producono: si potrebbe quindi imporre l'uguaglianza, come AD-22 fa
+    per `preserve`. Non si fa, perche' imporla renderebbe il `Boundary` un campo
+    **derivabile**, e un campo che nessun produttore puo' scegliere e' un campo che
+    non serve dichiarare — la stessa domanda che ha portato al ritiro di
+    `node_mapping`. Se `Boundary` debba restare dichiarato o diventare derivato e'
+    una decisione di contratto, non un effetto collaterale di un controllo.
+    """
+    preservate = preserve_set(before, after)
+    cambiati = frozenset(patch.remove) | frozenset(patch.create)
+    adiacenti = _terminali(before, cambiati) | _terminali(after, cambiati)
+    trovate: list[BoundaryViolation] = []
+
+    for e in sorted(boundary.entities):
+        if e not in preservate:
+            trovate.append(BoundaryViolation(
+                "fuori_da_pk", str(e),
+                "il boundary la nomina ma non sopravvive al passo: non e' un punto "
+                "di contatto col resto della rete, e' dentro il sottografo"))
+            continue
+        if e not in adiacenti:
+            trovate.append(BoundaryViolation(
+                "non_adiacente", str(e),
+                "sopravvive ma non tocca nulla di rimosso o creato: non confina "
+                "con il sottografo trasformato"))
+
+    return tuple(trovate)
+
+
 def check_transform(
     before: IR,
     after: IR,
