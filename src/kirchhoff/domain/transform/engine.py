@@ -55,7 +55,7 @@ from .catalog import (
     TransformationKind,
     transformations_supported,
 )
-from .check import check_delta, check_transform, preserve_set
+from .check import check_delta, check_patch, check_transform, preserve_set
 from .delta import Delta, EntityRef, StructuralDerivation
 from .result import Boundary, Certificate, Equation, LayoutPatch, TransformResult
 
@@ -75,6 +75,7 @@ CONTROLLI: tuple[str, ...] = (
     "identita'",
     "massimalita' di preserve",
     "coerenza del Delta",
+    "coerenza della LayoutPatch",
     "validazione elettrica di Cₖ₊₁",
 )
 
@@ -90,6 +91,24 @@ class DeltaIncoerente(AssertionError):
 
     Non si aggiunge una causa a `Cause` per ospitarlo: l'enumerazione di AD-19 e'
     chiusa e vive nello spine, non in questo modulo.
+    """
+
+
+class PatchIncoerente(AssertionError):
+    """La `LayoutPatch` emessa non regge il proprio controllore.
+
+    Stessa classificazione di `DeltaIncoerente`, e per la stessa ragione: la
+    richiesta era soddisfacibile e il motore ha prodotto un'attestazione incoerente
+    con cio' che ha fatto. AD-13 chiama guasto esattamente questo.
+
+    **La lettura alternativa e' stata considerata.** Il progetto tratta gia' una
+    patch non conforme come `Refusal` — `preserve_nonmaximal` — quindi si poteva
+    seguire quel precedente. Non si e' fatto per due ragioni: il difetto e' della
+    stessa famiglia di quello del `Delta`, che il proprietario ha descritto come
+    «due canali che raccontano storie diverse sulla stessa entita'»; e ospitarlo in
+    `Cause` richiederebbe una causa nuova, mentre l'enumerazione di AD-19 e' chiusa
+    e vive nello spine. Se un produttore esterno arrivera' a fornire patch, la
+    classificazione andra' rivista: e' scritto qui perche' non si scopra dopo.
     """
 
 
@@ -169,6 +188,16 @@ def _prodotto(
     # sopra da' alla validazione elettrica: e' qui che il `Certificate` nasce, e un
     # attestato che elenca un controllo eseguito altrove sarebbe vero per convenzione
     # invece che per costruzione (E-65).
+    # Il terzo lato dell'invariante: `create` e `remove` contro i due circuiti.
+    # Sta qui accanto al controllo del Delta perche' e' lo stesso attestato che
+    # nasce, e perche' l'incoerenza fra i due canali e' proprio cio' che il
+    # controllo del Delta da solo non vedeva.
+    guasti_patch = check_patch(patch, prima, dopo)
+    if guasti_patch:
+        raise PatchIncoerente(
+            f"{operazione}: la LayoutPatch emessa viola il proprio controllore — "
+            + "; ".join(f"{v.code} su {v.subject} ({v.detail})" for v in guasti_patch))
+
     delta = Delta((StructuralDerivation(operazione, consumati, (prodotto,)),))
     violazioni = check_delta(delta, prima, dopo, operation=operazione)
     if violazioni:

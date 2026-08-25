@@ -182,6 +182,67 @@ def check_delta(
 # --- le tre cause di AD-19 assegnate a questo modulo --------------------------
 
 
+@dataclass(frozen=True, slots=True, order=True)
+class PatchViolation:
+    code: str
+    subject: str
+    detail: str
+
+
+def check_patch(
+    patch: LayoutPatch,
+    before: IR,
+    after: IR,
+) -> tuple[PatchViolation, ...]:
+    """`create` e `remove` contro i due circuiti. Vuoto quando la patch regge.
+
+    E' il terzo lato dell'invariante che AD-22 esige e che il pacchetto verificava
+    solo a meta':
+
+        cio' che appare e sparisce nel `CircuitIR`
+          <-> cio' che dice il `Delta`
+          <-> cio' che dice la `LayoutPatch`
+
+    Il `Delta` ha il proprio controllore da quando `check_delta` e' cablato. La
+    patch non ne aveva: `preserve` era confrontato con `Pₖ`, ma `create` e `remove`
+    con nulla. Misurato: una patch con `create=(component:MaiEsistita,)` — o con
+    `remove` — attraversava `check_transform` pulita, e un renderer che la seguisse
+    riceverebbe istruzioni su entita' che nessuno dei due circuiti possiede.
+
+    **Uguaglianza, non inclusione.** La Rule di AD-22 dice «diverso da `Pₖ`» e non
+    «piu' piccolo di», e la stessa lettura vale qui: una patch che tace su cio' che e'
+    sparito e' bugiarda quanto una che dichiara cio' che non c'e' mai stato. I due
+    versi hanno codici distinti perche' la diagnosi deve dire quale dei due e'.
+
+    Le due riduzioni del catalogo producono gia' l'uguaglianza esatta: questo
+    controllo non stringe il contratto, lo rende verificato invece che sperato.
+    """
+    apparse = entities_of(after) - entities_of(before)
+    sparite = entities_of(before) - entities_of(after)
+    dichiarate_create = frozenset(patch.create)
+    dichiarate_remove = frozenset(patch.remove)
+    trovate: list[PatchViolation] = []
+
+    for e in sorted(dichiarate_create - apparse):
+        trovate.append(PatchViolation(
+            "create_non_apparsa", str(e),
+            "dichiarata creata dalla patch ma assente dalle entita' comparse in Cₖ₊₁"))
+    for e in sorted(apparse - dichiarate_create):
+        trovate.append(PatchViolation(
+            "apparsa_non_dichiarata", str(e),
+            "compare in Cₖ₊₁ e non era in Cₖ, ma la patch non la dichiara creata"))
+    for e in sorted(dichiarate_remove - sparite):
+        trovate.append(PatchViolation(
+            "remove_non_sparita", str(e),
+            "dichiarata rimossa dalla patch ma ancora presente in Cₖ₊₁, o mai esistita"))
+    for e in sorted(sparite - dichiarate_remove):
+        trovate.append(PatchViolation(
+            "sparita_non_dichiarata", str(e),
+            "era in Cₖ e non e' in Cₖ₊₁, ma la patch non la dichiara rimossa"))
+
+    return tuple(trovate)
+
+
 def check_transform(
     before: IR,
     after: IR,

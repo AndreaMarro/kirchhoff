@@ -28,6 +28,7 @@ from kirchhoff.domain.transform import (
     TransformResult,
     attributes_of,
     check_delta,
+    check_patch,
     check_transform,
     implemented,
     mutable_attributes,
@@ -800,3 +801,84 @@ def test_due_entita_non_possono_collassare_in_una_sola_preservata():
     p = preserve_set(SERIE, SERIE, operation="serie")
     identificatori = [e.id for e in p if e.kind == "node"]
     assert len(identificatori) == len(set(identificatori))
+
+
+# ---------------------------------------------------------------------------
+# P1-1 — `create` e `remove` contro i due circuiti.
+#
+# L'invariante generale, e la ragione per cui viene prima del boundary:
+#
+#     cio' che appare e sparisce nel CircuitIR
+#       <-> cio' che dice il Delta
+#       <-> cio' che dice la LayoutPatch
+#
+# Il Delta ha gia' il suo controllore (P0-A). La patch no: `create` e `remove`
+# non erano confrontati con nulla. Misurato: una patch con
+# `create=(component:MaiEsistita,)` — oppure `remove` — attraversava
+# `check_transform` pulita, e un renderer che la seguisse riceverebbe istruzioni
+# su entita' che nessuno dei due circuiti possiede.
+# ---------------------------------------------------------------------------
+
+
+def _patch_della_serie(**override):
+    """La patch che la serie produce davvero, con un campo sostituito."""
+    dopo, res = _serie_riuscita()
+    campi = dict(preserve=res.layout_patch.preserve,
+                 remove=res.layout_patch.remove,
+                 create=res.layout_patch.create,
+                 reroute_scope=res.layout_patch.reroute_scope)
+    return dopo, LayoutPatch(**{**campi, **override})
+
+
+@pytest.mark.parametrize("campo", ["create", "remove"])
+def test_una_patch_che_nomina_un_entita_mai_esistita_e_un_guasto(campo):
+    from kirchhoff.domain.transform.engine import PatchIncoerente, _prodotto
+    dopo, patch = _patch_della_serie(**{campo: (C("MaiEsistita"),)})
+    violazioni = check_patch(patch, SERIE, dopo)
+    assert violazioni, (
+        f"una patch con {campo}=(component:MaiEsistita,) non e' stata contestata")
+    assert any("MaiEsistita" in v.subject for v in violazioni)
+
+
+def test_una_patch_che_tace_su_cio_che_e_sparito_e_contestata():
+    """Il verso omissivo: `remove` incompleto e' bugiardo quanto `remove` gonfiato."""
+    dopo, patch = _patch_della_serie(remove=(C("R1"),))   # tace su R2 e node:b
+    violazioni = check_patch(patch, SERIE, dopo)
+    soggetti = {v.subject for v in violazioni}
+    assert "component:R2" in soggetti and "node:b" in soggetti
+
+
+def test_la_patch_che_le_riduzioni_producono_regge_il_controllore():
+    """Discriminazione positiva: il controllore non deve accusare il caso sano."""
+    for circuito, operazione in [(SERIE, "serie"), (PARALLELO, "parallelo")]:
+        dopo, res = transform(circuito, operazione, "R1", "R2")
+        assert check_patch(res.layout_patch, circuito, dopo) == ()
+
+
+def test_una_patch_che_mente_e_un_guasto_non_un_rifiuto():
+    """Discriminazione negativa attraverso il motore, non solo sul controllore.
+
+    Speculare a `test_un_delta_che_mente_e_un_guasto_non_un_rifiuto`. Dopo la
+    correzione non esiste una via pubblica per produrre una patch incoerente: le
+    due riduzioni dichiarano correttamente cio' che tolgono e cio' che creano.
+    Si chiama quindi l'assemblatore interno, con `rimossi` che nomina un'entita'
+    che nessuno dei due circuiti possiede.
+    """
+    from kirchhoff.domain.transform.engine import PatchIncoerente, _prodotto, _senza
+
+    eq = Component.of("R1R2eq", "resistor", ("a", "0"), F(30), "(R1 + R2)")
+    dopo = _senza(SERIE, ("R1", "R2"), ("b",), eq)
+
+    with pytest.raises(PatchIncoerente) as scoppio:
+        _prodotto(
+            SERIE, dopo, "serie",
+            consumati=(C("R1"), C("R2"), N("b")),
+            prodotto=C("R1R2eq"),
+            # dichiara rimossa un'entita' mai esistita, e tace su R2 e node:b
+            rimossi=(C("MaiEsistita"),),
+            boundary=Boundary((N("a"), N("0"))),
+            equazione=Equation("R1R2eq", "R1 + R2"),
+        )
+    messaggio = str(scoppio.value)
+    assert "remove_non_sparita" in messaggio and "MaiEsistita" in messaggio
+    assert "sparita_non_dichiarata" in messaggio
