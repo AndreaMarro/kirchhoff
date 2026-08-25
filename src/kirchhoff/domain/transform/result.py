@@ -63,16 +63,23 @@ def _ordinate(entita: tuple[EntityRef, ...], campo: str) -> tuple[EntityRef, ...
 class LayoutPatch:
     """Che cosa il renderer deve conservare, togliere e creare. Solo identificatori.
 
-    `node_mapping` e' una tupla di coppie e non un `dict` per due ragioni che
-    contano entrambe: la struttura resta congelabile insieme al resto, e l'ordine
-    e' canonico invece che d'inserimento — E-62 nasce da confronti che dipendevano
-    dall'iterazione di una mappa.
+    **`node_mapping` e' stata ritirata (AD-22 v2.2).** Il campo esisteva per
+    dichiarare rinomine, ma le clausole della v2 e della v2.1 lo rendevano
+    inutilizzabile: `Pₖ` e' preso dopo la mappa, quindi un nodo mappato con successo
+    entra in `Pₖ`, e li' l'identita' senza tolleranza gli vieta un nome diverso.
+    L'unica mappa che attraversava il controllore aveva sorgente inesistente, cioe'
+    era un riferimento a nulla.
+
+    Nel contratto corrente la preservazione richiede identita' semantica stabile
+    **e** identificatore semantico stabile: `rinomina != preservazione`. Una
+    trasformazione che fonde, sostituisce o ricostruisce un'entita' usa
+    `consume`/`create` piu' la lineage nel `Delta`. Il campo non e' sostituito da un
+    altro nome finche' non esiste un caso d'uso concreto.
     """
 
     preserve: tuple[EntityRef, ...]
     remove: tuple[EntityRef, ...]
     create: tuple[EntityRef, ...]
-    node_mapping: tuple[tuple[str, str], ...]
     reroute_scope: tuple[EntityRef, ...]
 
     def __post_init__(self) -> None:
@@ -81,35 +88,6 @@ class LayoutPatch:
         object.__setattr__(self, "create", _ordinate(self.create, "create"))
         object.__setattr__(
             self, "reroute_scope", _ordinate(self.reroute_scope, "reroute_scope"))
-
-        sorgenti = [a for a, _ in self.node_mapping]
-        immagini = [b for _, b in self.node_mapping]
-        for nome in (*sorgenti, *immagini):
-            if not isinstance(nome, str) or not nome:
-                raise ValueError(
-                    "node_mapping: una mappa fra identificatori, e un identificatore "
-                    "vuoto non identifica nulla")
-        # AD-22 em.: totale e **iniettiva** sui sopravvissuti. Senza iniettivita' due
-        # entita' distinte collasserebbero in una, e `Pₖ` si restringerebbe di
-        # conseguenza: e' la stessa autocertificazione che l'emendamento chiude.
-        if len(set(sorgenti)) != len(sorgenti):
-            raise ValueError("node_mapping: identificatore mappato due volte")
-        if len(set(immagini)) != len(immagini):
-            raise ValueError(
-                "node_mapping: due entita' distinte mappate sullo stesso "
-                "identificatore, e la mappatura non e' iniettiva")
-        object.__setattr__(self, "node_mapping", tuple(sorted(self.node_mapping)))
-
-    def image_of(self, identifier: str) -> str:
-        """L'identificatore in `Cₖ₊₁` di cio' che in `Cₖ` si chiamava `identifier`.
-
-        Chi non compare nella mappa conserva il proprio nome: la mappa dichiara le
-        rinomine, non ripete l'identita'.
-        """
-        for a, b in self.node_mapping:
-            if a == identifier:
-                return b
-        return identifier
 
 
 @dataclass(frozen=True, slots=True)

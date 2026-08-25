@@ -153,7 +153,6 @@ def _prodotto(
         preserve=tuple(sorted(preservate)),
         remove=rimossi,
         create=(prodotto,),
-        node_mapping=(),
         reroute_scope=(prodotto, *boundary.entities),
     )
 

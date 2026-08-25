@@ -57,31 +57,11 @@ def attributes_of(c: Component) -> dict[str, object]:
     return {nome: getattr(c, nome) for nome in IDENTITY_ATTRIBUTES}
 
 
-def _immagine(identificatore: str, mappa: tuple[tuple[str, str], ...]) -> str:
-    """L'immagine di un **nodo** attraverso `node_mapping`. Identita' se non mappato.
-
-    Stessa semantica di `LayoutPatch.image_of`, e qui perche' `preserve_set` riceve
-    la mappa e non la patch: `Pₖ` e' una proprieta' dei due circuiti piu' la mappa,
-    non della struttura che la trasporta.
-
-    **Solo nodi.** `node_mapping` lo dice nel nome, e AD-2 em. la descrive come la
-    mappa fra identificatori di nodo che il renderer deve seguire. Applicarla anche
-    agli identificatori di componente li fa collidere in un unico spazio di nomi che
-    `EntityRef` tiene invece distinto: un componente di id `a` e un nodo di id `a`
-    sono due entita' diverse, e una rinomina del secondo non riguarda il primo.
-    """
-    for sorgente, arrivo in mappa:
-        if sorgente == identificatore:
-            return arrivo
-    return identificatore
-
-
 def preserve_set(
     before: IR,
     after: IR,
     *,
     operation: TransformationKind | None = None,
-    node_mapping: tuple[tuple[str, str], ...] = (),
 ) -> frozenset[EntityRef]:
     """`Pₖ` (AD-22 em. v2.1): coincidenza dell'identificatore **e** degli attributi.
 
@@ -100,23 +80,15 @@ def preserve_set(
     mutazione ammessa», che e' la lettura piu' stretta e mai quella piu' comoda: chi
     non dice quale operazione sta misurando non ottiene indulgenza.
 
-    **L'intersezione si prende *dopo* `node_mapping`**, come AD-22 em. la definisce, e
-    non prima. La differenza non e' formale: senza la mappa un nodo davvero rinominato
-    fra `Cₖ` e `Cₖ₊₁` esce da `Pₖ` per il solo fatto di non chiamarsi piu' come prima,
-    e il ciclo d'identita' di `check_transform` — che scorre `Pₖ` — non lo vede mai.
-    Il controllo che AD-22 chiama `identity_violation` sarebbe cosi' **cieco alla
-    violazione che nomina**, e scatterebbe solo su una patch che dichiara una rinomina
-    non avvenuta. Con la mappa, `node:a` che diventa `node:a2` e' un sopravvissuto —
-    la sua immagine esiste in `Cₖ₊₁` — e la rinomina e' una violazione, che e'
-    esattamente cio' che l'emendamento pretende.
+    **`node_mapping` e' ritirata (AD-22 v2.2)**, e con lei lo strato di mappatura che
+    stava fra i due circuiti. `Pₖ` e' ora un'intersezione per identificatore piu' il
+    discriminante sugli attributi — che e' esattamente cio' che il calcolo faceva
+    gia' in ogni corsa reale, perche' ogni produttore passava `node_mapping=()`.
 
-    Per la stessa ragione i **terminali** di un componente si confrontano attraverso
-    la mappa: un componente il cui terminale cambia *solo* perche' il nodo che tocca e'
-    stato assorbito non ha cambiato identita', e dichiararlo non preservato
-    restringerebbe `Pₖ` proprio dove una fusione di nodi lo mette alla prova.
-
-    `node_mapping=()` — il caso di ogni riduzione del registro, che non rinomina nulla
-    — lascia il calcolo identico a un'intersezione per identificatore piu' attributi.
+    La conseguenza voluta: `rinomina != preservazione`. Un nodo che cambia nome fra
+    `Cₖ` e `Cₖ₊₁` non entra in `Pₖ` sotto nessuno dei due nomi, ed e' corretto — una
+    rinomina e' una consumata piu' una creata, con lineage nel `Delta`. Lo stesso per
+    un componente i cui terminali cambiano: attributi diversi, identita' diversa.
     """
     mutabili = mutable_attributes(operation) if operation is not None else frozenset()
     nodi_dopo = frozenset(after.nodes)
@@ -127,15 +99,14 @@ def preserve_set(
         if e.kind == "node":
             # Un nodo e' il proprio nome: non ha attributi che possano divergere.
             # Sopravvive quando la **sua immagine** esiste in `Cₖ₊₁`.
-            if _immagine(e.id, node_mapping) in nodi_dopo:
+            if e.id in nodi_dopo:
                 preservate.add(e)
             continue
         if e.id not in per_id:
             continue
         prima, dopo = before.component(e.id), per_id[e.id]
         atteso = attributes_of(prima)
-        atteso["terminals"] = tuple(
-            _immagine(t, node_mapping) for t in prima.terminals)
+        atteso["terminals"] = tuple(prima.terminals)
         cambiati = {k for k, v in atteso.items() if attributes_of(dopo)[k] != v}
         if cambiati <= mutabili:
             preservate.add(e)
@@ -218,7 +189,11 @@ def check_transform(
     patch: LayoutPatch,
     boundary: Boundary | None,
 ) -> Refusal | None:
-    """Massimalita', identita' e boundary. `None` quando reggono tutti e tre.
+    """Boundary e massimalita'. `None` quando reggono entrambi.
+
+    Erano tre. L'identita' e' uscita con `node_mapping` (AD-22 v2.2): senza strato
+    di mappatura, `id_{k+1}(x) = id_k(x)` su `Pₖ` e' vero per costruzione, e un
+    controllo che non puo' fallire non e' un controllo.
 
     Gira **prima** che il `TransformResult` sia costruito, e per questo puo' vedere
     un `boundary` assente: `Boundary` si rifiuta di esistere vuoto, quindi chi non e'
@@ -226,7 +201,7 @@ def check_transform(
     un'eccezione. Un rifiuto e' un atto di onesta' del sistema; un'eccezione e' un
     guasto (AD-13).
 
-    L'ordine dei tre controlli e' fisso e non e' indifferente: `empty_boundary` e' la
+    L'ordine dei due controlli e' fisso e non e' indifferente: `empty_boundary` e' la
     condizione piu' grossolana e viene per prima, cosi' la diagnosi nomina il difetto
     piu' grande invece di un suo sintomo.
     """
@@ -236,95 +211,21 @@ def check_transform(
             f"{operation}: ∂Tₖ = ∅. Un sottografo che non confina con nulla non e' "
             "un passo della derivazione: e' una riscrittura dell'intera rete.")
 
-    # AD-22 em.: `id_{k+1}(x) = id_k(x)` per ogni `x ∈ Pₖ`, **senza tolleranza**.
-    # E' un controllo *inter*-passo: il round-trip, che confronta SVG(Cₖ₊₁) con
-    # CircuitIR(Cₖ₊₁), non lo cattura, perche' una rinomina coerente sui due lati
-    # gli passerebbe pulita.
+    # AD-22 v2.2: `id_{k+1}(x) = id_k(x)` per ogni `x ∈ Pₖ` vale ora **per
+    # costruzione**. Con `node_mapping` ritirata, `Pₖ` e' un'intersezione per
+    # identificatore: ogni entita' che vi appartiene porta lo stesso nome nei due
+    # circuiti, per definizione dell'insieme. Non c'e' piu' niente da verificare.
     #
-    # Ha due versi, e chiuderne uno solo lascia aperto l'altro.
-    nodi_prima, nodi_dopo = frozenset(before.nodes), frozenset(after.nodes)
-
-    # (0a) **Il dominio della mappa sta dentro `Cₖ`.** Misurato: una mappa con
-    #      sorgente inesistente — `("zzz", "w")` — attraversava il controllore
-    #      pulita, ed era **l'unica** forma che ci riusciva: ogni mappa con sorgente
-    #      reale viene rifiutata dai due versi dell'identita'. Il campo accettava
-    #      quindi soltanto riferimenti a nulla.
+    # I quattro controlli che stavano qui — dominio della mappa, iniettivita' e i due
+    # versi dell'identita' — esistevano tutti e soli per sorvegliare quel campo, e
+    # sono stati rimossi con esso (decisione owner del 25/08/2026). Un controllo che
+    # non puo' piu' fallire non protegge nulla, e lasciarlo suggerirebbe una
+    # superficie che il contratto non ha piu'.
     #
-    #      Vale la ragione che il verso (a) da' gia' per l'arrivo: una mappa non
-    #      verificabile contro il circuito che pretende di descrivere non e' una
-    #      mappa. Qui la si applica anche alla sorgente.
-    for sorgente, _ in patch.node_mapping:
-        if sorgente not in before.nodes:
-            return Refusal(
-                "identity_violation", sorgente, "node",
-                f"il node_mapping dichiara una rinomina di node:{sorgente}, che in "
-                "Cₖ non esiste. Il dominio della mappa e' un sottoinsieme dei nodi "
-                "di partenza: una sorgente fuori non e' una rinomina, e' un "
-                "riferimento a nulla.")
-
-    # (0) **Iniettivita'.** AD-22 v2: «`node_mapping` e' totale e iniettiva sui
-    #     sopravvissuti». L'iniettivita' era promessa dal docstring di `LayoutPatch`
-    #     e verificata solo fra le coppie ESPLICITE: la collisione fra una coppia
-    #     dichiarata `b -> a` e l'identita' IMPLICITA di `a`, che nessuno dichiara,
-    #     non era colta. `Pₖ` si gonfiava — misurato: `preserve_set` con quella mappa
-    #     restituisce sia `node:a` sia `node:b`, due entita' di `Cₖ` contate come
-    #     sopravvissute nello stesso posto di `Cₖ₊₁`.
-    #
-    #     E' il verso opposto di quello che l'emendamento chiude, e ha lo stesso
-    #     effetto: il riferimento del kill criterion si sposta sotto la misura.
-    #
-    #     Va **prima** dei due versi dell'identita'. Senza, il caso veniva rifiutato
-    #     lo stesso ma con diagnosi «node:b sopravvive e il mapping la rinomina»:
-    #     vera e secondaria. Questa funzione dichiara gia' che l'ordine serve a
-    #     nominare «il difetto piu' grande invece di un suo sintomo», e una mappa non
-    #     iniettiva e' piu' grossolana di una singola identita' non rispettata.
-    immagini: dict[str, list[str]] = {}
-    for sorgente in sorted(nodi_prima):
-        arrivo = _immagine(sorgente, patch.node_mapping)
-        if arrivo in nodi_dopo:
-            immagini.setdefault(arrivo, []).append(sorgente)
-    for arrivo, sorgenti in sorted(immagini.items()):
-        if len(sorgenti) > 1:
-            elenco = ", ".join(f"node:{x}" for x in sorgenti)
-            return Refusal(
-                "identity_violation", sorgenti[0], "node",
-                f"il node_mapping non e' iniettivo: {elenco} finiscono tutti su "
-                f"node:{arrivo}. AD-22 v2 lo vuole totale e iniettivo sui "
-                "sopravvissuti, perche' due entita' di Cₖ che sopravvivono nello "
-                "stesso posto di Cₖ₊₁ verrebbero contate entrambe in Pₖ.")
-
-    # (a) La mappa dichiara una rinomina che `Cₖ₊₁` non conferma. Senza questo verso
-    #     `node_mapping` diventa una via d'uscita: mappare un nodo davvero
-    #     sopravvissuto su un nome inesistente lo farebbe cadere fuori da `Pₖ`, e un
-    #     `preserve` che lo omette risulterebbe conforme perche' il riferimento si e'
-    #     ristretto con lui — la stessa autocertificazione che l'emendamento chiude.
-    for sorgente, arrivo in patch.node_mapping:
-        if sorgente in nodi_prima and arrivo not in nodi_dopo:
-            return Refusal(
-                "identity_violation", sorgente, "node",
-                f"node:{sorgente}: il node_mapping lo rinomina in {arrivo!r}, che in "
-                f"Cₖ₊₁ non esiste. Una mappa che dichiara una rinomina non avvenuta "
-                "non e' verificabile contro il circuito che pretende di descrivere.")
-
-    preservate = preserve_set(
-        before, after, operation=operation, node_mapping=patch.node_mapping)
-
-    # (b) Un'entita' che sopravvive davvero, e che la mappa rinomina. `Pₖ` e' preso
-    #     **dopo** `node_mapping` (AD-22 em.), quindi il nodo rinominato ci sta
-    #     dentro ed e' qui che lo si vede. La mappa riguarda i soli nodi: un
-    #     componente e un nodo omonimi sono due entita' distinte, e `image_of`
-    #     applicata a un componente produrrebbe un `identity_violation` spurio su
-    #     un'entita' che nessuno ha rinominato.
-    for e in sorted(preservate):
-        if e.kind != "node":
-            continue
-        immagine = patch.image_of(e.id)
-        if immagine != e.id:
-            return Refusal(
-                "identity_violation", e.id, e.kind,
-                f"{e}: sopravvive alla trasformazione {operation} ma il "
-                f"node_mapping la rinomina in {immagine!r}. Un'entita' preservata "
-                "conserva il proprio identificatore, senza tolleranza.")
+    # **`identity_violation` resta dichiarata in `Cause` e senza produttori.** La
+    # tabella delle cause vive in AD-19, che e' spine: rimuoverne una e' un'altra
+    # decisione di proprieta', non un effetto collaterale di questa.
+    preservate = preserve_set(before, after, operation=operation)
 
     # AD-22 em.: la massimalita' e' verificata **indipendentemente** dalla
     # `Transform` che la dichiara. «Diverso da `Pₖ`», non «piu' piccolo di»: la

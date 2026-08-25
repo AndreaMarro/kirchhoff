@@ -138,33 +138,15 @@ class TestLayoutPatch:
 
     def test_una_coordinata_al_posto_di_un_entita_e_rifiutata(self):
         with pytest.raises(TypeError, match="nomina entita', non coordinate"):
-            LayoutPatch((C("R1"),), (), (12,), (), ())  # type: ignore[arg-type]
+            LayoutPatch((C("R1"),), (), (12,), ())  # type: ignore[arg-type]
 
     def test_entita_ripetuta_rifiutata(self):
         with pytest.raises(ValueError, match="preserve: entita' ripetuta"):
-            LayoutPatch((C("R1"), C("R1")), (), (), (), ())
-
-    def test_identificatore_vuoto_nella_mappa(self):
-        with pytest.raises(ValueError, match="non identifica nulla"):
-            LayoutPatch((C("R1"),), (), (), (("a", ""),), ())
-
-    def test_mappa_non_funzionale(self):
-        with pytest.raises(ValueError, match="mappato due volte"):
-            LayoutPatch((C("R1"),), (), (), (("a", "b"), ("a", "c")), ())
-
-    def test_mappa_non_iniettiva(self):
-        """Senza iniettivita' due entita' collassano in una, e `Pₖ` si restringe."""
-        with pytest.raises(ValueError, match="non e' iniettiva"):
-            LayoutPatch((C("R1"),), (), (), (("a", "z"), ("b", "z")), ())
-
-    def test_chi_non_compare_nella_mappa_conserva_il_proprio_nome(self):
-        patch = LayoutPatch((C("R1"),), (), (), (("a", "z"),), ())
-        assert patch.image_of("a") == "z"
-        assert patch.image_of("b") == "b"
+            LayoutPatch((C("R1"), C("R1")), (), (), ())
 
     def test_l_ordine_e_canonico_e_non_d_inserimento(self):
-        uno = LayoutPatch((C("R2"), C("R1")), (), (), (("b", "y"), ("a", "z")), ())
-        due = LayoutPatch((C("R1"), C("R2")), (), (), (("a", "z"), ("b", "y")), ())
+        uno = LayoutPatch((C("R2"), C("R1")), (), (), ())
+        due = LayoutPatch((C("R1"), C("R2")), (), (), ())
         assert uno == due
 
 
@@ -212,15 +194,21 @@ def _risultato(**sovrascritti):
         preserve=frozenset({N("0")}),
         delta=Delta((StructuralDerivation("serie", (C("R1"), C("R2")), (C("Req"),)),)),
         boundary=Boundary((N("0"),)),
-        layout_patch=LayoutPatch((N("0"),), (C("R1"),), (C("Req"),), (), (C("Req"),)),
+        layout_patch=LayoutPatch((N("0"),), (C("R1"),), (C("Req"),), (C("Req"),)),
         equation=Equation("Req", "R1 + R2"),
         certificate=Certificate("serie", CONTROLLI),
     )
     return TransformResult(**{**campi, **sovrascritti})
 
 
-class TestLeTreCauseDiAd19:
-    """Le tre cause che AD-19 assegna a `domain/transform/check`, viste sollevare."""
+class TestLeCauseDiAd19:
+    """Le cause che AD-19 assegna a `domain/transform/check`, viste sollevare.
+
+    Erano tre. Dalla v2.2 `identity_violation` **resta dichiarata e senza
+    produttori**: senza `node_mapping`, `id_{k+1}(x) = id_k(x)` su `Pₖ` e' vero per
+    costruzione. La causa non e' stata tolta da `Cause` perche' la tabella vive in
+    AD-19, che e' spine: rimuoverne una e' un'altra decisione di proprieta'.
+    """
 
     def test_le_tre_cause_sono_nell_enumerazione_chiusa(self):
         assert {"identity_violation", "preserve_nonmaximal", "empty_boundary"} <= CAUSES
@@ -228,21 +216,13 @@ class TestLeTreCauseDiAd19:
     def test_boundary_assente_produce_empty_boundary(self):
         dopo, _ = _serie_riuscita()
         patch = LayoutPatch(tuple(sorted(preserve_set(SERIE, dopo, operation="serie"))),
-                            (), (), (), (N("a"),))
+                            (), (), (N("a"),))
         r = check_transform(SERIE, dopo, "serie", patch, None)
         assert isinstance(r, Refusal) and r.cause == "empty_boundary"
 
-    def test_una_preservata_rinominata_produce_identity_violation(self):
-        dopo, _ = _serie_riuscita()
-        preservate = preserve_set(SERIE, dopo, operation="serie")
-        patch = LayoutPatch(tuple(sorted(preservate)), (), (), (("a", "a2"),), (N("a"),))
-        r = check_transform(SERIE, dopo, "serie", patch, Boundary((N("a"), N("0"))))
-        assert isinstance(r, Refusal)
-        assert r.cause == "identity_violation" and r.subject == "a"
-
     def test_preserve_diverso_da_pk_in_difetto(self):
         dopo, _ = _serie_riuscita()
-        patch = LayoutPatch((N("a"),), (), (), (), (N("a"),))
+        patch = LayoutPatch((N("a"),), (), (), (N("a"),))
         r = check_transform(SERIE, dopo, "serie", patch, Boundary((N("a"), N("0"))))
         assert isinstance(r, Refusal) and r.cause == "preserve_nonmaximal"
         assert "node:0" in r.diagnosis
@@ -251,7 +231,7 @@ class TestLeTreCauseDiAd19:
         """«Diverso da», non «piu' piccolo di»: la causa copre entrambi i versi."""
         dopo, _ = _serie_riuscita()
         preservate = preserve_set(SERIE, dopo, operation="serie")
-        patch = LayoutPatch((*sorted(preservate), C("R1")), (), (), (), (N("a"),))
+        patch = LayoutPatch((*sorted(preservate), C("R1")), (), (), (N("a"),))
         r = check_transform(SERIE, dopo, "serie", patch, Boundary((N("a"), N("0"))))
         assert isinstance(r, Refusal) and r.cause == "preserve_nonmaximal"
         assert "component:R1" in r.diagnosis
@@ -260,7 +240,7 @@ class TestLeTreCauseDiAd19:
         """Il verso chiuso il 15 agosto: restringere `Pₖ` per far tornare il riferimento."""
         dopo, _ = _serie_riuscita()
         preservate = preserve_set(SERIE, dopo, operation="serie")
-        patch = LayoutPatch(tuple(sorted(preservate)), (), (N("a"),), (), (N("a"),))
+        patch = LayoutPatch(tuple(sorted(preservate)), (), (N("a"),), (N("a"),))
         r = check_transform(SERIE, dopo, "serie", patch, Boundary((N("a"), N("0"))))
         assert isinstance(r, Refusal) and r.cause == "preserve_nonmaximal"
         assert r.subject == "a" and r.subject_kind == "node"
@@ -571,81 +551,46 @@ class TestFR43AlMotore:
             transform(SERIE, "stella_triangolo", "R1", "R2")
 
 
-class TestIdentitaAttraversoLaMappa:
-    """AD-22 em.: `Pₖ` e' l'intersezione **dopo** `node_mapping`."""
+class TestRinominaNonEPreservazione:
+    """AD-22 v2.2: `Pₖ` e' l'intersezione per identificatore, senza mappature.
+
+    Questa classe verificava il verso opposto — che una rinomina, *attraverso*
+    `node_mapping`, entrasse in `Pₖ` per potervi essere colta. Il campo e' ritirato
+    e il verso si e' invertito: una rinomina non entra affatto, e non deve.
+
+    Il test superstite non e' cambiato di una riga; e' cambiato cio' che dimostra.
+    Prima documentava un difetto — «senza la mappa il confronto non vede nulla» —
+    ed era la ragione per cui la mappa esisteva. Ora documenta il contratto.
+    """
 
     PRIMA = _ir(_v("V1", "a", "0", 12), _r("R1", "a", "b", 10), _r("R2", "b", "0", 20),
                 nodes=("0", "a", "b"))
-    #: lo stesso circuito, col nodo `a` davvero rinominato in `a2`.
+    #: lo stesso circuito, col nodo `a` rinominato in `a2`.
     RINOMINATO = _ir(_v("V1", "a2", "0", 12), _r("R1", "a2", "b", 10),
                      _r("R2", "b", "0", 20), nodes=("0", "a2", "b"))
-    MAPPA = (("a", "a2"),)
 
-    def _patch(self, prima: IR, dopo: IR, mappa, **extra) -> LayoutPatch:
-        preservate = preserve_set(prima, dopo, operation="serie", node_mapping=mappa)
-        campi = dict(preserve=tuple(sorted(preservate)), remove=(), create=(),
-                     node_mapping=mappa, reroute_scope=(N("b"),))
-        return LayoutPatch(**{**campi, **extra})
+    def test_un_nodo_rinominato_non_sopravvive_sotto_nessuno_dei_due_nomi(self):
+        """`rinomina != preservazione`: e' una consumata piu' una creata."""
+        p = preserve_set(self.PRIMA, self.RINOMINATO, operation="serie")
+        assert N("a") not in p
+        assert N("a2") not in p
 
-    def test_una_rinomina_reale_entra_in_pk_e_viene_colta(self):
-        """Prima era invisibile: `node:a` usciva da `Pₖ` per il solo fatto di non
-        chiamarsi piu' come prima, e il ciclo d'identita' scorre `Pₖ`."""
-        preservate = preserve_set(self.PRIMA, self.RINOMINATO, operation="serie",
-                                  node_mapping=self.MAPPA)
-        assert N("a") in preservate
-        patch = self._patch(self.PRIMA, self.RINOMINATO, self.MAPPA)
-        r = check_transform(self.PRIMA, self.RINOMINATO, "serie", patch,
-                            Boundary((N("b"),)))
-        assert isinstance(r, Refusal)
-        assert r.cause == "identity_violation" and r.subject == "a"
+    def test_un_componente_i_cui_terminali_cambiano_non_e_preservato(self):
+        """Conseguenza dichiarata del ritiro, registrata invece che scoperta dopo.
 
-    def test_senza_la_mappa_lo_stesso_confronto_non_vede_nulla(self):
-        """La prova che il difetto era strutturale e non una svista di soglia."""
-        senza = preserve_set(self.PRIMA, self.RINOMINATO, operation="serie")
-        assert N("a") not in senza
+        `R1 (a,b)` diventa `R1 (a2,b)` perche' il nodo che tocca e' stato rinominato.
+        Sotto la v2 il confronto passava per la mappa e `R1` restava preservata; sotto
+        la v2.2 i terminali si confrontano letteralmente, quindi `R1` **non** e'
+        preservata: attributi diversi, identita' diversa.
 
-    def test_un_componente_segue_il_nodo_assorbito_e_resta_preservato(self):
-        """`R1 (a,b)` diventa `R1 (a2,b)` **solo** perche' `a` e' stato rinominato:
-        non ha cambiato identita', e restringere `Pₖ` qui la restringerebbe proprio
-        dove una fusione di nodi la mette alla prova."""
-        preservate = preserve_set(self.PRIMA, self.RINOMINATO, operation="serie",
-                                  node_mapping=self.MAPPA)
-        assert C("R1") in preservate and C("V1") in preservate
-
-    def test_una_mappa_verso_un_nome_inesistente_non_fa_uscire_da_pk(self):
-        """L'uscita di sicurezza che restava aperta: mappare un sopravvissuto su un
-        nome che `Cₖ₊₁` non ha lo toglieva da `Pₖ`, e un `preserve` che lo omette
-        risultava conforme perche' il riferimento si era ristretto con lui."""
-        dopo, _ = _serie_riuscita()
-        patch = LayoutPatch(preserve=(C("V1"), N("0")), remove=(), create=(),
-                            node_mapping=(("a", "zzz"),), reroute_scope=(N("0"),))
-        r = check_transform(SERIE, dopo, "serie", patch, Boundary((N("0"),)))
-        assert isinstance(r, Refusal)
-        assert r.cause == "identity_violation" and r.subject == "a"
-
-    def test_la_mappa_dei_nodi_non_tocca_i_componenti(self):
-        """Un componente di id `a` e un nodo di id `a` sono due entita' distinte:
-        `EntityRef` le distingue, e la mappa deve rispettare la distinzione.
-
-        La rinomina qui e' **reale** — `z` esiste in `Cₖ₊₁` — di proposito: su una
-        rinomina soltanto dichiarata il primo verso del controllo scatterebbe per
-        conto proprio e coprirebbe il difetto. Entrambe le letture producono un
-        `identity_violation` di soggetto `a`; cambia il **genere**, e con esso quale
-        entita' viene accusata.
+        Nel catalogo corrente lo scenario non si presenta — i componenti che toccano
+        un nodo assorbito sono esattamente quelli consumati — e una rinomina di nodo
+        non e' un'operazione del contratto. Se una trasformazione futura ne avesse
+        bisogno, AD-22 v2.2 dice gia' che serve una nuova decisione architetturale.
         """
-        prima = _ir(_v("a", "a", "0", 12), _r("R1", "a", "b", 10),
-                    _r("R2", "b", "0", 20), nodes=("0", "a", "b"))
-        dopo = _ir(_v("a", "z", "0", 12), _r("R1", "z", "b", 10),
-                   _r("R2", "b", "0", 20), nodes=("0", "b", "z"))
-        mappa = (("a", "z"),)
-        preservate = preserve_set(prima, dopo, operation="serie", node_mapping=mappa)
-        assert {C("a"), N("a")} <= preservate      # omonimi, e tutti e due in `Pₖ`
-        patch = LayoutPatch(preserve=tuple(sorted(preservate)), remove=(), create=(),
-                            node_mapping=mappa, reroute_scope=(N("b"),))
-        r = check_transform(prima, dopo, "serie", patch, Boundary((N("b"),)))
-        assert isinstance(r, Refusal) and r.cause == "identity_violation"
-        assert r.subject == "a" and r.subject_kind == "node"
-
+        p = preserve_set(self.PRIMA, self.RINOMINATO, operation="serie")
+        assert C("R1") not in p
+        assert C("V1") not in p
 
 # ---------------------------------------------------------------------------
 # P0-A — il Delta emesso deve attraversare il proprio controllore.
@@ -787,7 +732,12 @@ def test_un_delta_che_mente_e_un_guasto_non_un_rifiuto():
 
 
 # ---------------------------------------------------------------------------
-# P0-C — `node_mapping` e' totale e INIETTIVA sui sopravvissuti (AD-22 v2).
+# P0-C — storicizzato. `node_mapping` e' stata ritirata dalla v2.2, e con essa i
+# quattro controlli che la sorvegliavano. L'iniettivita' non e' piu' un invariante
+# da verificare: e' una proprieta' che nessuno puo' violare, perche' `Pₖ` e' un
+# insieme e un identificatore vi compare al piu' una volta.
+#
+# Il rilievo resta valido come storia: sotto la v2 (AD-22 v2).
 #
 # L'iniettivita' era promessa dal docstring di `LayoutPatch` e verificata solo
 # fra le coppie esplicite: la collisione fra una coppia dichiarata `n2 -> n1` e
@@ -800,48 +750,53 @@ def test_un_delta_che_mente_e_un_guasto_non_un_rifiuto():
 # ---------------------------------------------------------------------------
 
 
-def test_una_mappa_non_iniettiva_e_rifiutata():
-    """Due sorgenti sulla stessa immagine: `Pₖ` conterebbe due volte un solo posto."""
-    patch = LayoutPatch(
-        preserve=(N("0"), N("a"), N("b")),
-        remove=(),
-        create=(),
-        node_mapping=(("b", "a"),),   # b -> a, mentre a -> a per identita'
-        reroute_scope=(N("a"),),
-    )
-    rifiuto = check_transform(SERIE, SERIE, "serie", patch,
-                              Boundary((N("a"),)))
-    assert rifiuto is not None, (
-        "la mappa manda b e a sulla stessa immagine a: non e iniettiva, "
-        "e AD-22 v2 la vuole iniettiva sui sopravvissuti")
-    assert rifiuto.cause == "identity_violation"
-    # **La diagnosi deve nominare il difetto, non un suo sintomo.** Prima di questo
-    # controllo il rifiuto arrivava lo stesso, ma per identita' su `b`: vero e
-    # secondario. `check_transform` dichiara gia' che l'ordine dei controlli serve a
-    # nominare «il difetto piu' grande invece di un suo sintomo», e una mappa non
-    # iniettiva e' piu' grossolana di una singola identita' non rispettata.
-    assert "iniettiv" in rifiuto.diagnosis, (
-        f"la diagnosi non nomina l'iniettivita: {rifiuto.diagnosis}")
-    assert "a" in rifiuto.diagnosis and "b" in rifiuto.diagnosis
+# ---------------------------------------------------------------------------
+# AD-22 v2.2 — `node_mapping` e' DIFFERITA. Questi test sono cio' che deve reggere
+# **dopo** il ritiro, e sono stati scritti prima di rimuovere il campo: servono a
+# dimostrare che togliere lo strato di mappatura non indebolisce il contratto.
+#
+# Nel contratto corrente la preservazione richiede identita' semantica stabile E
+# identificatore semantico stabile. `rinomina != preservazione`: una entita' che
+# cambia nome e' una consumata piu' una creata, con lineage nel `Delta`.
+# ---------------------------------------------------------------------------
 
 
-def test_una_mappa_con_sorgente_inesistente_e_rifiutata():
-    """L'unica mappa che attraversava il controllore era spazzatura.
+RINOMINATO = _ir(_v("V1", "a", "0", 12), _r("R1", "a", "z", 10), _r("R2", "z", "0", 20),
+                 nodes=("0", "a", "z"))
 
-    Misurato: `(("zzz","w"),)` — sorgente assente da `Cₖ` — passava pulita, mentre
-    ogni mappa con sorgente reale veniva rifiutata. Il dominio di `node_mapping`
-    e' per costruzione un sottoinsieme dei nodi di `Cₖ`: una sorgente fuori non e'
-    una rinomina, e' un riferimento a nulla. Vale la stessa ragione che il verso
-    (a) da' gia' per l'arrivo — una mappa non verificabile contro il circuito che
-    pretende di descrivere non e' una mappa.
+
+def test_una_rinomina_non_e_una_preservazione():
+    """`b` diventa `z`: nessuno dei due nomi sopravvive come preservato.
+
+    Senza strato di mappatura `Pₖ` e' un'intersezione per identificatore: `b` non
+    e' in `Cₖ₊₁`, `z` non e' in `Cₖ`, e nessuno dei due entra. E' esattamente cio'
+    che il contratto vuole — una rinomina e' una consumata piu' una creata.
     """
+    p = preserve_set(SERIE, RINOMINATO, operation="serie")
+    assert N("b") not in p, "il nome vecchio non sopravvive"
+    assert N("z") not in p, "il nome nuovo non e' una preservazione"
+
+
+def test_un_preserve_che_rivendica_il_nome_vecchio_e_rifiutato():
+    """Il verso che conta: nessuno puo' DICHIARARE preservato cio' che e' rinominato."""
     patch = LayoutPatch(
-        preserve=(N("0"), N("a"), N("b")),
+        preserve=(N("0"), N("a"), N("b")),   # rivendica b, che in Cₖ₊₁ non c'e'
         remove=(), create=(),
-        node_mapping=(("zzz", "w"),),
         reroute_scope=(N("a"),),
     )
-    rifiuto = check_transform(SERIE, SERIE, "serie", patch, Boundary((N("a"),)))
-    assert rifiuto is not None, "una mappa con sorgente inesistente non e verificabile"
-    assert rifiuto.cause == "identity_violation"
-    assert rifiuto.subject == "zzz"
+    rifiuto = check_transform(SERIE, RINOMINATO, "serie", patch, Boundary((N("a"),)))
+    assert rifiuto is not None
+    assert rifiuto.cause == "preserve_nonmaximal"
+
+
+def test_due_entita_non_possono_collassare_in_una_sola_preservata():
+    """Many-to-one non e' piu' esprimibile: `Pₖ` e' un'intersezione di insiemi.
+
+    Con lo strato di mappatura, `b -> a` faceva contare `a` e `b` entrambi come
+    sopravvissuti sullo stesso posto di `Cₖ₊₁` e gonfiava `Pₖ`. Senza, la
+    collisione non ha un canale attraverso cui esprimersi: ogni identificatore
+    compare al piu' una volta in un insieme.
+    """
+    p = preserve_set(SERIE, SERIE, operation="serie")
+    identificatori = [e.id for e in p if e.kind == "node"]
+    assert len(identificatori) == len(set(identificatori))

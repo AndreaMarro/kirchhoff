@@ -76,3 +76,79 @@ rinomine di sopravvissuti — e non inventa una semantica che lo spine non ha.
 Finché la decisione è aperta, `node_mapping` resta un campo che **solo** la mappa
 vuota può riempire legalmente. Va detto nella Story invece che lasciato implicito:
 è la differenza fra un campo differito e un campo morto di cui nessuno sa.
+
+---
+
+# DECISIONE OWNER — 25 agosto 2026: **B, ritiro/differimento**
+
+> «La regola più importante da preservare è: *same semantic entity → same semantic
+> identifier*, perché è proprio ciò che impedisce al transformer di autocertificare
+> la preservazione riutilizzando o reinterpretando identificatori.»
+
+L'uscita **A** è stata respinta esplicitamente: `id_{k+1}(map(x)) = map(id_k(x))`
+introdurrebbe una seconda nozione di identità — «stesso id» accanto a «stessa
+entità dopo una rinomina» — e renderebbe molto più difficile stabilire `Pₖ` in
+modo indipendente. Nel punto più delicato di Gate A si preferisce una semantica
+più piccola e verificabile a una più espressiva e ambigua.
+
+## Che cosa è stato fatto
+
+**Architettura** — AD-22 emendata a **v2.2**. Le clausole della v2 che
+riguardavano `node_mapping` restano scritte come **provenienza**: descrivono un
+contratto che ha smesso di essere corrente, non un errore da cancellare. Stato:
+**DIFFERITA**.
+
+**Codice** — il campo è uscito dal contratto runtime, e con lui tutto ciò che
+esisteva solo per sostenerlo:
+
+| Rimosso | Dove |
+|---|---|
+| campo `node_mapping` | `LayoutPatch` |
+| validazione della mappa (vuoto, funzionale, iniettiva) | `LayoutPatch.__post_init__` |
+| `image_of` | `LayoutPatch` |
+| `_immagine` | `check.py` |
+| parametro `node_mapping` | `preserve_set` |
+| controllo (0a) dominio della mappa | `check_transform` |
+| controllo (0) iniettività | `check_transform` |
+| controllo (a) rinomina non confermata | `check_transform` |
+| controllo (b) sopravvissuto rinominato | `check_transform` |
+| produttore `node_mapping=()` | `engine.py` |
+
+Nessun campo sostitutivo. Nessuna `IdentityMap`, `RenameMap`, `SemanticAlias` o
+`SurvivorMap`.
+
+## Che cosa dimostrano i test superstiti
+
+I guard sono stati scritti **prima** della rimozione, per provare che togliere lo
+strato non indebolisce il contratto:
+
+- `test_un_nodo_rinominato_non_sopravvive_sotto_nessuno_dei_due_nomi`
+- `test_un_preserve_che_rivendica_il_nome_vecchio_e_rifiutato` → `preserve_nonmaximal`
+- `test_due_entita_non_possono_collassare_in_una_sola_preservata`
+- `test_una_rinomina_non_e_una_preservazione`
+
+Il terzo merita una nota: many-to-one non è più *illegale*, è **inesprimibile**.
+`Pₖ` è un insieme, e un identificatore vi compare al più una volta. Un invariante
+che nessuno può violare è più forte di un controllo che lo verifica.
+
+## Due conseguenze registrate, non scoperte dopo
+
+**`identity_violation` resta dichiarata in `Cause` e senza produttori.** Senza
+mappatura, `id_{k+1}(x) = id_k(x)` su `Pₖ` è vero per costruzione. La causa non è
+stata rimossa: la tabella vive in AD-19, che è spine, e toglierne una è un'altra
+decisione di proprietà.
+
+**Un componente i cui terminali cambiano non è più preservato.** Sotto la v2 il
+confronto passava per la mappa e `R1 (a,b) → R1 (a2,b)` restava preservata; ora i
+terminali si confrontano letteralmente. Nel catalogo corrente lo scenario non si
+presenta — i componenti che toccano un nodo assorbito sono esattamente quelli
+consumati — ed è coperto da un test che lo dichiara invece di lasciarlo implicito.
+
+## Stato
+
+    P0-A  check_delta                   CLOSED
+    P0-B  Equation                      CLOSED
+    P0-C  Pₖ / iniettività              CLOSED
+    P0-D  contraddizione node_mapping   CLOSED BY ARCHITECTURE
+
+Oracolo: 347 test, copertura 100%, recinti verdi, dominio verde.
