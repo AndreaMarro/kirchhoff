@@ -217,3 +217,60 @@ class TransformResult:
                 f"TransformResult: il certificato attesta l'operazione "
                 f"«{self.certificate.operation}», il Delta ne deriva "
                 f"{', '.join(sorted(f'«{o}»' for o in operazioni))}.")
+
+        # --- le altre coppie di canali ---------------------------------------
+        #
+        # La prima chiusura si fermava a `preserve` e all'operazione: due coppie su
+        # sei. L'argomento che l'aveva motivata — «`Pₖ` e' scritto due volte dentro
+        # lo stesso prodotto e nessuno li confronta» — vale parola per parola per
+        # **cio' che sparisce**, scritto in `delta.consumed` e in `patch.remove`, e
+        # per **cio' che nasce**, scritto in `delta.produced` e in `patch.create`.
+        #
+        # Tutti questi invarianti sono verificabili **senza i circuiti**, che e'
+        # esattamente il livello a cui questa difesa vive: il motore li produce
+        # coerenti perche' i controllori girano contro `Cₖ` e `Cₖ₊₁`, ma un prodotto
+        # assemblato da fuori non attraversa quei controllori.
+        consumate = self.delta.consumed
+        prodotte = self.delta.produced
+
+        # Una preservata non puo' essere consumata: due canali che affermano
+        # l'opposto sulla stessa entita'.
+        contraddette = sorted(consumate & self.preserve)
+        if contraddette:
+            raise ValueError(
+                "TransformResult: "
+                f"{', '.join(str(e) for e in contraddette)} "
+                "compare fra le preservate e fra le consumate dal Delta.")
+
+        # Cio' che sparisce, scritto una volta sola.
+        rimosse = frozenset(self.layout_patch.remove)
+        if consumate != rimosse:
+            raise ValueError(
+                "TransformResult: `delta.consumed` e `layout_patch.remove` divergono. "
+                f"Solo nel Delta: {', '.join(str(e) for e in sorted(consumate - rimosse)) or 'nessuna'}. "
+                f"Solo nella patch: {', '.join(str(e) for e in sorted(rimosse - consumate)) or 'nessuna'}.")
+
+        # Cio' che nasce, scritto una volta sola. Si sottrae `preserve` perche' una
+        # fusione puo' atterrare su un'entita' preservata — e' il caso che
+        # `check_delta` ammette esplicitamente — e quella non e' una creazione.
+        create = frozenset(self.layout_patch.create)
+        nate = prodotte - self.preserve
+        if nate != create:
+            raise ValueError(
+                "TransformResult: cio' che il Delta produce e cio' che la patch crea "
+                f"divergono. Solo nel Delta: {', '.join(str(e) for e in sorted(nate - create)) or 'nessuna'}. "
+                f"Solo nella patch: {', '.join(str(e) for e in sorted(create - nate)) or 'nessuna'}.")
+
+        # `∂Tₖ` sta dentro cio' che sopravvive: e' dove il sottografo tocca il resto
+        # della rete, e cio' che non sopravvive e' dentro il sottografo, non al confine.
+        fuori = sorted(frozenset(self.boundary.entities) - self.preserve)
+        if fuori:
+            raise ValueError(
+                "TransformResult: il boundary nomina "
+                f"{', '.join(str(e) for e in fuori)}, che il prodotto non conserva.")
+
+        # L'equazione definisce cio' che il passo produce, non un simbolo qualunque.
+        if self.equation.subject not in {e.id for e in prodotte}:
+            raise ValueError(
+                f"TransformResult: l'equazione definisce «{self.equation.subject}», "
+                f"che nessuna derivazione produce.")

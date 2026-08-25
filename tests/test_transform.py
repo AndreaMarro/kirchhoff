@@ -1200,3 +1200,70 @@ def test_il_certificato_e_il_delta_non_possono_nominare_operazioni_diverse():
             preserve=res.preserve, delta=res.delta, boundary=res.boundary,
             layout_patch=res.layout_patch, equation=res.equation,
             certificate=Certificate("parallelo", CONTROLLI))
+
+
+# ---------------------------------------------------------------------------
+# Terza tornata — la coerenza interna del prodotto, tutte le coppie di canali.
+#
+# La chiusura precedente confrontava `preserve` con `layout_patch.preserve` e
+# l'operazione del `Certificate` con quella del `Delta`, e si fermava li'. Il
+# revisore ha costruito quattro risultati che passavano puliti, e il suo argomento
+# e' il mio: «cio' che sparisce» e' scritto due volte — `delta.consumed` e
+# `patch.remove` — e non lo confrontava nessuno.
+#
+# Gli invarianti mancanti sono tutti verificabili **senza i circuiti**, cioe' al
+# livello a cui la difesa e' stata messa.
+# ---------------------------------------------------------------------------
+
+
+def _risultato(**override):
+    dopo, res = _serie_riuscita()
+    campi = dict(preserve=res.preserve, delta=res.delta, boundary=res.boundary,
+                 layout_patch=res.layout_patch, equation=res.equation,
+                 certificate=res.certificate)
+    return TransformResult(**{**campi, **override})
+
+
+def test_una_preservata_non_puo_essere_anche_consumata_nel_prodotto():
+    """(a) due canali che affermano l'opposto sulla stessa entita'."""
+    from kirchhoff.domain.transform import Delta, StructuralDerivation
+    _, res = _serie_riuscita()
+    with pytest.raises(ValueError, match="consuma"):
+        _risultato(delta=Delta((StructuralDerivation(
+            "serie", (C("V1"), C("R1"), C("R2"), N("b")), (C(_eq_id(res)),)),)))
+
+
+def test_cio_che_sparisce_e_scritto_una_volta_sola():
+    """(b) il Delta tace su R2, la patch no."""
+    from kirchhoff.domain.transform import Delta, StructuralDerivation
+    _, res = _serie_riuscita()
+    with pytest.raises(ValueError, match="consumed.*remove|remove.*consumed"):
+        _risultato(delta=Delta((StructuralDerivation(
+            "serie", (C("R1"), N("b")), (C(_eq_id(res)),)),)))
+
+
+def test_il_boundary_del_prodotto_sta_dentro_preserve():
+    """(c) un boundary che nomina cio' che il prodotto non conserva."""
+    with pytest.raises(ValueError, match="boundary"):
+        _risultato(boundary=Boundary((N("mai_esistito"),)))
+
+
+def test_l_equazione_definisce_qualcosa_che_il_passo_produce():
+    """(d) l'equazione definisce un simbolo che nessuna derivazione produce."""
+    with pytest.raises(ValueError, match="equazione|equation"):
+        _risultato(equation=Equation("Zeq_inventata", "R1 + R2"))
+
+
+def test_cio_che_nasce_e_scritto_una_volta_sola():
+    """Il verso simmetrico di (b): `produced - preserve` deve essere `create`."""
+    _, res = _serie_riuscita()
+    patch = LayoutPatch(preserve=res.layout_patch.preserve,
+                        remove=res.layout_patch.remove,
+                        create=(C("AltroNome"),),
+                        reroute_scope=res.layout_patch.reroute_scope)
+    with pytest.raises(ValueError, match="produce.*crea|crea.*produce"):
+        _risultato(layout_patch=patch)
+
+
+def _eq_id(res):
+    return res.delta.derivations[0].outputs[0].id
