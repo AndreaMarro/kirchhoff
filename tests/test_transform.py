@@ -957,3 +957,44 @@ def test_un_boundary_che_mente_e_un_guasto_non_un_rifiuto():
     assert "non_adiacente" in str(scoppio.value)
     # un solo invariante, tre canali: le tre eccezioni condividono la base
     assert isinstance(scoppio.value, AttestazioneIncoerente)
+
+
+# ---------------------------------------------------------------------------
+# P1-3 — gli argomenti entrano dalle porte tipizzate.
+#
+# Il contratto di `transform` documenta con cura tre porte — `ValueError` per cio'
+# che non si potra' fare, `NotImplementedError` per cio' che non si e' ancora
+# fatto, `Refusal` per il dominio — e il primo errore che un chiamante reale
+# commette le attraversava tutte:
+#
+#     transform(SERIE, "serie", "R1", "RX")  -> KeyError('RX')
+#     transform(SERIE, "serie", "R1")        -> TypeError: _serie() missing 1 ...
+#
+# Un quarto tipo, senza operazione ne' diagnosi, e nessun test lo copriva. Il nome
+# della funzione privata finiva nel messaggio: una fuga di implementazione che
+# racconta al chiamante come e' fatto dentro invece di che cosa ha sbagliato.
+# ---------------------------------------------------------------------------
+
+
+def test_un_identificatore_inesistente_passa_dalla_porta_tipizzata():
+    with pytest.raises(ValueError) as scoppio:
+        transform(SERIE, "serie", "R1", "RX")
+    messaggio = str(scoppio.value)
+    assert "RX" in messaggio, "la diagnosi non nomina l'argomento sbagliato"
+    assert "serie" in messaggio, "la diagnosi non nomina l'operazione"
+    assert "_serie" not in messaggio, "il nome della funzione privata non deve uscire"
+
+
+@pytest.mark.parametrize("argomenti", [("R1",), ("R1", "R2", "R3"), ()])
+def test_un_arita_sbagliata_passa_dalla_porta_tipizzata(argomenti):
+    with pytest.raises(ValueError) as scoppio:
+        transform(SERIE, "serie", *argomenti)
+    messaggio = str(scoppio.value)
+    assert "serie" in messaggio
+    assert "_serie" not in messaggio, "il nome della funzione privata non deve uscire"
+
+
+def test_gli_argomenti_giusti_non_sono_disturbati():
+    """Discriminazione positiva: la porta nuova non deve accusare il caso sano."""
+    esito = transform(SERIE, "serie", "R1", "R2")
+    assert not isinstance(esito, Refusal)

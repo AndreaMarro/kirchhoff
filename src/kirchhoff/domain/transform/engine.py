@@ -45,6 +45,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import replace
 from fractions import Fraction
+from inspect import signature
 
 from ..ir import IR, REFERENCE_NODE, Component
 from ..refusal import Refusal
@@ -128,6 +129,22 @@ class PatchIncoerente(AttestazioneIncoerente):
 
 class BoundaryIncoerente(AttestazioneIncoerente):
     """`∂Tₖ` nomina entita' che non sopravvivono, o che non confinano col passo."""
+
+
+def _identificatori_attesi(corpo: Callable[..., object]) -> int:
+    """Quanti identificatori la voce del catalogo richiede, oltre al circuito.
+
+    Derivato dalla firma invece che dichiarato, perche' una seconda dichiarazione da
+    tenere allineata a mano e' esattamente E-62: due fonti per la stessa cosa
+    divergono nel posto dove nessuno guarda. Qui la fonte e' la firma, e non puo'
+    divergere da se stessa.
+    """
+    parametri = list(signature(corpo).parameters.values())
+    return sum(
+        1 for p in parametri[1:]
+        if p.kind in (p.POSITIONAL_ONLY, p.POSITIONAL_OR_KEYWORD)
+        and p.default is p.empty
+    )
 
 
 def _resistore(ir: IR, cid: str) -> Component:
@@ -455,4 +472,34 @@ def transform(
         raise NotImplementedError(
             f"{operation}: applicabile ma senza implementazione. "
             f"Implementate finora: {', '.join(sorted(_REGISTRO))}.")
-    return _REGISTRO[operation](ir, *args)
+
+    # **La quarta porta: gli argomenti.** Le tre sopra riguardano l'operazione; questa
+    # riguarda cio' che le si passa, ed era l'unica scoperta. Misurato: un
+    # identificatore inesistente usciva come `KeyError('RX')` da `IR.component`, e
+    # un'arita' sbagliata come `TypeError: _serie() missing 1 required positional
+    # argument`. Un quarto tipo che il contratto non dichiara, senza operazione ne'
+    # diagnosi — e col nome della funzione privata dentro il messaggio, cioe' una
+    # fuga di implementazione che racconta al chiamante come e' fatto dentro invece
+    # di che cosa ha sbagliato.
+    #
+    # Entrambi sono «cio' che non si potra' fare» e vanno quindi in `ValueError`,
+    # come le altre due porte di quella classe.
+    corpo = _REGISTRO[operation]
+    attesi = _identificatori_attesi(corpo)
+    if len(args) != attesi:
+        raise ValueError(
+            f"{operation}: vuole {attesi} identificatori, ne ha ricevuti "
+            f"{len(args)}{' (' + ', '.join(args) + ')' if args else ''}.")
+
+    # Tutte le voci del catalogo corrente nominano **componenti**. Se una voce futura
+    # nominasse nodi, il Catalogo dovrebbe dichiarare il genere degli argomenti:
+    # dedurlo qui sarebbe un'euristica dentro un punto che deve restare deterministico.
+    noti = {c.id for c in ir.components}
+    ignoti = [a for a in args if a not in noti]
+    if ignoti:
+        raise ValueError(
+            f"{operation}: {', '.join(ignoti)} non "
+            f"{'e' if len(ignoti) == 1 else 'sono'} un componente di questo circuito. "
+            f"Componenti: {', '.join(sorted(noti))}.")
+
+    return corpo(ir, *args)
