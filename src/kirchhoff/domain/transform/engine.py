@@ -29,7 +29,7 @@ lo dichiara, invece di scegliersene una.
 
 ## I Rifiuti che invece escono, e da dove vengono
 
-Due sono di `domain/transform/check` — le tre cause di AD-19 qui sopra. Gli altri
+Tre sono di `domain/transform/check` — le cause di AD-19 qui sopra. Gli altri
 sono **inoltrati** da `domain/validate`: `Cₖ` gia' rotto e `Cₖ₊₁` che non regge alla
 validazione elettrica portano `topology`, `units` o `unsolvable`, che restano cause
 di chi le emette. Il criterio della storia — *«il `CircuitIR` risultante supera la
@@ -59,9 +59,11 @@ from .catalog import (
 )
 from .check import (
     check_boundary,
+    check_certificate,
     check_delta,
     check_patch,
     check_transform,
+    identity_attestations,
     preserve_set,
 )
 from .delta import Delta, EntityRef, StructuralDerivation
@@ -94,9 +96,18 @@ from .result import Boundary, Certificate, Equation, LayoutPatch, TransformResul
 #: 25/08/2026, uscita B; l'uscita A — le Trasformazioni dichiarano `preserve` —
 #: resta possibile e richiedera' una decisione architetturale esplicita se un
 #: produttore esterno arrivera' davvero.
+#: **`identita' dei sopravvissuti` e' elencata, e la massimalita' no.** La
+#: differenza fra i due casi e' se il controllo puo' fallire su questo percorso.
+#: La massimalita' non puo': `f(x) != f(x)` con `f` pura non e' mai vero. L'identita'
+#: si', e non per una svista rimediabile — `check_transform` la legge in `Cₖ` e
+#: `Cₖ₊₁`, che il motore ha costruito ma non ha derivato dal controllo. Un difetto
+#: di `_nuovo_id`, o una riduzione che mutasse un sopravvissuto, la farebbero
+#: scattare. E' una verifica indipendente, quindi elencarla non e' E-65: e' cio' che
+#: E-65 chiede di poter distinguere da un'asserzione.
 CONTROLLI: tuple[str, ...] = (
     "validazione elettrica di Cₖ",
     "boundary",
+    "identita' dei sopravvissuti",
     "coerenza del Delta",
     "coerenza della LayoutPatch",
     "contenuto del boundary",
@@ -145,6 +156,18 @@ class PatchIncoerente(AttestazioneIncoerente):
 
 class BoundaryIncoerente(AttestazioneIncoerente):
     """`∂Tₖ` nomina entita' che non sopravvivono, o che non confinano col passo."""
+
+
+class CertificatoIncoerente(AttestazioneIncoerente):
+    """Le attestazioni d'identita' emesse non reggono `check_certificate`.
+
+    Stessa famiglia delle altre tre e stessa ragione per non essere un `Refusal`: la
+    richiesta era soddisfacibile, e cio' che non regge e' l'attestato che il motore ha
+    prodotto su se stesso. Un attestato d'identita' falso e' pero' il piu' pericoloso
+    dei quattro, perche' non contraddice un altro canale — lo *giustifica*: dice
+    perche' un'entita' e' in `Pₖ`, e `Pₖ` e' l'ingresso di VCER, della codifica di
+    braccio e di A-0.
+    """
 
 
 def _identificatori_attesi(corpo: Callable[..., object]) -> int:
@@ -270,13 +293,51 @@ def _prodotto(
     if isinstance(uscita, Refusal):
         return uscita
 
+    # Le attestazioni escono dallo stesso **predicato** che ha calcolato `Pₖ`
+    # (`check._divergenze`): un certificato che giustificasse l'identita' con un
+    # confronto diverso da quello che ha deciso l'appartenenza attesterebbe un
+    # controllo che non e' quello girato. Predicato, non calcolo: `_divergenze` gira
+    # sei volte per una `transform()` — una per ciascun controllore piu' quella del
+    # motore — e la garanzia e' che sia la stessa **funzione**, non la stessa corsa.
+    # Il commento di prima diceva «lo stesso predicato che ha calcolato `Pₖ`» e si
+    # leggeva come se fosse lo stesso risultato riusato; su una funzione pura di due
+    # circuiti immutabili le due letture coincidono, ma la seconda non e' vera e non
+    # va lasciata credere.
+    #
+    # Nel Catalogo corrente sono sempre vuote, perche' nessuna operazione dichiara
+    # attributi mutabili — e vuote sono un'affermazione, non un'omissione: nessuna
+    # preservazione ha avuto bisogno di una licenza.
+    certificato = Certificate(
+        operazione, CONTROLLI,
+        identity_attestations(prima, dopo, operation=operazione))
+
+    # **Il quarto canale attraversa il proprio controllore, per la stessa ragione
+    # degli altri tre.** Senza questa riga l'attestato era l'unico membro del prodotto
+    # che nessuno confrontava con i circuiti: `Certificate` verifica la licenza del
+    # Catalogo e `TransformResult` che l'attestata sia preservata, ma nessuno dei due
+    # vede `Cₖ` e `Cₖ₊₁`, quindi nessuno dei due poteva chiedere se l'attestazione
+    # fosse **vera**. Un certificato che si autocertifica e' E-65 nel campo che esiste
+    # per chiudere E-65.
+    #
+    # `CONTROLLI` non lo elenca, e non e' una dimenticanza: un certificato che
+    # attestasse di aver verificato le proprie attestazioni certificherebbe se stesso
+    # asserendolo. E-65 chiede che un controllo che non ha girato non compaia, non che
+    # ogni controllo girato compaia — e questo e' l'unico dei cinque che non puo'
+    # comparire senza diventare circolare.
+    guasti_certificato = check_certificate(certificato, prima, dopo)
+    if guasti_certificato:
+        raise CertificatoIncoerente(
+            f"{operazione}: il Certificate emesso viola il proprio controllore — "
+            + "; ".join(
+                f"{v.code} su {v.subject} ({v.detail})" for v in guasti_certificato))
+
     return dopo, TransformResult(
         preserve=preservate,
         delta=delta,
         boundary=boundary,
         layout_patch=patch,
         equation=equazione,
-        certificate=Certificate(operazione, CONTROLLI),
+        certificate=certificato,
     )
 
 

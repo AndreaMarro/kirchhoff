@@ -188,6 +188,16 @@ class TestCoerenzaColCircuito:
         # deve quindi renderne conto: «una rimozione piu' una creazione, e come tale
         # deve comparire nel Delta» (AD-22 v2.1).
         #
+        # **Cio' che `check_delta` esige non basta piu' a far passare il passo.**
+        # Misurato dopo la Story 1.1: su questa stessa coppia di circuiti,
+        # `check_transform` restituisce `Refusal(identity_violation, R2)`, perche'
+        # `R2` compare in entrambi senza nominare la stessa entita'. Il `Delta` qui
+        # sotto e' corretto per il proprio controllore e resta la risposta giusta alla
+        # domanda che questo test pone; una fusione di nodi che sposti i terminali di
+        # un componente sopravvissuto e' pero' oggi un passo **rifiutato**, e nessuna
+        # delle due riduzioni del catalogo la produce. Registrato in
+        # `deferred-work.md`.
+        #
         # Prima della correzione degli insiemi, `prima - dopo` era calcolato per solo
         # identificatore e `R2` non compariva: il `Delta` che la ignorava passava.
         delta = Delta((

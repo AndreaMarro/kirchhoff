@@ -30,6 +30,7 @@ import re
 from dataclasses import dataclass
 from datetime import date
 from fractions import Fraction
+from collections.abc import Mapping
 from types import MappingProxyType
 from typing import Literal
 
@@ -90,8 +91,19 @@ IDENTITY_ATTRIBUTES: tuple[str, ...] = (
 #:
 #: L'insieme predefinito e' **vuoto**: chi non dichiara nulla non muta nulla. Cosi'
 #: una `R1` da 10 Ω che dopo una riduzione in parallelo vale 6⅔ Ω **non e'**
-#: preservata — e' una rimozione piu' una creazione che ne ha riusato il nome, e
-#: come tale deve comparire nel `Delta`.
+#: preservata.
+#:
+#: **Che cosa le accade poi e' cambiato con la Story 1.1, e la riga di prima era
+#: rimasta indietro.** Diceva «e' una rimozione piu' una creazione che ne ha riusato
+#: il nome, e come tale deve comparire nel `Delta`», citando AD-22 v2.1. Quella
+#: clausola descrive cio' che il `Delta` deve dichiarare, e `check_delta` continua a
+#: esigerlo; ma `check_transform` **rifiuta** ora il passo prima di arrivarci, perche'
+#: un identificatore che compare in `Cₖ` e in `Cₖ₊₁` senza nominare la stessa entita'
+#: rende `Pₖ` leggibile e falso (CV1). La forma «rimozione piu' creazione col nome
+#: riusato» non e' quindi una rappresentazione ammessa del passo: e' la forma
+#: rifiutata. Quella ammessa da' all'entita' di `Cₖ₊₁` un **identificatore proprio**.
+#: La divergenza fra questa emissione e le due clausole owner-locked che la
+#: descrivono e' registrata in `deferred-work.md`, non decisa qui.
 #:
 #: Perche' qui e non nel controllore: il discriminante lo dichiara **il Catalogo**,
 #: mai la `Transform` misurata. Chi e' misurato non definisce il proprio
@@ -103,6 +115,20 @@ IDENTITY_ATTRIBUTES: tuple[str, ...] = (
 #: consente per quella operazione soltanto. E' la riga da cambiare, e
 #: `test_un_attributo_dichiarato_mutabile_lascia_l_entita_preservata` il posto dove
 #: dichiarare il caso nuovo.
+#:
+#: **`type` e' dichiarabile mutabile, e non e' una svista.** Nulla qui vieta a
+#: un'operazione di licenziare il cambio di tipo — un condensatore che diventa un
+#: resistore «restando la stessa entita'» — e la domanda e' stata posta
+#: esplicitamente. La risposta e' che l'esempio *illustrativo* di AD-22 v2.1 e'
+#: proprio questo caso: «la disattivazione di un generatore indipendente **potrebbe**
+#: essere una di queste — stessa entita', stato cambiato — oppure una sostituzione
+#: strutturale con identita' nuova». Un generatore disattivato modellato come corto
+#: circuito **e'** un cambio di `type`, e vietarlo qui deciderebbe in anticipo, e in
+#: un modulo, una questione che lo spine lascia aperta al vocabolario delle primitive
+#: strutturali. La licenza resta quindi esprimibile e resta **non esercitata**: nessuna
+#: voce di `_MUTABILI` la concede, e il giorno in cui una la concedesse sarebbe un
+#: commit visibile su questa riga, non un effetto a runtime. Registrato in
+#: `deferred-work.md` come decisione del proprietario.
 _MUTABILI: dict[str, frozenset[str]] = {nome: frozenset() for nome in sorted(CATALOG)}
 
 #: La dichiarazione e' esposta come **vista di sola lettura**. `CATALOG` e
@@ -130,12 +156,47 @@ def mutable_attributes(operation: str) -> frozenset[str]:
     return MUTABLE_ATTRIBUTES[operation]
 
 
-# Il catalogo e la dichiarazione non possono divergere: una voce senza
-# dichiarazione avrebbe discriminante indefinito, e la si leggerebbe come «tutto
-# mutabile» o «niente mutabile» a seconda di chi la interroga.
-if set(MUTABLE_ATTRIBUTES) != CATALOG:  # pragma: no cover - invariante di import
-    raise RuntimeError(
-        "il catalogo e la dichiarazione degli attributi mutabili sono divergenti")
+def _verifica_dichiarazione(dichiarazione: Mapping[str, frozenset[str]]) -> None:
+    """Le due condizioni che rendono `_MUTABILI` un discriminante e non un elenco.
+
+    **Le chiavi.** Il catalogo e la dichiarazione non possono divergere: una voce
+    senza dichiarazione avrebbe discriminante indefinito, e la si leggerebbe come
+    «tutto mutabile» o «niente mutabile» a seconda di chi la interroga.
+
+    **I valori.** Lo stesso invariante era guardato **su un lato solo**.
+    `IdentityAttestation` rifiuta un attributo fuori da `IDENTITY_ATTRIBUTES` —
+    «`provenance` non compone l'identita' sostanziale, quindi il suo cambiamento non
+    ha bisogno di licenza» — mentre qui si controllavano le sole chiavi, e
+    `_MUTABILI["serie"] = {"provenance"}` passava all'import (misurato). I due lati
+    dicono la stessa cosa: cio' che non compone l'identita' non e' licenziabile,
+    perche' concederne la licenza non concede nulla. Una dichiarazione simile non
+    sarebbe dannosa — nessun confronto la userebbe mai — ma sarebbe **leggibile e
+    falsa**: chi legge il Catalogo vedrebbe una licenza dove non ce n'e' una.
+
+    E' una funzione e non due righe in linea perche' un invariante di import senza
+    test e' una guardia che nessuno ha visto sollevare (CV5): cosi' la si puo'
+    interrogare con una dichiarazione guasta senza guastare il modulo.
+    """
+    if set(dichiarazione) != CATALOG:
+        raise RuntimeError(
+            "il catalogo e la dichiarazione degli attributi mutabili sono divergenti: "
+            f"solo nella dichiarazione {sorted(set(dichiarazione) - CATALOG)}, "
+            f"solo nel catalogo {sorted(CATALOG - set(dichiarazione))}")
+    sostanziali = set(IDENTITY_ATTRIBUTES)
+    fuori = {
+        nome: sorted(attributi - sostanziali)
+        for nome, attributi in sorted(dichiarazione.items())
+        if attributi - sostanziali
+    }
+    if fuori:
+        raise RuntimeError(
+            "attributi dichiarati mutabili che non compongono l'identita' "
+            f"sostanziale: {fuori}. Gli attributi d'identita' sono "
+            f"{', '.join(IDENTITY_ATTRIBUTES)}: licenziare il cambiamento di cio' "
+            "che non e' identita' non concede nulla, e si legge come se lo facesse.")
+
+
+_verifica_dichiarazione(MUTABLE_ATTRIBUTES)
 
 
 # --- FR-43: il Catalogo e' chiuso, e la sua apertura e' una decisione registrata ---
