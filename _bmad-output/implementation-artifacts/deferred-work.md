@@ -129,3 +129,19 @@ fatta emergere. Nessuna viene lasciata cadere in silenzio.
     risposta — nessun fantasma, insieme non vuoto. È un blocker reale di 1.4 perché FR-38 lo usa
     come vincolo **normativo** del renderer. Se arrivare a 1.4 richiedesse questa decisione prima,
     il loop deve fermarsi con `ARCHITECTURE_CONFLICT` invece di indovinare.
+
+- source_spec: `ramo loop/iter-20260824T211636Z` — residui della sesta tornata di Blind Hunter
+  summary: Tre MEDIUM e quattro LOW restano aperti sul contratto di dominio, tutti su superfici
+    che il motore interno non raggiunge. Il ramo è stato promosso con 0 CRITICAL e 0 HIGH.
+  evidence: (1) `check_boundary` condanna con diagnosi fattualmente falsa qualunque componente nel
+    boundary — `_terminali` produce solo nodi, quindi «non adiacente» descrive un difetto diverso
+    da quello reale, che è «non è un nodo»; il tipo ammette componenti e la terza condizione è
+    imposta strutturalmente senza essere dichiarata. (2) `attributes_of` è una seconda definizione
+    parziale del confronto d'identità, esportata, e il suo docstring non dice che i terminali vanno
+    orientati. (3) Il docstring di `CONTROLLI` promette «nell'ordine in cui girano» un ordine che
+    non è quello di esecuzione — l'attestato è vero nel contenuto e falso nella pretesa d'ordine.
+    (4) `CatalogOpening` accetta campi di soli spazi, l'incompletezza che il suo stesso docstring
+    dichiara di rifiutare. (5) `transform(ir, "parallelo", "R1", "R1")` — stesso componente due
+    volte — sfugge alle porte tipizzate e muore in `_ordinate` con una diagnosi che non nomina né
+    l'operazione né l'argomento. Nessuno di questi è raggiungibile dal motore, che è l'unico
+    produttore reale; tutti lo sono dalla porta pubblica che la decisione owner del 25/08 conserva.
