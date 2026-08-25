@@ -1267,3 +1267,41 @@ def test_cio_che_nasce_e_scritto_una_volta_sola():
 
 def _eq_id(res):
     return res.delta.derivations[0].outputs[0].id
+
+
+# ---------------------------------------------------------------------------
+# Quarta tornata — `reroute_scope`, il quarto canale che nessuno leggeva.
+#
+# FR-38 lo usa come limite normativo del renderer: «il numero di elementi con
+# coordinate cambiate e' limitato allo `reroute_scope` dichiarato». Un renderer che
+# lo rispetta riceveva istruzioni su entita' che nessuno dei due circuiti possiede
+# — parola per parola l'argomento con cui e' nato `check_patch`, un campo piu' in la'.
+# ---------------------------------------------------------------------------
+
+
+def test_un_reroute_scope_fantasma_e_contestato():
+    dopo, res = _serie_riuscita()
+    patch = LayoutPatch(preserve=res.layout_patch.preserve,
+                        remove=res.layout_patch.remove,
+                        create=res.layout_patch.create,
+                        reroute_scope=(C("MaiEsistita"), N("nodo_fantasma")))
+    violazioni = check_patch(patch, SERIE, dopo, operation="serie")
+    soggetti = {v.subject for v in violazioni}
+    assert "component:MaiEsistita" in soggetti and "node:nodo_fantasma" in soggetti, violazioni
+
+
+def test_un_reroute_scope_vuoto_e_contestato():
+    """Un passo che non libera nessuna instradatura non ha nulla da ridisegnare."""
+    dopo, res = _serie_riuscita()
+    patch = LayoutPatch(preserve=res.layout_patch.preserve,
+                        remove=res.layout_patch.remove,
+                        create=res.layout_patch.create,
+                        reroute_scope=())
+    violazioni = check_patch(patch, SERIE, dopo, operation="serie")
+    assert any(v.code == "reroute_scope_vuoto" for v in violazioni), violazioni
+
+
+def test_il_reroute_scope_che_le_riduzioni_producono_regge():
+    for circuito, operazione in [(SERIE, "serie"), (PARALLELO, "parallelo")]:
+        dopo, res = transform(circuito, operazione, "R1", "R2")
+        assert check_patch(res.layout_patch, circuito, dopo, operation=operazione) == ()

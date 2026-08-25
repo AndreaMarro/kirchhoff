@@ -269,6 +269,31 @@ def check_patch(
             "sparita_non_dichiarata", str(e),
             "era in Cₖ e non e' in Cₖ₊₁, ma la patch non la dichiara rimossa"))
 
+    # **Il quarto campo.** `reroute_scope` non era letto da nessun controllore:
+    # una patch che vi nominava entita' inesistenti attraversava tutto, e anche una
+    # che lo lasciava vuoto. Non e' decorativo — FR-38 lo usa come limite normativo
+    # del renderer: «il numero di elementi con coordinate cambiate e' limitato allo
+    # `reroute_scope` dichiarato». Un renderer che lo rispetta riceveva istruzioni su
+    # entita' che nessuno dei due circuiti possiede, che e' parola per parola
+    # l'argomento con cui questa funzione e' nata, un campo piu' in la'.
+    #
+    # Si verifica cio' che e' verificabile senza decidere la semantica: le entita'
+    # devono esistere in almeno uno dei due circuiti, e l'insieme non puo' essere
+    # vuoto. **Che cosa `reroute_scope` debba contenere resta aperto**: il docstring
+    # lo definisce «l'insieme dei rami la cui instradatura e' libera», il motore vi
+    # scrive il componente creato piu' i NODI del boundary, e le due letture non
+    # coincidono. Registrato in `deferred-work.md`, non deciso qui.
+    conosciute = entities_of(before) | entities_of(after)
+    for e in sorted(frozenset(patch.reroute_scope) - conosciute):
+        trovate.append(PatchViolation(
+            "reroute_scope_fantasma", str(e),
+            "la patch la dichiara reinstradabile, ma non e' in nessuno dei due circuiti"))
+    if not patch.reroute_scope:
+        trovate.append(PatchViolation(
+            "reroute_scope_vuoto", "—",
+            "nessuna instradatura libera: un passo che non permette di ridisegnare "
+            "nulla non ha un prodotto visuale"))
+
     return tuple(trovate)
 
 
