@@ -227,7 +227,19 @@ for i, s in enumerate(p):
       implementa|ripara)
         prompt="$STATO/.prompt-$i.md"
         { cat "$QUI/iterazione.md"
-          printf '\n## La storia di questo giro\n\nChiave: `%s`\nClasse di rischio: %s\n' "$storia" "$classe"
+          # **La Story, non solo la sua chiave.** L'implementatore riceveva chiave e
+          # classe e nient'altro: avrebbe dovuto sapere da se' che `epics.md` esiste,
+          # che la chiave vi corrisponde a un'intestazione, e andarsela a cercare.
+          # La Story 1.1 pretende per esempio che «il test negativo sia VISTO rosso
+          # rimuovendo la guardia», con l'output della mutazione come evidenza: un
+          # criterio che nessuno soddisfa senza leggerlo.
+          #
+          # La sorgente e' la stessa da cui viene la chiave: nessuna seconda verita'.
+          printf '\n## La storia di questo giro\n\nChiave: `%s`\nClasse di rischio: %s\n\n' "$storia" "$classe"
+          printf 'Il testo che segue e la Story cosi come vive in `epics.md`, che e\n'
+          printf 'l artefatto BMAD che la possiede. I criteri di accettazione sono\n'
+          printf 'quelli, non una loro parafrasi.\n\n'
+          python3 "$QUI/chiave.py" --corpo "$storia" 2>/dev/null || printf '(Story non trovata in epics.md)\n'
           if [ "$tipo" = "ripara" ] && [ -f "$STATO/.rilievi.md" ]; then
             printf '\n## Rilievi da riparare\n\nUn revisore in processo separato ha prodotto questi rilievi.\n'
             printf 'Verificali prima di accettarli: un rilievo plausibile e falso costa piu di uno mancato.\n'

@@ -123,6 +123,7 @@ def main() -> int:
     g.add_argument("--risolvi", metavar="N.M")
     g.add_argument("--verifica", metavar="CHIAVE")
     g.add_argument("--autorita", metavar="CHIAVE")
+    g.add_argument("--corpo", metavar="CHIAVE")
     p.add_argument("--epics", type=Path, default=None)
     a = p.parse_args()
 
@@ -139,6 +140,10 @@ def main() -> int:
 
     if a.autorita:
         print(autorita(a.autorita, a.epics))
+        return 0
+
+    if a.corpo:
+        print(corpo(a.corpo, a.epics))
         return 0
 
     note = {c for _, c, _ in chiavi(a.epics)}
