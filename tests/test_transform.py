@@ -784,3 +784,64 @@ def test_un_delta_che_mente_e_un_guasto_non_un_rifiuto():
         )
     assert "sparizione_non_spiegata" in str(scoppio.value)
     assert "node:b" in str(scoppio.value)
+
+
+# ---------------------------------------------------------------------------
+# P0-C — `node_mapping` e' totale e INIETTIVA sui sopravvissuti (AD-22 v2).
+#
+# L'iniettivita' era promessa dal docstring di `LayoutPatch` e verificata solo
+# fra le coppie esplicite: la collisione fra una coppia dichiarata `n2 -> n1` e
+# l'identita' implicita `n1 -> n1` non era colta ne' dalla patch ne' da
+# `preserve_set`, e `Pₖ` si gonfiava — due entita' di `Cₖ` contate come
+# sopravvissute sulla stessa entita' di `Cₖ₊₁`.
+#
+# Gonfiare `Pₖ` e' il verso opposto di quello che AD-22 v2 chiude, e ha lo stesso
+# effetto: il riferimento del kill criterion si sposta sotto la misura.
+# ---------------------------------------------------------------------------
+
+
+def test_una_mappa_non_iniettiva_e_rifiutata():
+    """Due sorgenti sulla stessa immagine: `Pₖ` conterebbe due volte un solo posto."""
+    patch = LayoutPatch(
+        preserve=(N("0"), N("a"), N("b")),
+        remove=(),
+        create=(),
+        node_mapping=(("b", "a"),),   # b -> a, mentre a -> a per identita'
+        reroute_scope=(N("a"),),
+    )
+    rifiuto = check_transform(SERIE, SERIE, "serie", patch,
+                              Boundary((N("a"),)))
+    assert rifiuto is not None, (
+        "la mappa manda b e a sulla stessa immagine a: non e iniettiva, "
+        "e AD-22 v2 la vuole iniettiva sui sopravvissuti")
+    assert rifiuto.cause == "identity_violation"
+    # **La diagnosi deve nominare il difetto, non un suo sintomo.** Prima di questo
+    # controllo il rifiuto arrivava lo stesso, ma per identita' su `b`: vero e
+    # secondario. `check_transform` dichiara gia' che l'ordine dei controlli serve a
+    # nominare «il difetto piu' grande invece di un suo sintomo», e una mappa non
+    # iniettiva e' piu' grossolana di una singola identita' non rispettata.
+    assert "iniettiv" in rifiuto.diagnosis, (
+        f"la diagnosi non nomina l'iniettivita: {rifiuto.diagnosis}")
+    assert "a" in rifiuto.diagnosis and "b" in rifiuto.diagnosis
+
+
+def test_una_mappa_con_sorgente_inesistente_e_rifiutata():
+    """L'unica mappa che attraversava il controllore era spazzatura.
+
+    Misurato: `(("zzz","w"),)` — sorgente assente da `Cₖ` — passava pulita, mentre
+    ogni mappa con sorgente reale veniva rifiutata. Il dominio di `node_mapping`
+    e' per costruzione un sottoinsieme dei nodi di `Cₖ`: una sorgente fuori non e'
+    una rinomina, e' un riferimento a nulla. Vale la stessa ragione che il verso
+    (a) da' gia' per l'arrivo — una mappa non verificabile contro il circuito che
+    pretende di descrivere non e' una mappa.
+    """
+    patch = LayoutPatch(
+        preserve=(N("0"), N("a"), N("b")),
+        remove=(), create=(),
+        node_mapping=(("zzz", "w"),),
+        reroute_scope=(N("a"),),
+    )
+    rifiuto = check_transform(SERIE, SERIE, "serie", patch, Boundary((N("a"),)))
+    assert rifiuto is not None, "una mappa con sorgente inesistente non e verificabile"
+    assert rifiuto.cause == "identity_violation"
+    assert rifiuto.subject == "zzz"

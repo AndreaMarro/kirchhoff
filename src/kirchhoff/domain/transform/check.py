@@ -244,6 +244,55 @@ def check_transform(
     # Ha due versi, e chiuderne uno solo lascia aperto l'altro.
     nodi_prima, nodi_dopo = frozenset(before.nodes), frozenset(after.nodes)
 
+    # (0a) **Il dominio della mappa sta dentro `Cₖ`.** Misurato: una mappa con
+    #      sorgente inesistente — `("zzz", "w")` — attraversava il controllore
+    #      pulita, ed era **l'unica** forma che ci riusciva: ogni mappa con sorgente
+    #      reale viene rifiutata dai due versi dell'identita'. Il campo accettava
+    #      quindi soltanto riferimenti a nulla.
+    #
+    #      Vale la ragione che il verso (a) da' gia' per l'arrivo: una mappa non
+    #      verificabile contro il circuito che pretende di descrivere non e' una
+    #      mappa. Qui la si applica anche alla sorgente.
+    for sorgente, _ in patch.node_mapping:
+        if sorgente not in before.nodes:
+            return Refusal(
+                "identity_violation", sorgente, "node",
+                f"il node_mapping dichiara una rinomina di node:{sorgente}, che in "
+                "Cₖ non esiste. Il dominio della mappa e' un sottoinsieme dei nodi "
+                "di partenza: una sorgente fuori non e' una rinomina, e' un "
+                "riferimento a nulla.")
+
+    # (0) **Iniettivita'.** AD-22 v2: «`node_mapping` e' totale e iniettiva sui
+    #     sopravvissuti». L'iniettivita' era promessa dal docstring di `LayoutPatch`
+    #     e verificata solo fra le coppie ESPLICITE: la collisione fra una coppia
+    #     dichiarata `b -> a` e l'identita' IMPLICITA di `a`, che nessuno dichiara,
+    #     non era colta. `Pₖ` si gonfiava — misurato: `preserve_set` con quella mappa
+    #     restituisce sia `node:a` sia `node:b`, due entita' di `Cₖ` contate come
+    #     sopravvissute nello stesso posto di `Cₖ₊₁`.
+    #
+    #     E' il verso opposto di quello che l'emendamento chiude, e ha lo stesso
+    #     effetto: il riferimento del kill criterion si sposta sotto la misura.
+    #
+    #     Va **prima** dei due versi dell'identita'. Senza, il caso veniva rifiutato
+    #     lo stesso ma con diagnosi «node:b sopravvive e il mapping la rinomina»:
+    #     vera e secondaria. Questa funzione dichiara gia' che l'ordine serve a
+    #     nominare «il difetto piu' grande invece di un suo sintomo», e una mappa non
+    #     iniettiva e' piu' grossolana di una singola identita' non rispettata.
+    immagini: dict[str, list[str]] = {}
+    for sorgente in sorted(nodi_prima):
+        arrivo = _immagine(sorgente, patch.node_mapping)
+        if arrivo in nodi_dopo:
+            immagini.setdefault(arrivo, []).append(sorgente)
+    for arrivo, sorgenti in sorted(immagini.items()):
+        if len(sorgenti) > 1:
+            elenco = ", ".join(f"node:{x}" for x in sorgenti)
+            return Refusal(
+                "identity_violation", sorgenti[0], "node",
+                f"il node_mapping non e' iniettivo: {elenco} finiscono tutti su "
+                f"node:{arrivo}. AD-22 v2 lo vuole totale e iniettivo sui "
+                "sopravvissuti, perche' due entita' di Cₖ che sopravvivono nello "
+                "stesso posto di Cₖ₊₁ verrebbero contate entrambe in Pₖ.")
+
     # (a) La mappa dichiara una rinomina che `Cₖ₊₁` non conferma. Senza questo verso
     #     `node_mapping` diventa una via d'uscita: mappare un nodo davvero
     #     sopravvissuto su un nome inesistente lo farebbe cadere fuori da `Pₖ`, e un
