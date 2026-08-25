@@ -1,6 +1,6 @@
 """`domain/ir` — schema, versionamento, canonicalizzazione dell'IR (albero dello spine)."""
 
-from .canonical import SYMMETRIC, canonicalize
+from .canonical import SYMMETRIC, canonicalize, orienta
 from .schema import (
     EXPECTED_UNIT,
     IR,
@@ -31,4 +31,5 @@ __all__ = [
     "Request",
     "SourceKind",
     "canonicalize",
+    "orienta",
 ]

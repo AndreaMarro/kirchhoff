@@ -1345,3 +1345,51 @@ def test_check_transform_sa_ancora_rifiutare_un_preserve_non_massimale():
                          reroute_scope=res.layout_patch.reroute_scope)
     r = check_transform(SERIE, dopo, "serie", guasta, res.boundary)
     assert isinstance(r, Refusal) and r.cause == "preserve_nonmaximal"
+
+
+# ---------------------------------------------------------------------------
+# Quinta tornata — il discriminante contraddiceva la simmetria dei bipoli.
+#
+# `ir/canonical.py` dichiara `resistor`, `capacitor`, `inductor` in `SYMMETRIC`:
+# «nessuna di queste differenze dice qualcosa del circuito». L'ordine dei terminali
+# di un GENERATORE invece e' la polarita', e riordinarlo produrrebbe un circuito
+# diverso che si dichiara uguale.
+#
+# `preserve_set` confrontava `terminals` per uguaglianza sintattica di tupla.
+# Misurato: due IR che `canonicalize` dichiara IDENTICI davano `Pₖ` diversi, e un
+# passo che non tocca nulla riceveva quattro violazioni. Falsa accusa — «il difetto
+# peggiore di questo prodotto» — sulla superficie che la decisione owner conserva
+# proprio per il produttore dichiarativo esterno.
+# ---------------------------------------------------------------------------
+
+
+def test_un_bipolo_riorientato_resta_preservato():
+    from kirchhoff.domain.ir import canonicalize
+    prima = _ir(_v("V1", "a", "0", 12), _r("R1", "a", "0", 10), nodes=("0", "a"))
+    dopo = canonicalize(prima)
+    assert canonicalize(prima) == canonicalize(dopo), "fixture: non sono lo stesso circuito"
+    p = preserve_set(prima, dopo)
+    assert C("R1") in p, (
+        "un resistore riorientato e' lo stesso resistore: `SYMMETRIC` lo dice, "
+        "e `Pₖ` non puo' dipendere da una proprieta' che il dominio dichiara "
+        "non semantica")
+
+
+def test_un_passo_che_non_tocca_nulla_non_e_accusato():
+    from kirchhoff.domain.ir import canonicalize
+    from kirchhoff.domain.transform import Delta
+    prima = _ir(_v("V1", "a", "0", 12), _r("R1", "a", "0", 10), nodes=("0", "a"))
+    dopo = canonicalize(prima)
+    assert check_delta(Delta(()), prima, dopo) == ()
+
+
+def test_la_polarita_di_un_generatore_non_e_simmetrica():
+    """Il verso opposto: riordinare un generatore NON e' lo stesso circuito.
+
+    Se la correzione fosse «confronta i terminali come insiemi», questo test
+    diventerebbe rosso — ed e' precisamente l'errore silenzioso che
+    `canonical.py` esiste per prevenire.
+    """
+    prima = _ir(_v("V1", "a", "0", 12), _r("R1", "a", "0", 10), nodes=("0", "a"))
+    invertito = _ir(_v("V1", "0", "a", 12), _r("R1", "a", "0", 10), nodes=("0", "a"))
+    assert C("V1") not in preserve_set(prima, invertito)

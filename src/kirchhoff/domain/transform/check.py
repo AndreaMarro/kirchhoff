@@ -30,7 +30,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from ..ir import IR, Component
+from ..ir import IR, Component, orienta
 from ..refusal import Refusal
 from .catalog import IDENTITY_ATTRIBUTES, TransformationKind, mutable_attributes
 from .delta import Delta, EntityRef
@@ -104,10 +104,27 @@ def preserve_set(
             continue
         if e.id not in per_id:
             continue
+        # **I terminali si confrontano ORIENTATI, e su entrambi i lati.**
+        # `ir/canonical.py` dichiara `resistor`, `capacitor`, `inductor` simmetrici:
+        # «nessuna di queste differenze dice qualcosa del circuito». Confrontarli per
+        # uguaglianza sintattica di tupla contraddiceva quel modulo — misurato: due IR
+        # che `canonicalize` dichiara identici davano `Pₖ` diversi, e un passo che non
+        # toccava nulla riceveva quattro violazioni. Falsa accusa, sulla superficie
+        # che la decisione owner del 25/08 conserva per il produttore esterno.
+        #
+        # La regola e' **riusata**, non riscritta: `orienta` vive in `canonical.py` e
+        # non tocca i generatori, perche' li' l'ordine e' la polarita' e riordinarla
+        # produrrebbe un circuito diverso che si dichiara uguale.
+        #
+        # La normalizzazione era anche **unilaterale**: `tuple(prima.terminals)` su un
+        # lato solo, quindi un componente con terminali-lista risultava non preservato
+        # rispetto a se stesso. Ora entrambi i lati passano da `orienta` e da `tuple`.
         prima, dopo = before.component(e.id), per_id[e.id]
         atteso = attributes_of(prima)
-        atteso["terminals"] = tuple(prima.terminals)
-        cambiati = {k for k, v in atteso.items() if attributes_of(dopo)[k] != v}
+        atteso["terminals"] = tuple(orienta(prima).terminals)
+        osservato = attributes_of(dopo)
+        osservato["terminals"] = tuple(orienta(dopo).terminals)
+        cambiati = {k for k, v in atteso.items() if osservato[k] != v}
         if cambiati <= mutabili:
             preservate.add(e)
 
