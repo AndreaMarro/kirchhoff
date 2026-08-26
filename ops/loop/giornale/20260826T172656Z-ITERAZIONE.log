@@ -1,0 +1,237 @@
+[17:26:56Z] kirchhoff-loop v3 — avvio
+[17:26:56Z] repository=/Users/andreamarro/MATJOURNEY/kirchhoff
+[17:26:56Z] iterazioni=1 prova=0 promuovi=0 watchdog=2700s scrittura=$25 revisione=$15
+[17:26:56Z] caffeinate: la macchina resta sveglia per la durata del giro
+[17:26:56Z] 
+[17:26:56Z] --- iterazione 1 di 1 ---
+  [ok]  nessun FERMO
+  [ok]  repository git: c2517a5
+  [ok]  uv: uv 0.11.8 (0e961dd9a 2026-04-27 aarch64-apple-darwin)
+  [ok]  helper runtime BMAD conformi al pin (5/5)
+  [ok]  holdout protetto da regola deny
+  [ok]  sprint-status.yaml leggibile
+  [ok]  albero di lavoro pulito
+[17:26:56Z] precondizioni: tutte verdi
+[17:26:56Z] storia: 1-7-la-prima-trasformazione-pedagogica-fino-al-disegno
+[17:26:56Z] classe di rischio: R2
+[17:26:56Z] ramo: loop/iter-20260826T172656Z-1-7-la-prima-trasformazione-pedagogica-fino-al-disegno (da main)
+[17:26:56Z] 
+[17:26:56Z] passo 1: implementa [-]
+[17:26:56Z]   → claude -p --model claude-opus-5 --effort max --max-budget-usd $25
+Work complete and certified by the oracle. Report follows.
+
+---
+
+# Rapporto — Story 1.7
+
+## 1. Che cosa ho cambiato, file per file
+
+**Nuovi**
+
+- **`src/kirchhoff/render/layout/apply.py`** — `applica(prima, patch, delta, *, istante, casualita) -> LayoutIR`. L'applicatore di cui la Story 1.3 aveva scritto il contratto e dichiarato non-goal il corpo. Costruisce un **secondo** stato visuale invece di aggiornare il primo (U2 di CV6). A-0 è ottenuta **riusando gli oggetti `Placement`** dei sopravvissuti, non ricalcolandone le coordinate: non esiste un percorso in cui una coordinata preservata passi per un'aritmetica. Ciò che nasce si piazza nel **baricentro esatto** degli ascendenti che il `Delta` nomina — non autolayout: la posizione si legge dalla lineage. Cinque guardie: preservato non piazzato, rimosso non piazzato, entità che la patch non nomina, creata senza ascendenti piazzati, tre generi d'ingresso.
+- **`src/kirchhoff/render/overlay/{__init__,schema}.py`** — `TransformOverlay` e `annota(TransformResult)`. Il pacchetto che l'albero sorgente dello spine dichiara e che non esisteva. Porta **ruoli, non stile**: `cambiato`, `confine`, `equazione`. Non porta `preserve` — nel braccio A il preservato riceve segnale «nessuno» — e non ha `ArmEncoding`, che AD-26 assegna a `experiment/`.
+- **`tests/test_prima_trasformazione.py`** — 51 test, con la mappa AC → test in testa al file (action item 3 della retrospettiva di Epic 1).
+
+**Modificati**
+
+- **`src/kirchhoff/render/serialize/svg.py`** — `render` accetta un `overlay` opzionale e popola i layer **5** (`subgraph-highlight`) e **6** (`boundary-anchor`, collegamento, `equation-anchor`). Senza overlay i byte sono invariati e i layer restano non emessi. Token copiati da `DESIGN.md`, non scelti qui. Una guardia converte in errore un caso che scrivevo come `continue` silenzioso: un confine assente dal disegno **solleva**, perché `∂Tₖ ⊆ Pₖ` e un preservato è piazzato in entrambi gli stati — a differenza del layer 5, dove saltare *è* il meccanismo dei due fotogrammi.
+- **`src/kirchhoff/render/layout/__init__.py`** — esporta `applica`; il contratto del 1.3 resta scritto, con la sola differenza di firma dichiarata (il `Delta` serve perché la `LayoutPatch` non porta la lineage).
+- **`_bmad-output/implementation-artifacts/deferred-work.md`** — due voci, sotto.
+
+## 2. Oracoli eseguiti
+
+| Comando | Exit | Esito |
+|---|---|---|
+| `uv run python scripts/bmad_chain.py verifica --con-loop` | **0** | catena 8/8 coerente |
+| `ops/loop/verifica.sh` (baseline, prima di toccare) | **0** | 725 passati · copertura 100.0% |
+| `ops/loop/verifica.sh` (finale) | **0** | **776 passati · copertura 100.0% · recinti ok · dominio ok** |
+| `ruff check` sui file della storia | **0** | nessun rilievo |
+
+Metriche finali: `{"copertura": 100.0, "dominio": true, "recinti": true, "test_falliti": 0, "test_passati": 776, "verde": true}`.
+
+Una nota sul metodo: la prima misura di copertura dopo il mio codice era **99,94%**, non 100 — una riga di `continue` mai eseguita. Non l'ho coperta con un test: l'ho riletta, ho concluso che il comportamento era **sbagliato** (nascondeva un'incoerenza) e l'ho convertita in guardia con due test. La copertura è tornata a 100 come conseguenza, non come obiettivo.
+
+## 3. Che cosa resta incompleto o rischioso
+
+- **UX-DR8 ha due letture e ne ho presa una.** Presa alla lettera su *ogni* `<text>` del file, la regola obbligherebbe a emettere il layer 5 prima del 4 — cioè a comporre i layer fuori dalla scala che AD-23 dichiara chiusa. Ho preso la lettura che le fonti sostengono (`EXPERIENCE.md` mette il circuito in scena al passo 2 e accende il sottografo al 3; `DESIGN.md` elenca «tre cose in ordine di comparsa» e aggiunge che *«il resto del circuito non compare in questa lista, ed è il punto»*), cioè: **l'evidenziazione precede ogni testo del passo**. Il ragionamento è scritto per esteso nel modulo e nel test perché sia **contestabile**. Se il revisore legge diversamente, cade l'ordine dei layer, non l'implementazione.
+- **La posizione dell'equazione è una scelta deterministica fra più valide.** Fuori dal disegno a destra, centro verticale coincidente con quello del sottografo, collegata da una linea. Soddisfa entrambe le metà di UX-DR10 in modo misurabile, ma «a destra» non è prescritto da nessuna autorità: su un disegno molto largo lo stacco dal sottografo cresce.
+- **L'alternativa testuale non descrive la trasformazione.** Il `<desc>` continua a dire la topologia (UX-DR25, FR-15) e non dice che cosa il passo annota. Nessun AC della storia lo chiedeva; per uno studente cieco il passo resta però meno accessibile del disegno.
+- **`sprint-status.yaml` non è aggiornato**, deliberatamente: registrare la chiave rompe `test_chiave_canonica.py`, come la Story 1.3 ha già misurato e riportato. È un difetto dell'armatura di Epic 0 e va corretto fuori dal loop.
+
+## 4. Trovato fuori ambito e NON toccato
+
+- **AD-23 non ha un livello per l'equazione.** Nessuno dei nove la nomina. La emetto al `6` con le altre annotazioni ancorate e lo **dichiaro** invece di far finta che AD-23 lo prescriva. Registrato in `deferred-work.md`; va ratificato da chi possiede lo spine.
+- **Il predicato di non-occlusione di AD-23 non è calcolabile in `render/serialize`**: richiede `Pₖ`, e AD-26 vieta al renderer di ricalcolarlo. Ho chiuso il solo caso chiudibile *per costruzione* (l'equazione sta fuori dal disegno, quindi non ha un livello 4 con cui intersecarsi, ed è verificato). Il caso generale appartiene a `render/roundtrip` e alla **Story 1.6**, che non è fatta. Registrato.
+- **La Story 1.6 precede la 1.7 nel backlog e non è implementata** — non esiste `render/roundtrip`. Non l'ho assorbita.
+- **Una voce stantia in `deferred-work.md`** (quella della Story 1.4) afferma che `svg.py` emette `--kf-tratto` in un foglio di stile: il foglio di stile è stato ritirato e il codice non lo fa. Non l'ho corretta — non è la mia storia.
+- **`boundary-anchor` a 1,4 px contro un tratto di schema a 1,5 px** è «deliberatamente più discreto» solo di un decimo. Già registrato dalla Story 1.4; lo confermo ora che l'ancora è emessa davvero.
+
+Nessun file sotto `reference-set/holdout/`, `_bmad/scripts/`, `ops/loop/`, `.claude/settings.json` o `_bmad-output/planning-artifacts/` è stato letto in scrittura o modificato.
+[17:46:21Z] 
+[17:46:21Z] passo 2: verifica [-]
+  test...
+  [ok]  test: 776 passati
+  [ok]  copertura: 100.0%
+  [ok]  recinti di dipendenza
+  [ok]  copertura del dominio
+[17:46:31Z]   oracolo exit 0 — {"copertura": 100.0, "dominio": true, "recinti": true, "test_falliti": 0, "test_passati": 776, "verde": true}
+[17:46:31Z] 
+[17:46:31Z] passo 3: revisiona [Blind Hunter]
+[17:46:31Z]   → claude -p --model claude-opus-5 --effort max --max-budget-usd $15
+[17:58:34Z]   revisione exit 0
+Ho letto il codice, i test, e ho eseguito il renderer sulla fixture della storia per misurare invece di dedurre. Rilievi.
+
+## Rilievi — Story 1.7
+
+- **La linea di collegamento passa dentro l'etichetta del componente equivalente, e non per caso.** Misurato sul fotogramma *Dopo* della fixture della storia: `<line class="kf-collegamento" x1="163" y1="40" x2="267" y2="40"/>` e `<text class="kf-etichetta" x="166" y="40">R1R2eq</text>`. La linea corre esattamente sulla linea di base della prima etichetta del simbolo e la attraversa da parte a parte. È sistematico: `_annotazioni` (`svg.py:790-795`) fissa la quota della linea al centro verticale dell'unione del sottografo, che per un sottografo di un solo simbolo verticale coincide con `centro.y`, che è la quota a cui `_scritte_del_simbolo` mette la prima etichetta. Nessun test guarda `kf-collegamento` contro alcunché, e il fotogramma su cui accade è quello che `EXPERIENCE.md` chiama *«il climax … l'intera scommessa del prodotto»*.
+
+- **Manca la famiglia di test che FR-53 nomina, ed è quella che questa storia rende per la prima volta eseguibile.** FR-53, seconda *Consequence (testable)*: *«Rimuovendo l'overlay, il rendering delle entità sottostanti è identico byte per byte a quello senza trasformazione in corso»*; AD-23 la ripete qualificata per braccio (*«nei bracci 0 e A»*) e FR-46 la rende obbligatoria. Non è fra i 51 test. Misurato: i corpi dei layer `2`, `3`, `4` sono byte-identici, ma la `viewBox` passa da `-24 -36.8 329 224.8` a `-24 -36.8 633 224.8` (`svg.py:903`), e l'`<svg>` non porta `width`/`height`, quindi si adatta al contenitore: con l'overlay il circuito è disegnato a circa metà scala e ogni entità preservata si rimpicciolisce e si sposta a schermo. Quale delle due letture governi — corpi dei layer, o rendering — non è deciso né dichiarato da nessuna parte, e `test_senza_overlay_i_layer_della_trasformazione_restano_non_emessi` prova solo il verso opposto.
+
+- **Il predicato di non-occlusione di AD-23 è violato, come scritto, proprio dall'ancora che questa storia emette — e la voce differita lo rinvia senza dirlo.** Misurato: `kf-confine` sul nodo `0` occupa `[95.5,104.5]×[155.5,164.5]` e **contiene** il riquadro della giunzione di livello 4 `<circle data-node-id="0" cx="100" cy="160" r="3"/>` = `[97,103]×[157,163]`; idem per il nodo `b`. Entrambi stanno in `preserve`. AD-23 emendata: *«nessun riquadro di livello ≥ 5 interseca il riquadro di un'entità di livello 4 appartenente a `Pₖ`»*; `DESIGN.md:177` chiama l'ancora *«un segno **sovrapposto**»* al nodo. Le due autorità collidono, questa storia è la prima che emette entrambe, e la voce di `deferred-work.md` registra solo che il predicato «non è calcolabile qui» — non che l'uscita odierna lo violerebbe. `test_l_ancora_di_confine_non_tocca_l_etichetta_del_nodo` misura le sole etichette.
+
+- **`TransformOverlay` lascia cadere il ruolo `preservato` che AD-26 nomina, ed è quella l'omissione che rende il predicato incalcolabile in `render/`.** AD-26: l'`ArmEncoding` *«è una mappa da **ruolo** (`preservato · cambiato · confine`) a stile, e i ruoli le arrivano dal `TransformResult`»*. `overlay/schema.py:85-88` argomenta che dare al ruolo un campo *«significherebbe dargli un modo di essere disegnato»*: ma il modo di essere disegnato è dell'`ArmEncoding`, vuota nel braccio A — il ruolo è del prodotto. Due conseguenze. (a) La voce differita attribuisce ad AD-26 l'incalcolabilità di R-Visual-1, mentre `preserve` è un membro di `TransformResult` e portarlo sarebbe una **copia**, la stessa che `cambiato` e `confine` già sono, non il ricalcolo di `Pₖ` che AD-26 chiama velenoso. (b) AD-26 *Rule*: A, B, C condividono il `LayoutIR` e differiscono **solo** nel `TransformOverlay` e nell'`ArmEncoding`; `unchanged-marker` (braccio B) e `attenuation` (braccio C) stilano i preservati, e con il ruolo assente dall'overlay condiviso quei bracci si ottengono solo con un overlay diverso, cioè insegnando ad `annota` quale braccio sta servendo.
+
+- **La firma non sa esprimere i passi 3 e 4 di `EXPERIENCE.md`.** La sequenza numerata (`EXPERIENCE.md:466-472`) ha tre battute: il sottografo si accende — *«Non è ancora comparso un solo carattere di testo»* — poi **PRIMA**, poi **AZIONE** con l'equazione. `render(circuito, layout, overlay)` emette layer `5` e layer `6` in una sola chiamata: non esiste un parametro che accenda l'evidenziazione senza l'equazione. Misurato: il fotogramma *Prima* porta già `R1R2eq = R1 + R2`, che nomina un'entità che `Cₖ` non contiene, con una linea che vi punta. Il rapporto dichiara la *lettura* di UX-DR8 ma non che la firma risultante non può produrre la sequenza che invoca per giustificarla. La Story 1.8 la incontra per prima.
+
+- **Il `certificate-chip` — terza delle *«tre cose, in ordine di comparsa»* — non ha alcuna rappresentazione.** Il commento di `svg.py:643-645` si appoggia a quell'elenco per decidere la lettura di UX-DR8 e ne implementa due voci su tre. `Certificate` è un membro di `TransformResult`, `TransformOverlay` non lo porta (`overlay/schema.py:106-108`), `render/` non lo nomina mai (verificato: zero occorrenze). `EXPERIENCE.md:190-191`: *«Un passo a cui manca `CERTIFICATE` … non è un passo, e non compare.»* Non lo chiede nessun AC della storia e non è in `deferred-work.md`.
+
+- **`reroute_scope` continua a non avere consumatori, ora che l'applicatore esiste.** `grep -rn reroute_scope src/` fuori da `domain/transform`: nulla. `result.py:105-107` registra che FR-38 lo usa *«come vincolo NORMATIVO del renderer»* e rinvia la sua unità semantica alla Story 1.4; la 1.4 è chiusa e la 1.7 ha scritto il renderer, e `applica` non lo legge. I test della storia gli passano un valore di riempimento con la nota *«nessuna delle guardie provate qui sotto lo riguarda»* (`tests:255-257`). La domanda aperta di `result.py:100-103` è ora una storia più lontana dalla risposta, e questo non è registrato.
+
+- **L'equivalente atterra fuori dal proprio percorso di collegamento, e l'unico test lo confronta con se stesso.** Misurato: `R1R2eq` a `(150,40)`, morsetti su `b(0,0)` e `0(100,160)`, fili emessi `150,16 150,0 0,0` e `150,64 150,160 100,160` — due gomiti attorno a un simbolo posato a un'ascissa dove non sta nessuno dei suoi due nodi. `apply.py:33-35` afferma che la nata *«si piazza nel baricentro esatto degli ascendenti»* perché lo studente pensi *«quelle due sono diventate questa»*: il baricentro di `R1(100,0)` e `R2(200,80)` non appartiene al percorso `b–0`. `test_l_equivalente_nasce_dove_stavano_le_due_che_sostituisce` ricalcola il baricentro e lo confronta col baricentro — prova l'aritmetica, non l'affermazione. Nessun test guarda la geometria del disegno risultante: `test_il_disegno_risultante_e_quello_del_circuito_risultante` verifica due elenchi di nomi.
+
+- **`subgraph-highlight` viene applicato ai nodi, che `DESIGN.md` assegna ai soli componenti.** `svg.py:705`. `DESIGN.md:170`: *«Marca **SOLO i componenti** che cambiano»*; `:431-432` dà ai nodi il `boundary-anchor`; la tabella `:382-384` ha tre righe e nessuna per un nodo consumato. Misurato sul fotogramma *Prima*: `<rect class="kf-sottografo" x="192" y="-8" width="16" height="16"/>` attorno al nodo `a`. È una decisione, difesa in un docstring (`svg.py:697-700`) e assente dalle §3 e §4 del rapporto, che invece dichiara *«token copiati da `DESIGN.md`, non scelti qui»*. Effetto misurato: il bordo destro di quel riquadro è a `x=208`, l'etichetta del nodo `a` comincia a `x=208`, il tratto è 2 centrato sul bordo — l'evidenziazione dipinge sopra il primo tratto dell'etichetta, che è la geometria esatta dell'aneddoto da cui AD-23 nasce.
+
+- **Due token di `equation-anchor` sono contraddetti, non copiati.** `DESIGN.md:206-212` dichiara `background: '{colors.surface-raised}'` e `border: '1px solid {colors.rule-hairline}'`. Emesso (`svg.py:796`): `fill="none"` e `stroke-width="1.4"` — cioè `_TRATTO_CONFINE`, lo spessore del `boundary-anchor`, che `DESIGN.md` dichiara *«deliberatamente più discreto del segnale sul delta»*. La linea di collegamento riceve lo stesso 1.4 (`svg.py:794`) senza alcun token dietro. La Story 1.4 aveva registrato `TRATTO` in `deferred-work.md` proprio perché *«il token manca, non è stato inventato»*: la stessa disciplina non è stata applicata ai due spessori e allo sfondo mancante che questa storia inventa.
+
+- **`_LARGHEZZA_DEL_GLIFO = 1` viene applicato all'unico font di cui l'avanzamento è noto esattamente, ed è quello che raddoppia la tela.** `_riquadro_dell_equazione` (`svg.py:718-733`) riusa il maggiorante dichiarato per un sans **proporzionale** (`svg.py:147-152`). Il font di `equation-anchor` è `{typography.quantity}` = JetBrains Mono, monospazio: l'avanzamento è una costante del font (~0.6 em), non una quantità da limitare superiormente. Misurato: riquadro largo 280 per 16 caratteri a corpo 16, dove ~178 basterebbero, e la `viewBox` che passa da 329 a 633 — la maggior parte dello scarto del rilievo sulla `viewBox` è questa sovrastima.
+
+- **`annota` nomina un caso che il renderer poi si rifiuta di disegnare.** `overlay/schema.py:154-156` sottrae `preserve` e non `boundary` perché *«una fusione può atterrare su un'entità preservata — `check_delta` lo ammette»*, e `check.py:292-293` lo conferma. Per un prodotto simile `cambiato = delta.consumed`, tutto in `patch.remove`, quindi assente da `LayoutIR_{k+1}` — e `_verifica_l_ordine_dell_overlay` (`svg.py:812-822`) solleva sul fotogramma successivo. K-0 dice che un passo senza disegno non è un passo: qui un passo legittimo per il dominio ha un *Dopo* non disegnabile. Né i test né il rapporto dicono se il Catalogo corrente lo raggiunga, né che cosa il fotogramma successivo dovrebbe accendere quando il punto d'atterraggio è preservato — cioè il ruolo che l'overlay ha rinunciato a portare.
+
+- **`applica` difende cinque volte da una patch assemblata a mano e si fida della sesta.** `apply.py:100-140` verifica tre generi, `preserve ⊆ piazzate`, `remove ⊆ piazzate` e le orfane, tutte motivate come difese contro una coppia non nata da `TransformResult`. Non verifica l'unica relazione che lega i suoi due argomenti (`delta.consumed == patch.remove`, `delta.produced - preserve == patch.create`), e il docstring (`apply.py:58-60`) la dichiara verificata *«alla costruzione del prodotto, non qui»* — che è l'argomento che avrebbe tolto anche le altre cinque. Due conseguenze visibili: una `create` che il `Delta` non produce cade nel ramo *«nessuna delle entità da cui deriva è piazzata»* (`apply.py:150-155`) e viene diagnosticata come autolayout mancante invece che come coppia disallineata; una `create` che si sovrappone a `preserve` produce due `Placement` per la stessa entità e viene fermata a valle da `LayoutIR.__post_init__` con un messaggio su `p_k(x)` e VCER invece che sulla patch.
+
+- **`_sagome_del_sottografo` è calcolata due volte per rendering**, a `svg.py:892` e di nuovo dentro `_enfasi_sul_cambiato` (`svg.py:752`), dalla stessa scena e dallo stesso overlay dentro la stessa chiamata, tenute uguali da niente. È la forma che E-62 descrive, sulla collezione che decide insieme che cosa disegna il layer 5 e dove si ancorano l'equazione e il collegamento.
+
+- **Gli elementi dei layer 5 e 6 non portano alcuna annotazione, e la Story 1.6 li incontrerà senza una regola.** Misurato: nessuno dei cinque elementi emessi (`kf-sottografo`, `kf-confine`, `kf-collegamento`, `kf-equazione`, `kf-equazione-testo`) porta un attributo `data-*`, mentre ogni elemento dei layer 2–4 ne porta. Il round-trip di FR-41 riparsa le annotazioni: nulla dice se debba ignorarli o rifiutarli, e la storia che lo scriverà (1.6) precede questa nel backlog e non è fatta. In parallelo, `<title>` e `<desc>` sono byte-identici con e senza overlay (misurato), quindi per chi legge con uno screen reader i due fotogrammi differiscono solo per la frase di topologia; il rapporto dichiara che l'alternativa testuale non descrive la trasformazione, non che è **identica** fra *Prima* e *Dopo*.
+[17:58:34Z] 
+[17:58:34Z] passo 4: ripara [-]
+[17:58:34Z]   → claude -p --model claude-opus-5 --effort max --max-budget-usd $25
+Final state verified. Here is the report.
+
+---
+
+## 1. Che cosa ho cambiato, file per file
+
+**`src/kirchhoff/render/overlay/schema.py`**
+- `TransformOverlay` porta un terzo ruolo, `preservato`, copiato da `TransformResult.preserve` in `annota`. Due guardie nuove: `cambiato ∩ preservato = ∅` e `confine ⊆ preservato` (`∂Tₖ ⊆ Pₖ`).
+- Riscritta la sezione del docstring che sosteneva l'opposto. L'argomento nuovo: il **ruolo** è del prodotto, lo **stile** è dell'`ArmEncoding` — vuota nel braccio A, ed è lì che «segnale nessuno» di `DESIGN.md` resta vero.
+
+**`src/kirchhoff/render/serialize/svg.py`**
+- Layer 5 ristretto ai **soli componenti** (`subgraph-highlight`: *«Marca SOLO i componenti che cambiano»*). Il nodo assorbito non riceve più segnale.
+- `_attacco()`: la linea di collegamento parte dal bordo destro di tutto ciò che il disegno emette, non dal bordo del sottografo.
+- `_TRATTO_EQUAZIONE = 1` (il token dice `1px`), `_TRATTO_COLLEGAMENTO` dichiarato esplicitamente come quantità senza token.
+- `_AVANZAMENTO_MONOSPAZIO = 13/20` per il riquadro dell'equazione, al posto del maggiorante da quadratone.
+- `_enfasi_sul_cambiato` riceve le sagome invece di ricalcolarle (un solo call site).
+- Corretti due commenti: `_CLASSI` diceva «i quattro dell'overlay» e sono cinque; il blocco su UX-DR8 si appoggiava a un elenco di tre e ne implementa due, e ora lo dice.
+
+**`src/kirchhoff/render/layout/apply.py`**
+- Sesto controllo: `delta.consumed == patch.remove` e `delta.produced - preserve == patch.create`.
+- `mosse(prima, dopo)` esposta come unità propria, e FR-38 verificato sul risultato: ogni entità con coordinata cambiata dev'essere nello `reroute_scope`. È il primo consumatore di quel campo in produzione.
+- **Rimosso** il ramo «una creata senza ascendenti piazzati»: con il controllo di coerenza è diventato irraggiungibile (`create ⊆ produced`, `ingressi_minimi ≥ 1`, `consumed == remove ⊆ piazzate`). La catena è scritta dov'era il ramo.
+
+**`src/kirchhoff/render/layout/__init__.py`** — firma del contratto aggiornata (prende il `Delta`); aggiunta la quarta condizione, FR-38.
+
+**`src/kirchhoff/domain/transform/result.py`** — solo commento: la domanda aperta su `reroute_scope` ha ora la metà di risposta che il primo consumatore fornisce (l'unità è l'**entità**); resta aperta per i fili.
+
+**`tests/test_prima_trasformazione.py`** — +23 test. Le famiglie nuove: FR-53 byte-identity (layer 2/3/4 × due fotogrammi), il predicato di non-occlusione di AD-23 calcolato da `overlay.preservato`, «nessuna annotazione attraversa il disegno», i due token dell'equazione, `mosse` sulla propria unità, e l'equivalente misurato **sul disegno** invece che sul baricentro.
+
+**`deferred-work.md`** — la voce sul predicato AD-23 riscritta (v. §3); otto voci nuove.
+
+## 2. Oracoli eseguiti
+
+| Oracolo | Exit code | Esito |
+|---|---|---|
+| `ops/loop/verifica.sh` | **0** | `{"copertura": 100.0, "dominio": true, "recinti": true, "test_falliti": 0, "test_passati": 799, "verde": true}` |
+| `uv run python scripts/bmad_chain.py verifica --con-loop` | **0** | catena coerente, 8/8 |
+
+Baseline prima dell'intervento: 776 passati, copertura 100.0%, verde.
+
+`ruff` non è configurato in `pyproject.toml` e non è in `verifica.sh`: eseguito comunque, riporta 58 errori preesistenti nel repo, 2 nei file toccati, **entrambi in codice che non ho scritto** (`serialize/__init__.py`, `result.py`, import non ordinati). Non toccati.
+
+## 3. I quindici rilievi: confermati e refutati
+
+**Confermati e riparati** — 1 (linea attraverso l'etichetta: misurato `x1=163→267` a `y=40` contro l'etichetta a `x=166 y=40`; ora `243→267`), 2 (famiglia FR-53 assente: sei casi nuovi), 7 (`reroute_scope` senza consumatori), 9 (`subgraph-highlight` sui nodi: il riquadro finiva a `x=208` e l'etichetta comincia a `x=208`), 10 (bordo 1.4 → 1), 11 (riquadro 280 → 190,4; `viewBox` del *Dopo* 583 → 493,4), 13 (relazione patch/`Delta` non verificata), 14 (doppio calcolo).
+
+**Confermati e registrati, non riparati** — 3 (il predicato di AD-23 *è* violato oggi: tre intersezioni misurate, e la voce differita non lo diceva; ora lo dice, e la metà indipendente dalla collisione è un test permanente), 5, 6, 12 (misurato: **non raggiungibile** dal Catalogo corrente, `implemented() = {serie, parallelo}`, il prodotto è sempre un nome coniato nuovo), 15.
+
+**Confermato in parte** — 4. Confermata l'accusa centrale: la voce differita attribuiva ad AD-26 un'incalcolabilità che non le appartiene, `preserve` è un membro del prodotto e portarlo è una **copia**. Riparato. **Refutata** la conseguenza (b): AD-26 *Rule* dice che i bracci *«differiscono **solo** nel `TransformOverlay` e nell'`ArmEncoding`»* — un overlay diverso per braccio è esplicitamente permesso, non un difetto.
+
+**Confermata la metà che riguarda il test, non la diagnosi** — 8. La tautologia è reale e riparata. Che l'equivalente «atterri fuori dal proprio percorso» è misurato ed è vero, ma è la conseguenza di una scelta dichiarata che nessuna autorità contraddice, e l'alternativa sarebbe autolayout: registrato con la misura, non riparato.
+
+Una nota sui numeri del revisore: `329 → 633` era corretto, sul fotogramma *Prima*.
+
+## 4. Resta incompleto o rischioso
+
+- **La collisione AD-23 / `DESIGN.md` sul `boundary-anchor` non è risolta e non poteva esserlo qui.** L'una vieta ogni intersezione con `Pₖ` a livello ≥ 5, l'altra prescrive un segno *sovrapposto*. È un conflitto di piano: `bmad-correct-course`, non codice.
+- **Il ruolo `preservato` è una scelta mia, non un'istruzione.** AD-26 enumera tre ruoli ma non impone che l'overlay li porti tutti. Se chi possiede lo spine lo legge diversamente, il campo va tolto e il predicato torna incalcolabile in `render/`.
+- Il canale d'emissione `overlay_occlusion` resta a 1.6: qui il predicato è un test, non un rifiuto di dominio.
+- Il nodo consumato oggi non riceve **nessun** segnale: lo studente lo vede sparire senza che niente lo abbia acceso. Meglio del difetto precedente, non necessariamente giusto.
+
+## 5. Fuori ambito, non toccato
+
+`serialize/__init__.py` e `result.py` hanno import non ordinati (ruff `I001`), preesistenti. `implementation-readiness.md` tiene ancora 1.3 a «⛔ non pronta» per la riga ERD di CV6 e la ratifica del `PatchStore` in AD-8: non toccato, ed è a monte di questa storia. Il `certificate-chip` e la sequenza a fotogrammi di `EXPERIENCE.md` appartengono a 1.8; il `data-*` sui layer 5-6 e il round-trip a 1.6.
+[18:21:09Z] 
+[18:21:09Z] passo 5: verifica [-]
+  test...
+  [ok]  test: 799 passati
+  [ok]  copertura: 100.0%
+  [ok]  recinti di dipendenza
+  [ok]  copertura del dominio
+[18:21:19Z]   oracolo exit 0 — {"copertura": 100.0, "dominio": true, "recinti": true, "test_falliti": 0, "test_passati": 799, "verde": true}
+[18:21:19Z] 
+[18:21:19Z] passo 6: revisiona [ri-revisione]
+[18:21:19Z]   → claude -p --model claude-opus-5 --effort max --max-budget-usd $15
+[18:30:50Z]   revisione exit 0
+Ho letto il codice, le autorità citate e ho misurato l'uscita. Tredici rilievi.
+
+---
+
+- **La linea di collegamento non tocca più il sottografo: 80 unità di distacco, su entrambi i fotogrammi.** `_attacco` restituisce `max(bordo destro del disegno, bordo destro del sottografo)` = 293 su *Prima*, 243 su *Dopo*; il bordo destro del sottografo è 213 e 163. La linea è lunga 24 (`_STACCO_EQUAZIONE`) e comincia 80 unità a destra di ciò che dovrebbe collegare — il vuoto è più di tre volte la linea. `DESIGN.md` chiede l'equazione «ACCANTO al sottografo che l'ha generata, **con una linea di collegamento**»; ciò che esce collega il riquadro al nulla. Su *Prima* la quota `y=42` cade per giunta **fra** i due riquadri accesi (`R1` finisce a `y=13`, `R2` comincia a `y=63`), quindi la linea non è allineata neppure a uno di essi. `test_la_linea_collega_il_riquadro_all_altezza_del_sottografo` non lo vede: asserisce `x1 == max(alto.x, max bordo sottografo)`, cioè riafferma la formula di `_attacco`, e non chiede mai che la linea raggiunga il sottografo. La riparazione del rilievo 1 ha scambiato «la linea attraversa un'etichetta» con «la linea non collega niente», e non è registrata da nessuna parte.
+
+- **`applica` può restituire un `LayoutIR` con lo stesso `lay_` di `prima`.** `LayoutIR.nuovo` conia da `(istante, casualita)` soltanto: i piazzamenti non entrano nell'identificatore. Misurato: `applica(prima, patch, delta, istante=I, casualita=E)` con lo stesso `I`/`E` di `prima` restituisce `lay_01K2F2DKG0000G40R40M30E209` per entrambi. La prima clausola del contratto in `render/layout/__init__.py` — *«restituisce un `LayoutIR` nuovo … non ne riusa l'identificatore»* — non ha guardia dentro `apply.py`. Si scopre solo se qualcuno deposita entrambi in un `LayoutStore`, e lì la diagnosi accusa chi deposita («già depositato»), non l'applicatore. Cinque test della storia chiamano `applica` con lo stesso `istante` di `prima` e producono quella collisione senza che nulla la noti.
+
+- **`overlay.preservato` non ha un solo consumatore in `render/`.** Il campo è stato aggiunto con la motivazione che senza di lui il predicato di non-occlusione di AD-23 *«non è calcolabile in `render/`»*: `svg.py` non lo legge mai — quattro occorrenze, tutte in docstring. Il predicato lo calcola il **test**, su una geometria di livello 4 che il test si **ricostruisce da sé** (`_livello_4_per_entita` rifà il riquadro della giunzione come `punto ± _RAGGIO_GIUNZIONE`) invece di leggerla da chi la emette: è E-62 dentro il predicato che esiste per impedire l'occlusione. È inoltre il difetto del rilievo 7 — un canale senza lettori — reintrodotto nella stessa storia che l'ha chiuso per `reroute_scope`.
+
+- **Il controllo FR-38 in `applica` non può fallire su nessuna patch che il motore produce.** `engine.py:249` scrive `reroute_scope=(prodotto, *boundary.entities)`, `patch.create` è `(prodotto,)`, e `applica` riusa gli oggetti `Placement` dei preservati: quindi `mosse(prima, dopo) == create ⊆ reroute_scope` per costruzione. Misurato sul passo della storia: `mosse = {component:R1R2eq}`, `reroute_scope = {component:R1R2eq, node:0, node:b}`. L'unico test che la vede sollevare costruisce una patch a mano. Ne segue che l'affermazione nuova in `result.py` — *«Ne segue che l'unità è l'**entità**»* — non è sostenuta dal consumatore che la cita: nulla nel controllo distingue entità da ramo, perché i nodi di boundary nello scope non si muovono mai e non vengono mai messi alla prova.
+
+- **La quarta condizione è stata aggiunta alla prosa del contratto, non al controllore che il contratto nomina.** `render/layout/__init__.py` dice *«Il posto in cui questo contratto si controlla esiste già … `operandi_di_vcer` fallisce se il risultato non regge le cinque condizioni»* e subito dopo annuncia FR-38 come condizione nuova — ma `operandi_di_vcer` continua a elencare e verificare le stesse cinque. FR-38 vive solo dentro `applica`: una coppia di `LayoutIR` arrivata al `ProofGraph` per qualunque altra via non è controllata dove il modulo dichiara che il contratto si controlla. Nello stesso paragrafo «cinque condizioni» e «una quarta condizione» stanno a due righe di distanza.
+
+- **L'`halo` di `subgraph-highlight` non è emesso: i suoi 5px sono stati spesi per spostare il tratto.** Il token è `strokeWidth: '2px'` **più** `halo: '0 0 0 5px {colors.provenance-surface}'` — un tratto sulla sagoma e una fascia colorata **fuori** di esso. `_riquadro_con_alone` gonfia la sagoma di 5 e `_enfasi_sul_cambiato` traccia lì il 2px: l'alone non esce, e il tratto non è più *«stretto attorno alla loro sagoma»* — sta a 6 unità da essa. È la conversione di un token in un altro, e va nella direzione che ha prodotto la collisione con l'etichetta del nodo `a` che questa stessa storia ha dovuto togliere.
+
+- **Il testo dell'equazione non è centrato nel riquadro, e nessuno dei due margini è quello del token.** `base = centro + _SOPRA_LA_BASE * CORPO_EQUAZIONE / 2` mette la linea di base a 46,4 in un riquadro `19,6–60,4`: 14 unità sopra l'ascendente, 10 sotto il discendente, contro `padding: '{spacing.3}'` = 12. La formula centrata — `centro + (_SOPRA_LA_BASE − _SOTTO_LA_BASE)/2 · CORPO_EQUAZIONE` — dà 12 e 12 esatti. È la stessa classe di infedeltà ai token corretta per il bordo (1,4 → 1) e per l'avanzamento del monospazio, lasciata sull'asse verticale. `test_il_riquadro_contiene_la_scritta_che_ci_sta_dentro` verifica solo il contenimento e passa con 10 unità di gioco.
+
+- **La `viewBox` non conta le ancore di boundary né alcuna mezza larghezza di tratto.** `render` unisce `(basso, alto)`, `equazione` e `sottografo`, e basta. Misurato: l'ancora del nodo `b` occupa `[−4,5; 4,5]²` mentre la geometria del nodo arriva a `±3` — sporge di 1,5 oltre ciò che il nodo contribuisce all'estensione; il tratto del sottografo (2) e quello del riquadro (1) sporgono di 1 e 0,5 oltre i riquadri uniti. Oggi non si taglia nulla soltanto perché `MARGINE` = 12 li assorbe, e `MARGINE` è documentato come `{spacing.drawing-inset}` — uno spazio dichiarato, non una franchigia di ritaglio. È il difetto che la Story 1.4 ha già pagato con «220 ohm» tagliato, riaperto sui layer 5 e 6.
+
+- **Un componente cambiato che nessuno dei due fotogrammi piazza sparisce in silenzio.** `_sagome_del_sottografo` filtra `e.id in simboli` e giustifica il salto con *«è piazzata nell'altro»* — affermazione che nessun controllo verifica, perché nessuna singola chiamata vede i due stati. `_verifica_l_ordine_dell_overlay` intercetta solo il caso in cui **tutte** mancano. Il test che potrebbe chiudere il buco, `test_lo_stesso_overlay_annota_i_due_stati_visuali`, asserisce due letterali (`2` e `1`) invece della relazione `accese(prima) + accese(dopo) == componenti cambiati`.
+
+- **`TransformOverlay` ammette `confine` e `preservato` vuoti, che il prodotto vieta.** Il modello di minaccia dichiarato dalla classe è *«un overlay assemblato a mano non attraversa quel prodotto»*, e per `cambiato` la guardia c'è. A monte `Boundary` rifiuta un boundary vuoto (*«un sottografo che non confina con nulla non è un passo, è una riscrittura»*) e AD-22 vuole `preserve` non vuoto: nessuna delle due condizioni è ricopiata qui. Misurato: `TransformOverlay((C('R1'),), (), (), Equation(...))` si costruisce, e `render` emette un layer 6 con zero ancore — un passo che dichiara di non confinare con niente.
+
+- **L'equazione che lo studente legge è `R1R2eq = R1 + R2`.** Il criterio d'accettazione della storia scrive `R_eq = R1 + R2`, e `Equation` dichiara nel proprio docstring che il testo porta **segnaposto** e che *«chi renderizza sostituisce»*. Il renderer non sostituisce niente — emette `str(overlay.equazione)` alla lettera — quindi il soggetto è l'identificatore coniato da `engine._nuovo_id`. Che la sostituzione sia rinviata può essere la scelta giusta per questa storia, ma non è dichiarata né nel modulo né fra le voci differite, e il contratto scritto nel dominio resta senza esecutore.
+
+- **La regola «una guardia che non si può vedere lavorare non è una guardia» è stata applicata in un file e no nell'altro.** In `apply.py` il ramo dell'autolayout è stato **rimosso** perché irraggiungibile. In `svg.py` la seconda condizione di `_verifica_l_ordine_dell_overlay` (`"<text" in r`) è irraggiungibile per la stessa forma di ragionamento — `_enfasi_sul_cambiato` produce solo `_rettangolo`, che non può contenere `<text` — ed è stata tenuta, con un test che la chiama direttamente. Le due decisioni non possono essere entrambe corrette. Stessa forma in `test_l_ordine_delle_entita_dell_overlay_non_cambia_un_byte`: rovescia le tuple, ma `__post_init__` le riordina prima che `render` le veda, quindi il test misura `_ordinate` e non il renderer.
+
+- **Niente compone il passo.** `annota`, `applica` e `render` non hanno un solo chiamante in `src/` (verificato: zero occorrenze fuori dalle definizioni), e `pipeline/`, `api/`, `adapters/` sono file vuoti. La sequenza che K-0 chiede — `transform → applica → annota → render`, due volte, con la disciplina su `istante`/`casualita` che il secondo rilievo rende necessaria — esiste solo dentro `_passo()` nel file di test, che è anche l'unico posto in cui gli AC della storia sono scritti (non c'è `spec-1-7-*` in `implementation-artifacts/`, mentre 1.1, 1.3 e 1.4 ce l'hanno). Chiunque la usi la riscriverà, e riscriverà anche il riuso dell'istante.
+
+---
+
+Gli oracoli li ho rieseguiti: 799 test passati, copertura 100,00%. I numeri del rapporto reggono.
+ratchet: avanzamento — test_passati: 245 -> 799
+[18:30:50Z] ratchet: verde
+[18:30:50Z] giro verde, NON promosso: manca --promuovi.
+[18:30:50Z] Ispeziona il ramo, poi decidi:
+[18:30:50Z]   promuovere: git merge --no-ff loop/iter-20260826T172656Z-1-7-la-prima-trasformazione-pedagogica-fino-al-disegno
+[18:30:50Z]   scartare:   git branch -D loop/iter-20260826T172656Z-1-7-la-prima-trasformazione-pedagogica-fino-al-disegno
+[18:30:50Z] I rilievi dell'ultima revisione sono nel giornale: nessun cancello
+[18:30:50Z] deterministico sa giudicarli, e un verdetto di modello non apre un merge.
+[18:30:50Z] pausa 20s
+[18:31:10Z] 
+[18:31:10Z] fine dopo 1 iterazione/i. Giornale: /Users/andreamarro/MATJOURNEY/kirchhoff/ops/loop/giornale/20260826T172656Z-ITERAZIONE.log
