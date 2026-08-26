@@ -9,19 +9,23 @@ sotto `domain/proof`, perche' il proprietario del riferimento e' **il nodo**. Qu
 sono i tre operandi che quella relazione nomina — i due `LayoutIR` e il
 `LayoutPatch` — e la funzione che li congiunge, `operandi_di_vcer`.
 
-## Il contratto che vincola chi scrivera' l'applicatore (Story 1.7)
+## Il contratto dell'applicatore, scritto in 1.3 e **onorato in 1.7**
 
-La Story 1.3 dichiara **non-goal** il renderer, quindi qui non c'e' `applica`. La
-minaccia che CV6 descrive vive pero' esattamente dentro quella funzione, e va
-scritta prima che qualcuno la implementi, non dopo:
+La Story 1.3 dichiarava non-goal il renderer e lasciava qui il contratto di
+`applica`, perche' la minaccia che CV6 descrive vive esattamente dentro quella
+funzione. `apply.py` la implementa ora; il contratto resta scritto qui perche' e'
+cio' che l'implementazione deve continuare a soddisfare, e la sola differenza e' la
+firma — `applica` prende anche il `Delta`, per la ragione scritta nel suo docstring:
+la `LayoutPatch` non porta la lineage, quindi da sola non sa da quali entita' una
+creata derivi.
 
 > **U2 — la lettura naturale, e quella vietata.** *«Applicare un `LayoutPatch`
 > aggiorna il layout in luogo.»* Sotto U2, *«`p_k` non esiste piu' nel momento in cui
 > servirebbe misurarlo»* e VCER e' incalcolabile senza rieseguire la derivazione.
 
-Il contratto, per chi in 1.7 scrivera' l'applicatore:
+Il contratto, che `apply.py` soddisfa:
 
-    applica(prima: LayoutIR, patch: LayoutPatch, *, istante: int,
+    applica(prima: LayoutIR, patch: LayoutPatch, delta: Delta, *, istante: int,
             casualita: bytes) -> LayoutIR
 
 - **restituisce un `LayoutIR` nuovo**, con un `lay_` nuovo coniato dall'istante
@@ -36,8 +40,15 @@ Il contratto, per chi in 1.7 scrivera' l'applicatore:
 Il posto in cui questo contratto si controlla esiste gia': depositare `prima` e il
 risultato nello stesso `LayoutStore` fallisce se l'applicatore riusa il `lay_`, e
 `operandi_di_vcer` fallisce se il risultato non regge le cinque condizioni.
+
+Dalla Story 1.7 c'e' una quarta condizione, che il contratto del 1.3 non nominava
+perche' il suo canale non aveva ancora lettori: **FR-38**, *«il rerouting delle
+coordinate cambiate e' limitato allo `reroute_scope` dichiarato»*. Si calcola con
+`mosse`, che e' esposta apposta — il predicato ha una meta' che `applica` non sa
+produrre, e una guardia che non si puo' vedere lavorare non e' una guardia.
 """
 
+from .apply import applica, mosse
 from .continuity import OperandiVCER, operandi_di_vcer
 from .schema import LayoutIR, Placement
 from .store import LayoutStore, PatchStore
@@ -48,5 +59,7 @@ __all__ = [
     "OperandiVCER",
     "PatchStore",
     "Placement",
+    "applica",
+    "mosse",
     "operandi_di_vcer",
 ]

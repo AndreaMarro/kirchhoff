@@ -298,3 +298,183 @@ fatta emergere. Nessuna viene lasciata cadere in silenzio.
     Nota di coerenza: `boundary-anchor` è dichiarato *«deliberatamente più discreto»* del segnale
     sul delta, e a 1.4px contro 1.5 lo è appena — la relazione fra i due spessori è un'altra cosa
     che solo il proprietario di `DESIGN.md` può fissare.
+
+- source_spec: Story `1-7-la-prima-trasformazione-pedagogica-fino-al-disegno` (26/08/2026)
+  summary: La scala dei layer di AD-23 **non ha una riga per l'equazione**, che UX-DR10 e
+    `EXPERIENCE.md` richiedono entrambi accanto al sottografo. Il renderer la emette al `6` e lo
+    dichiara; la riga la deve scrivere chi possiede lo spine.
+  evidence: I nove livelli sono `0` sfondo · `1` regione di trasformazione · `2` fili · `3`
+    componenti · `4` nodi ed etichette semantiche · `5` enfasi sul cambiato · `6` annotazioni di
+    boundary · `7` interazione · `8` debug, e AD-23 aggiunge *«il renderer non compone layer fuori
+    da questa scala»*. Nessuno dei nove nomina l'equazione: il `6` dice «di boundary», il `5` dice
+    «sul cambiato», e l'equazione non è né l'una né l'altra — è un'annotazione **ancorata** al
+    sottografo. `render/overlay/schema.py` sceglie il `6` insieme alle altre annotazioni ancorate
+    del passo e lo scrive come assunzione dichiarata, non come se AD-23 lo prescrivesse. È la
+    stessa forma dell'assunzione che la Story 1.3 ha dichiarato per il `PatchStore`, che AD-8 non
+    nomina. Va ratificata, non ereditata per inerzia.
+
+- source_spec: Story `1-7-la-prima-trasformazione-pedagogica-fino-al-disegno` (26/08/2026)
+  summary: **AD-23 em. e `DESIGN.md` collidono sul `boundary-anchor`**, e l'uscita di oggi viola
+    il predicato di non-occlusione così com'è scritto. Non è una svista del renderer: è un
+    conflitto fra due autorità, e la regola di collisione della costituzione dice che si segnala,
+    non si sceglie.
+  evidence: AD-23 em. chiede che *«nessun riquadro di livello ≥ 5 intersechi il riquadro di
+    un'entità di livello 4 appartenente a `Pₖ`»*. `DESIGN.md:177` dichiara il `boundary-anchor`
+    *«un segno **sovrapposto**»* al nodo, e *«togliendolo, il nodo torna identico»* — un segno
+    sovrapposto interseca per definizione ciò su cui sta. Questa storia è la prima che emette
+    entrambi. Misurato sull'uscita corrente, entrambi i fotogrammi: l'ancora del nodo `0` occupa
+    `[95.5,104.5]×[155.5,164.5]` e interseca due riquadri di livello 4 del nodo `0`, che è in
+    `preserve` — il pallino della giunzione `[97,103]×[157,163]` e il simbolo di massa
+    `[93,107]×[160,176]`; l'ancora del nodo `b` interseca il pallino di `b`. Tre intersezioni, e
+    il predicato come scritto le vieta tutte e tre.
+    Ciò che questa storia ha potuto chiudere è la metà che non dipende dalla collisione, e l'ha
+    chiusa come **test permanente** invece che come prosa
+    (`test_nessuna_annotazione_occlude_un_preservato_salvo_l_ancora_sul_proprio_nodo`, per
+    fotogramma): nessuna annotazione tocca l'**etichetta** di un preservato — che è l'aneddoto da
+    cui AD-23 nasce — e l'unica intersezione ammessa è quella di un'ancora con la geometria del
+    nodo su cui è centrata. Il conteggio è fissato a 3: se scendesse a zero il test starebbe
+    misurando un'uscita senza ancore invece di un predicato soddisfatto.
+    **Rettifica di una voce precedente di questa stessa storia.** La prima stesura attribuiva ad
+    AD-26 l'incalcolabilità del predicato dentro `render/`, sostenendo che il `TransformOverlay`
+    non poteva portare `preserve`. Era sbagliato: `preserve` è un membro di `TransformResult`
+    esattamente come `boundary`, e portarlo è una **copia**, non il ricalcolo di `Pₖ` che AD-26
+    chiama velenoso — quello sarebbe dedurlo dai due circuiti o da «tutto ciò che l'overlay non
+    nomina». AD-26 em. enumera del resto i ruoli come `preservato · cambiato · confine`: sono tre.
+    L'overlay ora porta il terzo, il predicato **è** calcolabile, e ciò che resta aperto è solo la
+    collisione fra le due autorità. Resta a 1.6 il canale d'emissione: AD-23 vuole
+    `overlay_occlusion` da `render/roundtrip`, che non esiste ancora.
+
+- source_spec: Story `1-7-la-prima-trasformazione-pedagogica-fino-al-disegno` (26/08/2026)
+  summary: **Un nodo consumato non ha un segnale dichiarato in `DESIGN.md`.** Il renderer gliene
+    dava uno preso in prestito; ora non gliene dà nessuno, ed è una riga che manca alla tabella.
+  evidence: `subgraph-highlight` porta la nota *«Marca **SOLO i componenti** che cambiano»*, e la
+    sequenza di `DESIGN.md:430-432` distribuisce i segnali per genere: i componenti che cambiano
+    ricevono l'evidenziazione, i nodi di boundary il `boundary-anchor`. La tabella dei segnali
+    (`:382-384`) ha tre righe — il delta, i preservati-e-boundary, i preservati — e **nessuna** per
+    un nodo che la riduzione assorbe. `serie` ne assorbe uno: sulla fixture della storia
+    `overlay.cambiato` contiene `node:a`. La prima stesura gli dava il segnale dei componenti; era
+    una decisione del renderer, e misurata produceva il difetto esatto dell'aneddoto di AD-23 — il
+    riquadro finiva a `x=208`, l'etichetta del nodo `a` comincia a `x=208`, tratto 2 centrato sul
+    bordo, cioè evidenziazione sopra il primo tratto del nome. Oggi il nodo consumato non riceve
+    nulla e il test `test_il_sottografo_marca_solo_i_componenti` lo tiene chiuso. Che sia il
+    trattamento **giusto** non è deciso da nessuno: lo studente vede sparire un nodo senza che
+    niente lo abbia acceso. La riga la scrive chi possiede `DESIGN.md`.
+
+- source_spec: Story `1-7-la-prima-trasformazione-pedagogica-fino-al-disegno` (26/08/2026)
+  summary: Due quantità di `equation-anchor` non hanno un token dietro: il **fondo** del riquadro
+    e lo **spessore della linea di collegamento**. Sono dichiarate nel modulo, non copiate.
+  evidence: `DESIGN.md:206-212` dà a `equation-anchor` `background: '{colors.surface-raised}'` e
+    `border: '1px solid {colors.rule-hairline}'`. Il bordo ora è `1` ed è il token (la prima
+    stesura emetteva `1.4`, che è lo spessore del `boundary-anchor` — *«deliberatamente più
+    discreto del segnale sul delta»* — e legava due quantità che i token tengono separate;
+    `test_il_bordo_dell_equazione_e_quello_del_token` lo tiene chiuso). Il **fondo** no: la tinta
+    dei token non è emessa da `svg.py` — `TINTA` spiega perché, e D4 è aperta — quindi il riquadro
+    esce `fill="none"`. È una dichiarazione, non una copia, e la ragione per cui è quella e non
+    un'altra è che un riquadro pieno di `currentColor` coprirebbe ciò che ha dietro. Lo
+    **spessore della linea di collegamento** non ha token affatto: `equation-anchor` la chiede
+    (*«collegata da una linea»*) e non la quantifica. Vale quanto il bordo del riquadro, che è
+    l'unica relazione che i token permettono di affermare. Entrambe stanno accanto a `TRATTO`, già
+    registrato dalla Story 1.4 per la stessa ragione: il token manca, non è stato inventato.
+
+- source_spec: Story `1-7-la-prima-trasformazione-pedagogica-fino-al-disegno` (26/08/2026)
+  summary: **La firma di `render` non sa esprimere i passi 3 e 4 della sequenza di
+    `EXPERIENCE.md`**: layer 5 e layer 6 escono da una sola chiamata, e non c'è un fotogramma in
+    cui il sottografo è acceso e nessun testo del passo è comparso. La Story 1.8 la incontra per
+    prima.
+  evidence: `EXPERIENCE.md:466-472` numera tre battute distinte: (3) *«`R3` e `R4` si accendono
+    … Non è ancora comparso un solo carattere di testo»*, (4) **PRIMA**, (5) **AZIONE** con
+    l'equazione. `render(circuito, layout, overlay)` emette `5` e `6` insieme: non esiste un
+    parametro che accenda l'evidenziazione senza l'equazione. Misurato: il fotogramma *Prima*
+    porta già `R1R2eq = R1 + R2`, che nomina un'entità che `Cₖ` non contiene, con una linea che vi
+    punta. La lettura di UX-DR8 che questa storia ha preso — l'evidenziazione prima di ogni testo
+    **del passo**, non di ogni `<text>` del file — resta corretta e verificata
+    (`test_il_sottografo_si_accende_prima_di_qualunque_testo_del_passo`), ma la sequenza che la
+    giustifica non è producibile da questa firma. Aggiungere un parametro di fase qui avrebbe
+    inventato un'API che AD-35 non nomina: la firma dello spine è
+    `render(LayoutIR, TransformOverlay, ArmEncoding)`, tre parametri e nessuna fase.
+
+- source_spec: Story `1-7-la-prima-trasformazione-pedagogica-fino-al-disegno` (26/08/2026)
+  summary: Il **`certificate-chip`** — terza delle *«tre cose, in ordine di comparsa»* — non ha
+    alcuna rappresentazione, e `Certificate` non arriva al renderer.
+  evidence: `DESIGN.md:435-440` elenca tre cose in ordine di comparsa: evidenziazione, equazione,
+    certificato. Il renderer ne implementa due, e si appoggia proprio a quell'elenco per decidere
+    la lettura di UX-DR8. `Certificate` è un membro di `TransformResult`; `TransformOverlay` non lo
+    porta e `render/` non lo nomina mai (verificato: zero occorrenze). `EXPERIENCE.md:190-191`:
+    *«Un passo a cui manca `CERTIFICATE` … non è un passo, e non compare.»* Nessun AC della Story
+    1.7 lo chiede — gli AC visuali sono UX-DR8 e UX-DR10 — quindi non è stato costruito: portarlo
+    avrebbe richiesto di decidere che cosa il chip mostra e dove, cioè lavoro di 1.8 fatto qui.
+
+- source_spec: Story `1-7-la-prima-trasformazione-pedagogica-fino-al-disegno` (26/08/2026)
+  summary: **Gli elementi dei layer 5 e 6 non portano alcun `data-*`**, e nulla dice se il
+    round-trip di FR-41 debba ignorarli o rifiutarli. La Story 1.6 li incontra senza una regola.
+  evidence: Misurato: nessuno dei cinque elementi emessi — `kf-sottografo`, `kf-confine`,
+    `kf-collegamento`, `kf-equazione`, `kf-equazione-testo` — porta un attributo `data-*`, mentre
+    ogni elemento dei layer 2–4 ne porta. FR-41 riparsa le annotazioni per ricostruire il
+    `CircuitIR`: un elemento senza annotazioni è invisibile a quel parser, il che è probabilmente
+    corretto — l'overlay non è il circuito — ma non è **scritto** da nessuna parte, e la storia che
+    lo scriverà (1.6) precede questa nel backlog e non è fatta. Conseguenza già visibile qui: il
+    test del predicato di AD-23 deve attribuire le etichette del layer 4 alle proprie entità
+    leggendo le strutture (`_scritte_del_simbolo`, `_scritte_del_nodo`) invece dei byte, perché dal
+    solo SVG un'etichetta non è attribuibile.
+
+- source_spec: Story `1-7-la-prima-trasformazione-pedagogica-fino-al-disegno` (26/08/2026)
+  summary: **`<title>` e `<desc>` sono byte-identici con e senza overlay**: chi legge con un
+    lettore di schermo non sente la trasformazione, sente due volte lo stesso circuito.
+  evidence: Misurato e fissato in `test_l_alternativa_testuale_non_cambia_con_l_overlay`. UX-DR25
+    e FR-15 danno all'alternativa testuale la topologia, e la topologia dei due fotogrammi è
+    davvero diversa — quindi *Prima* e *Dopo* differiscono, ma solo per la frase di topologia: né
+    l'evidenziazione, né il confine, né l'equazione compaiono in forma testuale. K-0 dice che un
+    passo senza disegno non è un passo; per chi il disegno non lo vede, il passo oggi non ha una
+    forma. Non è un criterio di questa storia e non è stato costruito; è una misura, non
+    un'impressione.
+
+- source_spec: Story `1-7-la-prima-trasformazione-pedagogica-fino-al-disegno` (26/08/2026)
+  summary: **FR-53 «identico byte per byte» ha due letture, e la seconda tocca D4**, che è aperta
+    e blocca Gate A. La storia ha implementato e verificato la prima, e ha misurato la seconda.
+  evidence: FR-53, seconda *Consequence (testable)*: *«Rimuovendo l'overlay, il rendering delle
+    entità sottostanti è identico byte per byte a quello senza trasformazione in corso»*; AD-23 em.
+    la qualifica *«nei bracci 0 e A»* e FR-46 la rende obbligatoria. La famiglia ora esiste —
+    `test_rimosso_l_overlay_il_layer_delle_entita_e_identico`, sei casi: layer `2`, `3`, `4` per
+    entrambi i fotogrammi, confrontati sui **byte emessi** e non su un sottoalbero riserializzato.
+    La seconda lettura — «il rendering» come ciò che finisce a schermo — non è soddisfatta e non
+    può esserlo da sola: l'equazione **deve** stare fuori dal disegno (UX-DR10), quindi la
+    `viewBox` cresce necessariamente. Misurato sul fotogramma *Dopo*: da `-24 -28.8 279 216.8`
+    senza overlay a `-24 -28.8 493.4 216.8` con overlay,
+    stessa origine e stessa altezza, larghezza maggiore; e l'`<svg>` non porta `width`/`height`,
+    quindi scala col contenitore (UX-DR27) e ogni entità preservata si rimpicciolisce. Quale
+    lettura governi non è deciso da nessuna autorità, e deciderlo nel renderer chiuderebbe per
+    inerzia **D4**, *«renderer stack web vs PDF»*. La misura è fissata in
+    `test_l_overlay_allarga_la_viewbox_e_questo_e_dichiarato` perché chi decide D4 la trovi.
+
+- source_spec: Story `1-7-la-prima-trasformazione-pedagogica-fino-al-disegno` (26/08/2026)
+  summary: `annota` ammette un caso — una fusione che **atterra su un'entità preservata** — che il
+    renderer non saprebbe disegnare sul fotogramma successivo. Non è raggiungibile dal Catalogo di
+    oggi, ed è misurato.
+  evidence: `annota` calcola `cambiato = (consumed | produced) - preserve`, e sottrae `preserve` e
+    non `boundary` perché *«una fusione può atterrare su un'entità preservata»* — `check_delta` lo
+    ammette (`check.py:292-293`). Per un prodotto simile `cambiato = delta.consumed`, tutto in
+    `patch.remove`, quindi assente da `LayoutIR_{k+1}`: `_verifica_l_ordine_dell_overlay`
+    solleverebbe sul fotogramma *Dopo*, e K-0 dice che un passo senza disegno non è un passo — un
+    passo legittimo per il dominio avrebbe un *Dopo* non disegnabile. Misurato sul Catalogo
+    corrente: `implemented()` è `{serie, parallelo}` e le due riduzioni passano dallo stesso
+    percorso, che pone `create=(prodotto,)` con `prodotto` coniato da `engine._nuovo_id` — un nome
+    nuovo, quindi mai in `preserve`. Il caso **non è raggiungibile oggi**. Che cosa il fotogramma
+    successivo debba accendere quando il punto d'atterraggio è preservato è una domanda per chi
+    apre il Catalogo, e la risposta userà il ruolo `preservato` che l'overlay ora porta.
+
+- source_spec: Story `1-7-la-prima-trasformazione-pedagogica-fino-al-disegno` (26/08/2026)
+  summary: L'equivalente nasce nel **baricentro** dei suoi ascendenti, che non appartiene al
+    percorso fra i suoi due morsetti: i fili escono a gomito. È una conseguenza misurata della
+    scelta dichiarata, non un difetto contro un'autorità — ma nessuna autorità la ratifica.
+  evidence: Misurato sul fotogramma *Dopo*: `R1R2eq` è disegnato in `(150,40)`, il baricentro
+    esatto di `R1(100,0)` e `R2(200,80)`; i suoi morsetti stanno su `b(0,0)` e `0(100,160)`, e i
+    fili emessi sono `150,16 150,0 0,0` e `150,64 150,160 100,160` — due gomiti attorno a un
+    simbolo posato a un'ascissa dove non sta nessuno dei suoi due nodi. La scelta è quella che
+    risponde alla domanda della storia (*«quelle due sono diventate questa»*: l'equivalente compare
+    dove stavano le due, ed è verificato sul disegno da
+    `test_l_equivalente_e_disegnato_dentro_l_ingombro_delle_due_che_sostituisce`), e l'alternativa
+    — posarlo sul percorso `b–0` — sarebbe autolayout, non-goal dichiarato. `EXPERIENCE.md:470`
+    dice *«`R3` e `R4` diventano `R34`, sempre fra `A` e `B`»*, e topologicamente lo è. Se il
+    gomito sia accettabile davanti a uno studente è una domanda di Gate A, e la risposta appartiene
+    a chi possiede `DESIGN.md` e all'instradatore dei fili di `render/serialize/geometry.py`, non a
+    `applica`.
