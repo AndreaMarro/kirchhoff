@@ -64,12 +64,25 @@ from pathlib import Path
 # qualcosa» ma «non vedere la forma giusta»: analisi divergente, dove due letture
 # diverse valgono piu' di due letture accurate uguali.
 
-SCRITTORE = "claude-opus-5"
+# **Ruoli invertiti il 26/08/2026, sera.** Fable scrive, Opus giudica.
+#
+# La ragione dichiarata dal proprietario: «dove serve programmazione e idee piu'
+# complesse, fable max». L'implementazione e' il passo che inventa; la revisione
+# e' il passo che verifica cio' che qualcun altro ha inventato, ed e' un lavoro
+# diverso.
+#
+# C'e' una misura a favore e una contro, e vanno dette entrambe.
+# A FAVORE: il 25/08 Fable come revisore ha trovato cinque HIGH veri su codice
+# scritto da Opus. Sa guardare codice altrui.
+# CONTRO: non e' mai stato misurato come SCRITTORE su questo prodotto. Invertire
+# i ruoli e' quindi un esperimento, non un miglioramento dimostrato, e la prima
+# storia che passa di qui e' anche la sua misura.
+SCRITTORE = "claude-fable-5"
 SCRITTORE_EFFORT = "max"
 REVISORE = "claude-opus-5"
-REVISORE_EFFORT = "high"
-COMPLESSO = "claude-fable-5"
-COMPLESSO_EFFORT = "max"
+REVISORE_EFFORT = "max"
+COMPLESSO = "claude-opus-5"
+COMPLESSO_EFFORT = "high"
 
 IMPLEMENTA = "implementa"
 VERIFICA = "verifica"
