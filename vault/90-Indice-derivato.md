@@ -1,5 +1,5 @@
 ---
-sha: 34db615b1d963dba91afaae6610281e472d8e251
+sha: 0fa9f653803bce5b01929eaac265af49b41cbe78
 tipo: indice-derivato
 ---
 
@@ -10,8 +10,8 @@ tipo: indice-derivato
 > una nota, ha torto lui — e `--verifica` lo dice, invece di lasciartelo
 > scoprire.
 
-Costruito sulla revisione `34db615b1d963dba91afaae6610281e472d8e251`.
-48 note.
+Costruito sulla revisione `0fa9f653803bce5b01929eaac265af49b41cbe78`.
+49 note.
 
 ## (radice)
 
@@ -36,6 +36,7 @@ Costruito sulla revisione `34db615b1d963dba91afaae6610281e472d8e251`.
 ## 20-Decisioni-prese
 
 - [[20260826T172656Z-Promuovere-17-con-tre-rilievi-aperti]] — Promuovere 1.7 con tre rilievi aperti · `decisione-presa` → [[00-INDICE]], [[Decisioni aperte]]
+- [[20260826T212024Z-Estendere-la-catena-irrigidire-prima-di-costruire]] — Estendere la catena: irrigidire prima di costruire · `decisione-presa` → [[00-INDICE]], [[Decisioni aperte]]
 
 ## 30-Decisioni-aperte
 

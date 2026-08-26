@@ -14,3 +14,28 @@
 1.4
 1.7
 1.8
+
+# --- estensione del 26/08/2026, dopo che 1.8 ha chiuso la fetta visuale -----
+#
+# La priorita' dichiarata era VEDERE IL PRIMO RISULTATO NEL BROWSER, e c'e': 1.4
+# ha dato l'SVG, 1.8 la fetta completa, e `pipeline/` il comando che li produce
+# da una netlist. Quella priorita' e' soddisfatta, quindi l'ordine cambia
+# ragione: adesso si irrigidisce cio' che esiste, prima di costruirci sopra.
+#
+# 1.5 per primo perche' `pipeline/` E' un adapter nato senza il suo recinto: e'
+#     il momento in cui il confine costa meno, e ogni storia che passa lo rende
+#     piu' caro.
+# 1.9 subito dopo perche' il determinismo oggi e' verificato in tre punti diversi
+#     scritti da tre storie diverse: una famiglia obbligatoria lo rende una
+#     proprieta' del prodotto invece di una consuetudine.
+# 1.6 infine chiude il giro visuale — l'SVG riparsato deve ridare il circuito —
+#     ed e' cio' che rende il disegno una PROVA e non un'illustrazione.
+#
+# Poi l'Epic 2, che e' il prodotto per un tutor: la traccia dello studente.
+1.5
+1.9
+1.6
+2.1
+2.2
+2.3
+2.4
