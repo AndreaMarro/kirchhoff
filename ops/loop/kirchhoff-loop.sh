@@ -107,6 +107,16 @@ log "kirchhoff-loop v3 — avvio"
 log "repository=$REPO"
 log "iterazioni=$ITERAZIONI prova=$PROVA promuovi=$PROMUOVI watchdog=${WATCHDOG}s scrittura=\$${BUDGET_SCRITTURA} revisione=\$${BUDGET_REVISIONE}"
 
+  # **Il Mac non deve dormire durante un giro.** Un'iterazione R2 dura un'ora
+  # abbondante e i passi sono processi figli: se la macchina si sospende, il
+  # watchdog scade su un processo che non stava lavorando e il giro viene buttato
+  # dopo aver gia' pagato. `-w $$` lega la veglia alla vita di QUESTO script, quindi
+  # si spegne da sola quando il giro finisce — anche se finisce male.
+  if command -v caffeinate >/dev/null 2>&1; then
+    caffeinate -dimsu -w $$ &
+    log "caffeinate: la macchina resta sveglia per la durata del giro"
+  fi
+
 # --- il watchdog --------------------------------------------------------------
 # Ardesia: TERM, dieci secondi di grazia, poi KILL. Il segnale di stop deve
 # venire da FUORI dall'agente: un agente che decide da solo quando fermarsi ha
@@ -178,6 +188,28 @@ while [ "$n" -lt "$ITERAZIONI" ]; do
     exit 64
   fi
   storia="$(head -1 "$STATO/prossima-storia.txt")"
+
+  # **Se la storia fissata e' gia' su main, avanza.** Senza questo il loop rifa'
+  # all'infinito la stessa storia: `prossima-storia.txt` veniva scritto da
+  # `dry-run` e non piu' toccato, quindi dopo la promozione di 1.1 il giro
+  # successivo avrebbe reimplementato 1.1.
+  #
+  # «Gia' fatta» si deriva da cio' che esiste davvero: l'artefatto di
+  # implementazione della storia, con la sua chiave INTERA. Il prefisso da solo non
+  # basta — `spec-1-2-script-di-valutazione` e' una storia della v1 e collidere
+  # con la 1.2 della v2 sarebbe precisamente l'errore che il ledger disallineato
+  # gia' commette.
+  if python3 "$QUI/catena.py" --fatta "$storia" 2>/dev/null; then
+    prossima="$(python3 "$QUI/catena.py" --dopo "$storia" 2>/dev/null)"
+    if [ -n "$prossima" ]; then
+      log "storia $storia gia' su main: avanzo a $prossima"
+      printf '%s\n' "$prossima" > "$STATO/prossima-storia.txt"
+      storia="$prossima"
+    else
+      log "catena esaurita: nessuna storia dopo $storia"
+      exit 0
+    fi
+  fi
   log "storia: $storia"
 
   # 3. IL ROUTER --------------------------------------------------------------
