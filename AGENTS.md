@@ -103,3 +103,35 @@ costituzione del prodotto in `docs/`, il metodo di lavoro in `.claude/loop.md`.
   allineato. Aggiungere una riscrittura significa toccare `StructuralPrimitive`, la tabella
   `FORME` (che le impone genere e arità), e `catalog.COMPOSITION` o `catalog.DORMANT` — la
   partizione fra riscritture esercitate e dormienti è imposta esatta all'import.
+- **Gli identificatori delle entità esposte hanno un vocabolario chiuso, e sta nel dominio.**
+  Dalla Story 1.3 (26/08/2026) `src/kirchhoff/domain/identity.py` deriva i sei prefissi delle
+  `Consistency Conventions` — `ir_`, `sol_`, `var_`, `evt_`, `lay_`, `patch_` — da `IdentityKind`
+  con `get_args`, come `refusal.CAUSES` da `Cause`. Coniare è **puro**: `conia` prende istante ed
+  entropia dalla firma (AD-17, «il tempo si inietta»), non li legge, e **non esiste una seconda
+  maniera di coniare** — un test lo verifica. Le convenzioni dicono «ULID», e tutti e sei i generi
+  ne ricevono uno vero.
+- **Conia chi ritiene, non chi produce.** `transform` è pura per AD-2: non ha orologio, quindi non
+  può coniare il `patch_` della `LayoutPatch` che emette. Il nome nasce al deposito, in
+  `render/layout.PatchStore`, con l'istante iniettato — la stessa regola di `LayoutIR.nuovo`. Ne
+  segue la proprietà che SM-14 richiede: **un `patch_` identifica un passo, non un contenuto**, e
+  due passi che emettono patch identiche ricevono due nomi. `ProofGraph` rifiuta due archi sullo
+  stesso `patch_`, e `verifica` rifiuta le stringhe di forma giusta e valore oltre i 128 bit.
+- **L'entropia dev'essere nuova a ogni conio, e nessun port la fornisce.** `casualita` entra dalla
+  firma come l'istante, ma nell'elenco dei port dello spine non c'è un `EntropyPort`: il requisito
+  vive nel docstring di `domain/identity`. A entropia costante due conii nello stesso millisecondo
+  collidono e il registro solleva «già depositato», accusando chi deposita di un difetto altrui.
+- **Il proprietario del riferimento al `LayoutIR` è il nodo del `ProofGraph`, non la sessione.**
+  AD-8 em. del 24 agosto lo scrive; `src/kirchhoff/domain/proof/graph.py` lo implementa. Il nodo
+  porta due identificatori (`ir_` e `lay_`) e **nessuna struttura**. La relazione è scritta una
+  volta sola, sul nodo: `nodo_di` è una scansione, non un secondo registro. Il `LayoutIR` e il suo
+  registro append-only vivono in `src/kirchhoff/render/layout/` — AD-8 dà quel ruolo a
+  `render/layout` e scrive «**mai** `domain/`», perché dalla v2 il dominio non sa cosa sia una
+  posizione. Lì accanto stanno il registro delle `LayoutPatch` e
+  `operandi_di_vcer`, che congiunge la tripla di CV6 verificandone le cinque condizioni: senza
+  `preserve` risolvibile, `p_k(x)` non è definita e VCER resta un'ipotesi.
+- **AD-8 non ha una riga per la `LayoutPatch` persistita.** La tabella dei proprietari non la
+  nomina, né come entità con scrittore né come entità dichiarata non persistita. Il `PatchStore`
+  sta in `render/layout` perché lì stanno gli altri due operandi della stessa tripla: è
+  un'assunzione dichiarata nel modulo, non un fatto dell'autorità. Va ratificata da chi possiede
+  lo spine, insieme alla riga dell'ERD che CV6 chiedeva e che non è mai entrata — per la quale
+  `implementation-readiness.md` tiene ancora 1.3 a «⛔ non pronta».
