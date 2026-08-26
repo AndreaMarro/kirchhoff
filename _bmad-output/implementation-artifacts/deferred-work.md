@@ -220,3 +220,13 @@ fatta emergere. Nessuna viene lasciata cadere in silenzio.
     volte — sfugge alle porte tipizzate e muore in `_ordinate` con una diagnosi che non nomina né
     l'operazione né l'argomento. Nessuno di questi è raggiungibile dal motore, che è l'unico
     produttore reale; tutti lo sono dalla porta pubblica che la decisione owner del 25/08 conserva.
+
+- source_spec: Story 1.1 — residui della ri-revisione a contesto fresco (26/08/2026)
+  summary: Un MEDIUM e due LOW restano aperti dopo la promozione di 1.1. Nessuno tocca la
+    correttezza del contratto; tutti e tre sono discrepanze fra ciò che il codice dichiara e ciò
+    che fa.
+  evidence: (1) La diagnosi di `attestazione_infondata` afferma una causa che il controllo non
+    conosce, ed è falsa se il vero motivo è un altro. (2) Il commento del motore dichiara un
+    conteggio misurabile e sbagliato: `_divergenze` gira sette volte, non il numero scritto.
+    (3) Il criterio enunciato per l'elenco `CONTROLLI` è contraddetto dalla voce `boundary` due
+    righe sotto — lo stesso rilievo già emerso nella sesta tornata manuale, che sopravvive.
