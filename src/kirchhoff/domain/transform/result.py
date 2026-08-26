@@ -39,6 +39,8 @@ Puro: nessuna I/O, nessun orologio, nessuna casualita'.
 
 from __future__ import annotations
 
+from collections import Counter
+
 from dataclasses import dataclass
 
 from .catalog import (
@@ -46,6 +48,7 @@ from .catalog import (
     IDENTITY_ATTRIBUTES,
     TransformationKind,
     mutable_attributes,
+    primitives_of,
 )
 from .delta import Delta, EntityRef
 
@@ -347,15 +350,57 @@ class TransformResult:
                 f"Solo nel risultato: {', '.join(str(e) for e in solo_qui) or 'nessuna'}. "
                 f"Solo nella patch: {', '.join(str(e) for e in solo_patch) or 'nessuna'}.")
 
-        # Il `Certificate` attesta i controlli di **un'operazione**; le derivazioni
-        # del `Delta` ne nominano una. Se non e' la stessa, l'attestato certifica un
-        # passo diverso da quello compiuto.
-        operazioni = {d.operation for d in self.delta.derivations}
-        if operazioni != {self.certificate.operation}:
+        # **I due livelli, e il legame che li tiene insieme** (Story 1.2).
+        #
+        # Il `Certificate` nomina il **passo pedagogico**, e ne nomina uno solo per
+        # costruzione: c'e' un `Certificate` per prodotto. Le derivazioni del `Delta`
+        # nominano le **riscritture strutturali** di cui quel passo e' composto, e
+        # possono essere piu' d'una — `serie` fonde due componenti e cancella il nodo
+        # interno.
+        #
+        # Il confronto originario era un'uguaglianza fra gli stessi nomi, perche' i
+        # due campi vivevano allo stesso livello: il passo pedagogico era scritto una
+        # volta nel certificato e una volta per derivazione, cioe' la stessa cosa
+        # scritta due volte dentro lo stesso prodotto (E-62). Il legame non e' pero'
+        # sparito con la ripetizione: passa ora dalla dichiarazione del Catalogo, e
+        # resta un'uguaglianza — fra il multinsieme dichiarato e quello emesso.
+        #
+        # Il riferimento resta dichiarato dal Catalogo e non dal prodotto misurato,
+        # come il discriminante d'identita' di AD-22 v2.1: se fosse il `Delta` a dire
+        # di quale passo fa parte, la `Transform` sceglierebbe da se' il livello a cui
+        # viene letta.
+        dichiarata = primitives_of(self.certificate.operation)
+        if not dichiarata:
+            raise ValueError(
+                f"TransformResult: «{self.certificate.operation}» non dichiara di "
+                "quali riscritture strutturali e' composta, quindi nessun `Delta` puo' "
+                "esserne il resoconto. La dichiarazione sta nel Catalogo "
+                "(`catalog.COMPOSITION`): un passo che non la porta non produce un "
+                "risultato, invece di produrne uno che nessuno puo' verificare.")
+
+        # **Uguaglianza fra multinsiemi, non inclusione.** La prima stesura chiedeva
+        # che le riscritture emesse fossero *fra* quelle dichiarate, e un `serie` che
+        # ne dichiarava due emettendone una sola passava (misurato). Un'inclusione
+        # verifica che il `Delta` non inventi; non verifica che il passo faccia cio'
+        # che ha dichiarato, ed e' quella la meta' che AC2 chiede — «il `Delta` porta
+        # piu' `StructuralDerivation`» e' una proprieta' del contratto, non del
+        # prodotto che il motore emette oggi.
+        #
+        # Il confronto e' su un multinsieme perche' `COMPOSITION` porta la
+        # molteplicita': due `eliminazione_di_nodo` dichiarate pretendono due nodi
+        # eliminati. Non e' su una sequenza: le derivazioni di un `Delta` non hanno
+        # ordine causale, e l'ordine canonico e' per contenuto.
+        emesse = Counter(d.operation for d in self.delta.derivations)
+        if emesse != Counter(dichiarata):
+            def _conta(c: Counter[str]) -> str:
+                return ", ".join(
+                    f"«{o}»×{n}" for o, n in sorted(c.items())) or "nessuna"
             raise ValueError(
                 f"TransformResult: il certificato attesta l'operazione "
-                f"«{self.certificate.operation}», il Delta ne deriva "
-                f"{', '.join(sorted(f'«{o}»' for o in operazioni))}.")
+                f"«{self.certificate.operation}», che si dichiara composta di "
+                f"{_conta(Counter(dichiarata))}; il Delta porta {_conta(emesse)}. "
+                "Un passo che non esercita cio' che dichiara descrive un'operazione "
+                "diversa da quella attestata.")
 
         # Un'attestazione giustifica l'appartenenza a `Pₖ` di un'entita': se quella
         # entita' non e' fra le preservate, l'attestato risponde a una domanda che

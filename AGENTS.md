@@ -85,3 +85,21 @@ costituzione del prodotto in `docs/`, il metodo di lavoro in `.claude/loop.md`.
   ricerca a profondità limitata non lo vede. Per la struttura usa `ls -R`.
 
 <!-- /bmad:context -->
+
+<!-- Fuori dal blocco gestito da bmad-project-context: qui non viene sostituito al refresh. -->
+
+## Fatti che il blocco gestito non conosce ancora
+
+- **I vocabolari chiusi sono due, non uno.** La riga «Non aggiungere un'operazione al catalogo
+  delle Trasformazioni» sopra ne conosce uno solo. Dalla Story 1.2 (26/08/2026) esiste anche
+  `src/kirchhoff/domain/transform/primitives.py`: cinque **riscritture strutturali**
+  — `fusione_di_componenti`, `fusione_di_nodi`, `eliminazione_di_nodo`,
+  `sostituzione_di_componente`, `rimozione_di_componente` — che sono il livello *sotto* i passi
+  pedagogici. `StructuralDerivation.operation` punta a queste; `Certificate.operation` al
+  catalogo. I due insiemi sono disgiunti, e una guardia all'import lo verifica.
+- Le due regole differiscono. Il catalogo è scritto due volte (`TransformationKind` e `CATALOG`)
+  e un test confronta i due insiemi. `PRIMITIVES` è invece **derivato** da `StructuralPrimitive`
+  con `get_args`, come `refusal.CAUSES` da `Cause`: non c'è un secondo insieme da tenere
+  allineato. Aggiungere una riscrittura significa toccare `StructuralPrimitive`, la tabella
+  `FORME` (che le impone genere e arità), e `catalog.COMPOSITION` o `catalog.DORMANT` — la
+  partizione fra riscritture esercitate e dormienti è imposta esatta all'import.

@@ -164,7 +164,15 @@ fatta emergere. Nessuna viene lasciata cadere in silenzio.
     **potrebbe** essere una di queste — stessa entità, stato cambiato» — e un generatore
     disattivato modellato come corto circuito **è** un cambio di `type`. Vietarlo in un modulo
     deciderebbe in anticipo una questione che lo spine lascia aperta al vocabolario delle primitive
-    strutturali, che non esiste ancora. La licenza resta quindi **esprimibile e non esercitata**:
+    strutturali. **Aggiornamento del 26/08/2026 (Story 1.2): quel vocabolario ora esiste —
+    `domain/transform/primitives.py`, cinque riscritture chiuse — e continua a non decidere la
+    questione.** Nessuna delle cinque nomina la soppressione di un generatore, e l'assenza è
+    deliberata per la stessa ragione registrata qui: darle un nome sceglierebbe in un modulo la
+    lettura «sostituzione strutturale con identità nuova». La decisione resta al proprietario, e
+    la premessa su cui poggia è ora questa, non più «il vocabolario non esiste». Il posto dove
+    dichiarare il caso nuovo è `test_la_soppressione_di_un_generatore_non_e_nel_vocabolario`, che
+    pinna l'insieme per intero e diventa rosso il giorno in cui una sesta riscrittura compare.
+    La licenza resta quindi **esprimibile e non esercitata**:
     nessuna voce di `_MUTABILI` la concede, e
     `test_il_tipo_resta_licenziabile_e_non_e_licenziato_da_nessuno` diventerebbe rosso il giorno in
     cui una la concedesse. Se il proprietario decide che il cambio di tipo non è mai identità
@@ -230,3 +238,15 @@ fatta emergere. Nessuna viene lasciata cadere in silenzio.
     conteggio misurabile e sbagliato: `_divergenze` gira sette volte, non il numero scritto.
     (3) Il criterio enunciato per l'elenco `CONTROLLI` è contraddetto dalla voce `boundary` due
     righe sotto — lo stesso rilievo già emerso nella sesta tornata manuale, che sopravvive.
+
+- source_spec: Story 1.2 — residui della passata fresca (26/08/2026)
+  summary: Due LOW restano aperti dopo la promozione di 1.2, più la disallineatura del ledger che
+    entrambe le revisioni hanno segnalato.
+  evidence: (1) `_verifica_dormienti` non impone `dormienti ⊆ PRIMITIVES`: un nome dormiente
+    inventato non farebbe protestare nulla. (2) Il docstring di `primitives.py:20` — «entrambi i
+    registri sono stati aggiornati con l'esito» — ha un antecedente ambiguo che fa sembrare falso
+    un claim vero. (3) **`sprint-status.yaml` non registra né 1.1 né 1.2**: le voci `1-1-…` e
+    `1-2-…` presenti appartengono alla numerazione v1, già dichiarata stale. Le due storie
+    implementate più di recente sono invisibili nel tracker. Il loop non ne dipende — avanza
+    leggendo gli artefatti di implementazione, non il ledger — ma chiunque legga il tracker vede
+    uno stato falso. Allinearlo tocca 46 chiavi ed è una decisione, non una patch.

@@ -91,3 +91,29 @@ Non l'ho risolto: è la scelta fra estendere il catalogo alle primitive atomiche
 tenere il catalogo al livello didattico e modellare le atomiche come derivazioni interne a
 un passo. Tocca direttamente la `SolutionTimeline` e va decisa insieme allo scavo delle
 trasformazioni didattiche reali.
+
+## Risolto il 26/08/2026 — Story 1.2
+
+**La seconda.** Il catalogo resta al livello didattico e le atomiche sono derivazioni
+interne a un passo: `domain/transform/primitives.py` porta un secondo vocabolario chiuso di
+cinque **riscritture strutturali**, disgiunto da `CATALOG`, e `StructuralDerivation.operation`
+punta a quello. Il legame fra i due livelli è `catalog.COMPOSITION`, che dichiara di quali
+riscritture — con la loro molteplicità — ciascun passo è composto; `TransformResult` esige
+che il `Delta` eserciti esattamente la composizione dichiarata. Una `serie` è quindi **un
+solo** passo pedagogico con **due** derivazioni: `{R1,R2} --fusione_di_componenti--> {Req}`
+e `{b} --eliminazione_di_nodo--> {∅}`.
+
+Le due conseguenze che avevano motivato la scelta:
+
+- SM-C5 non si muove: il numero delle Trasformazioni applicabili resta tre, perché nessuna
+  micro-operazione è entrata nel catalogo;
+- K-0 continua a pretendere un fotogramma per **passo**, non per riscrittura, che è
+  esattamente ciò che chiedeva — «un passo senza disegno è una riga di calcolo».
+
+`REMOVE_LOAD` è coperto (`rimozione_di_componente`); `ZERO_VOLTAGE_SOURCE` **no**, e
+l'assenza è deliberata: resta la decisione del proprietario registrata in `deferred-work.md`.
+Il paragrafo qui sopra cita `test_operazione_fuori_catalogo_rifiutata`, che non esiste più:
+il rifiuto vive ora in `test_una_riscrittura_fuori_vocabolario_e_rifiutata` e nei due test
+che distinguono i due sotto-passi invece di confonderli.
+
+Resta aperto l'impatto su `SolutionTimeline`, che nessuna storia ha ancora costruito.

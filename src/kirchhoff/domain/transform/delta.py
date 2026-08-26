@@ -7,9 +7,15 @@ definito**: qui viene definito, e solo per il proprio dominio.
 ## Che cosa `Delta` e'
 
 Una collezione ordinata di **derivazioni strutturali**: insiemi di entita' in
-ingresso, un'operazione del catalogo chiuso, insiemi di entita' in uscita.
+ingresso, una **riscrittura** del vocabolario strutturale chiuso (`primitives.py`),
+insiemi di entita' in uscita.
 
-    {R1, R2}  --serie-->  {Req}
+    {R1, R2}  --fusione_di_componenti-->  {Req}
+    {b}       --eliminazione_di_nodo-->   {}
+
+Le due righe qui sopra sono **un solo** passo pedagogico: la riduzione in serie. Il
+passo lo nomina il `Certificate`, una volta; il `Delta` nomina le riscritture di cui
+e' fatto, una per derivazione (Story 1.2).
 
 ## Che cosa `Delta` NON e'
 
@@ -48,10 +54,11 @@ Puro: nessuna I/O, nessun orologio, nessuna casualita'.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Literal
 
-from .catalog import CATALOG, TransformationKind
+from .primitives import FORME, PRIMITIVES, Forma, StructuralPrimitive
 
 #: Le entita' che il `CircuitIR` conosce. Non un namespace nuovo: i componenti si
 #: identificano col loro `id`, i nodi col loro nome, gli stessi che `IR.nodes` e
@@ -60,6 +67,28 @@ from .catalog import CATALOG, TransformationKind
 EntityKind = Literal["component", "node"]
 
 ENTITY_KINDS: frozenset[str] = frozenset({"component", "node"})
+
+
+def _verifica_generi_delle_forme(
+    forme: Mapping[str, Forma], generi: frozenset[str]
+) -> None:
+    """I generi che `primitives.py` nomina sono generi di entita' che esistono qui.
+
+    Il vocabolario delle riscritture non puo' importare `EntityKind`: `delta.py`
+    importa `primitives.py`, e l'inverso sarebbe un ciclo. Il genere e' quindi una
+    stringa la', e la riconciliazione avviene qui — dove i generi sono definiti.
+    Non e' una seconda dichiarazione dello stesso insieme: e' un controllo di una
+    dichiarazione contro l'altra, che e' esattamente cio' che E-62 chiede al posto
+    della disciplina.
+    """
+    ignoti = sorted({f.genere for f in forme.values()} - generi)
+    if ignoti:
+        raise RuntimeError(
+            f"il vocabolario delle riscritture nomina generi di entita' che non "
+            f"esistono: {ignoti}. I generi sono {', '.join(sorted(generi))}.")
+
+
+_verifica_generi_delle_forme(FORME, ENTITY_KINDS)
 
 
 @dataclass(frozen=True, slots=True, order=True)
@@ -83,30 +112,74 @@ class EntityRef:
 
 @dataclass(frozen=True, slots=True)
 class StructuralDerivation:
-    """`inputs --operation--> outputs`. Gli insiemi sono tuple ordinate canonicamente."""
+    """`inputs --operation--> outputs`. Gli insiemi sono tuple ordinate canonicamente.
 
-    operation: TransformationKind
+    **`operation` e' una riscrittura strutturale, non un passo del Catalogo** (Story
+    1.2). Puntava al catalogo pedagogico, ed era il livello sbagliato: `serie` fonde
+    due componenti **e** cancella il nodo interno, quindi scrivere `serie` su ciascuna
+    delle due derivazioni faceva leggere due passi didattici dove ce n'e' uno — e K-0
+    pretende un fotogramma per ogni passo didattico.
+
+    Il passo pedagogico resta **uno solo** e vive in `Certificate.operation`. Da qui e'
+    sparito, e non e' una perdita d'informazione: era la stessa cosa scritta due volte
+    dentro lo stesso prodotto (E-62). Quale composizione un passo ammette lo dichiara
+    il Catalogo (`catalog.COMPOSITION`), e `TransformResult` lo verifica.
+
+    **Il nome vincola la derivazione**, per la forma che `primitives.FORME` gli
+    assegna: genere delle entita' ai due capi, quanti ingressi come minimo, quante
+    uscite esattamente. Senza quel vincolo i cinque nomi sarebbero decorazioni
+    intercambiabili — misurato: `{node:b} --eliminazione_di_nodo--> {node:a}` si
+    costruiva, e con esso ogni lineage falsa che rispettasse i soli aggregati.
+    """
+
+    operation: StructuralPrimitive
     inputs: tuple[EntityRef, ...]
     outputs: tuple[EntityRef, ...]
 
     def __post_init__(self) -> None:
-        if self.operation not in CATALOG:
+        if self.operation not in PRIMITIVES:
             raise ValueError(
-                f"operazione {self.operation!r} fuori dal catalogo chiuso. "
-                "Aggiungerne una e' una modifica del catalogo, non di una derivazione.")
-        if not self.inputs:
-            # Deciso esplicitamente, non per comodita': nel catalogo chiuso non esiste
-            # oggi una trasformazione che crei un'entita' senza ascendenza. Se ne
-            # comparira' una, questa guardia e' la riga da cambiare, e il test
-            # `test_una_derivazione_senza_ingressi_e_rifiutata` e' il posto dove
-            # dichiarare il caso nuovo.
-            raise ValueError(
-                f"derivazione {self.operation!r} senza entita' in ingresso: "
-                "una creazione senza ascendenza non ha lineage interrogabile")
+                f"riscrittura {self.operation!r} fuori dal vocabolario strutturale "
+                f"chiuso. Le riscritture sono {', '.join(sorted(PRIMITIVES))}: "
+                "aggiungerne una e' una modifica del vocabolario, non di una "
+                "derivazione, e un passo del catalogo pedagogico non e' una di esse.")
         if len(set(self.inputs)) != len(self.inputs):
             raise ValueError(f"derivazione {self.operation!r} con un ingresso ripetuto")
         if len(set(self.outputs)) != len(self.outputs):
             raise ValueError(f"derivazione {self.operation!r} con un'uscita ripetuta")
+
+        # **La forma che la riscrittura impone**, dalla tabella di `primitives.py`.
+        # I duplicati si contestano prima, perche' un ingresso ripetuto e' un difetto
+        # della derivazione e non della sua forma, e diagnosticarlo come «ne servono
+        # almeno due» nominerebbe la cosa sbagliata.
+        forma = FORME[self.operation]
+        estranei = sorted(
+            {e.kind for e in (*self.inputs, *self.outputs)} - {forma.genere})
+        if estranei:
+            raise ValueError(
+                f"derivazione {self.operation!r} su entita' di genere "
+                f"{', '.join(estranei)}: opera su {forma.genere}, e ai due capi. "
+                "Nessuna riscrittura trasforma un nodo in un componente.")
+        if len(self.inputs) < forma.ingressi_minimi:
+            raise ValueError(
+                f"derivazione {self.operation!r} con {len(self.inputs)} entita' in "
+                f"ingresso: ne vuole almeno {forma.ingressi_minimi}. Sotto quella "
+                "soglia la riscrittura afferma qualcosa di diverso da cio' che "
+                "il suo nome dichiara.")
+        if forma.ingressi_massimi is not None and len(self.inputs) > forma.ingressi_massimi:
+            raise ValueError(
+                f"derivazione {self.operation!r} con {len(self.inputs)} entita' in "
+                f"ingresso: ne ammette al massimo {forma.ingressi_massimi}. Sopra "
+                "quella soglia la riscrittura e' un'altra: una sostituzione che "
+                "consuma due componenti e ne produce uno e' una FUSIONE, e "
+                "chiamarla altrimenti rende i due nomi intercambiabili — cio' che "
+                "il vocabolario chiuso esiste per impedire.")
+        if len(self.outputs) != forma.uscite:
+            raise ValueError(
+                f"derivazione {self.operation!r} con {len(self.outputs)} entita' in "
+                f"uscita: ne vuole esattamente {forma.uscite}. E' il capo su cui "
+                "«un nodo sopravvive» e «nessuno eredita» si distinguono.")
+
         # Ordine canonico imposto alla costruzione: due derivazioni semanticamente
         # uguali sono uguali anche come oggetti, e serializzano identiche.
         object.__setattr__(self, "inputs", tuple(sorted(self.inputs)))
@@ -157,6 +230,33 @@ class Delta:
                     f"entita' prodotta da due derivazioni: "
                     f"{', '.join(sorted(str(e) for e in doppi))}")
             visti_out |= set(d.outputs)
+
+        # **La lineage non puo' chiudersi in cerchio.** Le derivazioni di un `Delta`
+        # descrivono lo stesso salto `Cₖ → Cₖ₊₁` da piu' punti, non una pipeline: non
+        # c'e' un «prima» e un «dopo» fra due riscritture dello stesso passo, e
+        # l'ordine canonico e' per contenuto, non per causalita'. Un'entita' prodotta
+        # da una riscrittura e consumata da un'altra pretenderebbe quell'ordine, e
+        # nulla nel modello lo porta.
+        #
+        # Con una derivazione sola la condizione non poteva darsi; dai `Delta`
+        # multi-derivazione della Story 1.2 e' reale. Misurato prima della guardia:
+        # `{R1} --sostituzione--> {R2}` accanto a `{R2} --sostituzione--> {R1}` si
+        # costruiva, e `derived_from` rispondeva in cerchio.
+        #
+        # L'incrocio si cerca fra derivazioni **distinte**: dentro una sola,
+        # ingresso e uscita possono coincidere, ed e' la forma con cui AD-22 v2.1
+        # vuole scritta l'entita' mutata in luogo.
+        # `prodotte - d.outputs` sono le uscite delle **altre** derivazioni: la
+        # guardia sopra ha gia' escluso che due ne producano la stessa.
+        prodotte = {e for d in ordinate for e in d.outputs}
+        for d in ordinate:
+            incrocio = (prodotte & set(d.inputs)) - set(d.outputs)
+            if incrocio:
+                raise ValueError(
+                    f"entita' prodotta da una derivazione e consumata da un'altra: "
+                    f"{', '.join(sorted(str(e) for e in incrocio))}. Le riscritture "
+                    "di un passo non si concatenano: descrivono lo stesso salto, e "
+                    "una lineage che si chiude in cerchio non ha origine.")
 
         object.__setattr__(self, "derivations", ordinate)
 
