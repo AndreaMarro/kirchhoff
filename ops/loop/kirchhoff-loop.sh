@@ -239,7 +239,18 @@ while [ "$n" -lt "$ITERAZIONI" ]; do
   # Un ramo per iterazione. Se qualcosa va storto, il lavoro resta ispezionabile
   # invece di sparire, e main non vede mai un verdetto non emesso.
   base="$(git -C "$REPO" rev-parse --abbrev-ref HEAD)"
-  ramo="loop/iter-${avvio}-${storia}"
+  # **Un istante per ITERAZIONE, non per corsa.** `avvio` e' calcolato una volta
+  # sola prima del ciclo, e va bene per il giornale — che e' per corsa. Per il
+  # ramo no: con `--iterazioni N` ogni giro costruiva lo STESSO nome, e il
+  # secondo moriva con «impossibile creare il ramo» incidendo un FERMO
+  # REPO_INTEGRITY_RISK.
+  #
+  # Il difetto ha aspettato: serve che l'istante non avanzi E che la storia non
+  # avanzi, e la storia resta ferma quando il giro precedente non e' stato
+  # promosso. Tutte le corse fino al 26/08/2026 erano `--iterazioni 1`, quindi
+  # non si e' mai visto. Misurato quel giorno alla prima corsa da sei.
+  istante="$(date -u +%Y%m%dT%H%M%SZ)"
+  ramo="loop/iter-${istante}-${storia}"
   ramo="$(printf '%s' "$ramo" | cut -c1-90)"
   git -C "$REPO" checkout -q -b "$ramo" 2>>"$DIARIO" || {
     log "impossibile creare il ramo $ramo"
@@ -462,14 +473,14 @@ for i, s in enumerate(p):
     #
     # L'ordine conta: la receipt e l'indice entrano nel repository PRIMA del
     # push, altrimenti si pubblicherebbe uno stato che il vault non descrive.
-    python3 "$QUI/receipt.py" --storia "$storia" --istante "$stamp" \
+    python3 "$QUI/receipt.py" --storia "$storia" --istante "$istante" \
       --metriche "$(cat "$STATO/.metriche.json" 2>/dev/null || echo '{}')" \
       --esito promosso >>"$DIARIO" 2>&1 && log "receipt incisa nel vault"
 
     python3 "$QUI/indice.py" --costruisci >>"$DIARIO" 2>&1
     git -C "$REPO" add -- vault >>"$DIARIO" 2>&1
     if ! git -C "$REPO" diff --cached --quiet; then
-      git -C "$REPO" commit -q -m "loop: receipt e indice del giro $stamp — $storia" >>"$DIARIO" 2>&1
+      git -C "$REPO" commit -q -m "loop: receipt e indice del giro $istante — $storia" >>"$DIARIO" 2>&1
     fi
 
     # L'indice si verifica DOPO il proprio commit: e' l'unico momento in cui la
