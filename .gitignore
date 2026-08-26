@@ -27,3 +27,7 @@ vault/.trash/
 # Dato locale, non versionato: un symlink a un percorso assoluto
 # funzionerebbe solo su questa macchina.
 reference-set
+
+# Il modulo del cancello visuale: si reinstalla con `npm install`
+ops/vista/node_modules/
+ops/vista/package-lock.json

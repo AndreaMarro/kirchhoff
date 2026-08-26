@@ -1,0 +1,8 @@
+{
+  "name": "kirchhoff-vista",
+  "private": true,
+  "type": "module",
+  "description": "Il cancello visuale: verifica che i byte dell'SVG diventino un disegno.",
+  "scripts": { "gate": "node gate.mjs" },
+  "devDependencies": { "playwright": "^1.62.0" }
+}
