@@ -41,7 +41,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from .catalog import CATALOG, TransformationKind
+from .catalog import (
+    CATALOG,
+    IDENTITY_ATTRIBUTES,
+    TransformationKind,
+    mutable_attributes,
+)
 from .delta import Delta, EntityRef
 
 
@@ -152,6 +157,68 @@ class Equation:
         return f"{self.subject} = {self.expression}"
 
 
+@dataclass(frozen=True, slots=True, order=True)
+class IdentityAttestation:
+    """Perche' un'entita' e' ancora la stessa **pur essendo cambiata**.
+
+    E' il caso **non banale** della preservazione. Quello banale non ha bisogno di
+    attestazione: un'entita' identica a se stessa in `Cₖ` e `Cₖ₊₁` sta in `Pₖ` e la
+    ragione e' leggibile confrontando i due circuiti. Il caso che va giustificato e'
+    l'altro — CV3: *«una preservata puo' cambiare proprieta' entro la semantica della
+    trasformazione»* — perche' li' l'appartenenza a `Pₖ` dipende da una **licenza**
+    che il Catalogo concede a quella operazione, e una licenza esercitata in
+    silenzio non e' distinguibile da un'identita' riusata.
+
+    `changed` nomina gli attributi che sono cambiati e che l'operazione ammette. E'
+    non-vuoto per costruzione: attestare che nulla e' cambiato sarebbe rumore che
+    diluisce le attestazioni vere, e chi legge il `Certificate` deve poter contare
+    quante preservazioni hanno avuto bisogno di una licenza.
+
+    Non dice «valida»: dice **che cosa** e' cambiato e su quale entita'. Chi legge
+    decide se quella licenza gli basta — E-65, un componente non certifica se stesso
+    asserendolo.
+    """
+
+    entity: EntityRef
+    changed: tuple[str, ...]
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.entity, EntityRef):
+            raise TypeError(
+                f"attestazione d'identita' su {type(self.entity).__name__} invece "
+                "di EntityRef: un'attestazione nomina un'entita' del circuito.")
+        # **Un nodo non e' attestabile.** `check._divergenze` lo dichiara: «un nodo
+        # e' il proprio nome: non ha attributi che possano divergere», quindi la sua
+        # appartenenza a `Pₖ` non puo' mai dipendere da una licenza, e un'attestazione
+        # su un nodo giustificherebbe qualcosa che non ha bisogno di giustificazione.
+        # `IdentityAttestation(node:a, ("value",))` si costruiva: l'`EntityRef` era
+        # valido e `value` stava fra gli attributi d'identita', e nessuna delle due
+        # guardie faceva la domanda che conta — di *quale* entita' si parla (CV5).
+        if self.entity.kind != "component":
+            raise ValueError(
+                f"{self.entity}: un'attestazione d'identita' nomina un componente. "
+                "Un nodo e' il proprio nome e non ha attributi che possano divergere: "
+                "la sua preservazione non passa mai da una licenza, quindi non c'e' "
+                "nulla da attestare.")
+        if not self.changed:
+            raise ValueError(
+                f"{self.entity}: attestazione d'identita' senza alcun attributo "
+                "cambiato. Il caso banale non si attesta: un attestato che non "
+                "dice nulla si legge come una giustificazione che non c'era.")
+        if len(set(self.changed)) != len(self.changed):
+            raise ValueError(f"{self.entity}: attributo attestato due volte")
+        fuori = sorted(set(self.changed) - set(IDENTITY_ATTRIBUTES))
+        if fuori:
+            raise ValueError(
+                f"{self.entity}: {', '.join(fuori)} non compone l'identita' "
+                "sostanziale, quindi il suo cambiamento non ha bisogno di licenza. "
+                f"Gli attributi d'identita' sono {', '.join(IDENTITY_ATTRIBUTES)}.")
+        object.__setattr__(self, "changed", tuple(sorted(self.changed)))
+
+    def __str__(self) -> str:
+        return f"{self.entity} ({', '.join(self.changed)})"
+
+
 @dataclass(frozen=True, slots=True)
 class Certificate:
     """Quali controlli sono stati eseguiti, su quale operazione, con quale esito.
@@ -159,10 +226,27 @@ class Certificate:
     E-65, dall'error ledger: *«un componente non certifica se stesso asserendolo»*.
     Il `Certificate` non dichiara «valido»: elenca i controlli **eseguiti**. Un
     controllo che non ha girato non compare, e la sua assenza si vede.
+
+    `attestations` e' l'altra meta': non *quali* controlli sono girati, ma **su
+    quali giustificazioni** una preservazione non banale regge. Vuoto e' l'esito
+    ordinario — nel Catalogo corrente nessuna operazione dichiara attributi mutabili,
+    quindi ogni preservata e' identica a se stessa — e non e' un'omissione: e'
+    l'affermazione che nessuna licenza e' stata esercitata.
+
+    **Ma «vuoto e' l'esito ordinario» va verificato, non creduto**, altrimenti e'
+    indistinguibile da una licenza esercitata in silenzio — che e' il difetto che
+    l'attestazione esiste per chiudere. Le due meta' della verifica stanno in due
+    posti, e la linea che le separa e' se servano i circuiti:
+
+    - **Qui**, senza `Cₖ` e `Cₖ₊₁`: l'attributo attestato e' fra quelli che
+      l'operazione dichiara mutabili, e l'entita' e' attestata una volta sola.
+    - **In `check_certificate`**, contro i due circuiti: l'attributo e' davvero
+      cambiato, e nessuna licenza esercitata e' rimasta taciuta.
     """
 
     operation: TransformationKind
     checks: tuple[str, ...]
+    attestations: tuple[IdentityAttestation, ...] = ()
 
     def __post_init__(self) -> None:
         if self.operation not in CATALOG:
@@ -175,7 +259,43 @@ class Certificate:
                 "Un attestato vuoto si legge come «tutto a posto» e non lo e'.")
         if len(set(self.checks)) != len(self.checks):
             raise ValueError(f"{self.operation}: controllo elencato due volte")
+        # Una sola attestazione per entita': due licenze sulla stessa preservata
+        # sarebbero due risposte alla stessa domanda, e chi legge non saprebbe
+        # quale delle due giustifica l'appartenenza a `Pₖ`.
+        soggetti = [a.entity for a in self.attestations]
+        if len(set(soggetti)) != len(soggetti):
+            raise ValueError(
+                f"{self.operation}: la stessa entita' attestata due volte "
+                f"({', '.join(sorted(str(e) for e in soggetti))})")
+
+        # **La licenza attestata deve esistere nel Catalogo.** `IdentityAttestation`
+        # verifica che l'attributo componga l'identita' sostanziale; quella e' la
+        # domanda «e' un attributo di cui abbia senso parlare», non «quella
+        # operazione lo ammette». Questo oggetto conosce l'operazione, quindi puo'
+        # porre la seconda — e senza di essa `Certificate("serie", ..., R1 (value))`
+        # si costruiva benche' `serie` non dichiari nulla di mutabile (misurato).
+        # Sarebbe un attestato che rivendica una licenza mai concessa: E-65 al
+        # contrario, un componente che certifica se stesso citando un permesso che il
+        # Catalogo non ha dato.
+        #
+        # Si verifica **qui** e non nel controllore perche' non servono i circuiti:
+        # `mutable_attributes` e' una funzione pura del Catalogo. Cio' che invece
+        # richiede `Cₖ` e `Cₖ₊₁` — che quell'attributo sia davvero cambiato, e che
+        # nessuna licenza esercitata resti taciuta — vive in `check_certificate`, che
+        # e' l'unico posto da cui si vedono i due circuiti.
+        licenza = mutable_attributes(self.operation)
+        for attestazione in self.attestations:
+            abusivi = sorted(set(attestazione.changed) - licenza)
+            if abusivi:
+                raise ValueError(
+                    f"{self.operation}: il certificato attesta l'identita' di "
+                    f"{attestazione.entity} nonostante {', '.join(abusivi)}, che "
+                    f"{self.operation} non dichiara mutabile. Attributi mutabili "
+                    f"dichiarati: {', '.join(sorted(licenza)) or 'nessuno'}. La "
+                    "licenza la concede il Catalogo, non l'attestato che la invoca.")
+
         object.__setattr__(self, "checks", tuple(sorted(self.checks)))
+        object.__setattr__(self, "attestations", tuple(sorted(self.attestations)))
 
 
 @dataclass(frozen=True, slots=True)
@@ -236,6 +356,22 @@ class TransformResult:
                 f"TransformResult: il certificato attesta l'operazione "
                 f"«{self.certificate.operation}», il Delta ne deriva "
                 f"{', '.join(sorted(f'«{o}»' for o in operazioni))}.")
+
+        # Un'attestazione giustifica l'appartenenza a `Pₖ` di un'entita': se quella
+        # entita' non e' fra le preservate, l'attestato risponde a una domanda che
+        # nessuno ha posto, e si legge come se il prodotto conservasse qualcosa che
+        # non conserva. E' la stessa forma delle altre coppie di canali qui sotto —
+        # due parti dello stesso prodotto che affermano cose incompatibili sulla
+        # stessa entita' — e si verifica senza i circuiti, come loro.
+        infondate = sorted(
+            a.entity for a in self.certificate.attestations
+            if a.entity not in self.preserve)
+        if infondate:
+            raise ValueError(
+                "TransformResult: il certificato attesta l'identita' di "
+                f"{', '.join(str(e) for e in infondate)}, che il prodotto non "
+                "conserva. Un'attestazione giustifica una preservazione: senza la "
+                "preservazione non giustifica nulla.")
 
         # --- le altre coppie di canali ---------------------------------------
         #

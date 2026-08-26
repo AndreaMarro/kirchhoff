@@ -17,6 +17,7 @@ from kirchhoff.domain.refusal import (
 from kirchhoff.domain.transform import (
     CATALOG,
     CONTROLLI,
+    IDENTITY_ATTRIBUTES,
     MUTABLE_ATTRIBUTES,
     SUPPORTED,
     Boundary,
@@ -24,13 +25,17 @@ from kirchhoff.domain.transform import (
     Certificate,
     Equation,
     EntityRef,
+    IdentityAttestation,
     LayoutPatch,
     TransformResult,
     attributes_of,
     check_delta,
     check_boundary,
+    check_certificate,
     check_patch,
     check_transform,
+    entities_of,
+    identity_attestations,
     implemented,
     mutable_attributes,
     preserve_set,
@@ -89,6 +94,54 @@ class TestDiscriminanteDiIdentita:
     def test_operazione_fuori_catalogo_non_ha_discriminante(self):
         with pytest.raises(ValueError, match="fuori dal catalogo chiuso"):
             mutable_attributes("REMOVE_LOAD")
+
+    def test_una_dichiarazione_senza_una_voce_del_catalogo_e_rifiutata(self):
+        """Una voce senza dichiarazione avrebbe discriminante indefinito."""
+        from kirchhoff.domain.transform.catalog import _verifica_dichiarazione
+        with pytest.raises(RuntimeError, match="divergenti"):
+            _verifica_dichiarazione({"serie": frozenset()})
+
+    def test_non_si_dichiara_mutabile_cio_che_non_compone_l_identita(self):
+        """**Lo stesso invariante, guardato ora su entrambi i lati.**
+
+        `IdentityAttestation` rifiuta `provenance` — «non compone l'identita'
+        sostanziale, quindi il suo cambiamento non ha bisogno di licenza» — mentre
+        l'invariante di import controllava le sole chiavi, e
+        `_MUTABILI["serie"] = {"provenance"}` passava (misurato). Una licenza cosi'
+        non sarebbe dannosa, perche' nessun confronto la userebbe mai: sarebbe
+        **leggibile e falsa**, che e' il difetto peggiore di questo prodotto.
+        """
+        from kirchhoff.domain.transform.catalog import _verifica_dichiarazione
+        guasta = dict(MUTABLE_ATTRIBUTES)
+        guasta["serie"] = frozenset({"provenance"})
+        with pytest.raises(RuntimeError, match="provenance"):
+            _verifica_dichiarazione(guasta)
+
+    def test_la_dichiarazione_reale_supera_il_proprio_invariante(self):
+        """Il verso che protegge dalla falsa accusa: cio' che il modulo dichiara regge."""
+        from kirchhoff.domain.transform.catalog import _verifica_dichiarazione
+        assert _verifica_dichiarazione(MUTABLE_ATTRIBUTES) is None
+
+    def test_il_tipo_resta_licenziabile_e_non_e_licenziato_da_nessuno(self):
+        """**Deliberato, e scritto perche' non si scopra dopo.**
+
+        Nulla vieta a un'operazione di dichiarare `type` mutabile — un condensatore
+        che diventa resistore «restando la stessa entita'». La scelta e' che AD-22
+        v2.1 porta come esempio *illustrativo* proprio questo caso («la disattivazione
+        di un generatore indipendente **potrebbe** essere una di queste — stessa
+        entita', stato cambiato»), e un generatore disattivato modellato come corto
+        circuito **e'** un cambio di `type`. Vietarlo in un modulo deciderebbe in
+        anticipo una questione che lo spine lascia aperta.
+
+        Cio' che il test pinna e' che la licenza resti **esprimibile e non
+        esercitata**: il giorno in cui una voce la concedesse, sarebbe un commit su
+        `_MUTABILI`, e questa riga lo direbbe.
+        """
+        assert "type" in IDENTITY_ATTRIBUTES
+        assert IdentityAttestation(C("R1"), ("type",)).changed == ("type",)
+        assert not any("type" in a for a in MUTABLE_ATTRIBUTES.values()), (
+            "una voce del Catalogo licenzia il cambio di tipo: e' una decisione del "
+            "proprietario, registrata in deferred-work.md, non un effetto di modulo")
 
     def test_attributi_sostanziali_non_includono_la_provenienza(self):
         """Da dove un componente e' stato letto non e' cio' che il componente e'."""
@@ -206,10 +259,12 @@ def _risultato(**sovrascritti):
 class TestLeCauseDiAd19:
     """Le cause che AD-19 assegna a `domain/transform/check`, viste sollevare.
 
-    Erano tre. Dalla v2.2 `identity_violation` **resta dichiarata e senza
-    produttori**: senza `node_mapping`, `id_{k+1}(x) = id_k(x)` su `Pₖ` e' vero per
-    costruzione. La causa non e' stata tolta da `Cause` perche' la tabella vive in
-    AD-19, che e' spine: rimuoverne una e' un'altra decisione di proprieta'.
+    Sono tre, e dalla Story 1.1 tutte e tre hanno un produttore. `identity_violation`
+    era rimasta dichiarata e vuota dopo il ritiro di `node_mapping` — `id_{k+1}(x) =
+    id_k(x)` su `Pₖ` e' vero per costruzione, e un controllo che non puo' fallire non
+    e' un controllo. Cio' che la riempie ora e' la domanda opposta, che per
+    costruzione non e' vera: se un'entita' presente in **entrambi** i circuiti sia la
+    stessa entita'. Le sue prove stanno in `TestUnIdentificatoreRiusatoERifiutato`.
     """
 
     def test_le_tre_cause_sono_nell_enumerazione_chiusa(self):
@@ -786,7 +841,19 @@ def test_una_rinomina_non_e_una_preservazione():
 
 
 def test_un_preserve_che_rivendica_il_nome_vecchio_e_rifiutato():
-    """Il verso che conta: nessuno puo' DICHIARARE preservato cio' che e' rinominato."""
+    """Il verso che conta: una rinomina non attraversa il controllore.
+
+    **La causa e' cambiata con la Story 1.1, e il difetto nominato e' piu' grande.**
+    Prima usciva `preserve_nonmaximal`, perche' la patch rivendica `b`, che in `Cₖ₊₁`
+    non esiste. Ma questa coppia di circuiti ha un difetto che non dipende da cio'
+    che la patch dichiara: rinominare `b` in `z` cambia i terminali di `R1` e `R2`,
+    che restano nei due circuiti **col nome di prima** senza essere le stesse
+    entita'. `Pₖ` e' quindi gia' compromesso quando la massimalita' lo userebbe come
+    metro, e nominare la dichiarazione prima dell'identita' descriverebbe un sintomo.
+
+    Il verso `preserve_nonmaximal` non perde copertura: `TestLeCauseDiAd19` lo misura
+    in difetto e in eccesso su una coppia di circuiti la cui identita' regge.
+    """
     patch = LayoutPatch(
         preserve=(N("0"), N("a"), N("b")),   # rivendica b, che in Cₖ₊₁ non c'e'
         remove=(), create=(),
@@ -794,7 +861,50 @@ def test_un_preserve_che_rivendica_il_nome_vecchio_e_rifiutato():
     )
     rifiuto = check_transform(SERIE, RINOMINATO, "serie", patch, Boundary((N("a"),)))
     assert rifiuto is not None
-    assert rifiuto.cause == "preserve_nonmaximal"
+    assert rifiuto.cause == "identity_violation"
+    # `riusati` e' ordinato canonicamente e il primo e' deterministicamente `R1`:
+    # `in {"R1", "R2"}` accettava anche un soggetto che il codice non puo' produrre.
+    assert rifiuto.subject == "R1", rifiuto.diagnosis
+
+
+#: Una rinomina che **non** tocca l'identita' di nessun componente: `b` non e'
+#: terminale di nulla, quindi diventare `z` non cambia i terminali di nessuno.
+#: `IR` ammette un nodo non toccato — verificato — e senza questa coppia il verso
+#: «dichiarare preservato cio' che e' rinominato» non e' piu' misurato da nessuna
+#: parte: nella coppia `SERIE/RINOMINATO` l'identita' scatta prima e la patch
+#: diventa irrilevante per l'esito.
+RINOMINA_INNOCUA_PRIMA = _ir(_v("V1", "a", "0", 12), _r("R1", "a", "0", 10),
+                             nodes=("0", "a", "b"))
+RINOMINA_INNOCUA_DOPO = _ir(_v("V1", "a", "0", 12), _r("R1", "a", "0", 10),
+                            nodes=("0", "a", "z"))
+
+
+def test_una_rinomina_dichiarata_preservata_e_non_massimale():
+    """Il verso perduto, su una coppia dove l'identita' non scatta prima.
+
+    `rinomina != preservazione` vale anche quando nessun componente ne risente: `b`
+    non e' in `Cₖ₊₁` sotto alcun nome, quindi rivendicarlo fra le preservate dichiara
+    sopravvissuto cio' che il passo ha consumato. Qui `Pₖ` **non** e' compromesso —
+    nessun identificatore e' riusato — quindi la causa e' quella che misura la
+    dichiarazione contro il metro, ed e' il metro a reggere.
+    """
+    pk = preserve_set(RINOMINA_INNOCUA_PRIMA, RINOMINA_INNOCUA_DOPO, operation="serie")
+    assert N("b") not in pk and N("z") not in pk
+
+    onesta = check_transform(
+        RINOMINA_INNOCUA_PRIMA, RINOMINA_INNOCUA_DOPO, "serie",
+        LayoutPatch(tuple(sorted(pk)), (N("b"),), (N("z"),), (N("a"),)),
+        Boundary((N("a"),)))
+    assert onesta is None, (
+        f"l'identita' non e' compromessa in questa coppia, e invece: {onesta}")
+
+    rivendica = check_transform(
+        RINOMINA_INNOCUA_PRIMA, RINOMINA_INNOCUA_DOPO, "serie",
+        LayoutPatch(tuple(sorted(pk | {N("b")})), (), (N("z"),), (N("a"),)),
+        Boundary((N("a"),)))
+    assert rivendica is not None
+    assert rivendica.cause == "preserve_nonmaximal", rivendica.diagnosis
+    assert "node:b" in rivendica.diagnosis
 
 
 def test_due_entita_non_possono_collassare_in_una_sola_preservata():
@@ -1094,6 +1204,17 @@ def test_il_registro_non_accetta_voci_nuove_a_runtime():
 # preservata: e' una rimozione piu' una creazione, e come tale deve comparire nel
 # Delta». I controllori misuravano «appare e sparisce» per id e `Pₖ` per
 # attributi: la fessura fra le due nozioni e' esattamente l'entita' mutata in luogo.
+#
+# **Attenzione a leggere quella clausola come un permesso: con la Story 1.1 non lo
+# e' piu'.** `check_delta` e `check_patch` continuano a esigere che la mutata in
+# luogo compaia nei loro canali, e i test qui sotto lo misurano su di essi. Ma un
+# passo intero — `check_transform` — **rifiuta** ora questa coppia di circuiti prima
+# di arrivarci: `R1` compare in `Cₖ` e in `Cₖ₊₁` senza nominare la stessa entita', e
+# `Pₖ` diventa leggibile e falso (CV1). «Rimozione piu' creazione col nome riusato»
+# e' quindi la forma **rifiutata**, non una rappresentazione ammessa; quella ammessa
+# da' all'entita' di `Cₖ₊₁` un identificatore proprio. La divergenza fra questa
+# emissione e la clausola owner-locked che la descrive e' registrata in
+# `deferred-work.md`, non decisa qui.
 # ---------------------------------------------------------------------------
 
 
@@ -1105,14 +1226,25 @@ R2A_DOPO = _ir(_v("V1", "a", "0", 12), _r("RL", "a", "0", 100),
                _r("R1", "a", "0", F(20, 3)), nodes=("0", "a"))
 
 
+def _patch_verace_r2a() -> LayoutPatch:
+    """La patch **irreprensibile** sul caso R2-A: dice esattamente cio' che e'
+    accaduto secondo AD-22 v2.1 — `R1` e `R2` sparite, un'entita' nuova che ne
+    riusa il nome creata, `Pₖ` dichiarato per intero.
+
+    Serve a isolare la variabile: un rifiuto su questa patch non puo' venire da una
+    dichiarazione sbagliata, perche' non ce n'e' una.
+    """
+    p = preserve_set(R2A_PRIMA, R2A_DOPO, operation="parallelo")
+    return LayoutPatch(preserve=tuple(sorted(p)), remove=(C("R1"), C("R2")),
+                       create=(C("R1"),), reroute_scope=(N("a"),))
+
+
 def test_una_mutata_in_luogo_e_sparita_e_apparsa():
     """`R1` cambia valore a nome fermo: per AD-22 v2.1 e' rimozione piu' creazione."""
     p = preserve_set(R2A_PRIMA, R2A_DOPO, operation="parallelo")
     assert C("R1") not in p, "il discriminante v2.1 deve tenerla fuori da Pₖ"
 
-    patch_verace = LayoutPatch(preserve=tuple(sorted(p)), remove=(C("R1"), C("R2")),
-                               create=(C("R1"),), reroute_scope=(N("a"),))
-    assert check_patch(patch_verace, R2A_PRIMA, R2A_DOPO) == (), (
+    assert check_patch(_patch_verace_r2a(), R2A_PRIMA, R2A_DOPO) == (), (
         "la patch che dice la verita' della dottrina viene rifiutata")
 
 
@@ -1142,14 +1274,29 @@ def test_un_delta_che_tace_su_una_mutata_in_luogo_e_contestato():
 # ---------------------------------------------------------------------------
 
 
-def test_il_certificato_non_attesta_controlli_rimossi():
-    """`identita'` e' stata rimossa da questo stesso ramo. Un attestato che la
-    elenca fra i controlli ESEGUITI e' falso, e il docstring di `Certificate`
-    fissa lo standard: «un controllo che non ha girato non compare» (E-65).
+def test_il_certificato_attesta_l_identita_solo_perche_qualcuno_la_verifica():
+    """Lo stesso standard di prima, con la premessa ribaltata dalla Story 1.1.
+
+    Il test nasceva per vietare l'attestazione di un controllo **rimosso**: dopo il
+    ritiro di `node_mapping` nessuna riga del pacchetto verificava l'identita', e
+    `CONTROLLI` non poteva elencarla — «un controllo che non ha girato non compare»
+    (E-65). Ora una riga la verifica, quindi l'attestazione e' dovuta.
+
+    Cio' che il test misura non e' cambiato: che l'elenco e cio' che gira non possano
+    divergere. Si verifica il legame, non il nome — che `check_transform` sappia
+    emettere `identity_violation` e' cio' che rende vera la voce, e se quella
+    capacita' sparisse questo test diventerebbe rosso invece di lasciare in piedi un
+    attestato falso.
     """
-    assert "identita'" not in CONTROLLI, (
-        "CONTROLLI elenca «identita'», ma nessuna riga del pacchetto la verifica: "
-        "i controlli d'identita' sono usciti con node_mapping (AD-22 v2.2)")
+    voce = "identita' dei sopravvissuti"
+    assert voce in CONTROLLI
+
+    rifiuto = check_transform(
+        R2A_PRIMA, R2A_DOPO, "parallelo", _patch_verace_r2a(),
+        Boundary((N("a"), N("0"))))
+    assert isinstance(rifiuto, Refusal) and rifiuto.cause == "identity_violation", (
+        f"«{voce}» e' elencato fra i controlli ESEGUITI, ma nessuna riga del "
+        "pacchetto rifiuta un'identita' riusata: l'attestato sarebbe falso (E-65)")
 
 
 # ---------------------------------------------------------------------------
@@ -1393,3 +1540,521 @@ def test_la_polarita_di_un_generatore_non_e_simmetrica():
     prima = _ir(_v("V1", "a", "0", 12), _r("R1", "a", "0", 10), nodes=("0", "a"))
     invertito = _ir(_v("V1", "0", "a", 12), _r("R1", "a", "0", 10), nodes=("0", "a"))
     assert C("V1") not in preserve_set(prima, invertito)
+
+
+# ---------------------------------------------------------------------------
+# Story 1.1 — l'identita' preservata dev'essere giustificata, non dichiarata.
+#
+# AD-22 chiude una direzione sola: «rifiuta se un'entita' presente in entrambi
+# compare in `create`». L'altra restava aperta, ed e' quella che il difetto del
+# 24/08/2026 percorre — se una trasformazione battezza `R1` la nuova resistenza
+# equivalente, `R1` compare in entrambi i circuiti. Il discriminante v2.1 la tiene
+# fuori da `Pₖ`, che e' necessario e non sufficiente: il passo restava
+# rappresentabile come rimozione piu' creazione, cioe' **leggibile e falso**. CV1,
+# un bug che si legge come dato — e `Pₖ` e' l'ingresso di VCER, della codifica di
+# braccio e di A-0.
+#
+# CV5 governa la forma: guardia a runtime piu' un test che l'ha vista sollevare,
+# mai un'annotazione. Lo stack e' Python senza type checker.
+# ---------------------------------------------------------------------------
+
+
+class TestUnIdentificatoreRiusatoERifiutato:
+    """AC1 — «viene rifiutata, e il rifiuto nomina l'entita' e la trasformazione»."""
+
+    BOUNDARY = Boundary((N("a"), N("0")))
+
+    def _rifiuto(self, patch=None) -> Refusal:
+        esito = check_transform(
+            R2A_PRIMA, R2A_DOPO, "parallelo", patch or _patch_verace_r2a(),
+            self.BOUNDARY)
+        assert isinstance(esito, Refusal), (
+            "la coppia di circuiti dell'istruttoria R2-A attraversa il controllore: "
+            f"l'equivalente si chiama R1 come la consumata, e l'esito e' {esito}")
+        return esito
+
+    def test_il_caso_fondativo_r2a_non_attraversa_piu_il_controllore(self):
+        """`{R1 10Ω, R2 20Ω} -> R1 6⅔Ω`: il nome riusato non e' piu' rappresentabile."""
+        assert self._rifiuto().cause == "identity_violation"
+
+    def test_il_rifiuto_nomina_l_entita(self):
+        """AD-19: una diagnosi che non nomina l'elemento non e' una Domanda mirata."""
+        r = self._rifiuto()
+        assert r.subject == "R1"
+        assert r.subject_kind == "component"
+        assert "component:R1" in r.diagnosis
+
+    def test_il_rifiuto_nomina_la_trasformazione(self):
+        assert "parallelo" in self._rifiuto().diagnosis
+
+    def test_il_rifiuto_dice_quale_attributo_rende_l_entita_diversa(self):
+        """K-3 chiede di piu' che nominare: «di R1 cambia il valore», non «R1 e' altra»."""
+        assert "value" in self._rifiuto().diagnosis
+
+    def test_la_patch_irreprensibile_non_salva_il_passo(self):
+        """Il controllo non dipende da cio' che il produttore dichiara.
+
+        `_patch_verace_r2a` e' la patch che dice **esattamente** la verita' della
+        dottrina v2.1 — sparite, create, `Pₖ` per intero — e `check_patch` la
+        approva. Se il rifiuto sparisse dichiarando bene, sarebbe di nuovo il
+        misurato a definire il proprio riferimento.
+        """
+        assert check_patch(_patch_verace_r2a(), R2A_PRIMA, R2A_DOPO) == ()
+        assert self._rifiuto().cause == "identity_violation"
+
+    def test_l_identita_viene_prima_della_massimalita(self):
+        """Con `Pₖ` compromesso, la massimalita' misurerebbe contro un metro falso."""
+        storta = LayoutPatch(preserve=(N("a"),), remove=(), create=(),
+                             reroute_scope=(N("a"),))
+        assert self._rifiuto(storta).cause == "identity_violation", (
+            "una patch anche non massimale riceve la diagnosi del sintomo invece "
+            "che quella del difetto")
+
+    def test_il_boundary_vuoto_resta_il_difetto_piu_grosso(self):
+        """L'ordine e' fisso: `empty_boundary` precede anche l'identita'."""
+        esito = check_transform(
+            R2A_PRIMA, R2A_DOPO, "parallelo", _patch_verace_r2a(), None)
+        assert isinstance(esito, Refusal) and esito.cause == "empty_boundary"
+
+    def test_un_passo_onesto_non_e_accusato(self):
+        """Il verso che protegge dalla falsa accusa: la serie vera passa."""
+        dopo, res = _serie_riuscita()
+        assert check_transform(
+            SERIE, dopo, "serie", res.layout_patch, res.boundary) is None
+
+    def test_un_nodo_sopravvissuto_non_e_mai_accusato_di_identita_riusata(self):
+        """Un nodo e' il proprio nome: non ha attributi che possano divergere.
+
+        Se comparisse fra i riusati, la diagnosi accuserebbe di identita' riusata
+        ogni nodo sopravvissuto — cioe' quasi ogni passo.
+        """
+        dopo, _ = _serie_riuscita()
+        assert check_transform(
+            SERIE, dopo, "serie",
+            LayoutPatch(tuple(sorted(preserve_set(SERIE, dopo, operation="serie"))),
+                        (), (), (N("a"),)),
+            Boundary((N("a"),))) is None
+
+    def test_per_i_nodi_il_controllo_e_vuoto_per_costruzione(self):
+        """**Il limite dichiarato del contratto, misurato invece che affermato.**
+
+        Il test che stava qui si chiamava «un nodo non puo' essere un identificatore
+        riusato» e rieseguiva una serie onesta: la stessa cosa del test qui sopra, e
+        nessuna coppia di circuiti con un nodo riusato veniva costruita. Questa la
+        costruisce.
+
+        `b` in `Cₖ` e' toccato da `R1` e `R2` con grado 2; `b` in `Cₖ₊₁` e' toccato da
+        `R3`, `R4` e `R5` con grado 3. Nessun componente sopravvive tranne `V1`.
+        Sotto ogni lettura semantica non e' lo stesso nodo — e il controllo lo dichiara
+        preservato, perche' in questo IR un nodo **e'** il proprio nome e la sua
+        incidenza non e' un suo campo.
+
+        Il test **pinna il limite**, non lo approva: e' l'ipotesi su cui poggia il
+        resto della storia, e se un giorno l'identita' dei nodi diventasse un
+        discriminante d'incidenza questa riga diventerebbe rossa invece di lasciare in
+        piedi un contratto che nessuno aveva scritto. La decisione e' registrata in
+        `deferred-work.md`; qui si misura cio' che il codice fa oggi.
+        """
+        prima = _ir(_v("V1", "a", "0", 12), _r("R1", "a", "b", 10),
+                    _r("R2", "b", "0", 20), nodes=("0", "a", "b"))
+        dopo = _ir(_v("V1", "a", "0", 12), _r("R3", "a", "b", 1),
+                   _r("R4", "b", "0", 2), _r("R5", "b", "0", 3),
+                   nodes=("0", "a", "b"))
+        pk = preserve_set(prima, dopo, operation="serie")
+        assert N("b") in pk, (
+            "il contratto dichiara il nodo preservato per coincidenza di nome")
+
+        patch = LayoutPatch(
+            preserve=tuple(sorted(pk)),
+            remove=(C("R1"), C("R2")),
+            create=(C("R3"), C("R4"), C("R5")),
+            reroute_scope=(N("b"),))
+        assert check_transform(prima, dopo, "serie", patch, Boundary((N("a"),))) is None, (
+            "se questo diventa un rifiuto, l'identita' dei nodi ha smesso di essere "
+            "il solo nome e il limite dichiarato in `_divergenze` va riscritto")
+
+    def test_la_diagnosi_non_afferma_una_causa_che_il_controllo_non_conosce(self):
+        """**Il controllo constata una divergenza; il riuso e' una delle spiegazioni.**
+
+        La diagnosi diceva sempre «produce un'entita' che riusa l'identificatore di
+        una consumata». Su una rinomina e' falso — `R1` non e' stata consumata da
+        nessuno, le e' cambiato sotto il nodo che tocca — e su una mutazione in luogo
+        pure. Una Domanda mirata costruita su una causa presunta manda chi legge a
+        cercare la cosa sbagliata, ed e' la falsa accusa che questo prodotto teme
+        piu' di ogni altro difetto.
+        """
+        r = check_transform(
+            SERIE, RINOMINATO, "serie",
+            LayoutPatch((N("0"),), (), (), (N("0"),)), Boundary((N("0"),)))
+        assert isinstance(r, Refusal) and r.cause == "identity_violation"
+        assert "riusa l'identificatore di una consumata" not in r.diagnosis
+        assert "constata la divergenza, non la sua causa" in r.diagnosis
+        # cio' che il controllo sa davvero, e che K-3 chiede di poter rileggere
+        assert "component:R1 (cambia terminals)" in r.diagnosis
+        assert "serie" in r.diagnosis
+
+    def test_la_diagnosi_nomina_tutti_gli_identificatori_divergenti(self):
+        """Ne nominava uno e taceva sugli altri; `preserve_nonmaximal` li elenca tutti.
+
+        Chi ripara due entita' divergenti scoprendone una alla volta fa due giri
+        invece di uno. `subject` resta la prima in ordine canonico, perche' AD-19
+        vuole *un* elemento coinvolto e `Refusal.subject` e' uno solo.
+        """
+        prima = _ir(_v("V1", "a", "0", 12), _r("R1", "a", "b", 10),
+                    _r("RL", "b", "0", 5), nodes=("0", "a", "b"))
+        dopo = _ir(_v("V1", "a", "0", 12), _r("R1", "a", "b", 99),
+                   _r("RL", "b", "0", 7), nodes=("0", "a", "b"))
+        r = check_transform(
+            prima, dopo, "serie",
+            LayoutPatch((N("0"),), (), (), (N("0"),)), Boundary((N("0"),)))
+        assert isinstance(r, Refusal) and r.cause == "identity_violation"
+        assert r.subject == "R1"
+        assert "component:R1 (cambia value)" in r.diagnosis
+        assert "component:RL (cambia value)" in r.diagnosis, (
+            f"RL diverge quanto R1 e la diagnosi tace: {r.diagnosis}")
+        assert "2 identificatori compaiono" in r.diagnosis
+
+    @pytest.mark.parametrize("circuito, operazione", [
+        (SERIE, "serie"), (PARALLELO, "parallelo"),
+    ])
+    def test_un_equivalente_che_riusa_il_nome_e_rifiutato_dal_motore(
+            self, monkeypatch, circuito, operazione):
+        """Lo stesso fatto col difetto dentro: `_nuovo_id` che riusa il nome consumato.
+
+        E' l'unico test di AC1 che passa dal **motore** invece che da
+        `check_transform` chiamato a mano, ed e' cio' che rende vera la voce
+        «identita' dei sopravvissuti» in `CONTROLLI`: senza di esso l'elenco
+        motiverebbe se stesso con un fallimento che nessuno ha visto accadere (E-65).
+        """
+        from kirchhoff.domain.transform import engine
+        monkeypatch.setattr(engine, "_nuovo_id", lambda ir, primo, secondo: primo)
+        esito = transform(circuito, operazione, "R1", "R2")
+        assert isinstance(esito, Refusal), (
+            f"{operazione}: l'equivalente si chiama R1 come la consumata e il "
+            f"motore non ha rifiutato: {esito}")
+        assert esito.cause == "identity_violation"
+        assert esito.subject == "R1" and esito.subject_kind == "component"
+
+
+class TestLaPreservazioneNonBanaleEAttestata:
+    """AC2 — «passa, e il `Certificate` porta l'attestazione per il caso non banale».
+
+    CV3 e' il non-goal della storia scritto al contrario: `preserved != immutable`.
+    Una preservata **puo'** cambiare proprieta' entro la semantica della
+    trasformazione — ma quella licenza la concede il **Catalogo**, non la Transform
+    misurata, e una licenza esercitata in silenzio non e' distinguibile da
+    un'identita' riusata. L'attestazione e' la differenza.
+    """
+
+    @staticmethod
+    def _con_licenza(monkeypatch) -> None:
+        """`parallelo` dichiara `value` mutabile. Dal `dict` privato, come il test
+        gia' esistente sul discriminante: e' il test a scavalcare il recinto,
+        esplicitamente, e non il recinto a non esserci."""
+        from kirchhoff.domain.transform import catalog
+        monkeypatch.setitem(catalog._MUTABILI, "parallelo", frozenset({"value"}))
+
+    def test_con_la_licenza_la_stessa_coppia_passa(self, monkeypatch):
+        """Identica coppia di circuiti, esito opposto: cambia solo cosa il Catalogo ammette."""
+        self._con_licenza(monkeypatch)
+        p = preserve_set(R2A_PRIMA, R2A_DOPO, operation="parallelo")
+        assert C("R1") in p, "con `value` ammesso, R1 e' la stessa entita'"
+        patch = LayoutPatch(preserve=tuple(sorted(p)), remove=(C("R2"),), create=(),
+                            reroute_scope=(N("a"),))
+        assert check_transform(R2A_PRIMA, R2A_DOPO, "parallelo", patch,
+                               Boundary((N("a"), N("0")))) is None
+
+    def test_l_attestazione_nomina_l_entita_e_cio_che_e_cambiato(self, monkeypatch):
+        self._con_licenza(monkeypatch)
+        assert identity_attestations(
+            R2A_PRIMA, R2A_DOPO, operation="parallelo") == (
+                IdentityAttestation(C("R1"), ("value",)),)
+
+    def test_il_caso_banale_non_produce_attestazioni(self, monkeypatch):
+        """`RL` e `V1` sopravvivono identici: la loro identita' non ha bisogno di licenza.
+
+        Attestare anche loro diluirebbe le attestazioni vere fino a renderle
+        illeggibili — chi conta le preservazioni non banali conterebbe tutto.
+        """
+        self._con_licenza(monkeypatch)
+        attestate = {a.entity for a in identity_attestations(
+            R2A_PRIMA, R2A_DOPO, operation="parallelo")}
+        assert C("RL") not in attestate and C("V1") not in attestate
+        assert N("a") not in attestate
+
+    def test_senza_licenza_non_si_attesta_nulla(self):
+        """Non esiste un grado intermedio: senza licenza R1 non e' attestata debolmente,
+        e' rifiutata. L'attestazione non e' il posto dove torna l'autocertificazione."""
+        assert identity_attestations(
+            R2A_PRIMA, R2A_DOPO, operation="parallelo") == ()
+
+    def test_l_operazione_sceglie_la_licenza(self, monkeypatch):
+        """La licenza vale per l'operazione che la dichiara, e per nessun'altra."""
+        self._con_licenza(monkeypatch)
+        assert identity_attestations(R2A_PRIMA, R2A_DOPO, operation="serie") == ()
+        assert identity_attestations(R2A_PRIMA, R2A_DOPO) == ()
+
+    def test_il_certificato_porta_l_attestazione(self, monkeypatch):
+        self._con_licenza(monkeypatch)
+        cert = Certificate("parallelo", CONTROLLI, identity_attestations(
+            R2A_PRIMA, R2A_DOPO, operation="parallelo"))
+        assert cert.attestations == (IdentityAttestation(C("R1"), ("value",)),)
+
+    def test_il_motore_interroga_il_predicato_coi_due_circuiti_e_l_operazione(
+            self, monkeypatch):
+        """Il cablaggio, non il valore: il `Certificate` porta l'uscita della funzione.
+
+        **Il test di prima dimostrava il cablaggio e insieme una falla.** Sostituiva
+        `identity_attestations` con una funzione che restituiva `V1 (value)` su una
+        `serie` — un'operazione che non dichiara `value` mutabile, e su una coppia di
+        circuiti in cui `V1` non cambia — e il prodotto lo accettava. Le due porte
+        sono ora chiuse: `Certificate` rifiuta un attributo che l'operazione non
+        licenzia, `check_certificate` rifiuta un'attestazione che i circuiti non
+        sostengono. La falsa attestazione non arriva piu' al certificato, e con essa
+        se ne va il modo in cui il test misurava il cablaggio.
+
+        Cio' che resta da dimostrare e' che il motore **chiami** il predicato, coi due
+        circuiti e con l'operazione, invece di scrivere `()` a mano: sul percorso
+        interno le attestazioni sono sempre vuote, quindi il valore non distingue i
+        due casi e la chiamata si'.
+        """
+        from kirchhoff.domain.transform import check as modulo_check
+        from kirchhoff.domain.transform import engine
+        visto: list[tuple] = []
+
+        def spia(before, after, *, operation):
+            esito = modulo_check.identity_attestations(
+                before, after, operation=operation)
+            visto.append((before, after, operation, esito))
+            return esito
+
+        monkeypatch.setattr(engine, "identity_attestations", spia)
+        dopo, res = _serie_riuscita()
+        assert visto, "il motore non ha interrogato il predicato d'identita'"
+        prima_vista, dopo_visto, operazione, esito = visto[-1]
+        assert prima_vista is SERIE and dopo_visto is dopo, (
+            "il predicato e' stato interrogato su circuiti diversi da quelli del passo")
+        assert operazione == "serie"
+        assert res.certificate.attestations == esito
+
+    def test_un_certificato_che_tace_una_licenza_esercitata_e_contestato(
+            self, monkeypatch):
+        """Il verso che AD-22 chiude: la licenza esercitata in silenzio.
+
+        `R1` sta in `Pₖ` **solo** perche' `parallelo` dichiara `value` mutabile. Un
+        certificato che non lo dice descrive una preservazione banale dove ce n'e'
+        una licenziata, e chi legge non puo' distinguerla da un'identita' riusata.
+        """
+        self._con_licenza(monkeypatch)
+        muto = Certificate("parallelo", CONTROLLI)
+        violazioni = check_certificate(muto, R2A_PRIMA, R2A_DOPO)
+        assert [(v.code, v.subject) for v in violazioni] == [
+            ("licenza_taciuta", "component:R1")], violazioni
+
+    def test_un_certificato_che_attesta_cio_che_non_e_cambiato_e_contestato(
+            self, monkeypatch):
+        """L'altro verso: giustificare una preservazione che non aveva bisogno di nulla.
+
+        `RL` e `V1` sopravvivono identici. Attestarli li farebbe contare fra le
+        preservazioni non banali, che e' il numero che il `Certificate` esiste per
+        rendere leggibile.
+        """
+        self._con_licenza(monkeypatch)
+        gonfio = Certificate("parallelo", CONTROLLI, (
+            IdentityAttestation(C("R1"), ("value",)),
+            IdentityAttestation(C("RL"), ("value",))))
+        violazioni = check_certificate(gonfio, R2A_PRIMA, R2A_DOPO)
+        assert [(v.code, v.subject) for v in violazioni] == [
+            ("attestazione_infondata", "component:RL")], violazioni
+
+    def test_un_certificato_che_attesta_l_attributo_sbagliato_e_contestato(
+            self, monkeypatch):
+        """Leggibile e falso, la forma che CV1 descrive.
+
+        `R1` **e'** preservata per licenza, e l'attestazione **c'e'**: dice pero'
+        `symbolic` dove cambia `value`. Senza i due circuiti nessuno se ne accorge —
+        `symbolic` compone l'identita' e `parallelo` qui lo licenzia — ed e' il caso
+        che nessuna guardia di `result.py` puo' vedere.
+        """
+        from kirchhoff.domain.transform import catalog
+        monkeypatch.setitem(
+            catalog._MUTABILI, "parallelo", frozenset({"value", "symbolic"}))
+        discorde = Certificate("parallelo", CONTROLLI, (
+            IdentityAttestation(C("R1"), ("symbolic",)),))
+        violazioni = check_certificate(discorde, R2A_PRIMA, R2A_DOPO)
+        assert [(v.code, v.subject) for v in violazioni] == [
+            ("attestazione_discorde", "component:R1")], violazioni
+        assert "attesta symbolic" in violazioni[0].detail
+        assert "cambia value" in violazioni[0].detail
+
+    def test_il_certificato_giusto_non_e_contestato(self, monkeypatch):
+        """Il verso che protegge dalla falsa accusa."""
+        self._con_licenza(monkeypatch)
+        giusto = Certificate("parallelo", CONTROLLI, identity_attestations(
+            R2A_PRIMA, R2A_DOPO, operation="parallelo"))
+        assert check_certificate(giusto, R2A_PRIMA, R2A_DOPO) == ()
+
+    def test_un_certificato_senza_licenze_da_esercitare_non_e_contestato(self):
+        """Senza licenza nel Catalogo non c'e' nulla da attestare, e tacere e' giusto."""
+        dopo, res = _serie_riuscita()
+        assert res.certificate.attestations == ()
+        assert check_certificate(res.certificate, SERIE, dopo) == ()
+
+    def test_un_certificato_che_mente_sull_identita_e_un_guasto_non_un_rifiuto(
+            self, monkeypatch):
+        """Quarta discriminazione attraverso il motore, sorella delle altre tre.
+
+        AD-19 non assegna una causa a «l'attestato non regge»: inventarne una sarebbe
+        una modifica dello spine, riusarne una manderebbe l'utente a leggere la
+        diagnosi di un'altra cosa. Resta un guasto, e la sua eccezione condivide la
+        base delle altre tre perche' e' lo stesso invariante visto da un quarto canale.
+        """
+        from kirchhoff.domain.transform import catalog, engine
+        # `serie` licenzia `value`: senza la licenza l'attestazione falsa non
+        # supererebbe nemmeno la costruzione del `Certificate`, e il controllore che
+        # questo test misura non verrebbe raggiunto.
+        monkeypatch.setitem(catalog._MUTABILI, "serie", frozenset({"value"}))
+        monkeypatch.setattr(
+            engine, "identity_attestations",
+            lambda *a, **k: (IdentityAttestation(C("V1"), ("value",)),))
+        with pytest.raises(engine.CertificatoIncoerente) as scoppio:
+            transform(SERIE, "serie", "R1", "R2")
+        assert "attestazione_infondata" in str(scoppio.value)
+        assert "component:V1" in str(scoppio.value)
+        assert isinstance(scoppio.value, engine.AttestazioneIncoerente)
+
+    def test_sul_percorso_interno_le_attestazioni_sono_vuote(self):
+        """E vuote sono un'affermazione: nessuna preservazione ha avuto bisogno di licenza."""
+        for circuito, operazione in ((SERIE, "serie"), (PARALLELO, "parallelo")):
+            esito = transform(circuito, operazione, "R1", "R2")
+            assert not isinstance(esito, Refusal), esito
+            assert esito[1].certificate.attestations == ()
+
+
+class TestUnEquivalenteHaIdentitaNuova:
+    """AC3 — «`Req` ha identita' nuova e lineage nel `Delta`, e non compare in `Pₖ`»."""
+
+    @staticmethod
+    def _derivazione(circuito: IR, operazione: str):
+        esito = transform(circuito, operazione, "R1", "R2")
+        assert not isinstance(esito, Refusal), esito
+        dopo, res = esito
+        return dopo, res, _eq(dopo, *(c.id for c in circuito.components))
+
+    @pytest.mark.parametrize("circuito, operazione", [
+        (SERIE, "serie"), (PARALLELO, "parallelo"),
+    ])
+    def test_l_equivalente_non_riusa_l_identificatore_di_una_consumata(
+            self, circuito, operazione):
+        _, res, eq = self._derivazione(circuito, operazione)
+        assert C(eq.id) not in res.delta.consumed
+        assert C(eq.id) not in entities_of(circuito), (
+            f"{eq.id} esisteva gia' in Cₖ: non e' un'identita' nuova")
+
+    @pytest.mark.parametrize("circuito, operazione", [
+        (SERIE, "serie"), (PARALLELO, "parallelo"),
+    ])
+    def test_l_equivalente_non_compare_in_pk(self, circuito, operazione):
+        _, res, eq = self._derivazione(circuito, operazione)
+        assert C(eq.id) not in res.preserve, (
+            "l'equivalente e' nato in questo passo: dichiararlo preservato "
+            "gonfierebbe Pₖ, che e' l'ingresso di VCER e di A-0")
+
+    def test_l_equivalente_porta_la_propria_lineage(self):
+        """`{R1, R2, b} --serie--> {R1R2eq}`, interrogabile nelle due direzioni."""
+        _, res, eq = self._derivazione(SERIE, "serie")
+        assert res.delta.derived_from(C(eq.id)) == (C("R1"), C("R2"), N("b"))
+        assert res.delta.what_happened_to(C("R1")).outputs == (C(eq.id),)
+
+
+class TestLeGuardieDellAttestazione:
+    """CV5 — ogni invariante ha una guardia a runtime e un test che l'ha vista sollevare."""
+
+    def test_un_attestato_senza_attributi_cambiati_non_esiste(self):
+        with pytest.raises(ValueError, match="senza alcun attributo"):
+            IdentityAttestation(C("R1"), ())
+
+    def test_un_attestato_non_nomina_un_attributo_ripetuto(self):
+        with pytest.raises(ValueError, match="due volte"):
+            IdentityAttestation(C("R1"), ("value", "value"))
+
+    def test_un_attestato_non_nomina_cio_che_non_compone_l_identita(self):
+        """`provenance` dice da dove il componente e' stato letto, non che cosa e':
+        cambiarla non ha bisogno di licenza, e attestarla suggerirebbe il contrario."""
+        with pytest.raises(ValueError, match="provenance"):
+            IdentityAttestation(C("R1"), ("provenance",))
+
+    def test_un_attestato_nomina_un_entita_non_una_stringa(self):
+        with pytest.raises(TypeError, match="EntityRef"):
+            IdentityAttestation("R1", ("value",))  # type: ignore[arg-type]
+
+    def test_un_attestato_non_nomina_un_nodo(self):
+        """**Un nodo e' il proprio nome: non ha attributi che possano divergere.**
+
+        `IdentityAttestation(node:a, ("value",))` si costruiva: l'`EntityRef` era
+        valido e `value` stava fra gli attributi d'identita', e nessuna delle due
+        guardie faceva la domanda che conta — di *quale* entita' si parla. La
+        preservazione di un nodo non passa mai da una licenza, quindi un'attestazione
+        su un nodo giustifica qualcosa che non ha bisogno di giustificazione.
+        """
+        with pytest.raises(ValueError, match="nomina un componente"):
+            IdentityAttestation(N("a"), ("value",))
+
+    def test_un_certificato_non_attesta_una_licenza_che_il_catalogo_non_concede(self):
+        """**L'attestato non concede a se stesso il permesso che invoca.**
+
+        `IdentityAttestation` chiede «e' un attributo di cui abbia senso parlare»;
+        solo il `Certificate` conosce l'operazione, quindi solo lui puo' chiedere
+        «quella operazione lo ammette». Senza questa guardia
+        `Certificate("serie", ..., R1 (value))` si costruiva benche' `serie` non
+        dichiari nulla di mutabile — misurato — ed era E-65 al contrario: un attestato
+        che rivendica una licenza che il Catalogo non ha dato.
+        """
+        assert mutable_attributes("serie") == frozenset()
+        with pytest.raises(ValueError, match="non dichiara mutabile"):
+            Certificate("serie", CONTROLLI, (
+                IdentityAttestation(C("R1"), ("value",)),))
+
+    def test_gli_attributi_sono_in_ordine_canonico(self):
+        """Due attestazioni semanticamente uguali sono uguali anche come oggetti."""
+        assert (IdentityAttestation(C("R1"), ("value", "symbolic"))
+                == IdentityAttestation(C("R1"), ("symbolic", "value")))
+
+    def test_un_attestato_si_legge(self):
+        assert str(IdentityAttestation(C("R1"), ("value",))) == "component:R1 (value)"
+
+    def test_le_attestazioni_di_un_certificato_sono_in_ordine_canonico(
+            self, monkeypatch):
+        """La licenza serve perche' un certificato non ospita piu' un'attestazione che
+        l'operazione non concede: senza, non esiste un `Certificate` con due
+        attestazioni di cui misurare l'ordine."""
+        from kirchhoff.domain.transform import catalog
+        monkeypatch.setitem(catalog._MUTABILI, "serie", frozenset({"value"}))
+        uno = IdentityAttestation(C("R1"), ("value",))
+        due = IdentityAttestation(C("R2"), ("value",))
+        assert (Certificate("serie", CONTROLLI, (due, uno)).attestations
+                == Certificate("serie", CONTROLLI, (uno, due)).attestations)
+
+    def test_la_stessa_entita_non_si_attesta_due_volte(self):
+        """Due licenze sulla stessa preservata sono due risposte alla stessa domanda."""
+        with pytest.raises(ValueError, match="due volte"):
+            Certificate("serie", CONTROLLI, (
+                IdentityAttestation(C("R1"), ("value",)),
+                IdentityAttestation(C("R1"), ("symbolic",))))
+
+    def test_un_certificato_senza_attestazioni_resta_costruibile(self):
+        """Vuoto e' l'esito ordinario, non un campo dimenticato."""
+        assert Certificate("serie", CONTROLLI).attestations == ()
+
+    def test_non_si_attesta_l_identita_di_cio_che_il_prodotto_non_conserva(
+            self, monkeypatch):
+        """Il canale in piu': un'attestazione senza la preservazione non giustifica nulla."""
+        from kirchhoff.domain.transform import catalog
+        monkeypatch.setitem(catalog._MUTABILI, "serie", frozenset({"value"}))
+        dopo, res = _serie_riuscita()
+        with pytest.raises(ValueError, match="che il prodotto non conserva"):
+            TransformResult(
+                preserve=res.preserve, delta=res.delta, boundary=res.boundary,
+                layout_patch=res.layout_patch, equation=res.equation,
+                certificate=Certificate("serie", CONTROLLI, (
+                    IdentityAttestation(C("MaiPreservata"), ("value",)),)))

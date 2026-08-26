@@ -34,7 +34,7 @@ from ..ir import IR, Component, orienta
 from ..refusal import Refusal
 from .catalog import IDENTITY_ATTRIBUTES, TransformationKind, mutable_attributes
 from .delta import Delta, EntityRef
-from .result import Boundary, LayoutPatch
+from .result import Boundary, Certificate, IdentityAttestation, LayoutPatch
 
 
 @dataclass(frozen=True, slots=True)
@@ -55,6 +55,108 @@ def entities_of(ir: IR) -> frozenset[EntityRef]:
 def attributes_of(c: Component) -> dict[str, object]:
     """Gli attributi sostanziali di un componente, per il confronto d'identita'."""
     return {nome: getattr(c, nome) for nome in IDENTITY_ATTRIBUTES}
+
+
+def _divergenze(before: IR, after: IR) -> dict[EntityRef, frozenset[str]]:
+    """Per ogni entita' di `Cₖ` che ha un'immagine in `Cₖ₊₁`, cosa e' cambiato.
+
+    **Un solo predicato d'identita' nel pacchetto.** `Pₖ`, le attestazioni e la
+    diagnosi degli identificatori riusati sono tre letture dello stesso confronto:
+    scriverlo tre volte lo farebbe divergere nel posto dove nessuno guarda (E-62), e
+    la divergenza qui non produce un guasto ma una **falsa accusa** — un'entita'
+    dichiarata preservata da un ramo e riusata da un altro.
+
+    Chi non ha immagine in `Cₖ₊₁` non compare: non e' «cambiato», e' sparito, e
+    quella e' una domanda del `Delta`, non dell'identita'.
+
+    **Per i nodi il confronto e' vuoto per costruzione, ed e' dichiarato qui perche'
+    e' un limite del contratto e non un dettaglio.** Un nodo che sopravvive per nome
+    riceve `frozenset()` — nessuna divergenza possibile — quindi entra sempre in `Pₖ`,
+    non compare mai fra gli identificatori riusati e non e' mai attestabile. La
+    ragione e' che in questo IR un nodo **e'** il proprio nome: non ha attributi, e la
+    sua incidenza non e' un suo campo ma una proprieta' derivata dai terminali dei
+    componenti.
+
+    La conseguenza va detta, perche' e' l'ipotesi su cui il resto poggia: un
+    produttore che consumasse il nodo `b` e ne creasse uno nuovo, con incidenza
+    completamente diversa, chiamandolo ancora `b`, otterrebbe `b ∈ Pₖ`. Cio' che lo
+    rivela **indirettamente** e' che i componenti attorno cambierebbero terminali, e
+    quelli il confronto li vede; cio' che non lo rivela e' il nodo in se'. Un
+    discriminante d'incidenza per i nodi e' una modifica del contratto — decide che
+    cosa sia l'identita' di un nodo, che nessun documento oggi definisce — ed e'
+    registrata in `deferred-work.md`, non decisa qui.
+
+    **I terminali si confrontano ORIENTATI, e su entrambi i lati.**
+    `ir/canonical.py` dichiara `resistor`, `capacitor`, `inductor` simmetrici:
+    «nessuna di queste differenze dice qualcosa del circuito». Confrontarli per
+    uguaglianza sintattica di tupla contraddiceva quel modulo — misurato: due IR
+    che `canonicalize` dichiara identici davano `Pₖ` diversi, e un passo che non
+    toccava nulla riceveva quattro violazioni. Falsa accusa, sulla superficie
+    che la decisione owner del 25/08 conserva per il produttore esterno.
+
+    La regola e' **riusata**, non riscritta: `orienta` vive in `canonical.py` e
+    non tocca i generatori, perche' li' l'ordine e' la polarita' e riordinarla
+    produrrebbe un circuito diverso che si dichiara uguale.
+
+    La normalizzazione era anche **unilaterale**: `tuple(prima.terminals)` su un
+    lato solo, quindi un componente con terminali-lista risultava non preservato
+    rispetto a se stesso. Ora entrambi i lati passano da `orienta` e da `tuple`.
+    """
+    nodi_dopo = frozenset(after.nodes)
+    per_id = {c.id: c for c in after.components}
+    divergenze: dict[EntityRef, frozenset[str]] = {}
+
+    for e in entities_of(before):
+        if e.kind == "node":
+            # Un nodo e' il proprio nome: non ha attributi che possano divergere.
+            # Sopravvive quando la **sua immagine** esiste in `Cₖ₊₁`.
+            if e.id in nodi_dopo:
+                divergenze[e] = frozenset()
+            continue
+        if e.id not in per_id:
+            continue
+        prima, dopo = before.component(e.id), per_id[e.id]
+        atteso = attributes_of(prima)
+        atteso["terminals"] = tuple(orienta(prima).terminals)
+        osservato = attributes_of(dopo)
+        osservato["terminals"] = tuple(orienta(dopo).terminals)
+        divergenze[e] = frozenset(
+            k for k, v in atteso.items() if osservato[k] != v)
+
+    return divergenze
+
+
+def _ammessi(operation: TransformationKind | None) -> frozenset[str]:
+    """Gli attributi che `operation` puo' cambiare senza perdere l'identita'.
+
+    `operation=None` significa «nessuna mutazione ammessa», che e' la lettura piu'
+    stretta e mai quella piu' comoda: chi non dice quale operazione sta misurando
+    non ottiene indulgenza.
+    """
+    return mutable_attributes(operation) if operation is not None else frozenset()
+
+
+def _perche_diversa(
+    cambiati: frozenset[str],
+    operation: TransformationKind | None,
+) -> str:
+    """Quali attributi rendono un'entita' diversa da se stessa, per la diagnosi.
+
+    Si chiama **solo** su un'entita' presente in entrambi i circuiti e fuori da `Pₖ`,
+    quindi la differenza esiste: `cambiati <= ammessi` e' falso per definizione di
+    quell'insieme. Non c'e' un ramo «nessuna differenza» perche' non c'e' un caso.
+
+    AD-19 pretende che un rifiuto nomini l'elemento coinvolto; K-3 pretende di piu' —
+    che la diagnosi si rilegga come Domanda mirata. «`R1` e' un'altra entita'» non lo
+    e'; «di `R1` cambia il valore» lo e'.
+
+    **Riceve le divergenze gia' calcolate invece dei due circuiti.** Le ricalcolava,
+    ed era una settima corsa di `_divergenze` dentro un controllo che l'aveva appena
+    fatta girare: non un costo che qui interessi, ma una seconda strada verso la
+    stessa risposta, che e' esattamente la forma che E-62 chiude altrove in questo
+    modulo.
+    """
+    return "cambia " + ", ".join(sorted(cambiati - _ammessi(operation)))
 
 
 def preserve_set(
@@ -89,46 +191,59 @@ def preserve_set(
     `Cₖ` e `Cₖ₊₁` non entra in `Pₖ` sotto nessuno dei due nomi, ed e' corretto — una
     rinomina e' una consumata piu' una creata, con lineage nel `Delta`. Lo stesso per
     un componente i cui terminali cambiano: attributi diversi, identita' diversa.
+
+    Il confronto vive in `_divergenze`, che e' l'unico predicato d'identita' del
+    pacchetto: `Pₖ`, `identity_attestations` e la diagnosi degli identificatori
+    riusati sono tre letture dello stesso confronto, mai tre confronti.
     """
-    mutabili = mutable_attributes(operation) if operation is not None else frozenset()
-    nodi_dopo = frozenset(after.nodes)
-    per_id = {c.id: c for c in after.components}
-    preservate: set[EntityRef] = set()
+    ammessi = _ammessi(operation)
+    return frozenset(
+        e for e, cambiati in _divergenze(before, after).items()
+        if cambiati <= ammessi)
 
-    for e in entities_of(before):
-        if e.kind == "node":
-            # Un nodo e' il proprio nome: non ha attributi che possano divergere.
-            # Sopravvive quando la **sua immagine** esiste in `Cₖ₊₁`.
-            if e.id in nodi_dopo:
-                preservate.add(e)
-            continue
-        if e.id not in per_id:
-            continue
-        # **I terminali si confrontano ORIENTATI, e su entrambi i lati.**
-        # `ir/canonical.py` dichiara `resistor`, `capacitor`, `inductor` simmetrici:
-        # «nessuna di queste differenze dice qualcosa del circuito». Confrontarli per
-        # uguaglianza sintattica di tupla contraddiceva quel modulo — misurato: due IR
-        # che `canonicalize` dichiara identici davano `Pₖ` diversi, e un passo che non
-        # toccava nulla riceveva quattro violazioni. Falsa accusa, sulla superficie
-        # che la decisione owner del 25/08 conserva per il produttore esterno.
-        #
-        # La regola e' **riusata**, non riscritta: `orienta` vive in `canonical.py` e
-        # non tocca i generatori, perche' li' l'ordine e' la polarita' e riordinarla
-        # produrrebbe un circuito diverso che si dichiara uguale.
-        #
-        # La normalizzazione era anche **unilaterale**: `tuple(prima.terminals)` su un
-        # lato solo, quindi un componente con terminali-lista risultava non preservato
-        # rispetto a se stesso. Ora entrambi i lati passano da `orienta` e da `tuple`.
-        prima, dopo = before.component(e.id), per_id[e.id]
-        atteso = attributes_of(prima)
-        atteso["terminals"] = tuple(orienta(prima).terminals)
-        osservato = attributes_of(dopo)
-        osservato["terminals"] = tuple(orienta(dopo).terminals)
-        cambiati = {k for k, v in atteso.items() if osservato[k] != v}
-        if cambiati <= mutabili:
-            preservate.add(e)
 
-    return frozenset(preservate)
+def identity_attestations(
+    before: IR,
+    after: IR,
+    *,
+    operation: TransformationKind | None = None,
+) -> tuple[IdentityAttestation, ...]:
+    """Le preservazioni **non banali**, con la ragione per cui reggono.
+
+    Un'entita' entra in `Pₖ` per una di due strade: o non e' cambiata, e la ragione
+    e' leggibile confrontando i due circuiti, oppure e' cambiata **entro la licenza**
+    che il Catalogo concede a quella operazione (CV3: preservato non significa
+    immutato). La seconda strada e' il caso non banale, e non lascia traccia: chi
+    riceve `Pₖ` vede un'entita' preservata e non vede che la sua appartenenza
+    dipendeva da una licenza. Un'attestazione la rende leggibile.
+
+    Cio' che **non** e' qui e' altrettanto significativo. Un'entita' cambiata **oltre**
+    la licenza non riceve un'attestazione debole: non e' preservata affatto, esce da
+    `Pₖ`, e `check_transform` la rifiuta come identificatore riusato. Non esistono
+    gradi intermedi fra giustificata e rifiutata, ed e' deliberato — un'attestazione
+    che potesse dire «cambiata, ma non troppo» sarebbe il posto dove tornerebbe ad
+    abitare l'autocertificazione che AD-22 chiude.
+
+    Ordine canonico: due corse sugli stessi circuiti producono attestazioni uguali e
+    ugualmente ordinate, e il `Certificate` che le porta serializza identico.
+
+    **Con `operation=None` il risultato e' `()` sempre, per costruzione.** La
+    convenzione e' la stessa di `preserve_set` — chi non dice quale operazione sta
+    misurando non ottiene indulgenza — ma qui non produce la lettura piu' stretta:
+    la produce **muta**. Nessuna mutazione ammessa significa che ogni entita' cambiata
+    esce da `Pₖ`, quindi nessuna preservazione ha avuto bisogno di licenza, quindi non
+    c'e' niente da attestare; e un chiamante che dimentica l'argomento riceve un
+    insieme vuoto invece di un errore. Il trabocchetto non e' chiuso qui, perche'
+    chiuderlo renderebbe `operation` obbligatoria in una funzione sola su quattro. E'
+    chiuso a valle: `check_certificate` interroga questa funzione con
+    `certificate.operation`, che il `Certificate` porta sempre, quindi un attestato
+    reticente viene contestato anche se chi l'ha assemblato ha dimenticato l'argomento.
+    """
+    ammessi = _ammessi(operation)
+    return tuple(sorted(
+        IdentityAttestation(e, tuple(sorted(cambiati)))
+        for e, cambiati in _divergenze(before, after).items()
+        if cambiati and cambiati <= ammessi))
 
 
 def check_delta(
@@ -189,6 +304,12 @@ def check_delta(
     # la vedeva, ma esce da `Pₖ` per il discriminante v2.1. AD-22 v2.1 dice gia' che
     # cosa e': «Un'entita' che fallisce la seconda condizione non e' preservata: e'
     # una rimozione piu' una creazione, **e come tale deve comparire nel Delta**».
+    #
+    # Quella clausola resta il contratto **di questo controllore** e non e' cambiata.
+    # Cio' che e' cambiato e' che un passo intero non arriva piu' fin qui: se
+    # l'identificatore e' lo stesso in entrambi i circuiti, `check_transform` rifiuta
+    # prima. Un `Delta` conforme a questa riga e' quindi necessario e non sufficiente,
+    # e la divergenza fra le due letture e' registrata in `deferred-work.md`.
     #
     # Misurato prima della correzione: sul caso fondativo dell'istruttoria R2-A, un
     # `Delta` che non nominava affatto `R1` passava senza violazioni, e due lineage
@@ -259,7 +380,9 @@ def check_patch(
     # **Rispetto a `Pₖ`, non all'intersezione per identificatore.** Un'entita' che
     # cambia attributi a nome fermo sta in entrambi i circuiti e non e' preservata:
     # per AD-22 v2.1 e' una rimozione piu' una creazione, e la patch deve dirlo in
-    # entrambi i campi. Misurando per id, quell'entita' non era ne' apparsa ne'
+    # entrambi i campi. Come per `check_delta`, e' il contratto di questo controllore
+    # e resta vero; il passo intero viene pero' rifiutato prima da `check_transform`,
+    # e una patch conforme non lo salva — `test_la_patch_irreprensibile_non_salva_il_passo`. Misurando per id, quell'entita' non era ne' apparsa ne'
     # sparita: la patch che taceva passava, e quella che diceva la verita' della
     # dottrina veniva rifiutata in entrambi i versi.
     preservate = preserve_set(before, after, operation=operation)
@@ -392,6 +515,85 @@ def check_boundary(
     return tuple(trovate)
 
 
+@dataclass(frozen=True, slots=True, order=True)
+class CertificateViolation:
+    code: str
+    subject: str
+    detail: str
+
+
+def check_certificate(
+    certificate: Certificate,
+    before: IR,
+    after: IR,
+) -> tuple[CertificateViolation, ...]:
+    """Le attestazioni del `Certificate` contro i due circuiti. Vuoto quando reggono.
+
+    **Il lato mancante del contratto.** `IdentityAttestation` verificava la propria
+    forma, `Certificate` la propria coerenza interna e la licenza del Catalogo,
+    `TransformResult` che l'entita' attestata fosse fra le preservate. Nessuno dei tre
+    vede `Cₖ` e `Cₖ₊₁`, quindi nessuno dei tre poteva chiedere la sola domanda che
+    l'attestazione esiste per porre: **e' vero?** Misurato prima di questa funzione,
+    con `parallelo` che licenzia `value` e `R1 ∈ Pₖ` per quella licenza, lo stesso
+    `TransformResult` accettava tre certificati incompatibili fra loro:
+    `attestations=()`, `R1 (symbolic)` e `R1 (terminals, type)`. Un attestato che si
+    autocertifica e' precisamente E-65, e AC2 chiede che il `Certificate` **porti**
+    l'attestazione, non che possa portarla.
+
+    Il riferimento e' `identity_attestations` sugli stessi due circuiti e sulla
+    **stessa** operazione che il certificato dichiara: un controllo che ricalcolasse
+    l'identita' per conto proprio sarebbe il secondo predicato che E-62 chiude in
+    questo modulo, e la sua divergenza produrrebbe una falsa accusa.
+
+    **Uguaglianza, non inclusione**, come in `check_patch`. I tre versi hanno codici
+    distinti perche' dicono cose diverse a chi ripara:
+
+    - `licenza_taciuta` — l'entita' e' preservata **solo** grazie a una licenza, e il
+      certificato non lo dice. E' il difetto che AD-22 chiude: una licenza esercitata
+      in silenzio non e' distinguibile da un'identita' riusata.
+    - `attestazione_infondata` — il certificato giustifica una preservazione che non
+      aveva bisogno di giustificazione. Non e' innocuo: chi conta le preservazioni non
+      banali conterebbe una licenza che nessuno ha esercitato.
+    - `attestazione_discorde` — l'entita' e' attestata sull'attributo sbagliato.
+      Leggibile e falsa, la forma che CV1 descrive.
+
+    **Non emette un `Refusal`**, per la ragione che la testa del modulo enuncia:
+    AD-19 tiene chiusa l'enumerazione delle cause e non ne assegna una a questo caso.
+    Inventarne una sarebbe una modifica dello spine; riusarne una porterebbe l'utente
+    a leggere una diagnosi che parla di un'altra cosa.
+
+    Puro: nessuna I/O, nessun orologio, nessuna casualita'.
+    """
+    dovute = {
+        a.entity: a for a in identity_attestations(
+            before, after, operation=certificate.operation)}
+    dichiarate = {a.entity: a for a in certificate.attestations}
+    trovate: list[CertificateViolation] = []
+
+    for e in sorted(set(dovute) - set(dichiarate)):
+        trovate.append(CertificateViolation(
+            "licenza_taciuta", str(e),
+            f"sopravvive a {certificate.operation} solo perche' il Catalogo ne "
+            f"dichiara mutabile {', '.join(dovute[e].changed)}, e il certificato "
+            "tace: una licenza esercitata in silenzio non e' distinguibile da "
+            "un'identita' riusata"))
+    for e in sorted(set(dichiarate) - set(dovute)):
+        trovate.append(CertificateViolation(
+            "attestazione_infondata", str(e),
+            f"il certificato ne attesta l'identita' per "
+            f"{', '.join(dichiarate[e].changed)}, ma fra i due circuiti nulla di "
+            "cio' che comporrebbe una licenza le cambia: e' una preservazione banale, "
+            "e attestarla la fa contare fra quelle che hanno avuto bisogno di una"))
+    for e in sorted(set(dovute) & set(dichiarate)):
+        if dichiarate[e].changed != dovute[e].changed:
+            trovate.append(CertificateViolation(
+                "attestazione_discorde", str(e),
+                f"il certificato attesta {', '.join(dichiarate[e].changed)}; "
+                f"fra i due circuiti cambia {', '.join(dovute[e].changed)}"))
+
+    return tuple(trovate)
+
+
 def check_transform(
     before: IR,
     after: IR,
@@ -399,11 +601,15 @@ def check_transform(
     patch: LayoutPatch,
     boundary: Boundary | None,
 ) -> Refusal | None:
-    """Boundary e massimalita'. `None` quando reggono entrambi.
+    """Boundary, identita' e massimalita'. `None` quando reggono tutti e tre.
 
-    Erano tre. L'identita' e' uscita con `node_mapping` (AD-22 v2.2): senza strato
-    di mappatura, `id_{k+1}(x) = id_k(x)` su `Pₖ` e' vero per costruzione, e un
-    controllo che non puo' fallire non e' un controllo.
+    **L'identita' torna, e non e' il controllo che era uscito.** Quello sorvegliava
+    `node_mapping` — la mappa fra identificatori — ed e' uscito con essa (AD-22
+    v2.2): senza strato di mappatura, `id_{k+1}(x) = id_k(x)` su `Pₖ` e' vero per
+    costruzione. Questo verifica la cosa opposta, e non e' vera per costruzione:
+    che un'entita' presente in entrambi i circuiti **sia** la stessa entita'. Il
+    primo guardava chi e' dentro `Pₖ`; questo guarda chi ci sta per coincidenza di
+    nome.
 
     Gira **prima** che il `TransformResult` sia costruito, e per questo puo' vedere
     un `boundary` assente: `Boundary` si rifiuta di esistere vuoto, quindi chi non e'
@@ -411,9 +617,13 @@ def check_transform(
     un'eccezione. Un rifiuto e' un atto di onesta' del sistema; un'eccezione e' un
     guasto (AD-13).
 
-    L'ordine dei due controlli e' fisso e non e' indifferente: `empty_boundary` e' la
-    condizione piu' grossolana e viene per prima, cosi' la diagnosi nomina il difetto
-    piu' grande invece di un suo sintomo.
+    L'ordine dei tre controlli e' fisso e non e' indifferente: si va dal difetto piu'
+    grande al suo sintomo. `empty_boundary` e' la condizione piu' grossolana — un
+    passo che non confina con nulla non e' un passo. `identity_violation` viene poi,
+    perche' non dipende da nulla di dichiarato e perche' un identificatore riusato
+    compromette `Pₖ`, che e' il metro del controllo successivo. `preserve_nonmaximal`
+    per ultima: misura una dichiarazione contro quel metro, e nominarla per prima
+    farebbe leggere come errore del produttore un difetto della trasformazione.
     """
     if boundary is None:
         return Refusal(
@@ -421,21 +631,72 @@ def check_transform(
             f"{operation}: ∂Tₖ = ∅. Un sottografo che non confina con nulla non e' "
             "un passo della derivazione: e' una riscrittura dell'intera rete.")
 
-    # AD-22 v2.2: `id_{k+1}(x) = id_k(x)` per ogni `x ∈ Pₖ` vale ora **per
-    # costruzione**. Con `node_mapping` ritirata, `Pₖ` e' un'intersezione per
-    # identificatore: ogni entita' che vi appartiene porta lo stesso nome nei due
-    # circuiti, per definizione dell'insieme. Non c'e' piu' niente da verificare.
-    #
-    # I quattro controlli che stavano qui — dominio della mappa, iniettivita' e i due
-    # versi dell'identita' — esistevano tutti e soli per sorvegliare quel campo, e
-    # sono stati rimossi con esso (decisione owner del 25/08/2026). Un controllo che
-    # non puo' piu' fallire non protegge nulla, e lasciarlo suggerirebbe una
-    # superficie che il contratto non ha piu'.
-    #
-    # **`identity_violation` resta dichiarata in `Cause` e senza produttori.** La
-    # tabella delle cause vive in AD-19, che e' spine: rimuoverne una e' un'altra
-    # decisione di proprieta', non un effetto collaterale di questa.
     preservate = preserve_set(before, after, operation=operation)
+
+    # **La direzione che AD-22 lasciava aperta, e la ragione per cui viene qui.**
+    #
+    # La Rule chiude un verso solo — «rifiuta se un'entita' presente in entrambi
+    # compare in `create`» — e lo chiude piu' in basso, con `intruse`. L'altro verso
+    # e' questo: un'entita' che compare in **entrambi** i circuiti e **non** e' in
+    # `Pₖ` porta lo stesso identificatore di una che il passo ha consumato, ed e'
+    # un'entita' diversa. L'identificatore e' stato riusato.
+    #
+    # E' il difetto dell'istruttoria R2-A visto dal lato del contratto: se una
+    # trasformazione battezza `R1` la nuova resistenza equivalente, il discriminante
+    # v2.1 la tiene fuori da `Pₖ` — necessario, e non sufficiente. Restava
+    # rappresentabile come «rimozione piu' creazione» con lineage nel `Delta`, e un
+    # passo cosi' e' **leggibile e falso**: chi legge `R1` in `Cₖ₊₁` legge il nome di
+    # una cosa che non c'e' piu', e nessuna riga glielo dice. CV1, un bug che si
+    # legge come dato.
+    #
+    # **Prima della massimalita', e non e' indifferente.** `preserve_nonmaximal`
+    # misura cio' che il produttore dichiara *contro* `Pₖ`; ma con un identificatore
+    # riusato `Pₖ` non e' piu' un riferimento su cui appoggiarsi, ed emettere quella
+    # causa nominerebbe un sintomo misurato contro un metro gia' compromesso. Questa
+    # non dipende da nulla di dichiarato: si legge nei due circuiti e nell'operazione,
+    # cioe' esattamente in cio' che il produttore non controlla.
+    #
+    # Cio' che una trasformazione deve fare invece e' nel motore, in `_nuovo_id`:
+    # identita' **nuova** per l'equivalente, lineage nel `Delta`, e il nome vecchio
+    # non torna. La rinomina segue la stessa regola: AD-22 v2.2 la dichiara «una
+    # consumata piu' una creata», e non e' un'operazione del contratto corrente.
+    #
+    # **La diagnosi dice cio' che il controllo constata, non come ci si e' arrivati.**
+    # Diceva «{operation} produce un'entita' che riusa l'identificatore di una
+    # consumata», e su due dei tre casi che la fanno scattare e' falso. Misurato: su
+    # una rinomina del nodo `b` in `z` la diagnosi accusava `R1` di riusare
+    # l'identificatore di una consumata, mentre `R1` non e' stata consumata da nessuno
+    # — le e' cambiato sotto il nodo che tocca; su una mutazione in luogo, `RL` da 5Ω a
+    # 7Ω, idem. Il controllo osserva un identificatore presente in entrambi i circuiti
+    # che non nomina la stessa entita': **il riuso e' una delle spiegazioni possibili,
+    # non il fatto**. K-3 vuole che la diagnosi si rilegga come Domanda mirata, e una
+    # Domanda costruita su una causa presunta manda chi legge a cercare la cosa
+    # sbagliata — che e' la falsa accusa, il difetto peggiore di questo prodotto.
+    #
+    # **Le nomina tutte.** Ne nominava una e taceva sulle altre. Il precedente citato
+    # per giustificarlo diceva il contrario: il primo ramo di `preserve_nonmaximal`,
+    # qui sotto, elenca per intero mancanti ed eccedenti. `subject` resta la prima in
+    # ordine canonico — AD-19 vuole *un* elemento coinvolto e `Refusal.subject` e' uno
+    # — ma la diagnosi le porta tutte, perche' chi ripara due entita' divergenti
+    # dovendone scoprire una alla volta fa due giri invece di uno.
+    riusati = sorted((entities_of(before) & entities_of(after)) - preservate)
+    if riusati:
+        colpevole = riusati[0]
+        divergenze = _divergenze(before, after)
+        elenco = ", ".join(
+            f"{e} ({_perche_diversa(divergenze[e], operation)})" for e in riusati)
+        return Refusal(
+            "identity_violation", colpevole.id, colpevole.kind,
+            f"{operation}: {len(riusati)} identificator"
+            f"{'e compare' if len(riusati) == 1 else 'i compaiono'} in Cₖ e in Cₖ₊₁ "
+            f"senza nominare la stessa entita' — {elenco}. Il controllo constata la "
+            "divergenza, non la sua causa: un identificatore riusato da un'entita' "
+            "nuova, una rinomina e una mutazione in luogo la producono allo stesso "
+            "modo. In tutti e tre i casi l'entita' di Cₖ₊₁ ha bisogno di un "
+            "identificatore proprio e della propria lineage nel Delta, oppure di una "
+            "licenza che il Catalogo dichiari per quell'attributo sotto "
+            f"{operation}; tenere il nome fermo fa apparire preservato cio' che non "
+            "lo e'.")
 
     # AD-22 em.: la massimalita' e' verificata **indipendentemente** dalla
     # `Transform` che la dichiara. «Diverso da `Pₖ`», non «piu' piccolo di»: la
