@@ -48,23 +48,25 @@ ancoraggi, non le occorrenze dell'attributo.
 ## Che cosa NON c'e', e perche'
 
 AD-35 scrive la firma come `render(LayoutIR, TransformOverlay, ArmEncoding) → SVG`.
-`TransformOverlay` e `ArmEncoding` **non sono qui**, ed e' una scelta dichiarata,
-non una dimenticanza:
+Dei tre parametri ce ne sono ora due, e il terzo manca per scelta dichiarata:
 
-- AD-26 assegna l'`ArmEncoding` a `experiment/`, che non esiste: e' *«una mappa da
-  ruolo (preservato · cambiato · confine) a stile»*, e nel braccio A e' **vuota**.
-  Lo *stile* e' la variabile che Gate A manipola. Inventarlo qui la chiuderebbe per
-  inerzia, e AD-26 avverte che implementarlo dentro `render/serialize` e' proprio la
-  collocazione velenosa — obbligherebbe il renderer a ricalcolarsi `Pₖ`, riaprendo
-  l'autocertificazione che AD-22 chiude.
-- Il `TransformOverlay` e' *«cosa la trasformazione annota»*, e i ruoli gli arrivano
-  da un `TransformResult`. Questa storia disegna **uno stato visuale fermo**: non c'e'
-  nessuna trasformazione in corso, quindi nessun ruolo da cui derivare l'annotazione.
+- il `TransformOverlay` e' arrivato con la Story 1.7 ed e' **opzionale**. Senza, si
+  disegna uno stato visuale fermo — nessuna trasformazione in corso, nessun ruolo da
+  cui derivare un'annotazione — e i layer `1`, `5` e `6` restano **non emessi**
+  invece che emessi vuoti: un gruppo vuoto si riempirebbe per errore senza che
+  nessuno decida di riempirlo. Con l'overlay si popolano `5` e `6`; il `1`, che e' la
+  *regione* di trasformazione, resta non emesso perche' `region-highlight` porta in
+  `DESIGN.md` la nota *«NON e' default: … variabile sperimentale»*.
+- l'`ArmEncoding` **non e' qui**. AD-26 lo assegna a `experiment/`, che non esiste:
+  e' *«una mappa da ruolo (preservato · cambiato · confine) a stile»*, e nel braccio
+  A e' **vuota**. Lo *stile* e' la variabile che Gate A manipola. Inventarlo qui la
+  chiuderebbe per inerzia, e AD-26 avverte che implementarlo dentro
+  `render/serialize` e' proprio la collocazione velenosa — obbligherebbe il renderer
+  a ricalcolarsi `Pₖ`, riaprendo l'autocertificazione che AD-22 chiude.
 
-Ne segue che dei nove layer di AD-23 questa storia ne popola tre — `2` fili, `3`
-componenti, `4` nodi ed etichette semantiche. I layer `1`, `5` e `6`, che sono quelli
-della trasformazione, restano **non emessi** invece che emessi vuoti: un gruppo vuoto
-si riempirebbe per errore senza che nessuno decida di riempirlo.
+Il confine regge perche' l'overlay porta **ruoli**, non stile, e li porta gia' fatti:
+questo modulo non ha una funzione che deduca chi e' preservato, chi e' cambiato o chi
+e' confine. Disegna cio' che riceve.
 
 ## Accessibilita'
 
@@ -96,7 +98,9 @@ from fractions import Fraction
 from xml.sax.saxutils import escape
 
 from ...domain.ir import IR, SYMMETRIC, Magnitude
+from ...domain.transform import EntityRef
 from ..layout import LayoutIR
+from ..overlay import TransformOverlay
 from .geometry import FORME, Giunzione, Punto, Scena, Simbolo, Terminale, scena
 
 #: La lingua del testo emesso. Una sola volta: `lang` e `xml:lang` devono coincidere,
@@ -178,7 +182,68 @@ _MASSA_PASSO = Fraction(4)
 #: nel percorso di export. Il test che lo tiene chiuso e'
 #: `test_il_disegno_non_dipende_da_un_motore_css_per_esistere`.
 _CLASSI = ("kf-filo", "kf-corpo", "kf-massa", "kf-morsetto", "kf-giunzione",
-           "kf-etichetta")
+           "kf-etichetta",
+           # I cinque dell'overlay (Story 1.7). Stessa regola: la classe e'
+           # l'aggancio del token, il valore viaggia come attributo di presenza.
+           "kf-sottografo", "kf-confine", "kf-collegamento", "kf-equazione",
+           "kf-equazione-testo")
+
+# --- i token dell'overlay, copiati da `DESIGN.md` e non scelti qui ------------
+#
+# `subgraph-highlight`: `strokeWidth: '2px'`, `halo: '0 0 0 5px'`. L'alone e' li' una
+# box-shadow; qui diventa l'imbottitura del riquadro attorno alla sagoma, che e' la
+# stessa quantita' espressa nella geometria che questo file possiede. `scope: 'local'`
+# e' un obbligo sperimentale, non un'estetica: *«un fondo colorato esteso dietro il
+# sottografo e' una versione morbida del braccio C e contaminerebbe il confronto
+# A-C»*. Per questo il riquadro sta **stretto attorno alla sagoma** e non attorno alla
+# regione, e per questo non ha `fill`.
+_ALONE = Fraction(5)
+_TRATTO_SOTTOGRAFO = Fraction(2)
+
+#: `boundary-anchor`: `size: '9px'`, `strokeWidth: '1.4px'`, `fill: 'none'`, `layer: 6`.
+#: Il `fill: none` non e' un dettaglio — e' cio' che rende vero *«togliendolo, il nodo
+#: torna identico»*: un segno che non riempie non puo' cancellare cio' che sta sotto.
+_LATO_CONFINE = Fraction(9)
+_TRATTO_CONFINE = Fraction(7, 5)
+
+#: `equation-anchor`: `padding: '{spacing.3}'` = 12, `radius: '{rounded.md}'` = 8,
+#: `border: '1px solid {colors.rule-hairline}'`, `font: '{typography.quantity}'` =
+#: JetBrains Mono 16/500. Lo stacco fra il disegno e il riquadro e' `{spacing.5}` = 24:
+#: e' cio' che tiene l'equazione **fuori** dal disegno senza staccarla, ed e' quello
+#: che la linea di collegamento attraversa.
+CORPO_EQUAZIONE = Fraction(16)
+FAMIGLIA_EQUAZIONE = "JetBrains Mono, ui-monospace, monospace"
+PESO_EQUAZIONE = "500"
+_IMBOTTITURA = Fraction(12)
+_RAGGIO_EQUAZIONE = Fraction(8)
+_STACCO_EQUAZIONE = Fraction(24)
+
+#: Il bordo del riquadro dell'equazione: **1**, non 1.4. Il token dice `1px solid`, e
+#: 1.4 e' lo spessore del `boundary-anchor`, che `DESIGN.md` dichiara *«deliberatamente
+#: piu' discreto del segnale sul delta»*: prenderlo in prestito qui avrebbe legato due
+#: quantita' che i token tengono separate.
+_TRATTO_EQUAZIONE = Fraction(1)
+
+#: Lo spessore della **linea di collegamento**. `equation-anchor` la chiede — *«con una
+#: linea di collegamento»* — e non le da' un token: nessuna delle voci di `DESIGN.md`
+#: ne fissa lo spessore. E' quindi una quantita' **dichiarata qui**, non copiata, ed e'
+#: registrata come lavoro rinviato insieme a `TRATTO`, per la stessa ragione: il token
+#: manca, non e' stato inventato. Vale quanto il bordo del riquadro che collega, che e'
+#: l'unica relazione che i token permettono di affermare — appartengono alla stessa
+#: voce.
+_TRATTO_COLLEGAMENTO = _TRATTO_EQUAZIONE
+
+#: L'avanzamento di un glifo del font dell'equazione, in multipli del corpo.
+#: **Non e' `_LARGHEZZA_DEL_GLIFO`**, e la differenza non e' una raffinatezza: quello e'
+#: un maggiorante per un sans **proporzionale**, dove l'avanzamento dipende dal glifo e
+#: l'unico limite sicuro senza misurare il font e' il quadratone. `{typography.quantity}`
+#: e' JetBrains Mono, **monospazio**: li' l'avanzamento e' una costante della famiglia —
+#: 0,6 em per JetBrains Mono e per i fallback dichiarati nella pila — e un maggiorante
+#: da quadratone gonfia il riquadro del 67% e con lui la `viewBox`, cioe' rimpicciolisce
+#: il disegno in un contenitore che scala. Resta un maggiorante, con margine per un
+#: fallback dall'avanzamento piu' largo: non si misura un font che l'export potrebbe non
+#: avere, si limita superiormente una classe di font che si e' scelta.
+_AVANZAMENTO_MONOSPAZIO = Fraction(13, 20)
 
 
 # --- numeri e attributi -------------------------------------------------------
@@ -589,6 +654,266 @@ def _nodi_ed_etichette(disegno: Scena) -> list[str]:
     return righe
 
 
+# --- i layer 5 e 6: cio' che la trasformazione annota (Story 1.7) -------------
+#
+# ## UX-DR8, e la lettura che NON si e' presa
+#
+# *«Il sottografo evidenziato compare prima di qualunque testo.»* Presa alla lettera
+# sui byte — l'evidenziazione prima di **ogni** `<text>` del file — la regola
+# obbligherebbe a emettere il layer 5 prima del 4, cioe' a comporre i layer fuori
+# dalla scala di AD-23, che vieta esattamente questo. Le due autorita' sembrano
+# collidere; leggendo la fonte non collidono.
+#
+# `EXPERIENCE.md` numera la sequenza: al passo 2 *«`C₀` occupa quasi tutta la
+# superficie utile»* — il circuito e' gia' sullo schermo, etichette comprese — e solo
+# al passo 3 *«`R3` e `R4` si accendono … Non e' ancora comparso un solo carattere di
+# testo»*. Il testo di cui si parla e' quello del **passo**, non quello del circuito:
+# `DESIGN.md` elenca «tre cose, in ordine di comparsa» — evidenziazione, equazione,
+# certificato — e aggiunge che *«il resto del circuito non compare in questa lista,
+# ed e' il punto»*. **Di quelle tre questo file ne emette due**: il `certificate-chip`
+# non ha una rappresentazione, `TransformOverlay` non porta il `Certificate` e nessun
+# criterio di questa storia lo chiede. E' registrato come lavoro rinviato, perche'
+# appoggiarsi a un elenco di tre e implementarne due senza dirlo e' il modo in cui una
+# lacuna diventa invisibile.
+#
+# L'invariante emesso e' quindi: **ogni elemento del layer 5 precede ogni testo che
+# l'overlay emette**, e il layer 5 non emette testo affatto. Vale per costruzione — 5
+# prima di 6, tutto il testo dell'overlay nel 6 — e `_verifica_l_ordine_dell_overlay`
+# lo controlla sulle righe prodotte invece di lasciarlo alla disciplina di chi le
+# scrive.
+#
+# ## UX-DR10, che e' una posizione e non una preferenza
+#
+# *«Accanto al sottografo, non sotto il disegno.»* `DESIGN.md`: *«Un'equazione
+# staccata dal disegno e' una spiegazione; attaccata, e' una prova.»* Due quantita'
+# rendono la frase verificabile, e sono quelle che `_riquadro_dell_equazione` impone:
+#
+# 1. il riquadro sta **fuori dal disegno, di fianco** — a destra dell'estensione
+#    emessa, oltre `_STACCO_EQUAZIONE`. Ne segue che non copre nulla: la clausola
+#    *Prevents* di AD-23 e' soddisfatta per costruzione invece che per controllo;
+# 2. il suo centro verticale **coincide** con quello del sottografo, non con quello
+#    del disegno. E' questa la meta' che distingue «accanto al sottografo» da
+#    «accanto al disegno»: se il sottografo e' in alto, l'equazione lo segue in alto.
+#
+# La linea di collegamento chiude il resto: `DESIGN.md` la chiede — *«collegata da
+# una linea»* — e siccome i due centri verticali coincidono, e' un segmento
+# **orizzontale, alla quota del sottografo**. Da dove parte non e' pero' il bordo del
+# sottografo, che era la lettura immediata: e' `_attacco`, e il perche' sta li'.
+#
+# ## Cio' che qui NON si calcola
+#
+# **`Pₖ`.** AD-26: *«i ruoli gli arrivano da un `TransformResult`»* e `render/` *«non
+# ricalcola mai `Pₖ`»*. Dedurre i preservati come «tutto cio' che l'overlay non
+# nomina» sarebbe quella deduzione con un altro nome, e riaprirebbe
+# l'autocertificazione che AD-22 chiude. Il renderer disegna i ruoli che riceve e non
+# ne inferisce un terzo — che nel braccio A e' comunque quello che si annota **non
+# annotandolo**.
+
+def _riquadro_con_alone(basso: Punto, alto: Punto) -> tuple[Punto, Punto]:
+    return (Punto(basso.x - _ALONE, basso.y - _ALONE),
+            Punto(alto.x + _ALONE, alto.y + _ALONE))
+
+
+def _sagome_del_sottografo(
+    disegno: Scena, cambiato: Iterable[EntityRef]
+) -> list[tuple[str, tuple[Punto, Punto]]]:
+    """Le sagome delle entita' cambiate **che questo stato visuale piazza**.
+
+    Un solo `TransformOverlay` annota due disegni: su `Cₖ` sono piazzate le entita'
+    che spariscono, su `Cₖ₊₁` quelle che nascono. Le altre non stanno nel `LayoutIR`
+    che si sta disegnando, quindi non hanno una sagoma qui — e saltarle non e' una
+    tolleranza, e' cio' che rende lo stesso overlay valido su entrambi gli stati.
+
+    **Solo i componenti.** `subgraph-highlight` porta la nota *«Marca SOLO i
+    componenti che cambiano, stretto attorno alla loro sagoma»*, e la sequenza di
+    `DESIGN.md` la ripete distribuendo i segnali per genere: *«I componenti che
+    cambiano ricevono `subgraph-highlight` …; i nodi di boundary ricevono un
+    `boundary-anchor` sovrapposto»*. Un nodo **consumato** — il nodo interno che una
+    riduzione in serie assorbe — non e' in nessuna delle due righe: la tabella dei
+    segnali ne ha tre, il delta, i preservati-e-boundary e i preservati, e nessuna e'
+    la sua. Marcarlo col segnale dei componenti era una decisione presa qui, non un
+    token copiato, e sulla fixture di questa storia dipingeva il bordo del riquadro
+    esattamente sul primo tratto dell'etichetta del nodo — la geometria dell'aneddoto
+    da cui AD-23 nasce. Che il nodo consumato resti senza segnale e' registrato come
+    lavoro rinviato: e' una riga che manca a `DESIGN.md`, e chi la scrive e' chi lo
+    possiede.
+    """
+    simboli = {s.componente: s for s in disegno.simboli}
+    return [(e.id, _riquadro_con_alone(*simboli[e.id].riquadro()))
+            for e in cambiato if e.kind == "component" and e.id in simboli]
+
+
+def _unione(riquadri: list[tuple[Punto, Punto]]) -> tuple[Punto, Punto]:
+    return (Punto(min(b.x for b, _ in riquadri), min(b.y for b, _ in riquadri)),
+            Punto(max(a.x for _, a in riquadri), max(a.y for _, a in riquadri)))
+
+
+def _attacco(sottografo: tuple[Punto, Punto],
+             disegno: tuple[Punto, Punto]) -> Fraction:
+    """L'ascissa da cui comincia il lato dell'equazione: il bordo destro di **tutto
+    cio' che il disegno emette**, o del sottografo se il suo alone sporge oltre.
+
+    E' qui che la linea di collegamento parte, e la scelta e' l'unica che rende vera
+    per costruzione la meta' geometrica di R-Visual-1 che riguarda il collegamento.
+    Partire dal bordo del sottografo, che e' la lettura immediata di *«collegata da
+    una linea»*, mandava la linea **attraverso** cio' che il disegno ha gia' scritto
+    alla sua destra: sulla fixture di questa storia passava sulla linea di base
+    dell'etichetta del componente equivalente e la attraversava da parte a parte, sul
+    fotogramma che `EXPERIENCE.md` chiama *«il climax»*. Non era un caso: la quota
+    della linea e' il centro verticale del sottografo, e per un sottografo di un solo
+    simbolo quella quota **e'** la quota a cui `_scritte_del_simbolo` mette la prima
+    etichetta.
+
+    Cio' che dice «accanto al **sottografo**» e non «accanto al disegno» resta
+    l'**altezza**, non l'ascissa: e' la meta' che `_riquadro_dell_equazione` impone, e
+    se il sottografo e' in alto l'equazione lo segue in alto.
+    """
+    return max(disegno[1].x, sottografo[1].x)
+
+
+def _riquadro_dell_equazione(
+    testo: str, sottografo: tuple[Punto, Punto], attacco: Fraction
+) -> tuple[Punto, Punto]:
+    """Dove sta il riquadro dell'equazione: di fianco al disegno, all'altezza del suo
+    sottografo.
+
+    La larghezza e' un **maggiorante**, per la stessa ragione di
+    `_riquadro_del_testo`: la misura vera dipende dal font, e sbagliare per eccesso
+    lascia bianco mentre sbagliare per difetto taglia una parola. Il maggiorante non e'
+    pero' lo stesso — `_AVANZAMENTO_MONOSPAZIO` e non `_LARGHEZZA_DEL_GLIFO` — perche'
+    il font di `equation-anchor` e' monospazio e il suo avanzamento e' una costante
+    della famiglia, non una quantita' che varia col glifo.
+    """
+    larga = _AVANZAMENTO_MONOSPAZIO * CORPO_EQUAZIONE * len(testo) + 2 * _IMBOTTITURA
+    alta = (_SOPRA_LA_BASE + _SOTTO_LA_BASE) * CORPO_EQUAZIONE + 2 * _IMBOTTITURA
+    sinistra = attacco + _STACCO_EQUAZIONE
+    centro = (sottografo[0].y + sottografo[1].y) / 2
+    return (Punto(sinistra, centro - alta / 2),
+            Punto(sinistra + larga, centro + alta / 2))
+
+
+def _rettangolo(classe: str, riquadro: tuple[Punto, Punto], tratto: Fraction,
+                raggio: Fraction | None = None) -> str:
+    basso, alto = riquadro
+    attributi = [("class", classe),
+                 ("x", _numero(basso.x)), ("y", _numero(basso.y)),
+                 ("width", _numero(alto.x - basso.x)),
+                 ("height", _numero(alto.y - basso.y))]
+    if raggio is not None:
+        attributi.append(("rx", _numero(raggio)))
+    return _tag("rect", (*attributi, ("fill", "none"), ("stroke", TINTA),
+                         ("stroke-width", _numero(tratto))))
+
+
+def _enfasi_sul_cambiato(
+    sagome: list[tuple[str, tuple[Punto, Punto]]]
+) -> list[str]:
+    """Layer 5. `subgraph-highlight`, stretto attorno alla sagoma. **Nessun testo.**
+
+    Riceve le sagome invece di ricalcolarle: la stessa collezione decide che cosa il
+    layer 5 disegna **e** dove si ancorano l'equazione e il collegamento, e due
+    derivazioni della stessa cosa dalla stessa scena non sono tenute uguali da nulla
+    (E-62).
+    """
+    return [_rettangolo("kf-sottografo", riquadro, _TRATTO_SOTTOGRAFO)
+            for _, riquadro in sagome]
+
+
+def _annotazioni(disegno: Scena, overlay: TransformOverlay,
+                 sottografo: tuple[Punto, Punto],
+                 equazione: tuple[Punto, Punto],
+                 attacco: Fraction) -> list[str]:
+    """Layer 6. Le ancore di boundary, poi il collegamento, poi l'equazione.
+
+    L'ancora e' un quadrato **vuoto** centrato sulla giunzione: *«non e' il nodo
+    ridisegnato: e' un segno sovrapposto»*. Non tocca l'etichetta del nodo, che parte
+    a `_SCOSTAMENTO` dalla giunzione mentre l'ancora si ferma a mezzo lato — e' cosi'
+    che *«togliendo l'overlay, il nodo torna identico»* resta vero anche del suo nome.
+
+    **Qui un'entita' assente solleva, mentre nel layer 5 si salta**, e la differenza
+    non e' una svista. Nel layer 5 saltare e' il meccanismo: lo stesso overlay annota
+    due stati visuali, e cio' che non e' piazzato qui e' piazzato nell'altro. Il
+    confine no — `∂Tₖ ⊆ Pₖ`, e un preservato e' piazzato in **entrambi** gli stati,
+    altrimenti `operandi_di_vcer` avrebbe gia' rotto la tripla. Un confine che manca
+    dal disegno e' quindi un'incoerenza, non l'altro fotogramma, e saltarlo la
+    nasconderebbe emettendo un passo a cui manca un'ancora senza dirlo.
+    """
+    giunzioni = {g.nodo: g for g in disegno.giunzioni}
+    righe: list[str] = []
+    for e in overlay.confine:
+        if e.kind != "node" or e.id not in giunzioni:
+            raise ValueError(
+                f"il confine nomina {e}, che questo stato visuale non disegna come "
+                "giunzione. `∂Tₖ ⊆ Pₖ` e un preservato e' piazzato in entrambi gli "
+                "stati: un confine che manca dal disegno non e' l'altro fotogramma, "
+                "e' un'incoerenza fra l'overlay e il `LayoutIR`. Un confine su un "
+                "componente non ha ancora una geometria dichiarata — nel catalogo "
+                "corrente `∂Tₖ` porta solo nodi.")
+        p, mezzo = giunzioni[e.id].punto, _LATO_CONFINE / 2
+        righe.append(_rettangolo(
+            "kf-confine",
+            (Punto(p.x - mezzo, p.y - mezzo), Punto(p.x + mezzo, p.y + mezzo)),
+            _TRATTO_CONFINE))
+
+    altezza = (sottografo[0].y + sottografo[1].y) / 2
+    righe.append(_tag("line", (
+        ("class", "kf-collegamento"),
+        ("x1", _numero(attacco)), ("y1", _numero(altezza)),
+        ("x2", _numero(equazione[0].x)), ("y2", _numero(altezza)),
+        ("stroke", TINTA), ("stroke-width", _numero(_TRATTO_COLLEGAMENTO)))))
+    # `fill="none"`, dove il token dice `background: '{colors.surface-raised}'`. Non e'
+    # una contraddizione presa alla leggera ed e' registrata come lavoro rinviato: la
+    # tinta dei token non e' emessa da questo file — `TINTA` spiega perche' — e un
+    # riquadro pieno di `currentColor` coprirebbe cio' che ha dietro invece di
+    # ambientarlo. Fra un fondo sbagliato e nessun fondo, nessun fondo e' quello che
+    # non cancella niente; la classe resta l'aggancio per chi il fondo lo possiede.
+    righe.append(_rettangolo("kf-equazione", equazione, _TRATTO_EQUAZIONE,
+                             _RAGGIO_EQUAZIONE))
+    # La base del testo, non il suo bordo alto: `y` in SVG e' la linea di base.
+    base = (equazione[0].y + equazione[1].y) / 2 + _SOPRA_LA_BASE * CORPO_EQUAZIONE / 2
+    righe.append(
+        f"<text{_attributi((('class', 'kf-equazione-testo'),
+                            ('x', _numero(equazione[0].x + _IMBOTTITURA)),
+                            ('y', _numero(base)),
+                            ('text-anchor', 'start'),
+                            ('font-size', _numero(CORPO_EQUAZIONE)),
+                            ('font-family', FAMIGLIA_EQUAZIONE),
+                            ('font-weight', PESO_EQUAZIONE),
+                            ('font-variant-numeric', 'tabular-nums'),
+                            ('fill', TINTA)))}>"
+        f"{escape(str(overlay.equazione))}</text>")
+    return righe
+
+
+def _verifica_l_ordine_dell_overlay(enfasi: list[str]) -> None:
+    """UX-DR8 sulle righe emesse, non sulla disciplina di chi le ha scritte.
+
+    Due condizioni, e la prima e' quella che regge: il layer 5 esiste, e non emette
+    testo. Se il sottografo non producesse alcuna sagoma, l'equazione del layer 6
+    comparirebbe senza che nulla si sia acceso prima — cioe' il passo si aprirebbe con
+    del testo, che e' esattamente cio' che *«nessun passo si apre con un paragrafo»*
+    vieta.
+
+    Gira **prima** che il resto dell'overlay sia costruito, e non alla fine: il
+    riquadro dell'equazione si posiziona a partire dal riquadro del sottografo, quindi
+    un sottografo vuoto lo farebbe ripiegare su una posizione di ripiego — cioe'
+    produrrebbe silenziosamente un disegno che viola la regola, invece di dire che non
+    puo' disegnarlo.
+    """
+    if not enfasi:
+        raise ValueError(
+            "overlay senza alcuna sagoma da accendere su questo stato visuale: "
+            "nessuna delle entita' cambiate e' piazzata nel `LayoutIR` che si sta "
+            "disegnando. Il passo si aprirebbe con l'equazione, e UX-DR8 chiede che "
+            "il sottografo evidenziato compaia prima di qualunque testo.")
+    fuori = [r for r in enfasi if "<text" in r]
+    if fuori:
+        raise ValueError(
+            f"il layer 5 emette {len(fuori)} elemento/i di testo. UX-DR8 vuole "
+            "l'evidenziazione prima di qualunque testo del passo, e il layer 5 e' "
+            "cio' che deve venire prima: un testo qui sarebbe simultaneo a se stesso.")
+
+
 def _estensione_emessa(disegno: Scena) -> tuple[Punto, Punto]:
     """L'estensione della geometria unita a quella di cio' che `svg.py` aggiunge.
 
@@ -607,17 +932,51 @@ def _estensione_emessa(disegno: Scena) -> tuple[Punto, Punto]:
 
 # --- render -------------------------------------------------------------------
 
-def render(circuito: IR, layout: LayoutIR) -> str:
+def render(circuito: IR, layout: LayoutIR,
+           overlay: TransformOverlay | None = None) -> str:
     """Lo stato visuale come SVG semantico. Pura: stessi ingressi, stessi byte.
 
-    Non c'e' un `TransformOverlay` ne' un `ArmEncoding` fra i parametri, e non c'e'
-    un autolayout dentro: le posizioni vengono dal `LayoutIR`, che questa storia
-    riceve predefinito. Le ragioni stanno nel docstring del modulo.
+    `overlay` e' il secondo parametro della firma di AD-35 — `render(LayoutIR,
+    TransformOverlay, ArmEncoding) → SVG` — ed e' **opzionale** perche' i due casi
+    sono due cose diverse, non uno la versione degradata dell'altro: senza overlay si
+    disegna uno stato visuale fermo, che e' cio' che la Story 1.4 chiede e che non ha
+    nessuna trasformazione in corso da annotare. In quel caso i layer 5 e 6 restano
+    **non emessi**, non emessi vuoti — un gruppo vuoto si riempirebbe per errore
+    senza che nessuno decida di riempirlo.
+
+    Il terzo parametro, l'`ArmEncoding`, resta assente: AD-26 lo assegna a
+    `experiment/`, nel braccio A e' vuoto, e lo stile e' la variabile che Gate A
+    manipola. Le ragioni per esteso stanno nel docstring del modulo.
+
+    Non c'e' un autolayout: le posizioni vengono dal `LayoutIR`, che per lo stato
+    successivo e' quello che `render/layout.applica` ha costruito conservando i
+    piazzamenti dei sopravvissuti.
     """
     disegno = scena(circuito, layout)
     basso, alto = _estensione_emessa(disegno)
     titolo, descrizione = alternativa_testuale(disegno)
     nome, descrizione_id = f"titolo-{disegno.layout}", f"descrizione-{disegno.layout}"
+
+    annotato: list[str] = []
+    if overlay is not None:
+        if not isinstance(overlay, TransformOverlay):
+            raise TypeError(
+                f"{type(overlay).__name__} invece di TransformOverlay: i ruoli da "
+                "annotare vengono dal prodotto della Trasformazione (AD-26).")
+        sagome = _sagome_del_sottografo(disegno, overlay.cambiato)
+        enfasi = _enfasi_sul_cambiato(sagome)
+        _verifica_l_ordine_dell_overlay(enfasi)
+        sottografo = _unione([r for _, r in sagome])
+        attacco = _attacco(sottografo, (basso, alto))
+        equazione = _riquadro_dell_equazione(
+            str(overlay.equazione), sottografo, attacco)
+        annotato = [
+            *_layer(5, "sottografo", enfasi),
+            *_layer(6, "annotazioni",
+                    _annotazioni(disegno, overlay, sottografo, equazione,
+                                 attacco)),
+        ]
+        basso, alto = _unione([(basso, alto), equazione, sottografo])
 
     righe = [
         f"<svg{_attributi((
@@ -636,6 +995,7 @@ def render(circuito: IR, layout: LayoutIR) -> str:
         *_layer(2, "fili", _fili(disegno)),
         *_layer(3, "componenti", _componenti(disegno)),
         *_layer(4, "nodi", _nodi_ed_etichette(disegno)),
+        *annotato,
         "</svg>",
     ]
     return "\n".join(righe) + "\n"

@@ -97,7 +97,7 @@ class LayoutPatch:
     #: «delimita cio' che il renderer puo' reinstradare» — invece di continuare a
     #: contraddirlo.
     #:
-    #: La domanda di accettazione, da rispondere in 1.4 e non prima:
+    #: La domanda di accettazione, aperta fino alla Story 1.7:
     #:
     #:     Qual e' l'unita' semantica contenuta in `reroute_scope`: componenti,
     #:     nodi, branch/edge renderizzabili, o altro?
@@ -107,6 +107,14 @@ class LayoutPatch:
     #: dichiarato» — quindi un renderer che lo rispetti ha bisogno di sapere che cosa
     #: sta contando. `check_patch` verifica gia' cio' che e' verificabile senza la
     #: risposta: nessun fantasma, insieme non vuoto.
+    #:
+    #: **Il primo consumatore esiste dalla Story 1.7** e risponde alla meta' della
+    #: domanda che si puo' rispondere guardando l'uso invece della definizione:
+    #: `render/layout.applica` verifica, sul `LayoutIR` che produce, che ogni entita'
+    #: uscita con un piazzamento diverso da quello che aveva sia dentro lo scope. Ne
+    #: segue che l'unita' e' l'**entita'** — quella che `p_k` piazza — e non il ramo
+    #: renderizzabile: e' l'unica su cui il vincolo si calcola. Non chiude la domanda
+    #: per il rerouting dei **fili**, che nessun consumatore ancora esegue.
     reroute_scope: tuple[EntityRef, ...]
 
     def __post_init__(self) -> None:
