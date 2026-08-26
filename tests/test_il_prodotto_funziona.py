@@ -297,3 +297,63 @@ def test_un_circuito_senza_nodo_di_riferimento_e_fermato_A_MONTE():
     """
     with pytest.raises(ValueError, match="manca il nodo di riferimento"):
         leggi("R1 a b 10 ohm\nR2 b a 20 ohm\n")
+
+
+# --- i rami che restavano scoperti -----------------------------------------
+
+def test_senza_cartella_dei_browser_il_pdf_lo_dice(tmp_path, monkeypatch):
+    """Il ramo «la cartella non esiste», distinto da «esiste ma e' vuota»."""
+    from kirchhoff.pipeline import cli
+    monkeypatch.setattr(cli.pathlib.Path, "home", staticmethod(lambda: tmp_path))
+    assert cli._chromium() is None
+
+
+def test_con_la_cartella_ma_senza_eseguibili_il_pdf_lo_dice(tmp_path, monkeypatch):
+    """La cartella c'e' e non contiene nessun guscio: caso diverso dal precedente,
+    e il codice ha due `return None` distinti perche' arriva da due strade."""
+    from kirchhoff.pipeline import cli
+    (tmp_path / "Library/Caches/ms-playwright/chromium_headless_shell-1").mkdir(parents=True)
+    monkeypatch.setattr(cli.pathlib.Path, "home", staticmethod(lambda: tmp_path))
+    assert cli._chromium() is None
+
+
+def test_un_componente_senza_soluzione_non_ferma_la_stampa(tmp_path, capsys, monkeypatch):
+    """Il `continue`: un bipolo per cui il solutore non riporta la tensione viene
+    saltato invece di far esplodere il comando a meta' tabella."""
+    from kirchhoff.pipeline import cli
+
+    # Si sostituisce `risolvi`, non `solve_dc`: togliere un componente dalla
+    # soluzione grezza rompe `kcl_residuals` a valle con un KeyError, e il test
+    # misurerebbe quel guasto invece del ramo che vuole vedere.
+    vero = cli.risolvi
+
+    def parziale(circuito, layout=None):
+        pieno = vero(circuito, layout)
+        return type(pieno)(
+            circuito=pieno.circuito,
+            soluzione={k: v for k, v in pieno.soluzione.items() if k != "R1"},
+            layout=pieno.layout, svg=pieno.svg, verifiche=pieno.verifiche)
+
+    monkeypatch.setattr(cli, "risolvi", parziale)
+    assert cli.main([str(_netlist(tmp_path))]) == 0
+    fuori = capsys.readouterr().out
+    assert "R2" in fuori and "33/4" in fuori
+
+
+def test_un_grafo_che_si_interrompe_a_meta_non_e_una_maglia():
+    """Il `return None` di `_giro` quando il cammino resta senza passi: due
+    triangoli separati hanno tutti i nodi di grado due, quindi superano il primo
+    controllo, e cadono solo camminando."""
+    with pytest.raises(ValueError, match="non formano una maglia sola"):
+        layout_a_maglia(leggi(
+            "V1 a 0 12 volt\nR1 a b 10 ohm\nR2 b 0 20 ohm\n"
+            "R3 c d 30 ohm\nR4 d e 40 ohm\nR5 e c 50 ohm\n"))
+
+
+def test_i_gemelli_su_nodi_impilati_si_scostano_in_ORIZZONTALE():
+    """L'altro verso dello scostamento: quando i due nodi condividono la x, i
+    gemelli si separano lungo x. Il ramo verticale era gia' coperto."""
+    piazzati = layout_a_maglia(leggi("V1 a 0 9 volt\nR1 a 0 3 ohm\n")).placements
+    dove = {p.entity.id: (p.x, p.y) for p in piazzati}
+    assert dove["V1"] != dove["R1"], "i due gemelli coincidono"
+    assert dove["V1"][1] == dove["R1"][1], "si sono scostati nel verso sbagliato"

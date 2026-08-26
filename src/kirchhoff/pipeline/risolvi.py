@@ -79,11 +79,12 @@ def _giro(circuito: IR) -> list[str] | None:
     Cammina il grafo partendo dal nodo di riferimento: a ogni passo esiste un
     solo bipolo non ancora percorso, altrimenti non c'e' una maglia sola.
     """
+    # I morsetti nominano nodi dichiarati: lo garantisce `IR.__post_init__`, e
+    # riverificarlo qui sarebbe una guardia che non puo' fallire (E-65). Provato
+    # a tenerla: nessun circuito costruibile la raggiunge.
     vicini: dict[str, list[tuple[str, str]]] = {n: [] for n in circuito.nodes}
     for c in circuito.components:
         a, b = c.terminals
-        if a not in vicini or b not in vicini:
-            return None
         vicini[a].append((b, c.id))
         vicini[b].append((a, c.id))
     if any(len(v) != 2 for v in vicini.values()):
@@ -171,12 +172,15 @@ def layout_a_maglia(circuito: IR) -> LayoutIR:
             (x1, y1), (x2, y2) = dove[c.terminals[0]], dove[c.terminals[1]]
             mx, my = (x1 + x2) / 2, (y1 + y2) / 2
             if len(gruppo) > 1:
-                # scostamento perpendicolare al segmento, deterministico
-                scarto = PASSO * (k - Fraction(len(gruppo) - 1, 2))
-                if x1 == x2:
-                    mx += scarto
-                else:
-                    my += scarto
+                # **Lo scostamento e' sempre orizzontale, e non e' una svista.**
+                # Due bipoli che condividono ENTRAMBI i nodi formano una maglia di
+                # due nodi, e il ramo `n == 2` li impila in verticale: il segmento
+                # fra i loro nodi ha quindi sempre la stessa x. Un ramo per il caso
+                # orizzontale sarebbe codice che nessun circuito raggiunge.
+                # Se un giorno la disposizione a due nodi cambia verso, va
+                # cambiata anche questa riga — e il test dei gemelli, che verifica
+                # proprio che si scostino lungo x, diventera' rosso e lo dira'.
+                mx += PASSO * (k - Fraction(len(gruppo) - 1, 2))
             piazzamenti.append(Placement(EntityRef("component", c.id), mx, my))
 
     impronta = hashlib.blake2b(
