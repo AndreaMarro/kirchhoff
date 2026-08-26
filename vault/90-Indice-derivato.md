@@ -1,5 +1,5 @@
 ---
-sha: a9d3bf68f31f5fab0ce7ab213a76ce8386a8e23f
+sha: d1f04aa3d3c4061a0b514a84ea78f7e8976dd3ea
 tipo: indice-derivato
 ---
 
@@ -10,8 +10,8 @@ tipo: indice-derivato
 > una nota, ha torto lui — e `--verifica` lo dice, invece di lasciartelo
 > scoprire.
 
-Costruito sulla revisione `a9d3bf68f31f5fab0ce7ab213a76ce8386a8e23f`.
-47 note.
+Costruito sulla revisione `d1f04aa3d3c4061a0b514a84ea78f7e8976dd3ea`.
+48 note.
 
 ## (radice)
 
@@ -32,6 +32,10 @@ Costruito sulla revisione `a9d3bf68f31f5fab0ce7ab213a76ce8386a8e23f`.
 
 - [[Catena BMAD v3]] — Catena BMAD v3 — correct-course chain-top · `stato` → [[Costituzione Kirchhoff]], [[Decisioni aperte]], [[Lezioni sul loop]], [[Tracciamento derivato dalle prove]]
 - [[Tracciamento derivato dalle prove]] — Tracciamento derivato dalle prove · `meccanismo` → [[Automiglioramento, cosa è misurato]], [[Catena BMAD v3]], [[Il delimitatore iniettato]], [[Lezioni sul loop]]
+
+## 20-Decisioni-prese
+
+- [[20260826T172656Z-Promuovere-17-con-tre-rilievi-aperti]] — Promuovere 1.7 con tre rilievi aperti · `decisione-presa` → [[00-INDICE]], [[Decisioni aperte]]
 
 ## 30-Decisioni-aperte
 

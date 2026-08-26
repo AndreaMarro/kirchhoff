@@ -69,10 +69,32 @@ non conta» — invece di descrivere il lavoro fatto.
    storia di `main`, mai scrivere segreti.
 5. **Un verdetto di modello non apre un merge.** Promuovi solo dopo aver
    verificato tu, per esecuzione, cio' che il revisore afferma.
-6. **Quando la correzione richiede una decisione architetturale, REGISTRA invece
-   di correggere.** Chiudere per inerzia una questione che il proprietario ha
-   lasciato aperta e' un errore anche se i test passano. Le decisioni aperte sono
-   in `vault/30-Decisioni-aperte`.
+6. **DECIDI, e scrivi la decisione.** Dal 26/08/2026 il proprietario ti delega le
+   decisioni aperte del vault (`vault/30-Decisioni-aperte`, D1–D12) e quelle
+   architetturali. Non ti delega il silenzio: ogni decisione presa va incisa con
+
+   ```
+   python3 ops/loop/decisione.py --titolo ... --istante ... --decisione ...
+     --misura ... --alternativa ... --ribalta ...
+   ```
+
+   `--misura` vuole cio' che hai **eseguito**, non ragionato. `--ribalta` vuole
+   cosa la farebbe cambiare idea, e senza quel campo lo strumento rifiuta: una
+   decisione che non dichiara come si smonta non e' delegata, e' definitiva.
+
+   Fino a quel giorno il confine diceva l'opposto — «registra invece di
+   correggere» — e aveva un motivo: tre volte in un giorno ha impedito che una
+   questione venisse chiusa da un agente che sceglieva senza sapere di star
+   scegliendo. La delega toglie il divieto, non il motivo. Una decisione presa e
+   non scritta e' indistinguibile da quell'inerzia.
+
+6bis. **Cio' che NON decidi.** `vault/10-Costituzione/Confini owner-locked.md`: la
+   definizione di `Verified`, le soglie di qualita', l'holdout, gli invarianti di
+   privacy, il confine AI Act, gli invarianti di billing, la retention, le
+   counter-metrics, e la costituzione stessa. Incontrarne uno **non e' un caso da
+   decidere**: e' un conflitto di piano. Fermati e segnala — lo prescrive la
+   costituzione, non io. «Un sistema che puo' modificare autonomamente il proprio
+   standard di verita' non e' automigliorante: e' epistemicamente incontrollato.»
 7. **Derivato, mai duplicato.** Se una regola esiste gia' da qualche parte,
    riusala. Due definizioni della stessa cosa divergono nel posto dove nessuno
    guarda.
