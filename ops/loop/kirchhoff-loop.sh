@@ -400,10 +400,45 @@ for i, s in enumerate(p):
         ;;
 
       analizza|confronta)
-        log "  classe R3: la decisione appartiene al proprietario."
-        bash "$QUI/fermo.sh" OWNER_DECISION \
-          "la storia $storia e di classe R3: due analisi indipendenti e un confronto, poi decidi tu"
-        fallito=1; break
+        # **R3 raccoglie due categorie diverse sotto lo stesso nome**, e fino al
+        # 26/08/2026 le fermava entrambe.
+        #
+        # Alcune superfici R3 sono OWNER-LOCKED per costituzione: la costituzione
+        # stessa, l'holdout, i criteri di uccisione, le soglie. Per quelle la
+        # regola di collisione e' esplicita — «un agente che incontra un rilievo
+        # che richiede di violare un confine si ferma e lo segnala. Non sceglie,
+        # non aggira» — e resta.
+        #
+        # Altre sono ARCHITETTURA — un recinto di dipendenza, una superficie
+        # dello spine — e il proprietario le ha delegate al loop il 26/08/2026.
+        # Fermarle tutte significava che «loop perpetuo» non poteva esistere: la
+        # prima storia R3 della catena lo bloccava per sempre.
+        if printf '%s' "$storia" | grep -qiE "costituzione|holdout|criterio-di-uccisione|kill-criterion|soglia|soglie|privacy|gate-a"; then
+          log "  classe R3 su superficie OWNER-LOCKED: non si decide, si segnala."
+          bash "$QUI/fermo.sh" OWNER_DECISION \
+            "la storia $storia tocca un confine owner-locked (vault/10-Costituzione/Confini owner-locked.md). La costituzione lo dice: un sistema che puo modificare autonomamente il proprio standard di verita non e automigliorante, e epistemicamente incontrollato."
+          fallito=1; break
+        fi
+
+        log "  classe R3 su superficie architetturale: delegata (26/08/2026)."
+        pacchetto="$STATO/.analisi-$i.md"
+        { printf 'Analizzi una storia di classe R3 — una superficie architetturale.\n\n'
+          printf 'Il proprietario ti ha DELEGATO questa decisione. Non ti ha delegato il\n'
+          printf 'silenzio: la decisione va incisa con `ops/loop/decisione.py`, che pretende\n'
+          printf 'la MISURA eseguita, le alternative scartate, e COSA LA RIBALTEREBBE.\n'
+          printf 'Senza l ultimo campo lo strumento rifiuta: una decisione che non dichiara\n'
+          printf 'come si smonta non e delegata, e definitiva.\n\n'
+          printf 'NON decidi su cio che vault/10-Costituzione/Confini owner-locked.md\n'
+          printf 'protegge. Incontrarne uno non e un caso da decidere ma un conflitto di\n'
+          printf 'piano: fermati e segnala.\n\n'
+          printf '## La storia\n\n'
+          python3 "$QUI/chiave.py" --corpo "$storia" 2>/dev/null || printf '(non trovata)\n'
+          printf '\n'
+          python3 "$QUI/contesto.py" --storia "$storia" 2>/dev/null || true
+        } > "$pacchetto"
+        passo_modello "$modello" "$effort" "$pacchetto" "$STATO/.analisi-$i.out" "$BUDGET_REVISIONE"
+        { printf '\n===== ANALISI R3 =====\n'; cat "$STATO/.analisi-$i.out" 2>/dev/null
+          printf '\n======================\n'; } >> "$INCISO"
         ;;
 
       *)
