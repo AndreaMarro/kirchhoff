@@ -1,0 +1,225 @@
+[19:22:45Z] kirchhoff-loop v3 — avvio
+[19:22:45Z] repository=/Users/andreamarro/MATJOURNEY/kirchhoff
+[19:22:45Z] iterazioni=6 prova=0 promuovi=0 watchdog=2700s scrittura=$25 revisione=$15
+[19:22:45Z] caffeinate: la macchina resta sveglia per la durata del giro
+[19:22:45Z] 
+[19:22:45Z] --- iterazione 1 di 6 ---
+  [ok]  nessun FERMO
+  [ok]  repository git: c4124e6
+  [ok]  uv: uv 0.11.8 (0e961dd9a 2026-04-27 aarch64-apple-darwin)
+  [ok]  helper runtime BMAD conformi al pin (5/5)
+  [ok]  holdout protetto da regola deny
+  [ok]  sprint-status.yaml leggibile
+  [ok]  albero di lavoro pulito
+[19:22:45Z] precondizioni: tutte verdi
+[19:22:45Z] storia 1-7-la-prima-trasformazione-pedagogica-fino-al-disegno gia' su main: avanzo a 1-8-visual-slice-0-prima-azione-dopo-e-ripercorribile
+[19:22:45Z] storia: 1-8-visual-slice-0-prima-azione-dopo-e-ripercorribile
+[19:22:45Z] classe di rischio: R2
+[19:22:45Z] ramo: loop/iter-20260826T192245Z-1-8-visual-slice-0-prima-azione-dopo-e-ripercorribile (da main)
+[19:22:45Z] 
+[19:22:45Z] passo 1: implementa [-]
+[19:22:45Z]   → claude -p --model claude-opus-5 --effort max --max-budget-usd $25
+Story 1.8 implemented, oracles green. Report below.
+
+## 1. Che cosa ho cambiato, file per file
+
+**Nuovi**
+
+| File | Righe | Contenuto |
+|---|---|---|
+| `src/kirchhoff/render/step/schema.py` | 318 | `VisualStep` (proiezione **per riferimento**: due `lay_`, un `patch_`, i due SVG già emessi), `InteractionState`, `Justification` (i quattro campi), `StaticStep` |
+| `src/kirchhoff/render/step/compose.py` | 111 | `componi` — i cinque atti in fila: `transform` → `applica` → `annota` → deposito → `render` ×2 |
+| `src/kirchhoff/render/step/__init__.py` | 31 | esporta i quattro tipi e `componi` |
+| `tests/test_visual_slice.py` | 622 | 42 test, mappa AC→test in testa |
+| `_bmad-output/implementation-artifacts/spec-1-8-…md` | — | mappa criterio→test (action item aperto della retro Epic 1) |
+
+**Modificati**
+
+- `domain/transform/catalog.py` (+97) — `PRECONDITIONS` / `preconditions_of` / `_verifica_precondizioni`. Il **secondo** dei quattro campi di UX-DR23 non esisteva da nessuna parte: era l'unico che sarebbe stato *composto al momento della domanda*, cioè la prosa che la regola vieta. Sta nel Catalogo e non in `render/` per AD-26. Ordine **di valutazione**, non alfabetico (a differenza di `COMPOSITION`).
+- `domain/transform/engine.py` (+30) — `_verifica_le_precondizioni_degli_implementati`, eseguita all'import: un'operazione con un corpo e senza precondizioni dichiarate fa fallire l'import. Sta qui perché `catalog.py` non può importare `engine` e non sa quali voci abbiano un corpo.
+- `domain/transform/__init__.py` (+7) — riesporta i due nomi.
+- `tests/test_transform.py` (+88) — 9 test sulle guardie della dichiarazione.
+- `deferred-work.md`, `AGENTS.md` — vedi §3.
+
+Le precondizioni sono **trascritte dalle guardie che le impongono**, non riformulate, e ognuna ha un circuito che la viola (`TestLePrecondizioniSonoFalsificabili`).
+
+## 2. Oracoli eseguiti
+
+| Comando | Exit | Esito |
+|---|---|---|
+| `ops/loop/verifica.sh` | **0** | 850 test passati · copertura **100.0%** · recinti ✓ · dominio ✓ |
+| `scripts/bmad_chain.py verifica --con-loop` | **0** | catena coerente 8/8 |
+
+799 → 850 test (+51: 42 nuovi + 9 sul Catalogo).
+
+**Quattro mutanti introdotti e ritirati**, tutti uccisi: `esporta` che ricostruisce le stringhe (AD-10 v2), `giustificazione` che ricostruisce i campi (UX-DR23), lo stato *dopo* da un layout traslato (A-0), `fotogramma` che ricompone a ogni chiamata (UX-DR12). Il primo tentativo del secondo — `tuple(x)` su una tupla — **non era una mutazione**: CPython restituisce lo stesso oggetto e il test è giustamente rimasto verde; registrato nella spec perché un mutante che non muta si legge come un oracolo debole.
+
+## 3. Che cosa resta incompleto o rischioso
+
+- **`InteractionState` non ha un domicilio ratificato.** AD-21 elenca `ui/` fra i suoi *binds*; `ui/` non esiste, e la review dei confini registra proprio questo come il buco del quarto tipo. Il tipo nasce in `render/step` con l'assunzione dichiarata nel modulo — stessa forma della 1.3 per il `PatchStore` e della 1.7 per il layer dell'equazione. Va ratificata.
+- **`componi` non è transazionale**: se il deposito del secondo `lay_` sollevasse dopo quello del `patch_`, resterebbe una patch orfana. I registri sono append-only e una voce orfana è inerte; il caso richiede entropia riusata, che è un errore di programmazione. Non ho inventato un meccanismo a due fasi.
+- **`sprint-status.yaml` non registra la chiave di 1.8**, come non registra 1.1, 1.2, 1.3, 1.4 e 1.7: `test_chiave_canonica.py::test_la_derivazione_coincide_con_quella_di_bmad` diventa rosso appena una chiave viene registrata. È il difetto dell'armatura di Epic 0 già documentato nel file stesso — non l'ho toccato.
+- **`StaticStep` non è l'`Artifact` di AD-10** e il modulo lo dichiara: manca la Marcatura di provenienza (FR-18/FR-19, Epic 4). Prendere il nome senza la marcatura dichiarerebbe conforme ciò che non lo è.
+
+## 4. Fuori ambito, trovato e NON toccato
+
+- **`UX-DR12` ha due significati nel repository.** `epics.md:181` lo definisce `beforeafter-toggle` («due stati commutabili all'infinito»); `docs/inbox/kirchhoff_00_corpus_fonti_integrali.md` lo usa per l'accessibilità cromatica in scala di grigi. Ho implementato il primo — è quello coerente col testo della Story, e `epics.md` è l'artefatto che la possiede. Registrato in `AGENTS.md`; riconciliare le due numerazioni è lavoro di piano.
+- **Due file `deferred-work.md` con contenuti diversi** (radice: rilievi delle storie; `_bmad-output/implementation-artifacts/`: registro ship di BMAD). È E-62 in attesa. Ho aggiornato solo quello in radice, chiudendo il rilievo 3 della 1.7 — `annota`, `applica` e `render` hanno ora chiamanti veri in `src/`, verificato con `grep` sulle sole chiamate. I rilievi 1 e 2 restano aperti e intatti.
+- **Recinto 4 di AD-21** (`render/` → `adapters/`) continua a non scandire `render/`: è la Story 1.5, in backlog. `render/step` non importa nulla da `adapters/`, ma nessun gate lo verifica.
+- **Il toggle come componente di interfaccia** (`{motion.instant}`, pollice-raggiungibile, UX-DR27 affiancati sopra i 768 px) non è implementato: sono token e layout, e non esiste una superficie. Gli AC misurabili senza superficie sono tutti coperti.
+[19:43:45Z] 
+[19:43:45Z] passo 2: verifica [-]
+  test...
+  [ok]  test: 850 passati
+  [ok]  copertura: 100.0%
+  [ok]  recinti di dipendenza
+  [ok]  copertura del dominio
+[19:43:55Z]   oracolo exit 0 — {"copertura": 100.0, "dominio": true, "recinti": true, "test_falliti": 0, "test_passati": 850, "verde": true}
+[19:43:55Z] 
+[19:43:55Z] passo 3: revisiona [Blind Hunter]
+[19:43:56Z]   → claude -p --model claude-opus-5 --effort high --max-budget-usd $15
+[19:49:54Z]   revisione exit 0
+## Rilievi — Story 1.8
+
+- **I due fotogrammi hanno `viewBox` diverse, e A-0 «fra i due stati» è affermata su un asse che il test non può vedere.** Misurato: `prima` = `-24 -36.8 543.4 224.8`, `dopo` = `-24 -28.8 493.4 216.8`. L'`<svg>` non porta `width`/`height` (scala col contenitore, UX-DR27), quindi commutando in un riquadro di larghezza fissa **ogni entità preservata si sposta a schermo** — origine *e* dimensione differiscono. `TestA0FraIDueStati` confronta `cx`/`cy` e `ET.tostring` del sottoalbero: sono coordinate in spazio utente, invarianti per costruzione rispetto alla `viewBox`. La famiglia di oracoli che porta il nome dell'autorità della storia non può fallire sull'unico asse che la commutazione espone. La Story 1.7 aveva registrato la variante *con overlay vs senza overlay* (`test_l_overlay_allarga_la_viewbox_e_questo_e_dichiarato`, dove l'origine restava uguale e D4 veniva lasciata aperta); la variante *fra i due fotogrammi dello stesso passo* è nuova di questa storia, ha una forma diversa, e non è né misurata né registrata.
+
+- **Il fotogramma *Prima* mostra già il risultato del passo.** Nel layer 6 di `fotogrammi[prima]` è emesso `R1R2eq = R1 + R2` — il nome dell'equivalente che in `Cₖ` non esiste, e la sua formula. `apertura()` esiste e restituisce `prima` con un docstring che invoca UX-DR22 (*«aprire su `dopo` mostrerebbe il passo già compiuto»*), ma il fotogramma d'apertura enuncia comunque il passo compiuto. La causa è la scelta di `componi` di usare **un solo overlay per i due render**, commentata come un vantaggio per A-0 e senza un contro-controllo su cosa quella scelta deposita nel fotogramma d'apertura. `test_cio_che_cambia_invece_non_compare_in_entrambi` sta accanto al fatto e non lo vede: asserisce che `R1R2eq` non è fra i `data-component-id` di `prima` — vero — e non guarda il layer 6. Nessun test ispeziona il contenuto dei layer 5 e 6 del fotogramma *Prima*.
+
+- **`PRECONDITIONS` non caratterizza il permesso, e nessuna guardia se ne accorge.** Sia `_serie` sia `_parallelo` passano da `_resistore`, che impone due condizioni non dichiarate: i componenti nominati **esistono** nel circuito (`ir.component`) e sono **entrambi resistori** (*«la riduzione vale fra resistori»*). `_verifica_le_precondizioni_degli_implementati` controlla solo che l'elenco non sia vuoto; `TestLePrecondizioniSonoFalsificabili` verifica solo il verso *dichiarata → esigita*. Il verso *esigita → dichiarata* non è controllato da niente, ed è quello che rende l'elenco una risposta a «perché posso farlo?». La suite contiene già il controesempio: `test_un_rifiuto_si_restituisce_e_non_lascia_niente_nei_registri` costruisce un `parallelo` in cui l'**unica** precondizione dichiarata è soddisfatta e il passo è rifiutato lo stesso.
+
+- **`StaticStep` non ha nessuna guardia, e le sue sorelle ne hanno.** Verificato eseguendo: `StaticStep(operation="serie", prima="non-un-lay", dopo="non-un-lay", fotogrammi=("",))` è costruito senza proteste. Nessun `verifica(..., "lay")` sui due identificatori, nessun `prima != dopo`, nessuna relazione fra la tupla dei fotogrammi e i due `lay_`, nessun vincolo che i fotogrammi siano due. È esportato in `__all__` ed è *«ciò che `export()` consumerà»*: la proprietà AD-10 «stessi byte, stessa sorgente semantica» vale per le istanze che escono da `esporta()` e per nessun'altra, e il tipo non dice da nessuna parte che sia l'unico costruttore legittimo. Nessun test lo costruisce direttamente.
+
+- **Le tre risposte di FR-49 rispondono in silenzio su un'entità estranea al passo.** Verificato: `deriva_da(EntityRef("component","R99"))` → `()`, `e_lo_stesso(...)` → `False`, `che_ne_e_stato(...)` → `None`, per un'entità che non sta né in `Cₖ` né in `Cₖ₊₁`. `e_lo_stesso` restituisce `False`, cioè afferma «non è la stessa attraverso il passo» di qualcosa che nel passo non c'è. È la classe d'ingresso per cui `commuta` e `fotogramma` sollevano, con la ragione scritta nel docstring — *«rispondere `prima` lo renderebbe silenzioso, mostrando all'utente il disegno sbagliato senza che nulla se ne accorga»* — e il ragionamento non è applicato ai tre metodi che servono l'AC2. Nessun test passa un'entità estranea a nessuno dei tre.
+
+- **`componi` conia due identificatori dalla stessa entropia.** Un solo `(istante, casualita)` alimenta il `lay_` dentro `applica` e il `patch_` in `patches.deposita`. Misurato: `lay_01K2F2DMF8000G40R40M30E209` e `patch_01K2F2DMF8000G40R40M30E209` — 26 cifre identiche, ricavabili l'una dall'altra. `conia` documenta l'entropia come *«nuova a ogni conio»* e il messaggio d'errore di `PatchStore.deposita` la chiama *«entropia nuova a ogni chiamata»*; l'unico chiamante in `src/` la riusa, e la firma non offre modo di fornirne due. Nessun test osserva la relazione fra i due nomi.
+
+- **Due oracoli monkeypatchano un simbolo che il codice sotto test non può raggiungere.** `esporta`, `commuta` e `fotogramma` stanno in `schema.py`, che non importa `render` da nessuna parte; `test_esportare_non_renderizza` sostituisce `compose.render`. Quel test resta verde per **qualunque** implementazione di `esporta`, compresa una che chiamasse `serialize.render` direttamente. Stessa struttura per la seconda metà di `test_commutare_non_renderizza_nemmeno_una_volta`. Il peso reale lo portano i confronti con `is`; questi due si presentano come oracoli sul comportamento e non lo sono.
+
+- **La catena di due passi è dichiarata «il caso ordinario», ha un ramo scritto apposta, e non è né raggiungibile né provata.** `componi` scarta `dopo_circuito` (variabile locale) e `VisualStep` non nomina nessun circuito, per identificatore o altrimenti: dal valore restituito non si può comporre il passo successivo senza rieseguire `transform`. Il ramo `if layout.identifier not in layouts` esiste per la catena, e il suo test la simula depositando il layout a mano; nessun test compone due passi in fila. Ciò per cui il ramo è stato scritto non è verificato.
+
+- **`_verifica_precondizioni` non controlla il tipo dei valori.** `_PRECONDIZIONI["serie"] = "i due componenti condividono un nodo"` supera tutti e tre i controlli — ogni carattere è non vuoto, i caratteri sono distinti — e `Justification.precondizioni` diventa una `str` che chi la renderizza itererà come elenco di lettere. È il caso speculare che `conia` guarda esplicitamente nello stesso repository (*«una stringa di lunghezza giusta passerebbe ogni altro controllo»*): lo standard esiste e qui non è applicato.
+
+- **`VisualStep` esige che i due `lay_` differiscano e non che differiscano i due disegni.** La ragione scritta nella guardia — *«commutare non mostrerebbe niente»* — vale identica per due fotogrammi byte per byte uguali sotto due identificatori diversi, e quel caso è accettato. La differenza fra i due disegni è verificata solo dal test di controllo sulla fixture, non è un invariante del tipo.
+[19:49:54Z] 
+[19:49:54Z] passo 4: ripara [-]
+[19:49:54Z]   → claude -p --model claude-opus-5 --effort max --max-budget-usd $25
+All repairs verified by execution. Here is the report.
+
+---
+
+# Rapporto — Story 1.8, iterazione di riparazione
+
+## 1. Che cosa ho cambiato, file per file
+
+**`src/kirchhoff/render/step/schema.py`**
+- `StaticStep.__post_init__`: nuova. Sette guardie — operazione nel catalogo, i due `lay_` verificati per genere e distinti, `fotogrammi` una `tuple`, di lunghezza due, di stringhe non vuote, e i due byte distinti.
+- `VisualStep.__post_init__`: aggiunta la guardia che i **due fotogrammi** differiscano, accanto a quella che esigeva solo due `lay_` diversi.
+- `VisualStep.entita` (proprietà, nuova): `Pₖ ∪ consumed ∪ produced`, che è esattamente `Entities(Cₖ) ∪ Entities(Cₖ₊₁)` — verificato per esecuzione, non assunto.
+- `VisualStep._sua` (nuova): `deriva_da`, `e_lo_stesso` e `che_ne_e_stato` ora sollevano su un'entità estranea al passo, come già facevano `commuta` e `fotogramma`. `()` e `None` restano risposte legittime per le entità *del* passo.
+- Importato `CATALOG`.
+
+**`src/kirchhoff/domain/transform/catalog.py`**
+- `_PRECONDIZIONI`: aggiunte le due condizioni comuni a `serie` e `parallelo`, in testa perché è il loro ordine di valutazione.
+- `_verifica_precondizioni`: controllo di **forma** prima di quelli sul contenuto — la tupla non può essere una `str`, gli elementi devono essere `str`.
+
+**`tests/test_visual_slice.py`** — 26 test nuovi, tre classi nuove (`TestLeGuardieDellaFormaStatica`, `TestLEntitaEstraneaAlPasso`, `TestLaCatenaDiDuePassi`, `TestLeMisureRegistrate`), fixture `CATENA` a tre resistori, helper `_nessun_rendering`. Corretti i due oracoli che sostituivano `compose.render` per codice che sta in `schema.py`: ora sostituiscono **tutte e tre** le rilegature (`svg`, `serialize`, `compose`).
+
+**`tests/test_transform.py`** — due test per il controllo di forma su `_verifica_precondizioni`.
+
+**`AGENTS.md`**, **`deferred-work.md`** — la nota sulle precondizioni comuni; quattro rilievi registrati con la misura.
+
+## 2. Oracoli eseguiti
+
+| Oracolo | Exit |
+|---|---|
+| `ops/loop/verifica.sh` | **0** — 877 passati, copertura 100.0%, recinti ok, dominio ok |
+| `uv run python scripts/bmad_chain.py verifica --con-loop` | **0** |
+| `uv run python scripts/check_boundaries.py` | **0** |
+
+Baseline prima dell'iterazione: 850 passati, copertura 100%, exit 0.
+
+## 3. I dieci rilievi: sei confermati e riparati, tre confermati e registrati, uno confermato con la causa diversa da quella dichiarata
+
+**Riparati** (ciascuno con un test che ha visto la guardia sollevare): guardie di `StaticStep`; guardia sui due disegni di `VisualStep`; guardia sull'entità estranea nelle tre risposte FR-49; le due precondizioni esigite e non dichiarate; il controllo di forma su `_verifica_precondizioni`; i due oracoli su un simbolo irraggiungibile. La catena di due passi ha ora un test che la percorre davvero — tre `lay_` e due `patch_`, e `V1`, `node:0`, `node:b` nello stesso punto fra il primo fotogramma e l'ultimo.
+
+**Rettifica su un rilievo — la causa dichiarata è sbagliata, il fatto no.** Il revisore attribuisce entrambe le precondizioni mancanti a `_resistore`. Misurato: «entrambi resistori» è di `_resistore` (`engine.py:192`), ma «i componenti esistono» è della porta di `transform` **prima** dello smistamento (`engine.py:656`) — `_resistore` non ci arriva mai. Il rilievo resta valido; l'ho corretto nei tre punti in cui l'avevo trascritto.
+
+**Rettifica su `_verifica_precondizioni`.** L'esempio del revisore — `"i due componenti condividono un nodo"` — è **respinto**, perché lo spazio fallisce `.strip()`. Il difetto di classe esiste comunque: `"abc"` passava. Ho riparato la classe, non l'esempio.
+
+**Registrati con la misura, non riparati** — in `deferred-work.md` §4–7, ciascuno con un test che fa fallire chi cambia il comportamento senza prendere la decisione:
+
+- **Le due `viewBox` differiscono** (`-24 -36.8 543.4 224.8` contro `-24 -28.8 493.4 216.8`). Il rilievo è vero, ma la sua premessa va corretta: UX-DR17 definisce A-0 su `p_k(x)`, cioè in spazio utente — `TestA0FraIDueStati` **misura la cosa giusta**. Ciò che manca è la misura della «necessità geometrica», che UX-DR17 non lascia facoltativa. Unificare le due `viewBox` sceglie quale lettura di FR-53 governi, cioè chiude D4 per inerzia — la stessa ragione per cui la 1.7 registrò la sua variante.
+- **Il fotogramma d'apertura porta l'equazione.** Confermato: `R1R2eq = R1 + R2` nel layer 6 di `prima`, e `EXPERIENCE.md` §3 dice che a *PRIMA* «non è ancora comparso un solo carattere di testo». Non riparato perché `EXPERIENCE.md` distingue **tre** momenti e `VisualStep` ne ha **due**: decidere a quale appartenga l'equazione è sequenza UX, e realizzarlo richiede di allentare una guardia che la 1.7 ha scritto apposta.
+- **I due identificatori dalla stessa entropia.** Confermato (26 cifre identiche). **Il danno oggi è nullo e va detto**: i prefissi differiscono, quindi non collidono in nessun registro — e la collisione è la ragione per cui `conia` chiede entropia nuova. È il contratto a essere violato. Le due strade — cambiare la firma pubblica, o inventare una derivazione che nessun port nomina — sono entrambe decisioni; il docstring di `domain/identity` registra già che **non esiste un `EntropyPort`**, ed è lì che va chiusa.
+- **Il verso *esigita → dichiarata*** non è meccanizzabile. La suite contiene già il controesempio: `test_un_rifiuto_si_restituisce_e_non_lascia_niente_nei_registri` soddisfa ogni precondizione dichiarata e viene rifiutato lo stesso, da `validate` sul prodotto. Non ho installato un gate perché sarebbe un controllo che non può fallire.
+
+## 4. Fuori ambito, non toccato
+
+- Le **voci 1 e 2 di `deferred-work.md`** (Story 1.7): la guardia FR-38 vacua in `applica`, e `TransformOverlay` che ammette `confine` e `preservato` vuoti. Nessuna delle due è nominata dai criteri della 1.8.
+- **`pipeline/`, `api/`, `adapters/` restano vuoti.** `componi` vive in `render/step/` come assunzione dichiarata, non come architettura ratificata.
+- **La riga dell'ERD che CV6 chiedeva** per la `LayoutPatch` persistita non è mai entrata in AD-8; `implementation-readiness.md` tiene ancora 1.3 a «⛔ non pronta».
+- **`test_l_alternativa_testuale_non_cambia_con_l_overlay`** (1.7) registra che chi legge con un lettore di schermo non sente la trasformazione. Vale anche fra i due fotogrammi di questa storia. Non toccato.
+
+Il ramo non è stato promosso: `--promuovi` non è stato usato.
+[20:06:10Z] 
+[20:06:10Z] passo 5: verifica [-]
+  test...
+  [ok]  test: 877 passati
+  [ok]  copertura: 100.0%
+  [ok]  recinti di dipendenza
+  [ok]  copertura del dominio
+[20:06:20Z]   oracolo exit 0 — {"copertura": 100.0, "dominio": true, "recinti": true, "test_falliti": 0, "test_passati": 877, "verde": true}
+[20:06:20Z] 
+[20:06:20Z] passo 6: revisiona [ri-revisione]
+[20:06:20Z]   → claude -p --model claude-opus-5 --effort high --max-budget-usd $15
+[20:13:57Z]   revisione exit 0
+## Rilievi
+
+- **`Justification` è l'unico dei quattro tipi esportati senza una guardia, e ci finisce dentro esattamente il difetto appena riparato a monte.** `schema.py:103` non ha `__post_init__`. La riparazione ha aggiunto sette guardie a `StaticStep` con la ragione *«il tipo è esportato in `__all__` e non dice chi lo costruisce»*, e ha aggiunto a `_verifica_precondizioni` il controllo di forma perché *«`"abc"` supera ogni elemento è testo non vuoto, e `Justification.precondizioni` diventa un elenco di lettere»*. Misurato per esecuzione: `Justification(terminali="R1", precondizioni="abc", formula=None, certificato=None)` si costruisce senza proteste, e `tuple(j.precondizioni)` è `('a', 'b', 'c')`. Il controllo è stato installato sul produttore (il Catalogo) e non sul tipo che UX-DR23 nomina, cioè sull'ultimo punto prima del lettore — che è dove il difetto era stato descritto.
+
+- **Nessuna guardia lega un fotogramma al proprio `lay_`, e nei due tipi il caso non guardato è l'unico che produce una risposta plausibile e sbagliata.** Misurato: `StaticStep(operation, prima, dopo, fotogrammi=(svg_dopo, svg_prima))` supera tutte e sette le guardie nuove — `fotogrammi[0]` dichiara `data-layout-id=lay_…DMF8` mentre `prima` è `lay_…DKG0`. E `VisualStep(fotogrammi={prima: svg_dopo, dopo: svg_prima})` supera tutte le sue: `fotogramma(apertura())` restituisce allora il disegno del **dopo**, che è precisamente il caso che `apertura()` esiste per escludere (UX-DR22, `schema.py:306`). Il controllo è disponibile e costa una riga: `test_ogni_fotogramma_dichiara_di_quale_stato_visuale_e` prova che i byte portano già `data-layout-id`. Le sette guardie prendono vuoto, tre, non-tupla, uguali — cioè le forme che si notano — e lasciano passare lo scambio, che non si nota.
+
+- **Almeno due condizioni restano *esigite e non dichiarate*, della stessa classe delle due riparate, e §7 le registra come non meccanizzabili senza averle enumerate.** Misurato per esecuzione:
+  - arità — `transform(c, "serie", "R1")` → `ValueError: serie: vuole 2 identificatori, ne ha ricevuti 1` (`engine.py:650`);
+  - validità elettrica di `Cₖ` — su un circuito con un nodo pendente estraneo alla coppia, `transform(c, "serie", "R1", "R2")` → `Refusal(topology, z)` da `ingresso = validate(prima)` (`engine.py:241`), con **tutte e cinque** le precondizioni dichiarate soddisfatte.
+
+  Il controesempio di §7 riguarda `validate` sul **prodotto** e conclude che *«la condizione che manca non è una precondizione: è una proprietà di `Cₖ₊₁`»*. La metà su `Cₖ` falsifica quella conclusione: è una condizione su `Cₖ`, è imposta, ed è assente dall'elenco. La voce è quindi archiviata su una misura incompleta.
+
+- **La rettifica sull'attribuzione di `_resistore` è stata applicata in tre punti e non nel quarto, che è la prova.** `tests/test_visual_slice.py:433`: *«La prima delle due comuni: la impone `_resistore` per entrambe»* — mentre l'asserzione tre righe più sotto è `match="non e un componente"`, cioè il messaggio della porta di `transform` (`engine.py:656`), non di `_resistore`. Il docstring contraddice l'asserzione che gli sta sotto, nel test che l'iterazione cita come evidenza della correzione.
+
+- **Il `TransformResult` non ha registro, quindi un `VisualStep` non è ricostruibile — che è la seconda metà della frase di AD-21 su cui il tipo è scritto.** *«Ricostruirla significa risolvere gli identificatori»*: risolti `prima`, `dopo` e `patch` si ottengono due `LayoutIR` e una `LayoutPatch`, e nient'altro. `delta`, `boundary`, `equation`, `certificate` vivono per valore dentro l'oggetto e non sono depositati da nessuna parte — `LayoutStore` e `PatchStore` sono gli unici registri. Ne segue che tre dei quattro campi di UX-DR23 e tutte e tre le risposte di FR-49 spariscono col processo. La storia verifica il verso *«gli identificatori si risolvono»* e non quello *«risolverli ridà il passo»*, e l'assenza non è registrata né fra le assunzioni dichiarate né in `deferred-work.md`.
+
+- **`esporta()` lascia cadere il `patch_`.** `StaticStep` porta `operation`, `prima`, `dopo`, `fotogrammi` (`schema.py:130`): da una forma statica non si risale al `LayoutPatch` che lega i due stati, cioè al terzo lato della tripla di CV6 e all'unico identificatore che — per SM-14, citata da `compose.py` — *«identifica un passo, non un contenuto»*. L'omissione avviene nel punto in cui l'artefatto esce dal sistema, e nessun test, docstring o voce di `deferred-work.md` la nomina come scelta.
+
+- **Il costo ergonomico che il test dichiara registrato non è registrato.** `tests/test_visual_slice.py:879`: *«`componi` scarta `Cₖ₊₁`: per il secondo passo va rieseguita la trasformazione. È il costo ergonomico registrato in `deferred-work.md`»*. `deferred-work.md` non lo contiene — le voci sono 1, 2, 3 (chiusa) e 4–7, e nessuna nomina `Cₖ₊₁` né lo scarto. Il fatto è reale e visibile nella catena (`transform` gira due volte per ogni passo concatenato); ciò che manca è la voce a cui il test rimanda, ed è la forma di E-62 contro cui la stessa iterazione mette in guardia in `AGENTS.md`.
+
+- **Il ramo di `componi` che solleva non ha oracolo, e i quattro circuiti che violano le precondizioni non passano mai da `componi`.** `compose.py` dichiara due uscite distinte — *«il `Refusal` si restituisce, non si solleva»*, e *«un `ValueError` da `transform` è invece un'altra cosa … e sale»*. La prima ha `test_un_rifiuto_si_restituisce_e_non_lascia_niente_nei_registri`, con il controllo `len(layouts) == 0 and len(patches) == 0`. La seconda non ha niente: `TestLePrecondizioniSonoFalsificabili` chiama sempre `transform` diretta, mai `componi`, quindi nessun test dice che una precondizione violata attraversi il punto di composizione senza lasciare metà passo nei registri.
+
+- **`entita` afferma una proprietà universale ed è misurata su una fixture sola, e ora tre risposte di FR-49 ne dipendono.** `schema.py:318` dichiara *«le tre parti sono disgiunte e la loro unione è esatta … non c'è una quarta classe»*; `test_le_entita_del_passo_sono_l_unione_dei_due_circuiti` lo verifica per `serie` su `CIRCUITO` e basta — non per `parallelo`, non sul secondo passo della catena, che sono entrambi disponibili nel file. La conseguenza del verso mancante è specifica: un'entità presente in `Cₖ` e in `Cₖ₊₁` che cadesse fuori da `preserve ∪ consumed ∪ produced` farebbe **sollevare** `e_lo_stesso(x)` dove la risposta corretta è `True`, cioè la guardia nuova convertirebbe una risposta giusta in un errore. Nessun invariante del dominio è citato a sostegno della clausola, e nessun test la parametrizza.
+
+- **`check_boundaries.py` figura fra gli oracoli della storia e non apre il pacchetto nuovo.** Lo script cammina solo `RECINTO = "domain"` (`scripts/check_boundaries.py:30`, `:75`): il suo exit 0 è evidenza sulle due righe toccate in `catalog.py` e `engine.py`, e su niente di `render/step/`. Il recinto 4 di AD-21 su `render/` è dichiarato fuori ambito, il che rende legittimo non averlo — ma la tabella degli oracoli presenta il verde come se coprisse il codice nuovo, e per `render/step/` non esiste nessun controllo di confine.
+
+- **L'alternativa testuale dei due fotogrammi non è misurata da nulla in questa storia, e la frase con cui il rapporto la liquida non regge alla misura.** Il rapporto dice che il rilievo 1.7 *«vale anche fra i due fotogrammi di questa storia»*. Misurato: i due `<desc>` **differiscono** — `Circuito: 3 componenti, 3 nodi …` contro `Circuito: 2 componenti, 2 nodi … R1R2eq, resistore da 320 ohm`. Ciò che manca non è la differenza: è che nessuno dei due testi dice che una trasformazione è avvenuta, né da cosa `R1R2eq` deriva — l'equazione sta nel layer 6 visuale e non nell'alternativa testuale. È l'unico rendering di AC1 e AC2 disponibile a chi non vede, e la storia non gli ha installato né un test né un gate, mentre ai quattro rilievi registrati ne ha dato tre.
+ratchet: avanzamento — test_passati: 245 -> 877
+[20:13:57Z] ratchet: verde
+[20:13:57Z] giro verde, NON promosso: manca --promuovi.
+[20:13:57Z] Ispeziona il ramo, poi decidi:
+[20:13:57Z]   promuovere: git merge --no-ff loop/iter-20260826T192245Z-1-8-visual-slice-0-prima-azione-dopo-e-ripercorribile
+[20:13:57Z]   scartare:   git branch -D loop/iter-20260826T192245Z-1-8-visual-slice-0-prima-azione-dopo-e-ripercorribile
+[20:13:57Z] I rilievi dell'ultima revisione sono nel giornale: nessun cancello
+[20:13:57Z] deterministico sa giudicarli, e un verdetto di modello non apre un merge.
+[20:13:57Z] pausa 20s
+[20:14:17Z] 
+[20:14:17Z] --- iterazione 2 di 6 ---
+  [ok]  nessun FERMO
+  [ok]  repository git: c4124e6
+  [ok]  uv: uv 0.11.8 (0e961dd9a 2026-04-27 aarch64-apple-darwin)
+  [ok]  helper runtime BMAD conformi al pin (5/5)
+  [ok]  holdout protetto da regola deny
+  [ok]  sprint-status.yaml leggibile
+  [ok]  albero di lavoro pulito
+[20:14:17Z] precondizioni: tutte verdi
+[20:14:18Z] storia: 1-8-visual-slice-0-prima-azione-dopo-e-ripercorribile
+[20:14:18Z] classe di rischio: R2
+fatal: a branch named 'loop/iter-20260826T192245Z-1-8-visual-slice-0-prima-azione-dopo-e-ripercorribile' already exists
+[20:14:18Z] impossibile creare il ramo loop/iter-20260826T192245Z-1-8-visual-slice-0-prima-azione-dopo-e-ripercorribile
