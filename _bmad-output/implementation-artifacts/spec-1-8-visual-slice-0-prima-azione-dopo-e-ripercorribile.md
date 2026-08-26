@@ -64,8 +64,8 @@ Tutti in `tests/test_visual_slice.py` salvo dove indicato.
 | … **già calcolati** | `test_i_quattro_campi_sono_letti_dal_prodotto_non_composti` (`is`) · `test_i_quattro_campi_esistevano_prima_della_domanda` · `test_chiedere_due_volte_da_gli_stessi_oggetti` |
 | … e **non genera prosa** | gli stessi tre: un campo prodotto al momento della domanda non supera un confronto per identità, qualunque sia il suo contenuto |
 | … i quattro, uno per uno | `test_i_terminali_sono_i_due_nodi_su_cui_il_passo_confina` · `test_le_precondizioni_sono_quelle_dichiarate_dal_catalogo` · `test_il_certificato_e_quello_dell_operazione_del_passo` |
-| … e le precondizioni sono **esigibili**, non decorative | `TestLePrecondizioniSonoFalsificabili` (4 casi) · `test_transform.py::TestLePrecondizioniDichiarate` (9 casi, guardie della dichiarazione) |
-| **And** lo stesso passo è renderizzabile in **forma statica**, dalla **stessa** sorgente semantica (AD-10) | `TestLaFormaStatica::test_l_export_porta_gli_stessi_identici_byte` (`is`) · `test_esportare_non_renderizza` · `test_i_due_stati_e_l_export_vengono_dalla_stessa_sorgente_semantica` · `test_ogni_fotogramma_dichiara_di_quale_stato_visuale_e` |
+| … e le precondizioni sono **esigibili**, non decorative | `TestLePrecondizioniSonoFalsificabili` (8 casi, `Refusal` compreso) · `test_transform.py::TestLePrecondizioniDichiarate` (9 casi, guardie della dichiarazione) |
+| **And** lo stesso passo è renderizzabile in **forma statica**, dalla **stessa** sorgente semantica (AD-10) | `TestLaFormaStatica::test_l_export_porta_gli_stessi_identici_byte` (`is`) · `test_esportare_non_renderizza` · `test_i_due_stati_e_l_export_vengono_dalla_stessa_sorgente_semantica` · `test_ogni_fotogramma_dichiara_di_quale_stato_visuale_e` · `test_la_forma_statica_porta_il_patch_del_passo` (CV6) |
 | **Autorità A-0** — ciò che è in `preserve` non si muove **fra i due stati** | `TestA0FraIDueStati::test_ogni_nodo_preservato_sta_nello_stesso_punto_nei_due_fotogrammi` · `test_ogni_componente_preservato_e_disegnato_identico_nei_due_fotogrammi` (byte del sottoalbero) · controllo di controllo: `test_cio_che_cambia_invece_non_compare_in_entrambi` |
 | **Autorità AD-35** — la composizione intera è deterministica | `TestLaComposizione::test_comporre_due_volte_lo_stesso_passo_da_gli_stessi_byte` |
 | **Autorità CV6** — la tripla resta congiungibile | `TestLaComposizione::test_i_due_stati_visuali_restano_risolvibili_dopo_il_passo` |
@@ -106,3 +106,22 @@ e i suoi otto controlli (AD-5), la Marcatura di provenienza (FR-18/FR-19), il to
 come componente di interfaccia (`{motion.instant}`, pollice-raggiungibile: sono token
 e layout, e non esiste una superficie), e il recinto 4 di AD-21 su `render/`, che è
 la Story 1.5 e sta in backlog.
+
+Ne segue una precisazione sugli oracoli, dovuta alla seconda revisione:
+`scripts/check_boundaries.py` cammina il **solo** recinto `domain`. Il suo exit 0 è
+evidenza sulle righe toccate in `catalog.py` ed `engine.py`, e su **niente** di
+`render/step/`, che fino alla 1.5 non ha alcun controllo di confine: un verde in
+tabella non va letto come copertura del codice nuovo.
+
+## Seconda revisione a contesto fresco, 26/08/2026
+
+Undici rilievi, tutti confermati per esecuzione; otto riparati, tre registrati in
+`deferred-work.md` (voci 8–10) con la rettifica della §7. Le riparazioni visibili in
+questa spec: la guardia d'attribuzione dei fotogrammi su `VisualStep` e `StaticStep`
+(lo scambio dei due disegni superava ogni guardia esistente), le guardie di
+`Justification` (l'unico dei quattro tipi esportati senza), il `patch_` che
+`esporta()` lasciava cadere e ora attraversa l'export (CV6, SM-14), le precondizioni
+di `serie` e `parallelo` passate da 5/4 righe a 7/5 (arità e validazione elettrica
+di `Cₖ` erano esigite e non dichiarate), la misura dell'unione esatta di `entita`
+estesa alle quattro forme di passo componibili, e l'oracolo sul ramo di `componi`
+che solleva senza depositare mezzo passo.

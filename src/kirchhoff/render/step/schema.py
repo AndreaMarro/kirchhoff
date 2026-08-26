@@ -55,6 +55,7 @@ Puro: nessuna I/O, nessun orologio, nessuna casualita'.
 
 from __future__ import annotations
 
+import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from types import MappingProxyType
 
@@ -74,6 +75,22 @@ from ...domain.transform import (
 #: generi sta in `domain/identity` e qui si cita, non si ridichiara.
 _STATO_VISUALE: IdentityKind = "lay"
 _PATCH: IdentityKind = "patch"
+
+
+def _stato_dichiarato(svg: str) -> str | None:
+    """Il `lay_` che i byte dichiarano sulla radice (`data-layout-id`), o `None`.
+
+    Si legge l'attributo della radice e non si cerca una sottostringa: un SVG che
+    citasse l'identificatore di un altro stato in un commento o in un testo
+    passerebbe un controllo per sottostringa per pura coincidenza. `None` copre le
+    due forme del difetto — byte che non sono un documento, e un documento senza
+    dichiarazione — che per chi costruisce il passo sono lo stesso fatto: il
+    disegno non dice di quale stato e'.
+    """
+    try:
+        return ET.fromstring(svg).get("data-layout-id")
+    except ET.ParseError:
+        return None
 
 
 @dataclass(frozen=True, slots=True)
@@ -125,6 +142,44 @@ class Justification:
     formula: Equation
     certificato: Certificate
 
+    def __post_init__(self) -> None:
+        """Le stesse guardie delle sorelle: il tipo e' esportato e non dice chi lo costruisce.
+
+        Ed e' **l'ultimo punto prima del lettore** — UX-DR23 nomina questo tipo,
+        non il Catalogo. Il controllo di forma della prima revisione era stato
+        installato sul produttore (`catalog._verifica_precondizioni`), e prima di
+        queste guardie `Justification(terminali="R1", precondizioni="abc",
+        formula=None, certificato=None)` si costruiva senza proteste:
+        `tuple(precondizioni)` era `('a', 'b', 'c')`, l'elenco di lettere che quel
+        controllo esiste per escludere, ricostruibile qui aggirando il Catalogo.
+        """
+        if not isinstance(self.terminali, tuple) or not all(
+                isinstance(t, EntityRef) for t in self.terminali):
+            raise TypeError(
+                f"terminali {self.terminali!r}: serve una tupla di EntityRef. I "
+                "terminali sono `boundary.entities`, che nomina entita', non testo.")
+        if not isinstance(self.precondizioni, tuple):
+            raise TypeError(
+                f"precondizioni {type(self.precondizioni).__name__} invece di "
+                "tuple: una `str` si itera per caratteri, e l'elenco di ragioni "
+                "distinte che UX-DR23 chiama «precondizioni» diventerebbe un "
+                "elenco di lettere.")
+        for p in self.precondizioni:
+            if not isinstance(p, str) or not p.strip():
+                raise ValueError(
+                    f"precondizione {p!r} vuota o non testuale: una riga senza "
+                    "testo si legge come una condizione e non ne enuncia nessuna.")
+        if not isinstance(self.formula, Equation):
+            raise TypeError(
+                f"formula {type(self.formula).__name__} invece di Equation: la "
+                "formula e' l'`Equation` del prodotto, per riferimento, non un "
+                "testo composto al momento della domanda.")
+        if not isinstance(self.certificato, Certificate):
+            raise TypeError(
+                f"certificato {type(self.certificato).__name__} invece di "
+                "Certificate: il certificato e' quello del passo, per riferimento "
+                "— e' l'unico dei quattro campi ad aver verificato qualcosa.")
+
 
 @dataclass(frozen=True, slots=True)
 class StaticStep:
@@ -141,11 +196,18 @@ class StaticStep:
     ridotto ai byte gia' emessi, con gli identificatori che dicono di quali stati
     visuali sono i byte. Prendere il nome `Artifact` senza la marcatura sarebbe
     dichiarare conforme cio' che non lo e' ancora.
+
+    Porta anche il `patch_` del passo, e non e' un ornamento: e' il terzo lato
+    della tripla di CV6 e — SM-14, citata da `compose.py` — l'unico identificatore
+    che *«identifica un passo, non un contenuto»*. La prima stesura lo lasciava
+    cadere proprio nel punto in cui l'artefatto esce dal sistema: due disegni e
+    due `lay_` senza modo di risalire al passo che li lega.
     """
 
     operation: TransformationKind
     prima: str
     dopo: str
+    patch: str
     fotogrammi: tuple[str, str]
 
     def __post_init__(self) -> None:
@@ -172,6 +234,7 @@ class StaticStep:
                 "conosce non e' stato certificato da nessuno.")
         object.__setattr__(self, "prima", verifica(self.prima, _STATO_VISUALE))
         object.__setattr__(self, "dopo", verifica(self.dopo, _STATO_VISUALE))
+        object.__setattr__(self, "patch", verifica(self.patch, _PATCH))
         if self.prima == self.dopo:
             raise ValueError(
                 f"{self.prima}: i due stati visuali della forma statica sono lo "
@@ -199,6 +262,20 @@ class StaticStep:
                 "stati visuali distinti che disegnano lo stesso identico SVG sono "
                 "un passo che non si vede, e A-0 confronterebbe un disegno con se "
                 "stesso — che e' vero per chiunque e non misura nulla.")
+        # Le sette guardie sopra prendono vuoto, tre, non-tupla, uguali — le forme
+        # che si notano — e lasciavano passare lo **scambio**, che non si nota: i
+        # due disegni giusti nell'ordine invertito le superavano tutte, e la
+        # sequenza `prima → dopo` — l'unica cosa che qui dice quale disegno viene
+        # prima — mostrava il passo gia' compiuto sotto l'etichetta *Prima*.
+        for atteso, svg in zip((self.prima, self.dopo), self.fotogrammi):
+            dichiarato = _stato_dichiarato(svg)
+            if dichiarato != atteso:
+                raise ValueError(
+                    f"il fotogramma di {atteso} dichiara nei byte di essere il "
+                    f"disegno di {dichiarato or 'nessuno stato visuale'}. Senza "
+                    "un comando da premere la sequenza e' l'unica attribuzione "
+                    "(UX-DR27), e due disegni scambiati la rispettano esattamente "
+                    "al contrario.")
 
 
 @dataclass(frozen=True, slots=True)
@@ -263,6 +340,22 @@ class VisualStep:
                 "byte. I due stati visuali differiscono di identificatore e non di "
                 "disegno: commutare all'infinito (UX-DR12) mostrerebbe sempre la "
                 "stessa immagine, e A-0 confronterebbe un disegno con se stesso.")
+        # Il caso che le guardie sopra non prendono e' l'unico **silenzioso**: i
+        # due disegni giusti sotto le chiavi invertite superano il controllo
+        # sull'insieme delle chiavi e quello sui byte distinti, e
+        # `fotogramma(apertura())` restituisce allora il disegno del *dopo* — il
+        # caso esatto che `apertura()` esiste per escludere (UX-DR22). I byte
+        # dichiarano gia' di quale stato sono (`data-layout-id`, sulla radice):
+        # qui si esige che la dichiarazione e la chiave coincidano.
+        for atteso in (self.prima, self.dopo):
+            dichiarato = _stato_dichiarato(fotogrammi[atteso])
+            if dichiarato != atteso:
+                raise ValueError(
+                    f"il fotogramma di {atteso} dichiara nei byte di essere il "
+                    f"disegno di {dichiarato or 'nessuno stato visuale'}. "
+                    "Commutare mostrerebbe il disegno sbagliato sotto lo stato "
+                    "giusto, e l'apertura mostrerebbe il passo gia' compiuto "
+                    "(UX-DR22) — senza che nulla se ne accorga.")
         # Congelato **dopo** il controllo e a partire da una copia: una mappa
         # passata qui resterebbe altrimenti condivisa col chiamante, che potrebbe
         # sostituire un fotogramma dopo che le guardie sono passate. E' la stessa
@@ -318,12 +411,22 @@ class VisualStep:
     def entita(self) -> frozenset[EntityRef]:
         """`Entities(Cₖ) ∪ Entities(Cₖ₊₁)`: di chi questo passo puo' parlare.
 
-        Le tre parti sono disgiunte e la loro unione e' esatta: `Pₖ` e' cio' che i
-        due circuiti hanno in comune, `consumed` cio' che sta solo in `Cₖ`,
-        `produced` cio' che sta solo in `Cₖ₊₁`. Non c'e' una quarta classe, quindi
-        non serve risolvere nessun `CircuitIR` per sapere se un'entita' appartiene
-        al passo — che e' anche l'unica maniera di chiederlo restando la proiezione
-        per riferimento che AD-21 prescrive.
+        Le tre parti sono disgiunte e la loro unione e' esatta — e non per fede:
+        e' un teorema dei controllori che ogni prodotto attraversa in
+        `engine._prodotto` prima di uscire. `check_delta` (regole 4 e 5) esige che
+        tutto cio' che sta in `Cₖ` fuori da `Pₖ` sia in `consumed` e tutto cio'
+        che sta in `Cₖ₊₁` fuori da `Pₖ` sia in `produced`; `check_patch` esige
+        `create` e `remove` uguali a cio' che appare e sparisce fra i due
+        circuiti; `check_transform` rifiuta un identificatore presente in
+        entrambi che non nomini la stessa entita' (CV1). Un'entita' dei due
+        circuiti che cadesse fuori dall'unione — e farebbe sollevare `_sua` dove
+        la risposta giusta esiste — non puo' quindi arrivare qui dentro un
+        prodotto certificato; `result.py` dichiara il limite che resta, *«un
+        prodotto assemblato da fuori non attraversa quei controllori»*, e questa
+        proiezione non ha i circuiti per rimisurarlo: e' il prezzo, qui pagato
+        consapevolmente, di restare la proiezione per riferimento che AD-21
+        prescrive. La misura sta in `test_le_entita_del_passo_sono_l_unione_dei_
+        due_circuiti`, su ogni forma di passo che la suite sa comporre.
         """
         delta = self.risultato.delta
         return frozenset(self.risultato.preserve) | delta.consumed | delta.produced
@@ -434,10 +537,15 @@ class VisualStep:
         comando da premere, quindi la sequenza dei due disegni e' l'unica cosa che
         dice quale viene prima. UX-DR27 chiede i due stati **affiancati** sopra i
         768 px, e affiancati in quell'ordine.
+
+        Il `patch_` attraversa l'export intatto: e' l'identificatore del passo
+        (SM-14), e lasciarlo cadere qui spezzerebbe la tripla di CV6 proprio nel
+        punto in cui l'artefatto lascia il sistema.
         """
         return StaticStep(
             operation=self.operation,
             prima=self.prima,
             dopo=self.dopo,
+            patch=self.patch,
             fotogrammi=(self.fotogrammi[self.prima], self.fotogrammi[self.dopo]),
         )

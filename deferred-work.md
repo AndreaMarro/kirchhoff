@@ -178,3 +178,100 @@ proprieta' di `Cₖ₊₁`. Distinguere le due e' semantica di FR-49, non manute
 
 **Nessun gate installato**, e la ragione e' che un gate qui sarebbe il gate scritto e
 non installato al contrario: un controllo che non puo' fallire.
+
+**Rettifica del 26/08/2026 (seconda revisione, contesto fresco).** La voce era
+archiviata su una misura incompleta. Altre due condizioni della stessa classe erano
+esigite e non dichiarate: l'**arita'** (`engine.py:648` — `transform(c, "serie",
+"R1")` → `ValueError: vuole 2 identificatori`) e la **validita' elettrica di `Cₖ`**
+(`engine.py:241`, `validate(prima)` in `_prodotto` — su un circuito col nodo `z`
+pendente estraneo alla coppia, `Refusal(topology, z)` con tutte le precondizioni
+dichiarate soddisfatte). Entrambe sono ora **dichiarate** nel Catalogo e falsificate
+da `TestLePrecondizioniSonoFalsificabili`. Il controesempio di questa voce resta in
+piedi per la meta' che gli appartiene: il rifiuto di `validate` sul **prodotto**
+(`test_un_rifiuto_si_restituisce_e_non_lascia_niente_nei_registri`) continua a non
+essere una precondizione — e' una proprieta' di `Cₖ₊₁` — quindi il verso *esigita →
+dichiarata* resta non meccanizzabile. Ma la frase *«la condizione che manca non e'
+una precondizione»* era vera del prodotto e falsa di `Cₖ`, e la conclusione era piu'
+larga della misura che la sosteneva.
+
+## Story 1.8 — seconda revisione a contesto fresco, 26/08/2026
+
+Il revisore ha prodotto undici rilievi, tutti confermati per esecuzione. Otto sono
+stati riparati nella stessa iterazione — la guardia d'attribuzione dei fotogrammi
+sui due tipi (lo scambio superava ogni controllo), le guardie di `Justification`
+(l'unico tipo esportato senza), il `patch_` che `esporta()` lasciava cadere, le due
+precondizioni esigite e non dichiarate con la rettifica di §7 qui sopra,
+l'attribuzione corretta nel docstring del test che la prova, la misura dell'unione
+esatta di `entita` estesa alle quattro forme di passo con l'invariante citato,
+l'oracolo sul ramo di `componi` che solleva, e la nota sul recinto che
+`check_boundaries.py` non copre. I tre che seguono restano aperti, ciascuno con la
+misura che lo rende ritrovabile e la ragione per cui chiuderlo e' una decisione.
+
+### 8. `componi` scarta `Cₖ₊₁`: la catena riesegue la trasformazione
+
+Misurato: `TestLaCatenaDiDuePassi._catena` chiama `transform(CATENA, "serie", "R1",
+"R2")` **due volte** — una dentro `componi`, una di nuovo per ottenere il circuito
+d'ingresso del secondo passo — perche' `componi` restituisce il `VisualStep`, e il
+`VisualStep` e' una proiezione per riferimento: porta i `lay_` e il `patch_`, non il
+`CircuitIR` prodotto. Il costo e' una `transform` in piu' per ogni passo
+concatenato; su una funzione pura il risultato non cambia (AD-2), quindi il costo e'
+ergonomico e computazionale, non di correttezza.
+
+**Le alternative.** (1) `componi` restituisce anche `Cₖ₊₁` — cambia la firma
+pubblica del punto di composizione. (2) `VisualStep` porta il circuito per valore —
+contraddice AD-21. (3) un registro dei `CircuitIR` risolvibile per identificatore —
+e' la stessa lacuna della voce 9. **Cosa la ribalterebbe:** la prima storia di
+Epic 2 (il Piano didattico) che componga catene per davvero: chi scrive quel
+chiamante decide la firma, e questa voce gli tiene la misura.
+
+### 9. Il prodotto del passo non ha registro: perderlo perde tre campi su quattro
+
+AD-21 v2: *«ricostruirla significa risolvere gli identificatori»*. Misurato: risolti
+`prima`, `dopo` e `patch` si ottengono due `LayoutIR` e una `LayoutPatch`
+(`render.layout` esporta `LayoutStore` e `PatchStore` e nessun altro registro), e
+`delta`, `boundary`, `equation`, `certificate` vivono per valore dentro
+`VisualStep.risultato` senza essere depositati da nessuna parte. Ne segue che tre
+dei quattro campi di UX-DR23 e tutte e tre le risposte di FR-49 spariscono col
+processo: il passo e' ripercorribile finche' l'oggetto vive, e non e' ricostruibile
+dai registri. La storia verifica il verso *«gli identificatori si risolvono»*; il
+verso *«risolverli ridà il passo»* oggi e' falso, e prima di questa voce non era
+scritto da nessuna parte.
+
+**Perche' resta aperto:** un registro per il `TransformResult` — o per la
+`ProofSession` che AD-21 nomina — e' un'unita' di persistenza nuova con un
+identificatore nuovo, e AD-8 elenca le righe persistite senza includerla: aggiungerla
+e' una decisione sullo spine, non una manutenzione. **Nessun gate installato:** un
+test che asserisse «non esiste un registro» inchioderebbe l'assenza come se fosse
+voluta, e fallirebbe il giorno in cui la decisione venisse presa nel verso giusto —
+e' il gate al contrario, come per §7. **Cosa la ribalterebbe:** la prima storia che
+debba riaprire un passo da una sessione nuova (`resume_ref`, AD-8).
+
+### 10. L'alternativa testuale non racconta il passo
+
+Misurato: i due `<desc>` differiscono — *«Circuito: 3 componenti, 3 nodi…»* contro
+*«Circuito: 2 componenti, 2 nodi… R1R2eq, resistore da 320 ohm»* — e nessuno dei
+due dice che una trasformazione e' avvenuta, ne' da che cosa `R1R2eq` derivi:
+l'equazione sta nel layer 6 **visuale** e in nessun testo alternativo. Per chi legge
+con un lettore di schermo, AC1 e AC2 di questa storia non esistono.
+
+**Perche' resta aperto:** il `<desc>` e' l'alternativa testuale della **topologia**
+di un circuito (Story 1.4, `alternativa_testuale`), non del passo: fargli raccontare
+la trasformazione significa decidere la narrazione accessibile del passo — quale
+testo, in quale dei due fotogrammi, o in un canale terzo — cioe' la stessa famiglia
+di decisioni della voce 5 (a quale momento appartiene l'equazione), su un canale che
+nessun criterio della 1.8 nomina e che tocca FR-53. La 1.7 aveva registrato la meta'
+*overlay*; questa e' la meta' *fra i due fotogrammi*, ed e' piu' precisa del rapporto
+che la liquidava: la differenza fra i due testi c'e', e' la **narrazione** a mancare.
+
+**Gate installato:**
+`TestLeMisureRegistrate::test_l_alternativa_testuale_non_racconta_il_passo`.
+
+### Nota sul recinto non coperto, per chi legge gli oracoli
+
+`scripts/check_boundaries.py` cammina il solo recinto `domain`
+(`check_boundaries.py:30`): il suo exit 0 e' evidenza sulle righe toccate in
+`catalog.py` ed `engine.py` e su **niente** di `render/step/`, che fino alla
+Story 1.5 (recinto 4 di AD-21, in backlog) non ha alcun controllo di confine. Non e'
+un difetto da riparare qui — il recinto 4 e' dichiarato fuori ambito dalla spec —
+ma una tabella di oracoli che presenti quel verde come copertura del codice nuovo
+dice piu' di quel che il controllo misura, ed e' gia' successo una volta.

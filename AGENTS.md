@@ -201,13 +201,19 @@ e verifica dopo il push che il conteggio remoto coincida col locale.
   fallire l'import, e la guardia sta in `engine.py` perche' `catalog.py` non puo'
   importare `engine` e non sa quali voci abbiano un corpo. Sono trascritte dalle
   guardie che le impongono, e ogni riga ha un test che la vede respingere un circuito.
-  Le prime due di `serie` e `parallelo` sono **le stesse** e nessuna delle due sta
-  nel corpo delle due operazioni: l'esistenza dei componenti la impone la porta di
-  `transform` **prima** dello smistamento (`engine.py:656`), «entrambi resistori»
-  la impone `engine._resistore` (`engine.py:192`). Cercare le precondizioni di una
-  riduzione solo dentro `_serie` e `_parallelo` ne fa perdere due — ed e' cosi' che
-  sono rimaste esigite e non dichiarate fino al 26/08/2026. Il verso mancante — ogni guardia che respinge ha una riga nell'elenco
-  — non e' meccanizzabile: vedi `deferred-work.md` §7.
+  Le prime tre di `serie` e `parallelo` sono **le stesse** e nessuna delle tre sta
+  nel corpo delle due operazioni: l'arita' e l'esistenza dei componenti le impongono
+  le due porte di `transform` **prima** dello smistamento (`engine.py:648` e
+  `engine.py:656`), «entrambi resistori» la impone `engine._resistore`
+  (`engine.py:192`). E l'ultima riga di ciascuna dichiarazione — la validazione
+  elettrica di `Cₖ` — la impone `engine._prodotto` via `validate` (`engine.py:241`),
+  che respinge con un `Refusal` e non con un `ValueError`: e' un esito di dominio
+  (AD-13), e resta una condizione esigita. Cercare le precondizioni di una riduzione
+  solo dentro `_serie` e `_parallelo` ne fa perdere quattro — ed e' cosi' che sono
+  rimaste esigite e non dichiarate: due fino al 26/08/2026, altre due fino alla
+  seconda revisione dello stesso giorno. Il verso mancante — ogni guardia che
+  respinge ha una riga nell'elenco — non e' meccanizzabile: vedi `deferred-work.md`
+  §7, e la rettifica che la seconda revisione vi ha aggiunto.
 - **UX-DR12 ha due significati nel repository, e per le storie vale quello di
   `epics.md`.** `epics.md:181` lo definisce `beforeafter-toggle` («due stati
   commutabili all'infinito»); `docs/inbox/kirchhoff_00_corpus_fonti_integrali.md` lo

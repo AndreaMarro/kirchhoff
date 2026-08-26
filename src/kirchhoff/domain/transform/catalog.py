@@ -419,29 +419,46 @@ _verifica_dormienti(COMPOSITION, DORMANT)
 #: che si possono verificare in qualunque ordine.
 _PRECONDIZIONI: dict[str, tuple[str, ...]] = {nome: () for nome in sorted(CATALOG)}
 #:
-#: **Le prime due sono comuni alle due riduzioni** e stavano fuori dalla
-#: dichiarazione perche' nessuna delle due e' imposta dal corpo dell'operazione:
-#: l'esistenza dei componenti nominati la impone la porta di `transform` che
-#: precede lo smistamento, e «entrambi resistori» la impone `engine._resistore`,
-#: che le due riduzioni attraversano. Erano quindi condizioni **esigite e non
-#: dichiarate**: un circuito che le viola e' respinto, e «perche' posso farlo?»
-#: non nominava la ragione. Il verso mancante e' quello che rende l'elenco una
-#: risposta invece di una nota — dichiarata → esigita lo controlla
-#: `TestLePrecondizioniSonoFalsificabili`; esigita → dichiarata non e'
-#: meccanizzabile e resta registrato in `deferred-work.md`.
+#: **Le prime tre sono comuni alle due riduzioni** e stavano fuori dalla
+#: dichiarazione perche' nessuna delle tre e' imposta dal corpo dell'operazione:
+#: l'arita' — esattamente due identificatori — e l'esistenza dei componenti
+#: nominati le impongono le due porte di `transform` che precedono lo
+#: smistamento (`engine.py:648` e `engine.py:656`), e «entrambi resistori» la
+#: impone `engine._resistore`, che le due riduzioni attraversano. La prima
+#: revisione ne aveva dichiarate due; la seconda ha trovato l'arita' — stessa
+#: classe, stessa porta — a dimostrazione che l'elenco delle esigite non si
+#: enumera guardando i soli corpi.
+#:
+#: **L'ultima riga di ciascuna dichiarazione e' a sua volta comune** e viene dopo
+#: le condizioni del corpo perche' e' li' che si valuta: `engine._prodotto`
+#: chiama `validate` su `Cₖ` (`engine.py:241`) e un circuito di partenza non
+#: valido e' respinto con un `Refusal`, non con un `ValueError` — e' un esito di
+#: dominio (AD-13), e resta una condizione esigita su `Cₖ` come le altre.
+#:
+#: Erano tutte condizioni **esigite e non dichiarate**: un circuito che le viola
+#: e' respinto, e «perche' posso farlo?» non nominava la ragione. Il verso
+#: mancante e' quello che rende l'elenco una risposta invece di una nota —
+#: dichiarata → esigita lo controlla `TestLePrecondizioniSonoFalsificabili`;
+#: esigita → dichiarata non e' meccanizzabile e resta registrato in
+#: `deferred-work.md` §7, dove la seconda revisione ha corretto la misura su cui
+#: la voce era archiviata.
 _COMUNI_ALLE_RIDUZIONI = (
+    "l'operazione nomina esattamente due componenti",
     "i due componenti nominati esistono nel circuito",
     "i due componenti sono entrambi resistori",
 )
+_VALIDITA_DI_PARTENZA = "il circuito di partenza supera la validazione elettrica"
 _PRECONDIZIONI["serie"] = (
     *_COMUNI_ALLE_RIDUZIONI,
     "i due componenti condividono esattamente un nodo",
     "il nodo condiviso non e' il nodo di riferimento",
     "al nodo condiviso non tocca un terzo componente",
+    _VALIDITA_DI_PARTENZA,
 )
 _PRECONDIZIONI["parallelo"] = (
     *_COMUNI_ALLE_RIDUZIONI,
     "i due componenti stanno fra gli stessi due nodi",
+    _VALIDITA_DI_PARTENZA,
 )
 
 #: Vista di sola lettura, per la stessa ragione di `MUTABLE_ATTRIBUTES` e

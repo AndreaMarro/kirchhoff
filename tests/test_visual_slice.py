@@ -112,6 +112,62 @@ def _layout_catena(istante: int = ISTANTE) -> LayoutIR:
     return LayoutIR.nuovo(PIAZZAMENTI_CATENA, istante=istante, casualita=ENTROPIA)
 
 
+#: Due resistenze fra gli stessi due nodi, per misurare **l'altra** riduzione: dopo
+#: `parallelo(R1,R2)` restano `V1` e l'equivalente fra `b` e `0`, e il circuito
+#: resta valido — al contrario della fixture di `test_un_rifiuto_si_restituisce_...`,
+#: dove la fusione lascia un ramo aperto e il prodotto e' rifiutato.
+PARALLELO = IR("1.0.0", "dc_resistive", "netlist", ("0", "b"), (
+    Component.of("V1", "voltage_source_dc", ("b", "0"), F(12), "V1"),
+    Component.of("R1", "resistor", ("b", "0"), F(100), "R1"),
+    Component.of("R2", "resistor", ("b", "0"), F(220), "R2"),
+), ())
+
+PIAZZAMENTI_PARALLELO = (
+    Placement(N("b"), F(0), F(0)),
+    Placement(N("0"), F(0), F(160)),
+    Placement(C("V1"), F(0), F(80)),
+    Placement(C("R1"), F(100), F(80)),
+    Placement(C("R2"), F(200), F(80)),
+)
+
+
+def _passo_e_circuiti(caso: str) -> tuple[VisualStep, IR, IR]:
+    """Un passo composto davvero, col suo `Cₖ` e il suo `Cₖ₊₁`, per ogni forma disponibile.
+
+    Sono i quattro passi che la suite sa comporre — le due riduzioni, e i due
+    passi della catena — e servono a misurare le proprieta' universali su ogni
+    forma invece che su una fixture sola.
+    """
+    if caso == "serie":
+        dopo_ir, _ = transform(CIRCUITO, "serie", "R1", "R2")
+        return _passo(), CIRCUITO, dopo_ir
+    if caso == "parallelo":
+        passo = componi(
+            PARALLELO, "parallelo", "R1", "R2",
+            layout=LayoutIR.nuovo(PIAZZAMENTI_PARALLELO, istante=ISTANTE,
+                                  casualita=ENTROPIA),
+            layouts=LayoutStore(), patches=PatchStore(),
+            istante=ISTANTE + 1_000, casualita=ENTROPIA)
+        assert isinstance(passo, VisualStep)
+        dopo_ir, _ = transform(PARALLELO, "parallelo", "R1", "R2")
+        return passo, PARALLELO, dopo_ir
+    layouts, patches = LayoutStore(), PatchStore()
+    uno = componi(CATENA, "serie", "R1", "R2", layout=_layout_catena(),
+                  layouts=layouts, patches=patches,
+                  istante=ISTANTE + 1_000, casualita=ENTROPIA)
+    assert isinstance(uno, VisualStep)
+    medio_ir, _ = transform(CATENA, "serie", "R1", "R2")
+    if caso == "catena, primo passo":
+        return uno, CATENA, medio_ir
+    due = componi(medio_ir, "serie", "R1R2eq", "R3",
+                  layout=layouts.risolvi(uno.dopo),
+                  layouts=layouts, patches=patches,
+                  istante=ISTANTE + 2_000, casualita=ENTROPIA)
+    assert isinstance(due, VisualStep)
+    finale_ir, _ = transform(medio_ir, "serie", "R1R2eq", "R3")
+    return due, medio_ir, finale_ir
+
+
 def _nessun_rendering(monkeypatch, ragione: str) -> None:
     """Chiude **tutte** le strade per arrivare a `render`, non solo l'ultima.
 
@@ -376,11 +432,13 @@ class TestPercheePossoFarlo:
     def test_le_precondizioni_sono_quelle_dichiarate_dal_catalogo(self):
         passo = _passo()
         assert passo.giustificazione.precondizioni == (
+            "l'operazione nomina esattamente due componenti",
             "i due componenti nominati esistono nel circuito",
             "i due componenti sono entrambi resistori",
             "i due componenti condividono esattamente un nodo",
             "il nodo condiviso non e' il nodo di riferimento",
             "al nodo condiviso non tocca un terzo componente",
+            "il circuito di partenza supera la validazione elettrica",
         )
 
     def test_il_certificato_e_quello_dell_operazione_del_passo(self):
@@ -389,13 +447,76 @@ class TestPercheePossoFarlo:
         assert passo.giustificazione.certificato.operation == passo.operation
 
 
+class TestLeGuardieDellaGiustificazione:
+    """L'unico dei quattro tipi esportati che non aveva guardie — e UX-DR23 nomina lui.
+
+    Il controllo di forma della prima revisione era stato installato sul
+    produttore (`catalog._verifica_precondizioni`) e non sul tipo che il lettore
+    riceve: `Justification(terminali="R1", precondizioni="abc", formula=None,
+    certificato=None)` si costruiva senza proteste, e `tuple(precondizioni)` era
+    `('a', 'b', 'c')` — l'elenco di lettere che quel controllo esiste per
+    escludere, ricostruibile all'ultimo punto prima del lettore aggirando il
+    Catalogo. Stessa convenzione delle sorelle: ogni invariante ha una guardia a
+    runtime e un test che l'ha vista sollevare.
+    """
+
+    def test_la_riga_che_prima_passava_ora_non_passa(self):
+        """L'esatto controesempio del rilievo, e non una sua parafrasi."""
+        with pytest.raises(TypeError):
+            Justification(terminali="R1", precondizioni="abc",
+                          formula=None, certificato=None)
+
+    def test_i_terminali_sono_una_tupla_di_entita(self):
+        """`terminali` e' `boundary.entities`: nomina entita', non testo."""
+        passo = _passo()
+        g = passo.giustificazione
+        for guasti in ("R1", ("R1", "R2")):
+            with pytest.raises(TypeError, match="tupla di EntityRef"):
+                Justification(terminali=guasti, precondizioni=g.precondizioni,
+                              formula=g.formula, certificato=g.certificato)
+
+    def test_le_precondizioni_non_possono_essere_una_stringa(self):
+        """Il caso speculare del controllo di forma del Catalogo, sul tipo."""
+        passo = _passo()
+        g = passo.giustificazione
+        with pytest.raises(TypeError, match="si itera per caratteri"):
+            Justification(terminali=g.terminali, precondizioni="abc",
+                          formula=g.formula, certificato=g.certificato)
+
+    def test_una_precondizione_vuota_o_non_testuale_e_rifiutata(self):
+        passo = _passo()
+        g = passo.giustificazione
+        for guaste in (("",), ("   ",), (3,)):
+            with pytest.raises(ValueError, match="vuota o non testuale"):
+                Justification(terminali=g.terminali, precondizioni=guaste,
+                              formula=g.formula, certificato=g.certificato)
+
+    def test_la_formula_e_il_certificato_sono_del_tipo_del_prodotto(self):
+        """`None` al posto dei due campi del prodotto era il resto del controesempio."""
+        passo = _passo()
+        g = passo.giustificazione
+        with pytest.raises(TypeError, match="invece di Equation"):
+            Justification(terminali=g.terminali, precondizioni=g.precondizioni,
+                          formula=None, certificato=g.certificato)
+        with pytest.raises(TypeError, match="invece di Certificate"):
+            Justification(terminali=g.terminali, precondizioni=g.precondizioni,
+                          formula=g.formula, certificato=None)
+
+    def test_cio_che_giustificazione_produce_regge_alle_proprie_guardie(self):
+        """Il verso positivo: le guardie non rifiutano l'unico costruttore vero."""
+        assert isinstance(_passo().giustificazione, Justification)
+
+
 class TestLePrecondizioniSonoFalsificabili:
     """Una precondizione dichiarata e non esigibile e' prosa con un nome di campo.
 
-    Ognuna delle quattro dichiarate ha qui un circuito che la viola, e `transform`
-    lo respinge. E' la lezione del gate scritto e non installato applicata a una
-    dichiarazione: senza questi casi la tabella del Catalogo potrebbe descrivere
-    condizioni che il motore non impone, e nessuno se ne accorgerebbe.
+    Ogni riga dichiarata ha qui un circuito che la viola, e `transform` lo
+    respinge — con un `ValueError` quando la impone una porta o una guardia del
+    corpo, con un `Refusal` quando la impone `validate` su `Cₖ`, perche' quello
+    e' un esito di dominio e si restituisce (AD-13). E' la lezione del gate
+    scritto e non installato applicata a una dichiarazione: senza questi casi la
+    tabella del Catalogo potrebbe descrivere condizioni che il motore non impone,
+    e nessuno se ne accorgerebbe.
     """
 
     def _ir(self, *componenti: Component, nodi: tuple[str, ...]) -> IR:
@@ -429,12 +550,55 @@ class TestLePrecondizioniSonoFalsificabili:
         with pytest.raises(ValueError, match="ha grado 3"):
             transform(circuito, "serie", "R1", "R2")
 
-    def test_le_riduzioni_esigono_che_i_componenti_nominati_esistano(self):
-        """La prima delle due comuni: la impone `_resistore` per entrambe.
+    def test_le_riduzioni_esigono_esattamente_due_identificatori(self):
+        """La prima delle tre comuni: la impone la porta dell'arita' (`engine.py:648`).
 
-        Era **esigita e non dichiarata** — il circuito veniva respinto e «perche'
-        posso farlo?» non nominava la ragione, che e' l'unica cosa per cui l'elenco
-        esiste.
+        Sta **prima dello smistamento**, come l'esistenza dei componenti, e prima
+        di questa dichiarazione il rifiuto c'era e «perche' posso farlo?» non
+        nominava la ragione — la stessa classe delle due gia' riparate, che la
+        seconda revisione ha trovato non enumerata.
+        """
+        for operazione in ("serie", "parallelo"):
+            with pytest.raises(ValueError, match="vuole 2 identificatori"):
+                transform(CIRCUITO, operazione, "R1")
+
+    def test_le_riduzioni_esigono_un_circuito_di_partenza_valido(self):
+        """L'ultima riga delle due dichiarazioni, e l'unica imposta con un `Refusal`.
+
+        La impone `validate` su `Cₖ` dentro `engine._prodotto` (`engine.py:241`),
+        **dopo** le guardie del corpo — per questo e' l'ultima — e il rifiuto si
+        restituisce, non si solleva (AD-13). I due circuiti hanno un nodo `z`
+        pendente estraneo alla coppia: ogni altra precondizione dichiarata e'
+        soddisfatta, e il passo e' respinto lo stesso. Era la condizione esigita
+        e non dichiarata su `Cₖ` che la voce §7 di `deferred-work.md` non aveva
+        misurato, archiviando il verso come irriducibile su una misura incompleta.
+        """
+        con_pendente = self._ir(
+            Component.of("V1", "voltage_source_dc", ("b", "0"), F(12), "V1"),
+            Component.of("R1", "resistor", ("b", "a"), F(100), "R1"),
+            Component.of("R2", "resistor", ("a", "0"), F(220), "R2"),
+            Component.of("R9", "resistor", ("b", "z"), F(50), "R9"),
+            nodi=("0", "a", "b", "z"))
+        esito = transform(con_pendente, "serie", "R1", "R2")
+        assert isinstance(esito, Refusal)
+        assert (esito.cause, esito.subject) == ("topology", "z")
+
+        in_parallelo = self._ir(
+            Component.of("V1", "voltage_source_dc", ("b", "0"), F(12), "V1"),
+            Component.of("R1", "resistor", ("b", "0"), F(100), "R1"),
+            Component.of("R2", "resistor", ("b", "0"), F(220), "R2"),
+            Component.of("R9", "resistor", ("b", "z"), F(50), "R9"),
+            nodi=("0", "b", "z"))
+        esito = transform(in_parallelo, "parallelo", "R1", "R2")
+        assert isinstance(esito, Refusal)
+        assert (esito.cause, esito.subject) == ("topology", "z")
+
+    def test_le_riduzioni_esigono_che_i_componenti_nominati_esistano(self):
+        """La seconda delle tre comuni: la impone la porta di `transform` prima
+        dello smistamento (`engine.py:656`) — non `_resistore`, che su un
+        identificatore inesistente non arriva mai a girare. Era **esigita e non
+        dichiarata**: il circuito veniva respinto e «perche' posso farlo?» non
+        nominava la ragione, che e' l'unica cosa per cui l'elenco esiste.
         """
         circuito = self._ir(
             Component.of("V1", "voltage_source_dc", ("b", "0"), F(12), "V1"),
@@ -446,7 +610,9 @@ class TestLePrecondizioniSonoFalsificabili:
                 transform(circuito, operazione, "R1", "R9")
 
     def test_le_riduzioni_esigono_due_resistori(self):
-        """La seconda delle due comuni: *«la riduzione vale fra resistori»*."""
+        """La terza delle comuni: *«la riduzione vale fra resistori»*, di
+        `engine._resistore` (`engine.py:192`) — l'unica delle tre che le due
+        riduzioni attraversano dentro il proprio corpo."""
         circuito = self._ir(
             Component.of("V1", "voltage_source_dc", ("b", "0"), F(12), "V1"),
             Component.of("R1", "resistor", ("b", "a"), F(100), "R1"),
@@ -519,6 +685,19 @@ class TestLaFormaStatica:
         for identificatore, svg in zip((statica.prima, statica.dopo),
                                        statica.fotogrammi):
             assert _albero(svg).get("data-layout-id") == identificatore
+
+    def test_la_forma_statica_porta_il_patch_del_passo(self):
+        """Il terzo lato della tripla di CV6, nel punto in cui l'artefatto esce.
+
+        SM-14, citata da `compose.py`: un `patch_` identifica **un passo**, non un
+        contenuto. Senza di esso la forma statica portava due disegni e due `lay_`
+        e nessun modo di risalire al passo che li lega: `esporta()` lasciava
+        cadere l'unico identificatore del passo proprio dove l'artefatto lascia
+        il sistema, e nessun test o voce registrata lo nominava come scelta.
+        """
+        assert "patch" in {f.name for f in fields(StaticStep)}
+        passo = _passo()
+        assert passo.esporta().patch == passo.patch
 
     def test_i_due_stati_e_l_export_vengono_dalla_stessa_sorgente_semantica(self):
         """AD-10: *«l'SVG semantico verificato e' la sorgente unica di ogni formato»*.
@@ -639,6 +818,24 @@ class TestLaComposizione:
         assert (esito.cause, esito.subject) == ("topology", "a")
         assert len(layouts) == 0 and len(patches) == 0
 
+    def test_una_precondizione_violata_sale_da_componi_e_non_lascia_mezzo_passo(self):
+        """L'altro dei due esiti che `componi` dichiara, finora senza oracolo.
+
+        Il docstring di `compose.py` distingue: il `Refusal` si restituisce
+        (AD-13), un `ValueError` da `transform` *«e' un'altra cosa … e sale»*. Il
+        primo esito aveva un test coi registri controllati; il secondo nessuno — i
+        circuiti di `TestLePrecondizioniSonoFalsificabili` non passano mai da
+        `componi`, quindi niente diceva che una precondizione violata attraversi
+        il punto di composizione senza depositare mezzo passo. Visto rosso col
+        mutante che sposta il deposito del layout sopra `transform`.
+        """
+        layouts, patches = LayoutStore(), PatchStore()
+        with pytest.raises(ValueError, match="non e un componente"):
+            componi(CIRCUITO, "serie", "R1", "R9", layout=_layout(),
+                    layouts=layouts, patches=patches,
+                    istante=ISTANTE + 1_000, casualita=ENTROPIA)
+        assert len(layouts) == 0 and len(patches) == 0
+
     def test_comporre_due_volte_lo_stesso_passo_da_gli_stessi_byte(self):
         """AD-35 sulla composizione intera, non sulla sola `render`.
 
@@ -721,6 +918,24 @@ class TestLeGuardieDelPasso:
         with pytest.raises(ValueError, match="sono gli stessi byte"):
             VisualStep(**campi)
 
+    def test_i_fotogrammi_scambiati_fra_i_due_stati_sono_rifiutati(self):
+        """L'unico caso silenzioso fra quelli non guardati, e il piu' costoso.
+
+        Le altre guardie prendono vuoto, tre, non-tupla, uguali — forme che si
+        notano. Due disegni giusti sotto gli identificatori invertiti superavano
+        invece ogni controllo, e `fotogramma(apertura())` restituiva il disegno
+        del **dopo**: il caso esatto che `apertura()` esiste per escludere
+        (UX-DR22), servito senza che nulla protestasse. I byte dichiarano gia' di
+        quale stato sono (`data-layout-id`, sulla radice): la guardia esige che la
+        dichiarazione e la chiave coincidano.
+        """
+        passo = _passo()
+        campi = self._campi(passo)
+        campi["fotogrammi"] = {passo.prima: passo.fotogrammi[passo.dopo],
+                               passo.dopo: passo.fotogrammi[passo.prima]}
+        with pytest.raises(ValueError, match="dichiara nei byte di essere"):
+            VisualStep(**campi)
+
 
 class TestLeGuardieDellaFormaStatica:
     """`StaticStep` e' esportato, e il tipo non dice chi ha il diritto di costruirlo.
@@ -740,13 +955,16 @@ class TestLeGuardieDellaFormaStatica:
     def _campi(self, passo: VisualStep) -> dict:
         statica = passo.esporta()
         return {"operation": statica.operation, "prima": statica.prima,
-                "dopo": statica.dopo, "fotogrammi": statica.fotogrammi}
+                "dopo": statica.dopo, "patch": statica.patch,
+                "fotogrammi": statica.fotogrammi}
 
     def test_la_riga_che_prima_passava_ora_non_passa(self):
-        """L'esatto controesempio del rilievo, e non una sua parafrasi."""
+        """L'esatto controesempio del rilievo, piu' il `patch` che la seconda
+        revisione ha aggiunto al tipo: senza un valore il controesempio non
+        arriverebbe alle guardie che deve vedere sollevare."""
         with pytest.raises(ValueError):
             StaticStep(operation="serie", prima="non-un-lay", dopo="non-un-lay",
-                       fotogrammi=("",))
+                       patch="non-un-patch", fotogrammi=("",))
 
     def test_l_operazione_deve_stare_nel_catalogo(self):
         passo = _passo()
@@ -755,10 +973,12 @@ class TestLeGuardieDellaFormaStatica:
             StaticStep(**campi)
 
     def test_gli_identificatori_sono_verificati_per_genere(self):
+        """Anche il `patch` della seconda revisione: stessa `verifica`, per genere."""
         passo = _passo()
-        campi = self._campi(passo) | {"prima": passo.patch}
-        with pytest.raises(ValueError):
-            StaticStep(**campi)
+        for guasto in ({"prima": passo.patch}, {"patch": passo.prima}):
+            campi = self._campi(passo) | guasto
+            with pytest.raises(ValueError):
+                StaticStep(**campi)
 
     def test_i_due_stati_visuali_devono_differire(self):
         passo = _passo()
@@ -797,6 +1017,32 @@ class TestLeGuardieDellaFormaStatica:
         campi = self._campi(passo) | {"fotogrammi": (uguale, uguale)}
         with pytest.raises(ValueError, match="sono gli stessi byte"):
             StaticStep(**campi)
+
+    def test_i_fotogrammi_scambiati_sono_rifiutati(self):
+        """Nella forma statica lo scambio e' ancora piu' muto che nel passo.
+
+        Non c'e' un comando da premere: la sequenza `prima → dopo` e' l'unica cosa
+        che dice quale disegno viene prima (UX-DR27), e due disegni scambiati la
+        rispettano esattamente al contrario — l'etichetta *Prima* sopra il passo
+        gia' compiuto. Le sette guardie della prima revisione non lo vedevano.
+        """
+        passo = _passo()
+        statica = passo.esporta()
+        campi = self._campi(passo) | {
+            "fotogrammi": (statica.fotogrammi[1], statica.fotogrammi[0])}
+        with pytest.raises(ValueError, match="dichiara nei byte di essere"):
+            StaticStep(**campi)
+
+    def test_un_fotogramma_che_non_dichiara_il_proprio_stato_e_rifiutato(self):
+        """Le due forme del difetto: byte che non sono un documento, e un documento
+        senza `data-layout-id`. Per chi costruisce il passo sono lo stesso fatto —
+        il disegno non dice di quale stato e', quindi non e' attribuibile."""
+        passo = _passo()
+        for muto in ("non sono un documento svg", "<svg><g/></svg>"):
+            campi = self._campi(passo) | {
+                "fotogrammi": (muto, passo.esporta().fotogrammi[1])}
+            with pytest.raises(ValueError, match="nessuno stato visuale"):
+                StaticStep(**campi)
 
     def test_cio_che_esporta_produce_regge_alle_proprie_guardie(self):
         """Il verso positivo: le guardie non rifiutano l'unico costruttore vero."""
@@ -847,18 +1093,26 @@ class TestLEntitaEstraneaAlPasso:
         assert passo.che_ne_e_stato(N("b")) is None
         assert passo.e_lo_stesso(C("R1")) is False
 
-    def test_le_entita_del_passo_sono_l_unione_dei_due_circuiti(self):
+    @pytest.mark.parametrize("caso", ("serie", "parallelo", "catena, primo passo",
+                                      "catena, secondo passo"))
+    def test_le_entita_del_passo_sono_l_unione_dei_due_circuiti(self, caso):
         """`Pₖ ∪ consumed ∪ produced = Entities(Cₖ) ∪ Entities(Cₖ₊₁)`, esatta.
 
         Le tre parti sono disgiunte e non c'e' una quarta classe: e' quel che rende
         la domanda «e' di questo passo?» rispondibile **senza risolvere nessun
         `CircuitIR`**, cioe' restando la proiezione per riferimento di AD-21.
+
+        La seconda revisione l'ha voluta su **ogni** forma di passo che la suite sa
+        comporre, non su una fixture sola: un'unione a cui mancasse qualcosa
+        farebbe sollevare `e_lo_stesso(x)` dove la risposta corretta e' `True` —
+        una falsa accusa, cioe' il difetto peggiore di questo prodotto. La clausola
+        non e' una proprieta' del tipo: la impongono i controllori del motore, e il
+        docstring di `entita` dice quali e dove. Qui la si misura.
         """
-        passo = _passo()
-        dopo_ir, _ = transform(CIRCUITO, "serie", "R1", "R2")
+        passo, prima_ir, dopo_ir = _passo_e_circuiti(caso)
         entita = lambda ir: ({C(c.id) for c in ir.components}
                              | {N(n) for n in ir.nodes})
-        assert passo.entita == entita(CIRCUITO) | entita(dopo_ir)
+        assert passo.entita == entita(prima_ir) | entita(dopo_ir)
 
 
 class TestLaCatenaDiDuePassi:
@@ -876,8 +1130,9 @@ class TestLaCatenaDiDuePassi:
                       istante=ISTANTE + 1_000, casualita=ENTROPIA)
         assert isinstance(uno, VisualStep)
         # `componi` scarta `Cₖ₊₁`: per il secondo passo va **rieseguita** la
-        # trasformazione. E' il costo ergonomico registrato in `deferred-work.md`,
-        # e questo test e' il posto in cui si vede.
+        # trasformazione. E' il costo ergonomico registrato in `deferred-work.md`
+        # — Story 1.8, seconda revisione, voce 8 — e questo test e' il posto in
+        # cui si vede.
         dopo_ir, _ = transform(CATENA, "serie", "R1", "R2")
         due = componi(dopo_ir, "serie", "R1R2eq", "R3",
                       layout=layouts.risolvi(uno.dopo),
@@ -1048,3 +1303,39 @@ class TestLeMisureRegistrate:
         # Il verso di controllo: il `lay_` di **partenza** ha invece cifre proprie,
         # perche' nasce da un conio che `componi` non fa.
         assert passo.prima.removeprefix("lay_") != passo.patch.removeprefix("patch_")
+
+    def test_l_alternativa_testuale_non_racconta_il_passo(self):
+        """AC1 e AC2 per chi non vede i due disegni: oggi non esistono.
+
+        I due `<desc>` — l'unico rendering del passo disponibile a chi legge con
+        un lettore di schermo — differiscono, e la differenza non basta: nessuno
+        dei due dice che una trasformazione e' avvenuta, ne' da che cosa `R1R2eq`
+        derivi. L'equazione sta nel layer 6 **visuale** e in nessun testo
+        alternativo. Il rapporto della prima iterazione liquidava il fatto con
+        «vale anche fra i due fotogrammi»; misurato, e' piu' preciso di cosi': la
+        differenza c'e', e' la **narrazione** a mancare.
+
+        **Perche' non e' riparato qui.** Il `<desc>` e' l'alternativa testuale
+        della **topologia** di un circuito (Story 1.4, `alternativa_testuale`),
+        non del passo: fargli raccontare la trasformazione significa decidere la
+        narrazione accessibile del passo — quale testo, in quale dei due
+        fotogrammi, o in un canale terzo — cioe' la stessa famiglia di decisioni
+        della voce sull'equazione d'apertura, su un canale che nessun criterio
+        della 1.8 nomina. Registrata in `deferred-work.md`.
+        """
+        passo = _passo()
+        desc = lambda lay: next(e.text for e in _albero(passo.fotogrammi[lay]).iter()
+                                if e.tag == f"{SVG}desc")
+        prima, dopo = desc(passo.prima), desc(passo.dopo)
+        # La meta' vera della frase del rapporto: i due testi differiscono.
+        assert prima != dopo
+        # E la meta' che mancava: l'equivalente e' nominato, la sua storia no —
+        # tolto il suo nome, `R1` e `R2` non compaiono, e nessuno dei due testi
+        # contiene una parola di trasformazione o derivazione.
+        assert "R1R2eq" in dopo
+        senza_equivalente = dopo.replace("R1R2eq", "")
+        assert "R1" not in senza_equivalente and "R2" not in senza_equivalente
+        for testo in (prima, dopo):
+            assert "serie" not in testo
+            assert "trasforma" not in testo
+            assert "deriva" not in testo
