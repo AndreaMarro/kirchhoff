@@ -411,6 +411,37 @@ for i, s in enumerate(p):
     fi
     python3 "$QUI/ratchet.py" --metriche "$STATO/.metriche.json" --baseline "$BASELINE" --applica >>"$DIARIO" 2>&1
     log "promossa su $base; baseline aggiornata"
+
+    # 9. IL SAPERE E LA PUBBLICAZIONE -----------------------------------------
+    # Finora questi tre passi li faceva una persona a mano dopo ogni giro, e
+    # quindi ogni tanto non li faceva nessuno. Un giro che non lascia traccia
+    # interrogabile e' un giro che il giro dopo non puo' usare.
+    #
+    # L'ordine conta: la receipt e l'indice entrano nel repository PRIMA del
+    # push, altrimenti si pubblicherebbe uno stato che il vault non descrive.
+    python3 "$QUI/receipt.py" --storia "$storia" --istante "$stamp" \
+      --metriche "$(cat "$STATO/.metriche.json" 2>/dev/null || echo '{}')" \
+      --esito promosso >>"$DIARIO" 2>&1 && log "receipt incisa nel vault"
+
+    python3 "$QUI/indice.py" --costruisci >>"$DIARIO" 2>&1
+    git -C "$REPO" add -- vault >>"$DIARIO" 2>&1
+    if ! git -C "$REPO" diff --cached --quiet; then
+      git -C "$REPO" commit -q -m "loop: receipt e indice del giro $stamp — $storia" >>"$DIARIO" 2>&1
+    fi
+
+    # L'indice si verifica DOPO il proprio commit: e' l'unico momento in cui la
+    # domanda «e' cambiata una nota dopo?» ha una risposta stabile.
+    if python3 "$QUI/indice.py" --verifica >>"$DIARIO" 2>&1; then
+      log "indice del vault: corrente"
+    else
+      log "indice del vault: STANTIO — il giro prosegue, ma va guardato"
+    fi
+
+    if bash "$QUI/pubblica.sh" >>"$DIARIO" 2>&1; then
+      log "pubblicato su origin"
+    else
+      log "pubblicazione NON riuscita: il lavoro e' su $base, non su origin"
+    fi
   fi
 
   log "pausa ${PAUSA}s"

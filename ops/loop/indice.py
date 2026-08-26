@@ -64,7 +64,8 @@ def note() -> list[tuple[pathlib.Path, str, str, list[str]]]:
     return fuori
 
 
-def costruisci() -> pathlib.Path:
+def _rendi() -> str:
+    """Il testo dell'indice, senza scriverlo."""
     h = head()
     n = note()
     righe = [
@@ -95,59 +96,54 @@ def costruisci() -> pathlib.Path:
             archi = f" → {', '.join('[[' + x + ']]' for x in link[:4])}" if link else ""
             righe.append(f"- [[{rel.stem}]] — {titolo}{marca}{archi}")
         righe.append("")
-    INDICE.write_text("\n".join(righe) + "\n", encoding="utf-8")
+    return "\n".join(righe) + "\n"
+
+
+def costruisci() -> pathlib.Path:
+    INDICE.write_text(_rendi(), encoding="utf-8")
     return INDICE
 
 
-def _ultima_revisione_delle_note() -> str:
-    """La revisione piu' recente che ha toccato una NOTA — non l'indice stesso.
-
-    Confrontare con `HEAD` sembrava giusto e non lo era: l'indice viene costruito
-    PRIMA del commit che lo contiene, quindi dichiara sempre la revisione
-    precedente, e un controllo su `HEAD` lo trova stantio un istante dopo essere
-    stato scritto. Misurato il 26/08/2026 su due giri di fila.
-
-    La domanda giusta non e' «l'indice dichiara HEAD?» ma «e' cambiata una nota
-    dopo che l'indice e' stato scritto?». Un commit che tocca solo codice non
-    invecchia una vista del vault, e dirlo stantio insegnerebbe a ignorarlo.
-
-    L'indice e' ESCLUSO dalla domanda: senza l'esclusione il commit che lo
-    contiene conterebbe come «vault toccato» e l'indice invecchierebbe se stesso.
-    Una vista non e' una nota.
-    """
-    r = subprocess.run(
-        ["git", "log", "-1", "--format=%H", "--", "vault",
-         f":(exclude){INDICE.relative_to(REPO)}"],
-        cwd=REPO, capture_output=True, text=True)
-    return r.stdout.strip() if r.returncode == 0 else ""
-
-
-def _e_antenato(a: str, b: str) -> bool:
-    """Vero se `a` e' un antenato di `b`, o coincide."""
-    if not a or not b:
-        return False
-    if a == b:
-        return True
-    return subprocess.run(["git", "merge-base", "--is-ancestor", a, b],
-                          cwd=REPO, capture_output=True).returncode == 0
+def _corpo(testo: str) -> str:
+    """L'indice senza la riga della revisione: cio' che deve coincidere."""
+    return "\n".join(r for r in testo.splitlines()
+                     if not r.startswith(("sha:", "Costruito sulla revisione")))
 
 
 def verifica() -> int:
-    """Zero se nessuna nota e' cambiata dopo la revisione che l'indice dichiara."""
+    """Zero se ricostruire l'indice non lo cambierebbe.
+
+    **Terza forma di questo controllo, e la prima che regge.** Le prime due
+    confrontavano revisioni git, e sono cadute sullo stesso scoglio da due lati:
+    l'indice viene costruito PRIMA del commit che lo contiene, quindi dichiara
+    sempre la revisione precedente. Confrontandolo con `HEAD` si dichiarava
+    stantio un istante dopo essere stato scritto; escludendo se stesso restava il
+    caso — normale — in cui una nota e l'indice entrano nello stesso commit, e
+    l'indice risultava di nuovo indietro di uno.
+
+    Il difetto non era nel confronto ma nella domanda. «Da quale revisione viene?»
+    e' una domanda sull'ordine degli eventi, e l'ordine qui e' intrinsecamente
+    ambiguo. «Ricostruirlo lo cambierebbe?» e' una domanda sul CONTENUTO, ha una
+    risposta sola, e non dipende da quando qualcuno ha committato.
+
+    La riga della revisione resta nel file: dice a un lettore umano da dove viene
+    quella vista. Semplicemente non e' piu' cio' su cui si decide.
+    """
     if not INDICE.exists():
         print("indice assente: costruiscilo con `indice.py --costruisci`", file=sys.stderr)
         return 1
-    dichiarato = _campo(INDICE.read_text(encoding="utf-8"), "sha")
-    if not dichiarato:
-        print("l'indice non dichiara alcuna revisione: ricostruiscilo", file=sys.stderr)
-        return 1
 
-    note = _ultima_revisione_delle_note()
-    if note and dichiarato != note and _e_antenato(dichiarato, note):
-        print(f"indice stantio: dichiara {dichiarato[:12]}, ma una nota e' cambiata "
-              f"dopo, in {note[:12]}", file=sys.stderr)
+    depositato = INDICE.read_text(encoding="utf-8")
+    atteso = _rendi()
+    if _corpo(depositato) != _corpo(atteso):
+        d, a = _corpo(depositato).splitlines(), _corpo(atteso).splitlines()
+        print(f"indice stantio: ricostruirlo lo cambierebbe "
+              f"({len(d)} righe depositate, {len(a)} attese). "
+              "Ricostruiscilo con `indice.py --costruisci`.", file=sys.stderr)
+        for riga in [r for r in a if r not in d][:3]:
+            print(f"  manca: {riga[:96]}", file=sys.stderr)
         return 1
-    print(f"indice corrente: nessuna nota cambiata dopo {dichiarato[:12]}")
+    print(f"indice corrente: {len(note())} note, ricostruirlo non lo cambierebbe")
     return 0
 
 
