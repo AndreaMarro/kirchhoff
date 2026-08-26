@@ -1,0 +1,209 @@
+[12:58:12Z] kirchhoff-loop v3 — avvio
+[12:58:12Z] repository=/Users/andreamarro/MATJOURNEY/kirchhoff
+[12:58:12Z] iterazioni=1 prova=0 promuovi=0 watchdog=2700s scrittura=$25 revisione=$15
+[12:58:12Z] caffeinate: la macchina resta sveglia per la durata del giro
+[12:58:12Z] 
+[12:58:12Z] --- iterazione 1 di 1 ---
+  [ok]  nessun FERMO
+  [ok]  repository git: 02015a8
+  [ok]  uv: uv 0.11.8 (0e961dd9a 2026-04-27 aarch64-apple-darwin)
+  [ok]  helper runtime BMAD conformi al pin (5/5)
+  [ok]  holdout protetto da regola deny
+  [ok]  sprint-status.yaml leggibile
+  [ok]  albero di lavoro pulito
+[12:58:12Z] precondizioni: tutte verdi
+[12:58:13Z] storia: 1-4-serializzatore-svg-semantico-deterministico-su-una-fixture-a
+[12:58:13Z] classe di rischio: R2
+[12:58:13Z] ramo: loop/iter-20260826T125812Z-1-4-serializzatore-svg-semantico-deterministico-su-una-fixture- (da main)
+[12:58:13Z] 
+[12:58:13Z] passo 1: implementa [-]
+[12:58:13Z]   → claude -p --model claude-opus-5 --effort max --max-budget-usd $25
+---
+
+# Rapporto — Story 1.4, serializzatore SVG semantico deterministico
+
+## 1. Che cosa ho cambiato, file per file
+
+Quattro file nuovi, nessun file esistente toccato. Le modifiche sono in staging, non committate.
+
+**`src/kirchhoff/render/serialize/geometry.py`** (417 righe, nuovo)
+La geometria annotata, da cui l'SVG deriva. `Punto`, `Terminale`, `Simbolo`, `Giunzione`, `Filo`, `Scena`, e la funzione pura `scena(circuito, layout) -> Scena`. Il pacchetto `render/serialize` è quello che AD-31 nomina accanto a `render/roundtrip`.
+
+- L'asse di un bipolo **non è inventato**: si legge dai due nodi a cui è attaccato (`_asse`), sull'asse su cui quei nodi sono più lontani. Il `LayoutIR` non porta un orientamento e questa storia non ha autolayout.
+- `FORME` è la tavola unica dei tipi disegnabili — `resistor` e `voltage_source_dc`, l'ambito stretto che la storia prescrive. Un tipo fuori tavola **solleva**, non produce `Refusal`: un condensatore senza simbolo è un disegno che non abbiamo scritto, non un circuito incertificabile, e chiamarlo `Refusal` accuserebbe lo studente di un difetto nostro.
+- `Scena.__post_init__` porta le guardie che rendono l'AC3 verificabile invece che promessa: ogni filo parte dal morsetto che dichiara e arriva alla giunzione che dichiara, ogni morsetto ha un filo, due nodi o due morsetti non coincidono. Sono pubbliche perché la Story 1.7 comporrà scene.
+- L'ordine delle tre collezioni nasce qui, da tre `sorted` con chiave dichiarata. Nessun dizionario: le posizioni si cercano nel `LayoutIR` con una scansione.
+
+**`src/kirchhoff/render/serialize/svg.py`** (386 righe, nuovo)
+`render(circuito, layout) -> str`, pura. `_numero` formatta i `Fraction` con `round()` esatto (al pari, su interi) — nessun passaggio da `float`. `alternativa_testuale` deriva titolo e descrizione **dalla scena**, non dal `CircuitIR`, così testo e disegno hanno una sola origine. Layer `2`, `3`, `4` di AD-23; i layer della trasformazione restano **non emessi**, non emessi vuoti. `_verifica_corpi` confronta all'import la tavola degli ingombri con quella dei corpi.
+
+**`src/kirchhoff/render/serialize/__init__.py`** (23 righe, nuovo) — esportazioni.
+
+**`tests/test_svg_semantico.py`** (506 righe, 52 test, nuovo) — i quattro AC più le guardie.
+
+Due attributi non chiesti da nessun AC: `data-component-value` e `data-component-unit` sul gruppo del componente. Li ho messi sotto AD-10 («l'SVG semantico verificato è la sorgente unica di ogni altro formato»): un export derivato da un SVG privo di valori non è producibile. Il valore è comunque già disegnato come etichetta.
+
+## 2. Oracoli eseguiti, con l'exit code
+
+| Comando | Exit | Uscita |
+|---|---|---|
+| `uv run python scripts/bmad_chain.py verifica --con-loop` | **0** | catena 8/8 coerente |
+| `ops/loop/verifica.sh` | **0** | `{"copertura": 100.0, "dominio": true, "recinti": true, "test_falliti": 0, "test_passati": 699, "verde": true}` |
+
+699 test passati (647 preesistenti + 52 nuovi), copertura 100%, recinti verdi, `domain/` al 100%.
+
+**L'oracolo che la storia prescrive, eseguito.** Ho sostituito in `geometry.scena()` la riga
+
+```python
+componenti = sorted(circuito.components, key=lambda c: c.id)
+```
+con `list({c.id: c for c in circuito.components}.values())` — un ordinamento dipendente dall'inserimento in un dizionario. Esito: **exit 1**, due fallimenti, entrambi `AssertionError` (non `exit 4` da errore d'uso, non `127`):
+
+```
+FAILED tests/test_svg_semantico.py::test_l_ordine_di_inserimento_non_cambia_un_byte
+FAILED tests/test_svg_semantico.py::test_ogni_componente_porta_il_proprio_data_component_id
+E  assert '<svg xmlns=".../g>\n</svg>\n' == '<svg xmlns=".../g>\n</svg>\n'
+E    - ... V1, generatore di tensione continua da 12 volt, ... R1, resistore da 100 ohm, ...
+E    + ... R2, resistore da 220 ohm, ... R1, resistore da 100 ohm, ...
+```
+
+Ripristinata la riga, `diff` con la copia pre-mutazione è vuoto e la suite torna verde.
+
+## 3. Che cosa resta incompleto o rischioso
+
+**`TransformOverlay` e `ArmEncoding` — `DEFERRED`, con la misura.** AD-35 scrive `render(LayoutIR, TransformOverlay, ArmEncoding) → SVG`; la funzione ne ha due di parametri, non tre. AD-26 assegna l'`ArmEncoding` a `experiment/`, che non esiste, e lo descrive come «una mappa da ruolo a **stile**» dove lo stile è la variabile che Gate A manipola: inventarlo qui chiuderebbe per inerzia una decisione aperta. AD-26 avverte anche che implementarlo dentro `render/serialize` è la collocazione velenosa — obbligherebbe il renderer a ricalcolarsi `Pₖ`, riaprendo l'autocertificazione che AD-22 chiude. Il `TransformOverlay` prende i ruoli da un `TransformResult`, e qui non c'è nessuna trasformazione in corso. Aggiungerli come parametri che accettano solo `None` sarebbe peggio: sembrerebbero implementati.
+
+**Il disegno non è stato guardato da nessuno.** I quattro AC sono strutturali e sono verdi; che il risultato sia *comprensibile* non è misurato da niente qui. È il rilievo che `review-costituzione.md` già segnala («certificati sì, comprensibili non misurato»).
+
+**`estensione()` non misura il testo.** La `viewBox` copre punti, morsetti e corpi; le etichette sono coperte da `MARGINE = 30`, che è una stima dichiarata. Un identificatore di componente lungo può uscire dal riquadro.
+
+**Pareggio sull'asse.** Quando `|dx| == |dy|` fra i due nodi di un bipolo, la regola dichiarata rompe il pareggio verso l'orizzontale. Deterministico, ma arbitrario.
+
+**`PRECISIONE = 4`.** Due punti distinti a meno di 10⁻⁴ unità utente scrivono la stessa stringa. Innocuo sulla fixture (coordinate intere), ma è la tolleranza che AD-31 chiede «dichiarata» per il round-trip: la Story 1.6 deve deciderla, non ereditarla per inerzia da questa costante.
+
+## 4. Trovato fuori ambito, e NON toccato
+
+1. **AD-35 non è implementabile alla lettera.** La firma non nomina il `CircuitIR`, e senza di esso il `LayoutIR` — che porta «dove ogni cosa sta» e nient'altro (AD-21) — non sa che `R1` è un resistore, quali nodi tocca, né che valore ha. Ne segue che `data-terminal-*`, `data-node-id` e l'alternativa testuale della topologia, cioè tre AC di questa storia, non sono derivabili dai soli ingressi che AD-35 elenca. Ho passato due rappresentazioni distinte che si nominano per identificatore, come AD-21 chiede. Lo spine è autorità, non materiale: serve un `bmad-architecture (update)` su AD-35.
+
+2. **Il recinto della Story 1.5 non è installato.** `check_boundaries.py` ha un solo recinto (`domain/`) e non scandisce `render/`. Il pacchetto nuovo importa solo da `domain/` e dalla libreria standard, ma **nessun gate lo impone**. È esattamente la Story 1.5, e non l'ho anticipata.
+
+3. **`sprint-status.yaml` non può registrare la chiave di 1.4**, per il difetto dell'armatura di Epic 0 già documentato in quel file: aggiungere una chiave la fa sparire dalle `new_entries` di BMAD e rende rosso `test_chiave_canonica.py::test_la_derivazione_coincide_con_quella_di_bmad`. Non l'ho toccato.
+
+4. **Il portatore canonico di un'identità non è dichiarato da nessuna autorità.** Ho scelto: il gruppo di layer 3 *è* il componente (unico a portare `data-component-type`), il cerchio di layer 4 *è* il nodo, le etichette non portano identità — anche perché `role="img"` rende presentazionale il sottoalbero, quindi ripeterla lì non aiuterebbe nessun lettore e darebbe a chi riparsa due elementi che dicono di essere la stessa cosa. È documentato nei docstring, ma la Story 1.6 avrà bisogno che sia un contratto, non una convenzione.
+
+5. **L'altra conseguenza testabile di FR-15 non è verificata** — «a 360 px di viewport il disegno resta interamente visibile senza scorrimento orizzontale, etichette a non meno di 11 px effettivi». L'AC di questa storia cita FR-15 solo per l'alternativa testuale. Emetto `viewBox` senza `width`/`height` fissi, così il disegno scala col contenitore (UX-DR27), e `font-size` 11 in unità utente; ma qui non esiste un viewport da misurare. Appartiene alla storia che possiede la superficie web.
+[13:19:19Z] 
+[13:19:19Z] passo 2: verifica [-]
+  test...
+  [ok]  test: 699 passati
+  [ok]  copertura: 100.0%
+  [ok]  recinti di dipendenza
+  [ok]  copertura del dominio
+[13:19:36Z]   oracolo exit 0 — {"copertura": 100.0, "dominio": true, "recinti": true, "test_falliti": 0, "test_passati": 699, "verde": true}
+[13:19:36Z] 
+[13:19:36Z] passo 3: revisiona [Blind Hunter]
+[13:19:36Z]   → claude -p --model claude-fable-5 --effort max --max-budget-usd $15
+[13:31:33Z]   revisione exit 0
+Verifiche eseguite: `tests/test_svg_semantico.py` 52/52; `ops/loop/verifica.sh` exit 0 con le stesse metriche del rapporto; fixture rasterizzata (`qlmanage`) e guardata; `scena()`/`Scena` sondate con layout validi e scene composte; due mutanti in copia-ombra; larghezze del testo misurate col font di sistema a 11 px.
+
+- **L'etichetta di R2 è tagliata sulla fixture stessa che la storia prescrive.** `svg.py::_etichette` mette il valore di un bipolo verticale a `centro.x + largo + 8` = 216; «220 ohm» a 11 px è largo 46,3 px; la `viewBox` finisce a −42 + 280 = 238. Nel PNG resta «220». `Scena.estensione()` non conta le etichette e `MARGINE = 30` copre per costruzione al massimo 22 unità di testo per un componente verticale sul bordo destro. Il rapporto lo dichiara come rischio su «un identificatore lungo»: accade sul valore, sul caso base.
+
+- **Le guardie di `Scena` applicano due delle tre condizioni di AD-31 e nessuna di occlusione, e `scena()` produce da `LayoutIR` validi esattamente il difetto che AD-31 nomina.** Verificato: centro di R1 a x=300 con nodi a 0 e 200 → il filo di R1.1 va da (324,0) a (200,0) attraversando il corpo [288..312] e il morsetto R1.0 (276,0), accettato; nodi a 90 e 110 con centro 100 → i fili entrano nel corpo, accettato; terzo nodo `z` collineare a 200 → il filo R1.1 (124→300) passa per la sua giunzione, accettato; nodo `0` piazzato in (76,0) sul morsetto → `points="76,0 76,0"`, giunzione r=3 sopra il morsetto r=2, accettato (`_punti_distinti` confronta nodi fra loro e morsetti fra loro, mai nodi con morsetti). Il docstring di `_verifica_i_fili` dice «È AD-31 applicata a ciò che stiamo per emettere»: ne applica gli estremi.
+
+- **Guardie di composizione mancanti, su tipi resi pubblici «perché la 1.7 comporrà scene».** Filo duplicato sullo stesso morsetto accettato (7 fili, due `<polyline>` con la stessa tripla emesse); `Simbolo` con `orizzontale=True` e morsetti a (0,−24),(0,24) accettato — `riquadro()` e `_reoforo` disegnano un corpo ortogonale ai reofori; `Simbolo` con entrambi i morsetti sul nodo `a` accettato (lo schema del `Component` lo vieta, la scena no).
+
+- **Il portatore canonico del terminale non è dichiarato, ed è l'unico caso in cui la duplicazione esiste davvero nei byte.** La tripla `data-terminal-component/index/node` compare due volte per morsetto (polyline di layer 2 e circle di layer 3: contate 2 occorrenze di `R1/0/b`). Il punto 4 del rapporto tratta componente e nodo e tace il terminale; la 1.6 dovrà distinguere «è il morsetto» da «tocca il morsetto» dal nome del tag, cioè da una convenzione non scritta.
+
+- **La domanda di accettazione differita a 1.4 non è né risposta né riportata.** `deferred-work.md` («spec-2-6 → Story 1.4»): l'unità semantica di `reroute_scope`, con l'istruzione di fermarsi con `ARCHITECTURE_CONFLICT` invece di indovinare. Il codice risponde per fatto: i fili non sono entità (`EntityKind` resta `component | node`), non hanno posizione nel `LayoutIR` e vengono reinstradati da zero a ogni `render` (`_percorso`). Il rapporto non nomina `reroute_scope`.
+
+- **Manca lo spec della storia con la mappa criterio → test.** `spec-1-1-*` e `spec-1-3-*` l'hanno; l'action item aperto `epic-1-retro-item-3` lo esige «prima di entrare in review». Le dieci voci «incomplete/fuori ambito» del rapporto — AD-35 non implementabile alla lettera, portatore canonico, `PRECISIONE`, pareggio d'asse, il recinto 1.5, `placeholder_unbound` che AD-19 assegna a `render/serialize` (il pacchetto ora esiste e non ha alcun produttore di `Refusal`) — vivono solo nel rapporto e nei docstring: nessun artefatto su disco le porta.
+
+- **Il nodo di riferimento è detto e non disegnato.** `Giunzione.riferimento` entra nel `<desc>` («il nodo di riferimento e' 0») e in nessun elemento grafico: né simbolo di massa né marca. Lo studente che vede e quello che ascolta ricevono topologie con un'informazione di differenza.
+
+- **Il segno del generatore è codificato in tre modi diversi nei tre canali.** A valore negativo l'etichetta scrive «-12 volt» (`_etichette` → `_valore(s.valore)`) *e* la croce si sposta sul morsetto 1 (`_corpo_generatore`), mentre il testo dice «12 volt, positivo al nodo 0». A 0 V la croce è disegnata sul morsetto 0 (`>= 0`) e il testo dice che non c'è polarità («col primo morsetto…») — verificato eseguendo. Nel PNG, inoltre, la croce sta fuori dal cerchio (centro a y=62, cerchio da 68) con la barra verticale sovrapposta al reoforo: si legge come una piastra, non come un «+».
+
+- **Tre assenze nella radice, sul lato accessibilità.** `aria-labelledby` cita sia `<title>` sia `<desc>`: entrambi entrano nel *nome* accessibile e non resta alcuna descrizione — il pattern è `aria-labelledby` per il titolo e `aria-describedby` per la `<desc>`. Nessun `lang`/`xml:lang="it"`: l'SVG è per AD-10 la sorgente di ogni export e da solo non dichiara la lingua che un lettore di schermo deve usare. Il `<desc>` contiene «e'» per «è»: letto ad alta voce è un'altra parola, e le Consistency Conventions mandano il testo utente alla microcopy di EXPERIENCE.md.
+
+- **`Component.symbolic` sparisce.** Non è né disegnato né detto. In `reference-set/dev/dc-00001.json` `id="E1"` e `symbolic="E_1"`: il disegno mostrerà un nome che il testo dell'esercizio non usa, e nessuna autorità dice quale dei due sia quello dello studente.
+
+- **Nessun token di DESIGN.md.** `identity-tag` prescrive `{typography.label-drawing}` = `Inter, system-ui, sans-serif` e `{colors.ink-secondary}`; l'SVG fissa `font-family="ui-sans-serif, sans-serif"` e `fill="currentColor"` come attributi di presentazione, senza classe né variabile a cui un braccio possa agganciare i token (AD-26: «i quattro bracci usano gli stessi token di DESIGN.md»). `stroke-width` non dichiarato da nessuna parte.
+
+- **La fixture e il «`LayoutIR` predefinito» esistono solo dentro il test.** Nulla in `src/` o `reference-set/` li possiede; `render()` non è mai stato eseguito su un circuito del reference-set, benché i casi `dc-*` di `dev` abbiano esattamente i tipi di `FORME`; 1.6 e 1.7 dovranno ricopiare `CIRCUITO`/`PIAZZAMENTI` da `test_svg_semantico.py`. Nessun golden dei byte emessi è depositato: l'unico oracolo sul formato è l'uguaglianza con sé stesso, quindi un cambiamento del formato passa in silenzio finché la 1.6 non riparsa (FR-46 elenca «golden» fra le famiglie obbligatorie).
+
+- **L'oracolo di mutazione copre una sola delle tre chiavi d'ordine.** In copia-ombra, `tuple(sorted(fili, key=…))` → `tuple(fili)`: i 52 test restano verdi, exit 0. `sorted(circuito.nodes)` → `list(...)`: rosso su `test_l_ordine_di_inserimento_non_cambia_un_byte`. La chiave dei fili non è mai stata vista fallire.
+
+- **Affermazioni dei docstring che i byte contraddicono.** `svg.py`: «importa `fractions` e `xml.sax.saxutils` e nient'altro» — importa anche `collections.abc`. `_nodi_ed_etichette`: «Le etichette vengono dopo, tutte insieme» — l'ordine emesso nel layer 4 è `circle, text, circle, text, circle, text, text, text…`. `Scena`: «coerente per costruzione o non costruita affatto» — vedi i due rilievi sulle guardie.
+[13:31:33Z] 
+[13:31:33Z] passo 4: ripara [-]
+[13:31:33Z]   → claude -p --model claude-opus-5 --effort max --max-budget-usd $25
+## Rapporto — Story 1.4, riparazione dei rilievi
+
+### 0. I rilievi: quali confermo, quali refuto
+
+Tutti e quattordici sono **confermati nel fatto** — ognuno riprodotto con una misura, non accettato sulla parola. Tre portano però una clausola che refuto, e una di queste avrebbe fatto danno se l'avessi seguita.
+
+| # | Rilievo | Esito | Prova |
+|---|---|---|---|
+| 1 | Etichetta di R2 tagliata | **confermato** | `viewBox` finiva a 238, «220 ohm» partiva a 216 |
+| 2 | Terza condizione di AD-31 assente | **confermato**; *clausola occlusione refutata* | i quattro casi riprodotti; ma AD-23 definisce l'occlusione fra layer ≥5 e layer 4 e la assegna a `render/roundtrip` — i layer 5 e 6 questa storia **non li emette**, e l'attraversamento di un *corpo* non è vietato da alcuna autorità |
+| 3 | Guardie di composizione mancanti | **confermato** 3/3 | filo duplicato, asse incoerente, entrambi i morsetti sullo stesso nodo: tutti accettati |
+| 4 | Portatore canonico non dichiarato | **confermato**; *rinomina refutata* | `review-veridicita.md:189`, il testo che **ha prodotto** AD-31, scrive che è il **conduttore** a portare `data-terminal-*`: spostare l'attributo avrebbe contraddetto l'autorità. Ho dichiarato la convenzione e l'ho pinnata |
+| 5 | `reroute_scope` non riportato | **confermato** | risposto, senza `ARCHITECTURE_CONFLICT`: 1.4 non consuma `LayoutPatch` |
+| 6 | Spec mancante | **confermato** | `epic-1-retro-item-3` aperto, owner «loop di costruzione» |
+| 7 | Nodo di riferimento non disegnato | **confermato** | |
+| 8 | Segno del generatore in tre modi | **confermato** 3/3 | croce a y 58–66, cerchio 68–92: fuori |
+| 9 | Tre assenze di accessibilità | **confermato** 3/3 | |
+| 10 | `Component.symbolic` sparisce | **confermato** | |
+| 11 | Nessun token di `DESIGN.md` | **confermato** | |
+| 12 | Fixture e golden | **confermato**; *attribuzione FR-46 imprecisa* | FR-46 elenca «golden `ProofGraph`», non golden SVG — il golden dei byte resta giusto per AD-35/AD-10 e l'ho depositato |
+| 13 | Chiave d'ordine mai vista fallire | **confermato** | 52/52 verdi col `sorted` sui fili rimosso, misurato in copia-ombra |
+| 14 | Docstring contraddetti dai byte | **confermato** 3/3 | |
+
+**Un difetto che nessuno dei quattordici nominava**, trovato rasterizzando con un secondo renderer: il blocco `<style>` con `var()` che avevo scritto per il rilievo 11 fa uscire il circuito **senza un solo tratto** su `cairosvg`. Ritirato, e trasformato in invariante.
+
+### 1. Che cosa è cambiato, file per file
+
+**`src/kirchhoff/render/serialize/geometry.py`** — `Simbolo` porta `simbolico` e due guardie nuove (morsetti sull'asse dichiarato e simmetrici; non entrambi sullo stesso nodo). `Scena` passa da tre a sei condizioni: `_punti_distinti` confronta ora **tutti** i punti annotati insieme (nodi *e* morsetti, che prima non si vedevano fra loro), `_senza_transiti` applica la terza condizione di AD-31 con geometria esatta su `Fraction`, un morsetto porta esattamente un filo, e `_verifica_l_ordine` impone la chiave d'ordine sulle tre collezioni. Tolto il `sorted` morto sui fili.
+
+**`src/kirchhoff/render/serialize/svg.py`** — `_estensione_emessa` unisce geometria, scritte e massa: la `viewBox` non taglia più. `MARGINE` diventa `{spacing.drawing-inset}`; il font diventa `{typography.label-drawing}`; `TRATTO` e `TINTA` sono dichiarati; ogni elemento porta una classe `kf-*` (layer compresi, prima nudi e collidibili). Croce del generatore dentro il cerchio, assente a 0 V, e il testo cita il valore col suo segno invece di riformularlo. Massa disegnata sul nodo di riferimento, che porta `data-node-reference`. `aria-labelledby`/`aria-describedby` separati, `lang`/`xml:lang`, accenti nel testo parlato, `data-component-symbolic`.
+
+**`tests/test_svg_semantico.py`** — da 52 a 78 test. **`tests/golden/story-1-4-fixture.svg`** — nuovo. **`spec-1-4-….md`** — nuova, con la mappa criterio → test. **`deferred-work.md`** — tre voci.
+
+### 2. Oracolo eseguito
+
+`ops/loop/verifica.sh` → **exit 0**. `{"copertura": 100.0, "dominio": true, "recinti": true, "test_falliti": 0, "test_passati": 725, "verde": true}` (linea di base prima di questa iterazione: 699).
+
+**Nove mutanti in copia-ombra, nove rossi.** Quello che la storia prescrive — ordinamento da dizionario — muore con `ValueError: simboli fuori dall'ordine dichiarato: ['V1', 'R1', 'R2']` costruendo la `Scena`, exit 4 sul solo test di determinismo. Rasterizzazione con `qlmanage` **e** `cairosvg`: stesso circuito, guardato.
+
+### 3. Incompleto o rischioso
+
+- La larghezza del testo è un **maggiorante** (un quadratone per glifo), non una misura: la `viewBox` non taglia, ma su etichette lunghe lascia bianco. Misurare il font davvero dipende da D4, aperta.
+- `_estensione_emessa` va tenuta allineata a mano con ciò che si emette: chi aggiungerà un elemento geometrico deve ricordarsi di aggiungerlo lì. È dichiarato, non imposto da una guardia.
+- La tinta dei token non è emessa (`DESIGN.md` ha due palette, il file viaggia da solo).
+- Il golden è stato rigenerato **due volte** deliberatamente in questa iterazione: FR-46 chiede che sia una modifica esplicita e revisionata, ed è qui che la dichiaro.
+
+### 4. Fuori ambito, e non toccato
+
+- **`reroute_scope`**: la domanda di accettazione differita a 1.4 è risposta e **non chiusa**. 1.4 non consuma `LayoutPatch` (`applica` è 1.7), i fili non sono entità — `EntityKind = component | node` — e `_percorso` li ricalcola da zero: nessuna delle quattro letture cambia un byte. Nessun `ARCHITECTURE_CONFLICT`; la decisione va portata a 1.7, dove FR-38 la usa come vincolo normativo.
+- **Quale nome legga lo studente** (`id` o `symbolic`): tocca D2, registrata.
+- **Il token del tratto assente in `DESIGN.md`**: registrato, non inventato altrove.
+- **`placeholder_unbound`** (AD-19 lo assegna a `render/serialize`): nulla in questa storia lo richiede, dipende da 2.5, in backlog.
+- **Attraversamento di un corpo** e **pareggio d'asse a |dx| = |dy|**: materia di autolayout, non-goal dichiarato.
+- **`sprint-status.yaml`** non registra 1.4, e non l'ho aggiunto: lo stato di una storia sotto revisione lo scrive la promozione del loop, e un implementatore che scrive lo stato della propria storia è l'autocertificazione che questo progetto esiste per chiudere. `epic-1-retro-item-3` resta `open` perché è una politica permanente, non un compito da spuntare.
+- Non ho letto `reference-set/holdout/`, né toccato `_bmad/scripts/`, `ops/loop/`, `.claude/settings.json` o alcun documento sotto `planning-artifacts/`.
+[14:02:53Z] 
+[14:02:53Z] passo 5: verifica [-]
+  test...
+  [ok]  test: 725 passati
+  [ok]  copertura: 100.0%
+  [ok]  recinti di dipendenza
+  [ok]  copertura del dominio
+[14:03:11Z]   oracolo exit 0 — {"copertura": 100.0, "dominio": true, "recinti": true, "test_falliti": 0, "test_passati": 725, "verde": true}
+[14:03:11Z] 
+[14:03:11Z] passo 6: revisiona [ri-revisione]
+[14:03:12Z]   → claude -p --model claude-fable-5 --effort max --max-budget-usd $15
+[14:09:03Z]   revisione exit 1
+You've hit your session limit · resets 5:50pm (Europe/Rome)
+[14:09:03Z]   revisore non ha concluso
+[14:09:03Z] 
+[14:09:03Z] iterazione 1 NON promossa. Il ramo loop/iter-20260826T125812Z-1-4-serializzatore-svg-semantico-deterministico-su-una-fixture- resta per l'ispezione.
