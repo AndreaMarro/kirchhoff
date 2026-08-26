@@ -1,5 +1,5 @@
 ---
-sha: 4dc4b0651a2868fb411228c4fc0667521e709c4f
+sha: 065130a608b236f486b2216f2b69e603de5c243b
 tipo: indice-derivato
 ---
 
@@ -10,8 +10,8 @@ tipo: indice-derivato
 > una nota, ha torto lui — e `--verifica` lo dice, invece di lasciartelo
 > scoprire.
 
-Costruito sulla revisione `4dc4b0651a2868fb411228c4fc0667521e709c4f`.
-45 note.
+Costruito sulla revisione `065130a608b236f486b2216f2b69e603de5c243b`.
+46 note.
 
 ## (radice)
 
@@ -80,6 +80,7 @@ Costruito sulla revisione `4dc4b0651a2868fb411228c4fc0667521e709c4f`.
 ## 70-Receipt-di-giro
 
 - [[20260826T075916Z-1-3-un-layoutir-recuperabile-per-ogni-stato-visuale]] — Giro 20260826T075916Z — 1-3-un-layoutir-recuperabile-per-ogni-stato-visuale · `receipt-di-giro` → [[00-INDICE]]
+- [[20260826T125812Z-1-4-serializzatore-svg-semantico-deterministico-su-una-fixtu]] — Giro 20260826T125812Z — 1-4-serializzatore-svg-semantico-deterministico-su-una-fixture-a · `receipt-di-giro` → [[00-INDICE]]
 
 ## 80-Operazioni
 
