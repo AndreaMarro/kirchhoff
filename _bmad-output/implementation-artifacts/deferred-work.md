@@ -250,3 +250,51 @@ fatta emergere. Nessuna viene lasciata cadere in silenzio.
     implementate più di recente sono invisibili nel tracker. Il loop non ne dipende — avanza
     leggendo gli artefatti di implementazione, non il ledger — ma chiunque legga il tracker vede
     uno stato falso. Allinearlo tocca 46 chiavi ed è una decisione, non una patch.
+
+- source_spec: `spec-1-4-serializzatore-svg-semantico-deterministico-su-una-fixture-a.md`
+    (Story 1.4, 26/08/2026) — **risposta alla domanda di accettazione differita a 1.4**
+  summary: `reroute_scope` non è stato deciso, e 1.4 non lo richiede: la voce sopra chiedeva di
+    fermarsi con `ARCHITECTURE_CONFLICT` **se** arrivare a 1.4 avesse richiesto la decisione.
+    Non l'ha richiesta. La domanda resta aperta e va portata alla Story 1.7.
+  evidence: Misurato sul codice, non dedotto. Questa storia non consuma alcun `LayoutPatch` —
+    `applica` non esiste, ed è dichiarata contratto della Story 1.7 in
+    `render/layout/__init__.py` — quindi non reinstrada nulla di preesistente: `_percorso`
+    calcola ogni filo da zero a ogni `render`, e due `render` sullo stesso `LayoutIR` danno gli
+    stessi byte proprio perché non c'è stato da conservare fra l'uno e l'altro. I fili non sono
+    entità: `EntityKind` è `Literal["component", "node"]` (`domain/transform/delta.py:67`), non
+    hanno posizione nel `LayoutIR` e non compaiono in alcun `preserve`. Ne segue che nessuna
+    delle quattro letture candidate — componenti, nodi, branch/edge renderizzabili, altro —
+    cambia un byte di ciò che 1.4 emette, e sceglierne una qui l'avrebbe chiusa per inerzia
+    senza che alcun test potesse vederla sbagliata. **Dove morde davvero:** FR-38 usa
+    `reroute_scope` come vincolo normativo — *«il numero di elementi con coordinate cambiate è
+    limitato allo `reroute_scope` dichiarato»* — e quel conto esiste solo dentro l'applicatore
+    di patch. È lì che la decisione serve, ed è lì che va presa.
+
+- source_spec: `spec-1-4-serializzatore-svg-semantico-deterministico-su-una-fixture-a.md`
+    (Story 1.4, 26/08/2026)
+  summary: Quale dei due nomi di un componente lo studente debba **leggere** sul disegno —
+    `Component.id` o `Component.symbolic` — non è deciso da nessuna autorità.
+  evidence: I due esistono e differiscono: in `reference-set/dev/dc-00001.json` valgono `E1` ed
+    `E_1`. Il disegno mostra l'`id`, come già faceva, e la scelta non è stata presa qui: nessun
+    documento dice quale dei due sia il nome che il testo dell'esercizio usa, e deciderlo in un
+    serializzatore significherebbe fissare in un modulo una convenzione di notazione che FR-16
+    assegna al Profilo curricolare. Ciò che è stato chiuso è la **perdita**: `symbolic` esce ora
+    in `data-component-symbolic`, perché AD-10 fa di questo SVG la sorgente unica di ogni altro
+    formato e un nome che non entra nei byte non è più recuperabile a valle. La decisione tocca
+    D2 — il primo Profilo curricolare reale — e va presa con quella.
+
+- source_spec: `spec-1-4-serializzatore-svg-semantico-deterministico-su-una-fixture-a.md`
+    (Story 1.4, 26/08/2026)
+  summary: `DESIGN.md` non ha un token per lo spessore di tratto **dello schema**, e il renderer
+    ne ha dovuto dichiarare uno.
+  evidence: I quattro componenti di `DESIGN.md` che dichiarano uno `strokeWidth` —
+    `provenance-anchor` (2px), `subgraph-highlight` (2px), `boundary-anchor` (1.4px),
+    `unchanged-marker` (1px) — sono tutti **overlay**: annotano il disegno, non lo sono. Il
+    circuito stesso non ha un token. `svg.py` dichiara `TRATTO = 3/2` e lo emette come
+    `stroke-width` sulla radice più la proprietà `--kf-tratto` nel foglio di stile, così che un
+    braccio possa ridefinirlo senza toccare il renderer (AD-26). Resta che il valore è stato
+    scelto qui e non in `DESIGN.md`, che è dove i token vivono: il numero è dichiarato e
+    sostituibile, ma la riga di `DESIGN.md` manca e la deve scrivere chi possiede il documento.
+    Nota di coerenza: `boundary-anchor` è dichiarato *«deliberatamente più discreto»* del segnale
+    sul delta, e a 1.4px contro 1.5 lo è appena — la relazione fra i due spessori è un'altra cosa
+    che solo il proprietario di `DESIGN.md` può fissare.

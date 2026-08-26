@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-24 -36.8 329 224.8" role="img" lang="it" xml:lang="it" aria-labelledby="titolo-lay_01K2F2DKG0000G40R40M30E209" aria-describedby="descrizione-lay_01K2F2DKG0000G40R40M30E209" stroke-width="1.5" data-layout-id="lay_01K2F2DKG0000G40R40M30E209">
+  <title id="titolo-lay_01K2F2DKG0000G40R40M30E209">Circuito: 3 componenti, 3 nodi</title>
+  <desc id="descrizione-lay_01K2F2DKG0000G40R40M30E209">Circuito: 3 componenti, 3 nodi; il nodo di riferimento è 0. R1, resistore da 100 ohm, fra il nodo b e il nodo a. R2, resistore da 220 ohm, fra il nodo a e il nodo 0. V1, generatore di tensione continua da 12 volt, col morsetto positivo al nodo b e il negativo al nodo 0. Al nodo 0 si incontrano R2 e V1. Al nodo a si incontrano R1 e R2. Al nodo b si incontrano R1 e V1.</desc>
+  <g data-layer="2" class="kf-layer-fili">
+    <polyline class="kf-filo" data-terminal-component="R1" data-terminal-index="0" data-terminal-node="b" points="76,0 0,0" fill="none" stroke="currentColor"/>
+    <polyline class="kf-filo" data-terminal-component="R1" data-terminal-index="1" data-terminal-node="a" points="124,0 200,0" fill="none" stroke="currentColor"/>
+    <polyline class="kf-filo" data-terminal-component="R2" data-terminal-index="0" data-terminal-node="a" points="200,56 200,0" fill="none" stroke="currentColor"/>
+    <polyline class="kf-filo" data-terminal-component="R2" data-terminal-index="1" data-terminal-node="0" points="200,104 200,160 100,160" fill="none" stroke="currentColor"/>
+    <polyline class="kf-filo" data-terminal-component="V1" data-terminal-index="0" data-terminal-node="b" points="0,56 0,0" fill="none" stroke="currentColor"/>
+    <polyline class="kf-filo" data-terminal-component="V1" data-terminal-index="1" data-terminal-node="0" points="0,104 0,160 100,160" fill="none" stroke="currentColor"/>
+  </g>
+  <g data-layer="3" class="kf-layer-componenti">
+    <g data-component-id="R1" data-component-type="resistor" data-component-value="100" data-component-unit="ohm" data-component-symbolic="R1">
+      <line class="kf-corpo" x1="76" y1="0" x2="88" y2="0" stroke="currentColor"/>
+      <line class="kf-corpo" x1="124" y1="0" x2="112" y2="0" stroke="currentColor"/>
+      <rect class="kf-corpo" x="88" y="-8" width="24" height="16" fill="none" stroke="currentColor"/>
+      <circle class="kf-morsetto" data-terminal-component="R1" data-terminal-index="0" data-terminal-node="b" cx="76" cy="0" r="2" fill="currentColor"/>
+      <circle class="kf-morsetto" data-terminal-component="R1" data-terminal-index="1" data-terminal-node="a" cx="124" cy="0" r="2" fill="currentColor"/>
+    </g>
+    <g data-component-id="R2" data-component-type="resistor" data-component-value="220" data-component-unit="ohm" data-component-symbolic="R2">
+      <line class="kf-corpo" x1="200" y1="56" x2="200" y2="68" stroke="currentColor"/>
+      <line class="kf-corpo" x1="200" y1="104" x2="200" y2="92" stroke="currentColor"/>
+      <rect class="kf-corpo" x="192" y="68" width="16" height="24" fill="none" stroke="currentColor"/>
+      <circle class="kf-morsetto" data-terminal-component="R2" data-terminal-index="0" data-terminal-node="a" cx="200" cy="56" r="2" fill="currentColor"/>
+      <circle class="kf-morsetto" data-terminal-component="R2" data-terminal-index="1" data-terminal-node="0" cx="200" cy="104" r="2" fill="currentColor"/>
+    </g>
+    <g data-component-id="V1" data-component-type="voltage_source_dc" data-component-value="12" data-component-unit="volt" data-component-symbolic="V1">
+      <line class="kf-corpo" x1="0" y1="56" x2="0" y2="68" stroke="currentColor"/>
+      <line class="kf-corpo" x1="0" y1="104" x2="0" y2="92" stroke="currentColor"/>
+      <circle class="kf-corpo" cx="0" cy="80" r="12" fill="none" stroke="currentColor"/>
+      <line class="kf-corpo" x1="-4" y1="74" x2="4" y2="74" stroke="currentColor"/>
+      <line class="kf-corpo" x1="0" y1="70" x2="0" y2="78" stroke="currentColor"/>
+      <circle class="kf-morsetto" data-terminal-component="V1" data-terminal-index="0" data-terminal-node="b" cx="0" cy="56" r="2" fill="currentColor"/>
+      <circle class="kf-morsetto" data-terminal-component="V1" data-terminal-index="1" data-terminal-node="0" cx="0" cy="104" r="2" fill="currentColor"/>
+    </g>
+  </g>
+  <g data-layer="4" class="kf-layer-nodi">
+    <circle class="kf-giunzione" data-node-id="0" data-node-reference="true" cx="100" cy="160" r="3" fill="currentColor"/>
+    <line class="kf-massa" x1="93" y1="168" x2="107" y2="168" stroke="currentColor"/>
+    <line class="kf-massa" x1="95.5" y1="172" x2="104.5" y2="172" stroke="currentColor"/>
+    <line class="kf-massa" x1="98" y1="176" x2="102" y2="176" stroke="currentColor"/>
+    <text class="kf-etichetta" x="108" y="152" text-anchor="start" font-size="11" font-family="Inter, system-ui, sans-serif" font-weight="500" fill="currentColor">0</text>
+    <circle class="kf-giunzione" data-node-id="a" cx="200" cy="0" r="3" fill="currentColor"/>
+    <text class="kf-etichetta" x="208" y="-8" text-anchor="start" font-size="11" font-family="Inter, system-ui, sans-serif" font-weight="500" fill="currentColor">a</text>
+    <circle class="kf-giunzione" data-node-id="b" cx="0" cy="0" r="3" fill="currentColor"/>
+    <text class="kf-etichetta" x="8" y="-8" text-anchor="start" font-size="11" font-family="Inter, system-ui, sans-serif" font-weight="500" fill="currentColor">b</text>
+    <text class="kf-etichetta" x="100" y="-16" text-anchor="middle" font-size="11" font-family="Inter, system-ui, sans-serif" font-weight="500" fill="currentColor">R1</text>
+    <text class="kf-etichetta" x="100" y="22" text-anchor="middle" font-size="11" font-family="Inter, system-ui, sans-serif" font-weight="500" fill="currentColor">100 ohm</text>
+    <text class="kf-etichetta" x="216" y="80" text-anchor="start" font-size="11" font-family="Inter, system-ui, sans-serif" font-weight="500" fill="currentColor">R2</text>
+    <text class="kf-etichetta" x="216" y="94" text-anchor="start" font-size="11" font-family="Inter, system-ui, sans-serif" font-weight="500" fill="currentColor">220 ohm</text>
+    <text class="kf-etichetta" x="20" y="80" text-anchor="start" font-size="11" font-family="Inter, system-ui, sans-serif" font-weight="500" fill="currentColor">V1</text>
+    <text class="kf-etichetta" x="20" y="94" text-anchor="start" font-size="11" font-family="Inter, system-ui, sans-serif" font-weight="500" fill="currentColor">12 volt</text>
+  </g>
+</svg>
