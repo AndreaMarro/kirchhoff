@@ -1,5 +1,5 @@
 ---
-sha: 92cf1b5f29cecba06c7160d7efe5d2d9e2bfa736
+sha: 370e62e77b4f1f1a8efcf984423eae27743d5eb5
 tipo: indice-derivato
 ---
 
@@ -10,7 +10,7 @@ tipo: indice-derivato
 > una nota, ha torto lui — e `--verifica` lo dice, invece di lasciartelo
 > scoprire.
 
-Costruito sulla revisione `92cf1b5f29cecba06c7160d7efe5d2d9e2bfa736`.
+Costruito sulla revisione `370e62e77b4f1f1a8efcf984423eae27743d5eb5`.
 46 note.
 
 ## (radice)

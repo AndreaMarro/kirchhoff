@@ -99,18 +99,55 @@ def costruisci() -> pathlib.Path:
     return INDICE
 
 
+def _ultima_revisione_delle_note() -> str:
+    """La revisione piu' recente che ha toccato una NOTA — non l'indice stesso.
+
+    Confrontare con `HEAD` sembrava giusto e non lo era: l'indice viene costruito
+    PRIMA del commit che lo contiene, quindi dichiara sempre la revisione
+    precedente, e un controllo su `HEAD` lo trova stantio un istante dopo essere
+    stato scritto. Misurato il 26/08/2026 su due giri di fila.
+
+    La domanda giusta non e' «l'indice dichiara HEAD?» ma «e' cambiata una nota
+    dopo che l'indice e' stato scritto?». Un commit che tocca solo codice non
+    invecchia una vista del vault, e dirlo stantio insegnerebbe a ignorarlo.
+
+    L'indice e' ESCLUSO dalla domanda: senza l'esclusione il commit che lo
+    contiene conterebbe come «vault toccato» e l'indice invecchierebbe se stesso.
+    Una vista non e' una nota.
+    """
+    r = subprocess.run(
+        ["git", "log", "-1", "--format=%H", "--", "vault",
+         f":(exclude){INDICE.relative_to(REPO)}"],
+        cwd=REPO, capture_output=True, text=True)
+    return r.stdout.strip() if r.returncode == 0 else ""
+
+
+def _e_antenato(a: str, b: str) -> bool:
+    """Vero se `a` e' un antenato di `b`, o coincide."""
+    if not a or not b:
+        return False
+    if a == b:
+        return True
+    return subprocess.run(["git", "merge-base", "--is-ancestor", a, b],
+                          cwd=REPO, capture_output=True).returncode == 0
+
+
 def verifica() -> int:
-    """Zero se l'indice dichiara la revisione corrente."""
+    """Zero se nessuna nota e' cambiata dopo la revisione che l'indice dichiara."""
     if not INDICE.exists():
         print("indice assente: costruiscilo con `indice.py --costruisci`", file=sys.stderr)
         return 1
     dichiarato = _campo(INDICE.read_text(encoding="utf-8"), "sha")
-    corrente = head()
-    if dichiarato != corrente:
-        print(f"indice stantio: dichiara {dichiarato[:12] or '(nulla)'}, "
-              f"la revisione corrente e' {corrente[:12]}", file=sys.stderr)
+    if not dichiarato:
+        print("l'indice non dichiara alcuna revisione: ricostruiscilo", file=sys.stderr)
         return 1
-    print(f"indice corrente su {corrente[:12]}")
+
+    note = _ultima_revisione_delle_note()
+    if note and dichiarato != note and _e_antenato(dichiarato, note):
+        print(f"indice stantio: dichiara {dichiarato[:12]}, ma una nota e' cambiata "
+              f"dopo, in {note[:12]}", file=sys.stderr)
+        return 1
+    print(f"indice corrente: nessuna nota cambiata dopo {dichiarato[:12]}")
     return 0
 
 
