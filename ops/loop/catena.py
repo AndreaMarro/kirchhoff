@@ -51,17 +51,38 @@ def _piatto(t: str) -> str:
 
 
 def fatta(chiave: str) -> bool:
-    """Vero se l'artefatto di implementazione della storia esiste gia'.
+    """Vero se il lavoro della storia e' gia' dentro `main`.
 
-    Confronta la chiave INTERA, non il prefisso: `spec-1-2-script-di-valutazione`
-    e' una storia della v1, e farla collidere con la 1.2 della v2 sarebbe
-    precisamente l'errore che il ledger disallineato gia' commette.
+    **Il segnale e' il ramo fuso, non un artefatto.** La prima versione guardava se
+    esisteva `spec-<chiave>.md`, e dipendeva percio' da una scelta
+    dell'implementatore: il giro della 1.1 quell'artefatto lo aveva scritto, quello
+    della 1.2 no — e il pannello annunciava di voler rifare una storia appena
+    promossa. Un criterio di completamento non puo' poggiare su un'abitudine.
+
+    Un ramo `loop/iter-<istante>-<chiave>` dentro `git branch --merged main` e'
+    invece il fatto: quel lavoro E' su main, perche' e' li' che il merge lo ha
+    messo. Non c'e' un secondo registro da tenere allineato — la stessa ragione per
+    cui il dominio deriva `CAUSES` da `Cause` invece di scriverlo due volte.
+
+    Il confronto e' per PREFISSO perche' lo scheduler tronca il nome del ramo a 90
+    caratteri: `...non-dichiarat` ha perso la sua ultima lettera. Ed e' senza
+    accenti, perche' i due nomi non si scrivono uguale.
     """
-    art = QUI.parent.parent / "_bmad-output" / "implementation-artifacts"
-    if not art.is_dir():
+    r = subprocess.run(["git", "branch", "--merged", "main"],
+                       cwd=QUI.parent.parent, capture_output=True, text=True)
+    if r.returncode != 0:
         return False
-    atteso = _piatto(f"spec-{chiave}.md")
-    return any(_piatto(f.name) == atteso for f in art.glob("spec-*.md"))
+    atteso = _piatto(chiave)
+    for riga in r.stdout.splitlines():
+        nome = riga.strip().lstrip("* ").strip()
+        if not nome.startswith("loop/iter-"):
+            continue
+        # `loop/iter-<istante>-<chiave-troncata>` -> la parte dopo l'istante
+        resto = nome[len("loop/iter-"):]
+        _, _, coda = resto.partition("-")
+        if coda and atteso.startswith(_piatto(coda)):
+            return True
+    return False
 
 
 def dopo(chiave_corrente: str) -> str:
