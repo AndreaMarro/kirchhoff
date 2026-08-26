@@ -283,6 +283,14 @@ for i, s in enumerate(p):
           printf 'l artefatto BMAD che la possiede. I criteri di accettazione sono\n'
           printf 'quelli, non una loro parafrasi.\n\n'
           python3 "$QUI/chiave.py" --corpo "$storia" 2>/dev/null || printf '(Story non trovata in epics.md)\n'
+
+          # **Il vault, non solo la Story.** La Story dice cosa costruire; non dice
+          # quali decisioni sono gia' prese, quali sono APERTE, e cosa i giri
+          # precedenti hanno imparato a proprie spese. Quel sapere vive nel vault e
+          # nessuno lo passava a chi implementa — che percio' poteva chiudere per
+          # inerzia una questione che il proprietario aveva lasciato aperta.
+          printf '\n'
+          python3 "$QUI/contesto.py" --storia "$storia" 2>/dev/null || true
           if [ "$tipo" = "ripara" ] && [ -f "$STATO/.rilievi.md" ]; then
             printf '\n## Rilievi da riparare\n\nUn revisore in processo separato ha prodotto questi rilievi.\n'
             printf 'Verificali prima di accettarli: un rilievo plausibile e falso costa piu di uno mancato.\n'

@@ -1,5 +1,5 @@
 ---
-sha: 517fca953bb408456176a7fb98391a475730fd27
+sha: 4dc4b0651a2868fb411228c4fc0667521e709c4f
 tipo: indice-derivato
 ---
 
@@ -10,8 +10,8 @@ tipo: indice-derivato
 > una nota, ha torto lui — e `--verifica` lo dice, invece di lasciartelo
 > scoprire.
 
-Costruito sulla revisione `517fca953bb408456176a7fb98391a475730fd27`.
-44 note.
+Costruito sulla revisione `4dc4b0651a2868fb411228c4fc0667521e709c4f`.
+45 note.
 
 ## (radice)
 
@@ -80,4 +80,8 @@ Costruito sulla revisione `517fca953bb408456176a7fb98391a475730fd27`.
 ## 70-Receipt-di-giro
 
 - [[20260826T075916Z-1-3-un-layoutir-recuperabile-per-ogni-stato-visuale]] — Giro 20260826T075916Z — 1-3-un-layoutir-recuperabile-per-ogni-stato-visuale · `receipt-di-giro` → [[00-INDICE]]
+
+## 80-Operazioni
+
+- [[LOOP-KIRCHHOFF-CONVERGENZA]] — Loop Kirchhoff — convergenza · `pacchetto-operativo` → [[00-INDICE]], [[Decisioni aperte]], [[Lezioni sul loop]]
 
