@@ -141,6 +141,19 @@ fi
 titolo "Prossimo giro"
 if [ -f "$STATO/prossima-storia.txt" ]; then
   s="$(head -1 "$STATO/prossima-storia.txt")"
+  # **Mostra cio' che il giro FARA', non cio' che il file dice.** `run` avanza da
+  # solo quando la storia fissata e' gia' su main; senza questa riga il pannello
+  # annunciava 1.1 mentre il giro avrebbe fatto 1.2. Un pannello che mente su cosa
+  # sta per succedere e' la stessa attestazione infondata che il dominio rifiuta.
+  if python3 "$QUI/catena.py" --fatta "$s" 2>/dev/null; then
+    avanzata="$(python3 "$QUI/catena.py" --dopo "$s" 2>/dev/null)"
+    if [ -n "$avanzata" ]; then
+      riga "gia' su main" "$s"
+      s="$avanzata"
+    else
+      riga "catena" "esaurita dopo $s"
+    fi
+  fi
   riga "storia" "$s"
   python3 "$QUI/router.py" --storia "$s" 2>/dev/null | sed -n '2,3p' | sed 's/^/  /'
 else
