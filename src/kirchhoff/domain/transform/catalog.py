@@ -12,13 +12,22 @@ e il posto dove diverge e' invisibile (E-62 dell'error ledger).
 
 ## Tre cose distinte, e confonderle costa
 
-- **Il vocabolario** (`CATALOG`) — i sedici nomi che una derivazione puo' portare.
-  Chiuso per sempre: non lo si estende a runtime (AD-2).
+- **Il vocabolario** (`CATALOG`) — i sedici nomi di **passo pedagogico**. Chiuso per
+  sempre: non lo si estende a runtime (AD-2).
 - **Le applicabili** (`SUPPORTED`) — le tre dell'MVP. Un nome del vocabolario che
   non e' qui **esiste** e **non e' eseguibile**, e il sistema rifiuta invece di
   improvvisare (FR-43). Si apre solo con una decisione registrata: `CatalogOpening`.
 - **Le implementate** (`engine.implemented()`) — quelle che hanno gia' un corpo.
   «Non ancora scritta» e «non esiste» sono risposte diverse a chi pianifica.
+
+## E una quarta cosa, che non e' in questo modulo
+
+**I nomi qui dentro non sono quelli che una derivazione porta**, e la riga che lo
+diceva e' rimasta falsa fino alla Story 1.2. Una `StructuralDerivation` porta una
+**riscrittura strutturale** — `primitives.PRIMITIVES` — perche' un passo pedagogico
+puo' essere composto da piu' riscritture e K-0 pretende un fotogramma per ogni passo,
+non per ogni riscrittura. Il legame fra i due livelli e' `COMPOSITION`, dichiarata piu'
+sotto: e' il Catalogo a dire di che cosa un suo passo e' fatto, mai il `Delta`.
 
 Puro: nessuna I/O, nessun orologio, nessuna casualita'. Anche la data di una
 decisione di apertura entra come dato: qui non si legge un orologio.
@@ -33,6 +42,8 @@ from fractions import Fraction
 from collections.abc import Mapping
 from types import MappingProxyType
 from typing import Literal
+
+from .primitives import PRIMITIVES
 
 TransformationKind = Literal[
     # riduzioni di rete
@@ -125,7 +136,9 @@ IDENTITY_ATTRIBUTES: tuple[str, ...] = (
 #: strutturale con identita' nuova». Un generatore disattivato modellato come corto
 #: circuito **e'** un cambio di `type`, e vietarlo qui deciderebbe in anticipo, e in
 #: un modulo, una questione che lo spine lascia aperta al vocabolario delle primitive
-#: strutturali. La licenza resta quindi esprimibile e resta **non esercitata**: nessuna
+#: strutturali. **Quel vocabolario esiste dalla Story 1.2 e continua a non decidere
+#: la questione**: `primitives.py` non nomina la soppressione di un generatore, e
+#: dichiara perche'. La licenza resta quindi esprimibile e resta **non esercitata**: nessuna
 #: voce di `_MUTABILI` la concede, e il giorno in cui una la concedesse sarebbe un
 #: commit visibile su questa riga, non un effetto a runtime. Registrato in
 #: `deferred-work.md` come decisione del proprietario.
@@ -197,6 +210,183 @@ def _verifica_dichiarazione(dichiarazione: Mapping[str, frozenset[str]]) -> None
 
 
 _verifica_dichiarazione(MUTABLE_ATTRIBUTES)
+
+
+# --- Story 1.2: di quali riscritture strutturali un passo pedagogico e' composto ---
+#
+# Il vocabolario delle riscritture vive in `primitives.py` e non sa nulla del Catalogo:
+# una riscrittura e' una modifica del grafo, non il passo che la contiene. Il legame
+# fra i due livelli e' **una dichiarazione del Catalogo**, per la stessa ragione per
+# cui lo e' il discriminante d'identita': chi e' misurato non definisce il proprio
+# riferimento (AD-22 v2.1). Se fosse il `Delta` a dire di quale passo fa parte, la
+# `Transform` misurata sceglierebbe da se' il livello a cui viene letta.
+
+
+def _verifica_livelli_distinti(
+    catalogo: frozenset[str], riscritture: frozenset[str]
+) -> None:
+    """I due vocabolari non possono condividere un nome.
+
+    Un nome in entrambi sarebbe accettato sia da `StructuralDerivation` sia da
+    `Certificate`, e i due livelli tornerebbero indistinguibili **proprio nel punto
+    che la Story 1.2 esiste per separare** — senza che nulla protesti, perche' ogni
+    guardia presa da sola resterebbe soddisfatta. E' l'invariante che rende «distinto
+    dal catalogo pedagogico» una proprieta' verificata e non un'intenzione.
+    """
+    condivisi = sorted(catalogo & riscritture)
+    if condivisi:
+        raise RuntimeError(
+            "il catalogo pedagogico e il vocabolario delle riscritture strutturali "
+            f"condividono {', '.join(condivisi)}: un nome solo per due livelli li "
+            "rende indistinguibili, ed e' il difetto che tenerli separati chiude.")
+
+
+_verifica_livelli_distinti(CATALOG, PRIMITIVES)
+
+
+#: **Di quali riscritture strutturali ciascun passo pedagogico e' composto.**
+#:
+#: Una **tupla e non un insieme**, e la differenza e' misurata: come `frozenset` la
+#: dichiarazione non poteva esprimere la molteplicita', e un passo futuro che elimina
+#: due nodi si sarebbe dichiarato identico a uno che ne elimina uno. La tupla porta
+#: quante volte ciascuna riscrittura compare; **non** porta un ordine, perche' le
+#: derivazioni di un `Delta` non si concatenano e l'ordine canonico e' per contenuto.
+#: Per non lasciar credere il contrario, `_verifica_composizione` pretende che ogni
+#: tupla sia ordinata alfabeticamente: c'e' una sola forma in cui scriverla.
+#:
+#: La tupla vuota e' il predefinito, e vuoto qui non significa «nessun vincolo»: un
+#: passo che non dichiara di che cosa e' fatto **non produce un `TransformResult`**
+#: (`result.TransformResult`). Un vincolo che si spegne quando la dichiarazione manca
+#: sarebbe un controllo che non puo' fallire proprio dove non e' mai stato pensato, e
+#: un vuoto che somiglia a una misura e' peggio di un'assenza dichiarata.
+#:
+#: Dichiarano oggi le due operazioni che hanno un'implementazione (`engine.implemented`).
+#: `partitore_di_tensione` e' applicabile e non implementata: quando avra' un corpo,
+#: **questa e' la riga da cambiare**, altrimenti quel corpo non potra' emettere nulla —
+#: e il posto dove dichiarare il caso nuovo e' il test
+#: `test_ogni_operazione_implementata_dichiara_di_che_cosa_e_fatta`.
+#:
+#: `serie` ne dichiara **due**, e non e' un dettaglio: e' il caso di AC2 della Story —
+#: una trasformazione pedagogica composta da piu' riscritture. `parallelo` ne dichiara
+#: una sola, perche' entrambi i nodi sopravvivono alla fusione.
+_COMPOSIZIONE: dict[str, tuple[str, ...]] = {nome: () for nome in sorted(CATALOG)}
+_COMPOSIZIONE["serie"] = ("eliminazione_di_nodo", "fusione_di_componenti")
+_COMPOSIZIONE["parallelo"] = ("fusione_di_componenti",)
+
+#: Vista di sola lettura, per la stessa ragione di `MUTABLE_ATTRIBUTES`: un `dict`
+#: ordinario lascerebbe riscrivibile con un'assegnazione la dichiarazione rispetto a
+#: cui il `Delta` di un passo e' verificato.
+COMPOSITION: MappingProxyType[str, tuple[str, ...]] = MappingProxyType(_COMPOSIZIONE)
+
+
+def primitives_of(operation: str) -> tuple[str, ...]:
+    """Le riscritture di cui `operation` si dichiara composta, con la loro molteplicita'.
+
+    Solleva se l'operazione e' fuori dal catalogo, come `mutable_attributes`: chiedere
+    la composizione di un passo che non esiste e' un errore di programmazione, e
+    rispondere «nessuna» lo renderebbe silenzioso.
+    """
+    if operation not in CATALOG:
+        raise ValueError(
+            f"operazione {operation!r} fuori dal catalogo chiuso: "
+            "non ha una composizione perche' non esiste.")
+    return COMPOSITION[operation]
+
+
+def _verifica_composizione(dichiarazione: Mapping[str, tuple[str, ...]]) -> None:
+    """Le tre condizioni che rendono `_COMPOSIZIONE` una dichiarazione e non un elenco.
+
+    **Le chiavi**, come per `_MUTABILI`: catalogo e dichiarazione non possono
+    divergere, o una voce avrebbe composizione indefinita invece che vuota.
+
+    **I valori**: cio' che si dichiara dev'essere una riscrittura del vocabolario
+    chiuso. Senza questa meta', `_COMPOSIZIONE["serie"] = ("parallelo",)` passerebbe
+    all'import e dichiarerebbe un passo pedagogico come sotto-passo di un altro —
+    esattamente la confusione di livello che questo modulo separa.
+
+    **L'ordine**: ogni tupla e' ordinata alfabeticamente. La tupla porta molteplicita',
+    non sequenza, e due scritture della stessa dichiarazione che differissero solo per
+    l'ordine farebbero credere a un ordine che il `Delta` non ha.
+    """
+    if set(dichiarazione) != CATALOG:
+        raise RuntimeError(
+            "il catalogo e la dichiarazione di composizione sono divergenti: "
+            f"solo nella dichiarazione {sorted(set(dichiarazione) - CATALOG)}, "
+            f"solo nel catalogo {sorted(CATALOG - set(dichiarazione))}")
+    fuori = {
+        nome: sorted(set(riscritture) - PRIMITIVES)
+        for nome, riscritture in sorted(dichiarazione.items())
+        if set(riscritture) - PRIMITIVES
+    }
+    if fuori:
+        raise RuntimeError(
+            "riscritture dichiarate fuori dal vocabolario strutturale chiuso: "
+            f"{fuori}. Le riscritture sono {', '.join(sorted(PRIMITIVES))}: un passo "
+            "pedagogico non e' un sotto-passo di un altro passo pedagogico.")
+    disordinate = sorted(
+        nome for nome, riscritture in dichiarazione.items()
+        if list(riscritture) != sorted(riscritture))
+    if disordinate:
+        raise RuntimeError(
+            f"composizioni non ordinate alfabeticamente: {disordinate}. La tupla "
+            "porta la molteplicita' delle riscritture, non il loro ordine: il `Delta` "
+            "non ne ha uno, e scriverne uno qui lo farebbe credere.")
+
+
+_verifica_composizione(COMPOSITION)
+
+
+#: **Le riscritture che nessun passo dichiara**, col perche' di ciascuna.
+#:
+#: Un nome del vocabolario che nessuna voce di `COMPOSITION` nomina non e' emettibile
+#: da alcun prodotto: `TransformResult` lo rifiuterebbe qualunque sia il passo. Non e'
+#: un difetto — un vocabolario si chiude sui concetti, non sull'implementazione del
+#: momento — ma **taciuto** e' indistinguibile da una dimenticanza, e il divario fra
+#: `CATALOG` e `SUPPORTED` ha per contro un meccanismo (`CatalogOpening`), una misura
+#: (SM-C5) e tre porte in `transform()`. Qui il meccanismo e' piu' piccolo, ed e'
+#: questo: la partizione e' dichiarata, e `_verifica_dormienti` la impone esatta.
+#: Usare una dormiente senza toglierla di qui fa fallire l'import, come lasciarla
+#: dormiente dopo averla usata.
+_DORMIENTI: dict[str, str] = {
+    "fusione_di_nodi": (
+        "nessun passo implementato fonde due nodi conservandone uno: `serie` elimina "
+        "il nodo interno senza erede, `parallelo` non tocca i nodi. Serve al primo "
+        "passo che assorbe un nodo in un altro — la riduzione di un corto circuito."),
+    "sostituzione_di_componente": (
+        "l'unico produttore odierno e' `transform()`, e nessuna sua voce sostituisce "
+        "in luogo: `check_transform` rifiuta anzi il riuso di un identificatore fra "
+        "`Cₖ` e `Cₖ₊₁` (CV1). La riscrittura esiste perche' AD-22 v2.1 chiede che una "
+        "mutata in luogo compaia nel `Delta`, e un controllore la riceve gia' dai test."),
+    "rimozione_di_componente": (
+        "e' `REMOVE_LOAD` — il sotto-passo che la Story cita — e nessun passo del "
+        "catalogo lo esercita finche' `resistenza_equivalente_di_thevenin` non ha un "
+        "corpo: e' li' che il carico si stacca."),
+}
+
+#: Vista di sola lettura, come le altre dichiarazioni di questo modulo.
+DORMANT: MappingProxyType[str, str] = MappingProxyType(_DORMIENTI)
+
+
+def _verifica_dormienti(
+    dichiarazione: Mapping[str, tuple[str, ...]], dormienti: Mapping[str, str]
+) -> None:
+    """Ogni riscrittura o e' esercitata da un passo, o e' dichiarata dormiente. Mai
+    entrambe, mai nessuna delle due."""
+    esercitate = {r for riscritture in dichiarazione.values() for r in riscritture}
+    doppie = sorted(esercitate & set(dormienti))
+    if doppie:
+        raise RuntimeError(
+            f"riscritture insieme esercitate e dichiarate dormienti: {doppie}. "
+            "Una delle due affermazioni e' vecchia, e non si sa quale.")
+    mute = sorted(PRIMITIVES - esercitate - set(dormienti))
+    if mute:
+        raise RuntimeError(
+            f"riscritture che nessun passo esercita e che nulla dichiara dormienti: "
+            f"{mute}. Un nome non emettibile e non registrato e' indistinguibile da "
+            "una dimenticanza.")
+
+
+_verifica_dormienti(COMPOSITION, DORMANT)
 
 
 # --- FR-43: il Catalogo e' chiuso, e la sua apertura e' una decisione registrata ---

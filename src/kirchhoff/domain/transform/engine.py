@@ -215,7 +215,7 @@ def _prodotto(
     prima: IR,
     dopo: IR,
     operazione: TransformationKind,
-    consumati: tuple[EntityRef, ...],
+    derivazioni: tuple[StructuralDerivation, ...],
     prodotto: EntityRef,
     rimossi: tuple[EntityRef, ...],
     boundary: Boundary,
@@ -278,7 +278,11 @@ def _prodotto(
             f"{operazione}: il boundary emesso viola il proprio controllore — "
             + "; ".join(f"{v.code} su {v.subject} ({v.detail})" for v in guasti_boundary))
 
-    delta = Delta((StructuralDerivation(operazione, consumati, (prodotto,)),))
+    # **Le derivazioni arrivano gia' costruite, e sono piu' d'una quando il passo e'
+    # composto** (Story 1.2). Prima ne nasceva qui esattamente una, che portava il nome
+    # del passo pedagogico: la riduzione in serie cancella pero' anche il nodo interno,
+    # e quella era una seconda riscrittura schiacciata dentro la prima.
+    delta = Delta(derivazioni)
     violazioni = check_delta(delta, prima, dopo, operation=operazione)
     if violazioni:
         raise DeltaIncoerente(
@@ -382,13 +386,28 @@ def _serie(ir: IR, primo: str, secondo: str) -> tuple[IR, TransformResult] | Ref
     return _prodotto(
         ir, dopo, "serie",
         # **Il nodo comune e' consumato, non solo rimosso.** `rimossi` lo nominava
-        # gia'; `consumati` no, e i due canali raccontavano storie diverse sulla
+        # gia'; il `Delta` no, e i due canali raccontavano storie diverse sulla
         # stessa entita'. La lineage che `delta.py` promette — «e' li' che n2 e'
         # finito» — era interrogabile per i componenti e muta per il nodo assorbito:
         # `what_happened_to(node:b)` rispondeva `None` su un nodo che la fusione ha
         # inghiottito. Assorbire e' consumare.
-        consumati=(EntityRef("component", primo), EntityRef("component", secondo),
-                   EntityRef("node", nodo)),
+        #
+        # **Sono due riscritture, e ora si vedono due** (Story 1.2). Stavano in una
+        # sola derivazione, che nominava il passo pedagogico e metteva il nodo fra gli
+        # ascendenti dell'equivalente: `derived_from(Req)` rispondeva «R1, R2 e il nodo
+        # b», mentre l'equivalente deriva dai due resistori e basta — il nodo non e'
+        # diventato una resistenza, ha smesso di esistere. La distinzione e' quella che
+        # AC2 della Story chiede di poter rappresentare, e la lineage resta
+        # interrogabile nelle due direzioni: `what_happened_to(node:b)` risponde con la
+        # riscrittura che lo elimina, non con `None`.
+        derivazioni=(
+            StructuralDerivation(
+                "fusione_di_componenti",
+                (EntityRef("component", primo), EntityRef("component", secondo)),
+                (EntityRef("component", eq.id),)),
+            StructuralDerivation(
+                "eliminazione_di_nodo", (EntityRef("node", nodo),), ()),
+        ),
         prodotto=EntityRef("component", eq.id),
         rimossi=(EntityRef("component", primo), EntityRef("component", secondo),
                  EntityRef("node", nodo)),
@@ -419,7 +438,14 @@ def _parallelo(ir: IR, primo: str, secondo: str) -> tuple[IR, TransformResult] |
 
     return _prodotto(
         ir, dopo, "parallelo",
-        consumati=(EntityRef("component", primo), EntityRef("component", secondo)),
+        # Una sola riscrittura, e non per simmetria mancata: in parallelo i due nodi
+        # sopravvivono entrambi alla fusione, quindi non c'e' nulla da eliminare.
+        derivazioni=(
+            StructuralDerivation(
+                "fusione_di_componenti",
+                (EntityRef("component", primo), EntityRef("component", secondo)),
+                (EntityRef("component", eq.id),)),
+        ),
         prodotto=EntityRef("component", eq.id),
         rimossi=(EntityRef("component", primo), EntityRef("component", secondo)),
         boundary=Boundary((EntityRef("node", a.terminals[0]),

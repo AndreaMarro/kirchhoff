@@ -16,9 +16,12 @@ from kirchhoff.domain.refusal import (
 )
 from kirchhoff.domain.transform import (
     CATALOG,
+    COMPOSITION,
     CONTROLLI,
+    DORMANT,
     IDENTITY_ATTRIBUTES,
     MUTABLE_ATTRIBUTES,
+    PRIMITIVES,
     SUPPORTED,
     Boundary,
     CatalogOpening,
@@ -27,8 +30,10 @@ from kirchhoff.domain.transform import (
     EntityRef,
     IdentityAttestation,
     LayoutPatch,
+    StructuralDerivation,
     TransformResult,
     attributes_of,
+    primitives_of,
     check_delta,
     check_boundary,
     check_certificate,
@@ -64,6 +69,23 @@ def _ir(*comps: Component, nodes: tuple[str, ...], requests=()) -> IR:
 def _eq(ir: IR, *noti: str) -> Component:
     """L'equivalente: l'unico componente che non c'era prima."""
     return next(c for c in ir.components if c.id not in noti)
+
+
+def _riscritture_in_serie(
+    equivalente: str, primo: str = "R1", secondo: str = "R2", nodo: str = "b",
+) -> tuple[StructuralDerivation, ...]:
+    """Le due riscritture di cui una riduzione in serie e' composta (Story 1.2).
+
+    I test che chiamano `_prodotto` direttamente ne hanno bisogno per esercitare un
+    difetto **altrove** — in una patch, in un boundary — senza che il `Delta` sia esso
+    stesso guasto. Scriverle a mano ogni volta le avrebbe fatte divergere dal motore
+    nel posto dove nessuno guarda (E-62).
+    """
+    return (
+        StructuralDerivation(
+            "fusione_di_componenti", (C(primo), C(secondo)), (C(equivalente),)),
+        StructuralDerivation("eliminazione_di_nodo", (N(nodo),), ()),
+    )
 
 
 #: `R1 (a,b) 10Ω` in serie con `R2 (b,0) 20Ω`. Il nodo `b` ha grado 2.
@@ -247,7 +269,8 @@ def _risultato(**sovrascritti):
     from kirchhoff.domain.transform import Delta, StructuralDerivation
     campi = dict(
         preserve=frozenset({N("0")}),
-        delta=Delta((StructuralDerivation("serie", (C("R1"), C("R2")), (C("Req"),)),)),
+        delta=Delta((StructuralDerivation(
+            "fusione_di_componenti", (C("R1"), C("R2")), (C("Req"),)),)),
         boundary=Boundary((N("0"),)),
         layout_patch=LayoutPatch((N("0"),), (C("R1"),), (C("Req"),), (C("Req"),)),
         equation=Equation("Req", "R1 + R2"),
@@ -340,13 +363,16 @@ class TestContrattoDiTransform:
         dopo, res = _serie_riuscita()
         nuova = C(_eq(dopo, "V1").id)
         assert nuova not in res.preserve
-        # Il nodo assorbito entra fra le origini: l'equivalente esiste perche' i due
-        # resistori **e** il nodo comune sono stati consumati. L'aspettativa
-        # precedente — solo i due componenti — pinnava una lineage incompleta, e la
-        # stessa incompletezza faceva fallire `check_delta` con
-        # `sparizione_non_spiegata su node:b`.
-        assert res.delta.derived_from(nuova) == (C("R1"), C("R2"), N("b"))
+        # **Il nodo assorbito ha una riscrittura propria** (Story 1.2). Stava fra gli
+        # ascendenti dell'equivalente — l'aspettativa ancora precedente, solo i due
+        # componenti, pinnava invece una lineage incompleta e faceva fallire
+        # `check_delta` con `sparizione_non_spiegata su node:b`. Ora sono due
+        # riscritture: l'equivalente deriva dai due resistori, e il nodo non e'
+        # diventato una resistenza — ha smesso di esistere. Cio' che il passo
+        # promette e' che ogni entita' sparita abbia lineage, e ce l'ha.
+        assert res.delta.derived_from(nuova) == (C("R1"), C("R2"))
         assert res.delta.what_happened_to(C("R1")).outputs == (nuova,)
+        assert res.delta.what_happened_to(N("b")) is not None
 
     def test_il_circuito_risultante_supera_la_validazione_elettrica(self):
         esito = transform(SERIE, "serie", "R1", "R2")
@@ -496,7 +522,8 @@ class TestCioCheCkPiuUnoDeveEssere:
         """
         _, res = transform(self.CON_RICHIESTE, "serie", "R1", "R2")
         derivazione = res.delta.what_happened_to(C("R1"))
-        assert derivazione is not None and derivazione.operation == "serie"
+        assert derivazione is not None
+        assert derivazione.operation == "fusione_di_componenti"
 
     def test_una_richiesta_sul_superstite_viaggia_col_circuito(self):
         dopo, _ = transform(self.CON_RICHIESTE, "serie", "R1", "R2")
@@ -716,7 +743,7 @@ def test_la_lineage_risponde_anche_per_il_nodo_assorbito():
     _, res = esito
     derivazione = res.delta.what_happened_to(N("b"))
     assert derivazione is not None, "il nodo assorbito non ha lineage"
-    assert derivazione.operation == "serie"
+    assert derivazione.operation == "eliminazione_di_nodo"
     assert N("b") in derivazione.inputs
 
 
@@ -742,7 +769,7 @@ def test_l_equazione_nomina_l_entita_che_definisce(circuito, operazione):
     esito = transform(circuito, operazione, "R1", "R2")
     assert not isinstance(esito, Refusal), esito
     _, res = esito
-    prodotta = res.delta.derivations[0].outputs[0]
+    (prodotta,) = res.delta.produced
     assert res.equation.subject == prodotta.id, (
         f"l'equazione definisce «{res.equation.subject}», ma il passo produce "
         f"«{prodotta.id}»: il simbolo nuovo non compare nell'uguaglianza")
@@ -783,8 +810,9 @@ def test_un_delta_che_mente_e_un_guasto_non_un_rifiuto():
         _prodotto(
             SERIE, dopo, "serie",
             # il nodo assorbito NON e' dichiarato: e' esattamente la forma che il
-            # difetto aveva prima della correzione
-            consumati=(C("R1"), C("R2")),
+            # difetto aveva prima della correzione — manca la seconda riscrittura
+            derivazioni=(StructuralDerivation(
+                "fusione_di_componenti", (C("R1"), C("R2")), (C("R1R2eq"),)),),
             prodotto=C("R1R2eq"),
             rimossi=(C("R1"), C("R2"), N("b")),
             boundary=Boundary((N("a"), N("0"))),
@@ -989,7 +1017,7 @@ def test_una_patch_che_mente_e_un_guasto_non_un_rifiuto():
     with pytest.raises(PatchIncoerente) as scoppio:
         _prodotto(
             SERIE, dopo, "serie",
-            consumati=(C("R1"), C("R2"), N("b")),
+            derivazioni=_riscritture_in_serie("R1R2eq"),
             prodotto=C("R1R2eq"),
             # dichiara rimossa un'entita' mai esistita, e tace su R2 e node:b
             rimossi=(C("MaiEsistita"),),
@@ -1064,7 +1092,7 @@ def test_un_boundary_che_mente_e_un_guasto_non_un_rifiuto():
     with pytest.raises(BoundaryIncoerente) as scoppio:
         _prodotto(
             CATENA, dopo, "serie",
-            consumati=(C("R1"), C("R2"), N("b")),
+            derivazioni=_riscritture_in_serie("R1R2eq"),
             prodotto=C("R1R2eq"),
             rimossi=(C("R1"), C("R2"), N("b")),
             boundary=Boundary((N("0"),)),      # sopravvive, ma non confina
@@ -1263,7 +1291,8 @@ def test_una_patch_che_tace_su_una_mutata_in_luogo_e_contestata():
 def test_un_delta_che_tace_su_una_mutata_in_luogo_e_contestato():
     """«e come tale deve comparire nel Delta» — AD-22 v2.1, non sostenuto da nulla."""
     from kirchhoff.domain.transform import Delta, StructuralDerivation
-    muto = Delta((StructuralDerivation("parallelo", (C("R2"),), (C("R1"),)),))
+    muto = Delta((StructuralDerivation(
+        "sostituzione_di_componente", (C("R2"),), (C("R1"),)),))
     violazioni = check_delta(muto, R2A_PRIMA, R2A_DOPO, operation="parallelo")
     assert any("R1" in v.subject for v in violazioni), (
         f"il Delta non rende conto di R1 e nessuno protesta: {violazioni}")
@@ -1314,7 +1343,10 @@ def test_una_comparsa_non_spiegata_produce_una_sola_violazione():
     """
     from kirchhoff.domain.transform import Delta, StructuralDerivation
     dopo, _ = _serie_riuscita()
-    muto = Delta((StructuralDerivation("serie", (C("R1"), C("R2"), N("b")), (C("V1"),)),))
+    muto = Delta((
+        StructuralDerivation("fusione_di_componenti", (C("R1"), C("R2")), (C("V1"),)),
+        StructuralDerivation("eliminazione_di_nodo", (N("b"),), ()),
+    ))
     v = check_delta(muto, SERIE, dopo, operation="serie")
     su_eq = [x for x in v if "R1R2eq" in x.subject]
     assert len(su_eq) == 1, f"stesso difetto contestato {len(su_eq)} volte: {su_eq}"
@@ -1340,7 +1372,16 @@ def test_due_dichiarazioni_di_pk_nello_stesso_prodotto_non_possono_divergere():
             equation=res.equation, certificate=res.certificate)
 
 
-def test_il_certificato_e_il_delta_non_possono_nominare_operazioni_diverse():
+def test_il_certificato_e_il_delta_non_possono_descrivere_passi_diversi():
+    """Lo stesso invariante di prima, ai due livelli che la Story 1.2 separa.
+
+    Il confronto era un'uguaglianza fra gli stessi nomi, perche' `Delta` e
+    `Certificate` vivevano allo stesso livello. Ora il `Delta` porta le riscritture e
+    il certificato il passo: quello di una riduzione in serie contiene
+    `eliminazione_di_nodo`, che `parallelo` **non dichiara** — in parallelo i due nodi
+    sopravvivono entrambi. Il certificato sbagliato resta quindi rifiutato, e per una
+    ragione che nomina la riscrittura invece del nome ripetuto.
+    """
     dopo, res = _serie_riuscita()
     with pytest.raises(ValueError, match="operazione"):
         TransformResult(
@@ -1376,17 +1417,31 @@ def test_una_preservata_non_puo_essere_anche_consumata_nel_prodotto():
     from kirchhoff.domain.transform import Delta, StructuralDerivation
     _, res = _serie_riuscita()
     with pytest.raises(ValueError, match="consuma"):
-        _risultato(delta=Delta((StructuralDerivation(
-            "serie", (C("V1"), C("R1"), C("R2"), N("b")), (C(_eq_id(res)),)),)))
+        _risultato(delta=Delta((
+            StructuralDerivation(
+                "fusione_di_componenti",
+                (C("V1"), C("R1"), C("R2")), (C(_eq_id(res)),)),
+            StructuralDerivation("eliminazione_di_nodo", (N("b"),), ()),
+        )))
 
 
 def test_cio_che_sparisce_e_scritto_una_volta_sola():
-    """(b) il Delta tace su R2, la patch no."""
+    """(b) il Delta nomina consumata una `R9` di cui la patch non sa nulla.
+
+    Il verso e' cambiato con la Story 1.2 — prima il Delta *taceva* su `R2` — perche'
+    `fusione_di_componenti` vuole almeno due componenti ai propri ingressi e in questo
+    circuito non ce n'e' un terzo su cui tacere. La coppia di canali messa alla prova
+    e' la stessa: `delta.consumed` contro `layout_patch.remove`.
+    """
     from kirchhoff.domain.transform import Delta, StructuralDerivation
     _, res = _serie_riuscita()
     with pytest.raises(ValueError, match="consumed.*remove|remove.*consumed"):
-        _risultato(delta=Delta((StructuralDerivation(
-            "serie", (C("R1"), N("b")), (C(_eq_id(res)),)),)))
+        _risultato(delta=Delta((
+            StructuralDerivation(
+                "fusione_di_componenti",
+                (C("R1"), C("R2"), C("R9")), (C(_eq_id(res)),)),
+            StructuralDerivation("eliminazione_di_nodo", (N("b"),), ()),
+        )))
 
 
 def test_il_boundary_del_prodotto_sta_dentro_preserve():
@@ -1413,7 +1468,11 @@ def test_cio_che_nasce_e_scritto_una_volta_sola():
 
 
 def _eq_id(res):
-    return res.delta.derivations[0].outputs[0].id
+    """L'equivalente prodotto dal passo. Letto da `produced`, non da `derivations[0]`:
+    dalla Story 1.2 le derivazioni sono piu' d'una, e quale sia la prima nell'ordine
+    canonico non e' cio' che questo helper vuole sapere."""
+    (prodotta,) = res.delta.produced
+    return prodotta.id
 
 
 # ---------------------------------------------------------------------------
@@ -1961,10 +2020,16 @@ class TestUnEquivalenteHaIdentitaNuova:
             "gonfierebbe Pₖ, che e' l'ingresso di VCER e di A-0")
 
     def test_l_equivalente_porta_la_propria_lineage(self):
-        """`{R1, R2, b} --serie--> {R1R2eq}`, interrogabile nelle due direzioni."""
+        """`{R1, R2} --fusione_di_componenti--> {R1R2eq}`, nelle due direzioni.
+
+        Il nodo comune ha la propria riscrittura accanto, e la si interroga qui sotto:
+        e' il caso AC2 della Story 1.2, un passo pedagogico composto da due.
+        """
         _, res, eq = self._derivazione(SERIE, "serie")
-        assert res.delta.derived_from(C(eq.id)) == (C("R1"), C("R2"), N("b"))
+        assert res.delta.derived_from(C(eq.id)) == (C("R1"), C("R2"))
         assert res.delta.what_happened_to(C("R1")).outputs == (C(eq.id),)
+        assorbito = res.delta.what_happened_to(N("b"))
+        assert assorbito is not None and assorbito.operation == "eliminazione_di_nodo"
 
 
 class TestLeGuardieDellAttestazione:
@@ -2058,3 +2123,258 @@ class TestLeGuardieDellAttestazione:
                 layout_patch=res.layout_patch, equation=res.equation,
                 certificate=Certificate("serie", CONTROLLI, (
                     IdentityAttestation(C("MaiPreservata"), ("value",)),)))
+
+
+# ---------------------------------------------------------------------------
+# Story 1.2 — il vocabolario chiuso delle riscritture strutturali.
+#
+# Il vocabolario e il suo rifiuto stanno in `test_delta.py::TestCatalogo`, che e'
+# dove vive il contratto di `StructuralDerivation`. Qui c'e' l'altra meta': la
+# **dichiarazione di composizione** che lega i due livelli, e il passo composto visto
+# uscire dal motore.
+# ---------------------------------------------------------------------------
+
+
+class TestLaComposizioneDichiarataDalCatalogo:
+    """CV5 — ogni invariante ha una guardia a runtime e un test che l'ha vista."""
+
+    def test_la_composizione_di_un_passo_inesistente_solleva(self):
+        """Rispondere «nessuna» renderebbe silenzioso un errore di programmazione."""
+        with pytest.raises(ValueError, match="fuori dal catalogo chiuso"):
+            primitives_of("fusione_di_componenti")
+
+    def test_i_due_vocabolari_non_possono_condividere_un_nome(self):
+        from kirchhoff.domain.transform.catalog import _verifica_livelli_distinti
+        with pytest.raises(RuntimeError, match="condividono serie"):
+            _verifica_livelli_distinti(frozenset({"serie"}), frozenset({"serie"}))
+
+    def test_i_due_vocabolari_reali_non_ne_condividono_alcuno(self):
+        from kirchhoff.domain.transform.catalog import _verifica_livelli_distinti
+        assert _verifica_livelli_distinti(CATALOG, PRIMITIVES) is None
+
+    def test_una_dichiarazione_che_non_copre_il_catalogo_e_rifiutata(self):
+        """Una voce senza dichiarazione avrebbe composizione **indefinita**, e la si
+        leggerebbe come «vuota» — che qui e' un'affermazione diversa."""
+        from kirchhoff.domain.transform.catalog import _verifica_composizione
+        with pytest.raises(RuntimeError, match="divergenti"):
+            _verifica_composizione({"serie": frozenset()})
+
+    def test_un_passo_pedagogico_non_e_una_riscrittura_di_un_altro(self):
+        from kirchhoff.domain.transform.catalog import _verifica_composizione
+        guasta = {nome: frozenset() for nome in CATALOG}
+        guasta["serie"] = frozenset({"parallelo"})
+        with pytest.raises(RuntimeError, match="fuori dal vocabolario strutturale"):
+            _verifica_composizione(guasta)
+
+    def test_la_dichiarazione_reale_regge_al_proprio_controllo(self):
+        from kirchhoff.domain.transform.catalog import _verifica_composizione
+        from kirchhoff.domain.transform import COMPOSITION
+        assert _verifica_composizione(COMPOSITION) is None
+
+    def test_la_dichiarazione_non_e_riscrivibile_a_runtime(self):
+        """La riga da cambiare e' nel Catalogo, in un commit, non in un chiamante."""
+        from kirchhoff.domain.transform import COMPOSITION
+        with pytest.raises(TypeError):
+            COMPOSITION["serie"] = frozenset()  # type: ignore[index]
+
+    def test_una_composizione_non_ordinata_e_rifiutata(self):
+        """La tupla porta la molteplicita', non la sequenza: il `Delta` non ha ordine
+        causale, e scriverne uno qui lo farebbe credere."""
+        from kirchhoff.domain.transform.catalog import _verifica_composizione
+        disordinata = {nome: () for nome in CATALOG}
+        disordinata["serie"] = ("fusione_di_componenti", "eliminazione_di_nodo")
+        with pytest.raises(RuntimeError, match="non ordinate"):
+            _verifica_composizione(disordinata)
+
+    def test_la_molteplicita_e_dichiarabile(self):
+        """Cio' che un `frozenset` non poteva esprimere: un passo che elimina due nodi
+        si dichiarava identico a uno che ne elimina uno."""
+        from kirchhoff.domain.transform.catalog import _verifica_composizione
+        due_nodi = {nome: () for nome in CATALOG}
+        due_nodi["stella_triangolo"] = ("eliminazione_di_nodo", "eliminazione_di_nodo")
+        assert _verifica_composizione(due_nodi) is None
+        assert due_nodi["stella_triangolo"] != ("eliminazione_di_nodo",)
+
+    def test_ogni_operazione_implementata_dichiara_di_che_cosa_e_fatta(self):
+        """Un corpo senza dichiarazione e' un corpo che non puo' emettere nulla.
+
+        **Un'inclusione e non un'uguaglianza.** Il verso che conta e' questo: chi ha
+        un corpo deve dichiarare, o `TransformResult` rifiutera' ogni suo prodotto —
+        una funzione che solleva sempre, scoperta al primo utente invece che qui. Il
+        verso opposto non e' un difetto: dichiarare prima di implementare non fa male
+        a nessuno, e pretendere l'uguaglianza pinnerebbe come contratto l'ordine in
+        cui due commit vengono scritti.
+        """
+        assert implemented() <= {n for n in CATALOG if primitives_of(n)}
+
+
+class TestLeRiscrittureDormienti:
+    """Quali riscritture nessun passo puo' emettere, e perche' — registrato.
+
+    Tre nomi su cinque non compaiono in alcuna voce di `COMPOSITION`: un
+    `TransformResult` che li portasse verrebbe rifiutato qualunque sia il passo. Non e'
+    un difetto — un vocabolario si chiude sui concetti — ma taciuto era
+    indistinguibile da una dimenticanza. Il divario `CATALOG ⊇ SUPPORTED` ha per
+    contro un meccanismo (`CatalogOpening`), una misura (SM-C5) e tre porte in
+    `transform()`; qui il meccanismo e' la partizione dichiarata, imposta esatta.
+    """
+
+    def test_la_partizione_e_esatta_sulla_dichiarazione_reale(self):
+        esercitate = {r for voci in COMPOSITION.values() for r in voci}
+        assert esercitate | set(DORMANT) == PRIMITIVES
+        assert esercitate & set(DORMANT) == set()
+
+    def test_ogni_dormiente_dichiara_il_perche(self):
+        """Un elenco di nomi non registra nulla: registra la ragione, o non serve."""
+        assert all(len(motivo) > 40 for motivo in DORMANT.values())
+
+    def test_una_riscrittura_insieme_esercitata_e_dormiente_e_rifiutata(self):
+        from kirchhoff.domain.transform.catalog import _verifica_dormienti
+        with pytest.raises(RuntimeError, match="esercitate e dichiarate dormienti"):
+            _verifica_dormienti(COMPOSITION, {**DORMANT, "fusione_di_componenti": "x"})
+
+    def test_una_riscrittura_ne_esercitata_ne_dichiarata_e_rifiutata(self):
+        """E' il caso che la Story 1.2 aveva lasciato aperto per tre nomi su cinque."""
+        from kirchhoff.domain.transform.catalog import _verifica_dormienti
+        muta = {n: m for n, m in DORMANT.items() if n != "fusione_di_nodi"}
+        with pytest.raises(RuntimeError, match="nessun passo esercita"):
+            _verifica_dormienti(COMPOSITION, muta)
+
+    def test_la_dichiarazione_reale_regge_al_proprio_controllo(self):
+        from kirchhoff.domain.transform.catalog import _verifica_dormienti
+        assert _verifica_dormienti(COMPOSITION, DORMANT) is None
+
+
+def test_un_passo_senza_composizione_dichiarata_non_produce_un_risultato():
+    """Vuoto non significa «nessun vincolo»: significa «non se ne fa un prodotto».
+
+    Un vincolo che si spegne quando la dichiarazione manca sarebbe un controllo che
+    non puo' fallire proprio dove non e' mai stato pensato, e un vuoto che somiglia a
+    una misura e' peggio di un'assenza dichiarata.
+    """
+    _, res = _serie_riuscita()
+    assert primitives_of("stella_triangolo") == ()
+    with pytest.raises(ValueError, match="non dichiara di quali riscritture"):
+        TransformResult(
+            preserve=res.preserve, delta=res.delta, boundary=res.boundary,
+            layout_patch=res.layout_patch, equation=res.equation,
+            certificate=Certificate("stella_triangolo", CONTROLLI))
+
+
+def test_una_riscrittura_che_il_passo_non_dichiara_e_rifiutata():
+    """Il `Delta` non sceglie da se' di quale passo e' il resoconto."""
+    _, res = _serie_riuscita()
+    from kirchhoff.domain.transform import Delta
+    with pytest.raises(ValueError, match="non esercita cio' che dichiara"):
+        TransformResult(
+            preserve=res.preserve,
+            delta=Delta((
+                StructuralDerivation(
+                    "sostituzione_di_componente", (C("R1"),), (C(_eq_id(res)),)),
+                StructuralDerivation("eliminazione_di_nodo", (N("b"),), ()),
+            )),
+            boundary=res.boundary, layout_patch=res.layout_patch,
+            equation=res.equation, certificate=res.certificate)
+
+
+def test_un_passo_che_dichiara_due_riscritture_e_ne_emette_una_e_rifiutato():
+    """AC2 come proprieta' del contratto, non del prodotto che il motore emette oggi.
+
+    `COMPOSITION` era verificata come **sottoinsieme**: un `serie` che dichiarava due
+    riscritture e ne emetteva una sola passava `check_delta` e `TransformResult`
+    (misurato). Un'inclusione verifica che il `Delta` non inventi; non verifica che il
+    passo faccia cio' che ha dichiarato — ed e' quest'ultima meta' che AC2 chiede.
+    """
+    _, res = _serie_riuscita()
+    from kirchhoff.domain.transform import Delta
+    with pytest.raises(ValueError, match="non esercita cio' che dichiara"):
+        TransformResult(
+            preserve=res.preserve,
+            delta=Delta((StructuralDerivation(
+                "fusione_di_componenti", (C("R1"), C("R2")), (C(_eq_id(res)),)),)),
+            boundary=res.boundary, layout_patch=res.layout_patch,
+            equation=res.equation, certificate=res.certificate)
+
+
+def test_una_serie_e_un_passo_pedagogico_composto_da_due_riscritture():
+    """AC2 della Story 1.2, misurato sul prodotto che il motore emette davvero.
+
+    «Il `Delta` porta piu' `StructuralDerivation`, e resta **un solo** passo
+    pedagogico.» Il conteggio si legge dalle strutture che lo definiscono: le
+    derivazioni dal `Delta`, il passo dal `Certificate`.
+    """
+    esito = transform(SERIE, "serie", "R1", "R2")
+    assert not isinstance(esito, Refusal), esito
+    _, res = esito
+
+    assert len(res.delta.derivations) == 2, [str(d) for d in res.delta.derivations]
+    assert {d.operation for d in res.delta.derivations} == {
+        "fusione_di_componenti", "eliminazione_di_nodo"}
+
+    # Un solo passo pedagogico, e nessuna derivazione lo nomina: il livello non e'
+    # rappresentabile due volte, quindi non puo' diventare due.
+    assert res.certificate.operation == "serie"
+    assert all(d.operation not in CATALOG for d in res.delta.derivations)
+
+
+def test_la_partizione_delle_entita_fra_le_riscritture_di_una_serie_e_unica():
+    """La lineage giusta e' l'unica costruibile, non una fra tante che passano.
+
+    Prima delle forme di `primitives.py` la partizione era libera: solo gli
+    **aggregati** `consumed`/`produced` erano ancorati ai due circuiti, e
+    `{node:b} --eliminazione_di_nodo--> {R1R2eq}` accanto a
+    `{R1,R2} --fusione_di_componenti--> {∅}` passava `check_delta` e `TransformResult`
+    (misurato). `derived_from(R1R2eq)` rispondeva allora `node:b`.
+
+    Qui la si misura invece di dichiararla: si enumerano **tutte** le assegnazioni
+    delle entita' a due derivazioni, per ogni coppia di riscritture del vocabolario, e
+    si tengono quelle che superano insieme le forme, `check_delta` e la composizione
+    dichiarata dal Catalogo. Ne sopravvive una, ed e' quella che il motore emette.
+    """
+    from itertools import product
+    from collections import Counter
+    from kirchhoff.domain.transform import Delta, PRIMITIVES
+
+    esito = transform(SERIE, "serie", "R1", "R2")
+    assert not isinstance(esito, Refusal), esito
+    dopo, atteso = esito
+
+    consumate = sorted(atteso.delta.consumed)
+    prodotte = sorted(atteso.delta.produced)
+    composizione = Counter(primitives_of("serie"))
+
+    superstiti = []
+    for ops in product(sorted(PRIMITIVES), repeat=2):
+        if Counter(ops) != composizione:
+            continue
+        for scelta_in in product((0, 1), repeat=len(consumate)):
+            for scelta_out in product((0, 1), repeat=len(prodotte)):
+                blocchi = [([], []), ([], [])]
+                for e, dove in zip(consumate, scelta_in):
+                    blocchi[dove][0].append(e)
+                for e, dove in zip(prodotte, scelta_out):
+                    blocchi[dove][1].append(e)
+                try:
+                    delta = Delta(tuple(
+                        StructuralDerivation(op, tuple(dentro), tuple(fuori))
+                        for op, (dentro, fuori) in zip(ops, blocchi)))
+                except ValueError:
+                    continue                      # forma o invariante del Delta
+                if check_delta(delta, SERIE, dopo, operation="serie"):
+                    continue                      # incoerente coi due circuiti
+                if delta not in superstiti:
+                    superstiti.append(delta)
+
+    assert superstiti == [atteso.delta], (
+        "la partizione non e' determinata: "
+        f"{[[str(d) for d in s.derivations] for s in superstiti]}")
+
+
+def test_un_parallelo_e_un_passo_di_una_riscrittura_sola():
+    """La composizione non e' una decorazione uniforme: in parallelo non c'e' nodo da
+    eliminare, e il `Delta` porta una derivazione sola."""
+    esito = transform(PARALLELO, "parallelo", "R1", "R2")
+    assert not isinstance(esito, Refusal), esito
+    _, res = esito
+    assert [d.operation for d in res.delta.derivations] == ["fusione_di_componenti"]
+    assert res.certificate.operation == "parallelo"

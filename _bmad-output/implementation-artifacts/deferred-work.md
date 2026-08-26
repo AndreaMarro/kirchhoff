@@ -164,7 +164,15 @@ fatta emergere. Nessuna viene lasciata cadere in silenzio.
     **potrebbe** essere una di queste — stessa entità, stato cambiato» — e un generatore
     disattivato modellato come corto circuito **è** un cambio di `type`. Vietarlo in un modulo
     deciderebbe in anticipo una questione che lo spine lascia aperta al vocabolario delle primitive
-    strutturali, che non esiste ancora. La licenza resta quindi **esprimibile e non esercitata**:
+    strutturali. **Aggiornamento del 26/08/2026 (Story 1.2): quel vocabolario ora esiste —
+    `domain/transform/primitives.py`, cinque riscritture chiuse — e continua a non decidere la
+    questione.** Nessuna delle cinque nomina la soppressione di un generatore, e l'assenza è
+    deliberata per la stessa ragione registrata qui: darle un nome sceglierebbe in un modulo la
+    lettura «sostituzione strutturale con identità nuova». La decisione resta al proprietario, e
+    la premessa su cui poggia è ora questa, non più «il vocabolario non esiste». Il posto dove
+    dichiarare il caso nuovo è `test_la_soppressione_di_un_generatore_non_e_nel_vocabolario`, che
+    pinna l'insieme per intero e diventa rosso il giorno in cui una sesta riscrittura compare.
+    La licenza resta quindi **esprimibile e non esercitata**:
     nessuna voce di `_MUTABILI` la concede, e
     `test_il_tipo_resta_licenziabile_e_non_e_licenziato_da_nessuno` diventerebbe rosso il giorno in
     cui una la concedesse. Se il proprietario decide che il cambio di tipo non è mai identità
