@@ -1,0 +1,181 @@
+[07:59:16Z] kirchhoff-loop v3 — avvio
+[07:59:16Z] repository=/Users/andreamarro/MATJOURNEY/kirchhoff
+[07:59:16Z] iterazioni=1 prova=0 promuovi=0 watchdog=2700s scrittura=$25 revisione=$15
+[07:59:16Z] caffeinate: la macchina resta sveglia per la durata del giro
+[07:59:16Z] 
+[07:59:16Z] --- iterazione 1 di 1 ---
+  [ok]  nessun FERMO
+  [ok]  repository git: 807c7a3
+  [ok]  uv: uv 0.11.8 (0e961dd9a 2026-04-27 aarch64-apple-darwin)
+  [ok]  helper runtime BMAD conformi al pin (5/5)
+  [ok]  holdout protetto da regola deny
+  [ok]  sprint-status.yaml leggibile
+  [ok]  albero di lavoro pulito
+[07:59:17Z] precondizioni: tutte verdi
+[07:59:17Z] storia 1-2-il-vocabolario-chiuso-delle-riscritture-strutturali gia' su main: avanzo a 1-3-un-layoutir-recuperabile-per-ogni-stato-visuale
+[07:59:17Z] storia: 1-3-un-layoutir-recuperabile-per-ogni-stato-visuale
+[07:59:17Z] classe di rischio: R2
+[07:59:17Z] ramo: loop/iter-20260826T075916Z-1-3-un-layoutir-recuperabile-per-ogni-stato-visuale (da main)
+[07:59:17Z] 
+[07:59:17Z] passo 1: implementa [-]
+[07:59:17Z]   → claude -p --model claude-opus-5 --effort max --max-budget-usd $25
+Story 1.3 implemented and verified. Report follows.
+
+---
+
+## 1. Che cosa ho cambiato, file per file
+
+**Nuovi — dominio**
+
+- `src/kirchhoff/domain/identity.py` (186) — il vocabolario chiuso dei sei prefissi delle `Consistency Conventions` (`ir_`, `sol_`, `var_`, `evt_`, `lay_`, `patch_`), derivato da `IdentityKind` con `get_args` come `refusal.CAUSES` da `Cause`. `conia` è il ULID vero (48 bit di istante + 80 di entropia, 26 cifre Crockford) e **prende istante ed entropia dalla firma**: è la disciplina di AD-17, ed è ciò che permette al modulo di stare sotto `domain/`. `conia_da_contenuto` è la variante per produttori puri. `verifica` e `genere_di` sono le guardie.
+- `src/kirchhoff/domain/proof/graph.py` (265) + `__init__.py` — `ProofNode`, `ProofEdge`, `ProofGraph`. Il nodo porta **due identificatori e nessuna struttura**: l'`ir_` dello stato circuitale e il `lay_` del suo stato visuale. `layout_di` / `nodo_di` sono le due direzioni; `transizioni()` emette la tripla `(patch_, lay_k, lay_{k+1})` che CV6 chiede. `con_passo` / `con_stato_iniziale` restituiscono un grafo nuovo; non esiste un metodo che sostituisce il layout di un nodo. Guardie: nodo ripetuto, layout condiviso da due nodi, arco verso un nodo inesistente, arco ripetuto, arco su sé stesso, ciclo (Kahn), operazione fuori dal Catalogo.
+
+**Nuovi — render**
+
+- `src/kirchhoff/render/layout/schema.py` (147) — `LayoutIR` e `Placement`. Coordinate in `Fraction`. `LayoutIR.nuovo(...)` conia il `lay_` con istante ed entropia iniettati. **Il layout non porta l'identificatore del proprio nodo**: la relazione è scritta una volta sola, sul nodo.
+- `src/kirchhoff/render/layout/store.py` (102) + `__init__.py` — `LayoutStore`, registro append-only. `deposita` solleva su un identificatore già scritto, anche a contenuto identico.
+
+**Modificati**
+
+- `src/kirchhoff/domain/transform/result.py` (+36/-1) — `LayoutPatch` guadagna `identifier: str = field(init=False)`, derivato dal `repr` dei quattro campi **dopo** la canonicalizzazione. Non è un argomento del costruttore.
+- `tests/test_transform.py` (+46) — sei test su `LayoutPatch.identifier` dentro `TestLayoutPatch`.
+- `AGENTS.md` (+15) — due fatti fuori dal blocco gestito: il vocabolario dei prefissi e il fatto che il proprietario del riferimento è il nodo.
+
+**Nuovi — test**: `test_identity.py` (196), `test_layout.py` (180), `test_proof.py` (256), `test_continuita_visuale.py` (197, i tre AC su una derivazione vera di due passi guidata da `transform`).
+
+## 2. Oracoli eseguiti
+
+| Oracolo | Exit | Uscita |
+|---|---|---|
+| `ops/loop/verifica.sh` | **0** | `{"copertura": 100.0, "dominio": true, "recinti": true, "test_falliti": 0, "test_passati": 617, "verde": true}` |
+| `uv run python scripts/bmad_chain.py verifica --con-loop` | **0** | catena coerente, 8/8 (eseguito a inizio e fine iterazione) |
+
+Otto mutanti introdotti e ritirati, tutti **uccisi con exit 1** (non 4, non 127): registro che accetta la sovrascrittura → `test_un_secondo_deposito_sullo_stesso_layout_e_rifiutato`; layout condiviso da due nodi; ciclo nella derivazione; patch con prefisso di un altro genere; impronta che ignora `reroute_scope`; stato visuale vuoto; passo che arriva a un nodo diverso da quello che aggiunge; impronta con separatori invece che `repr`.
+
+## 3. Che cosa resta incompleto o rischioso
+
+- **`LayoutPatch.identifier` non è un ULID.** È un'impronta del contenuto, quindi **non ordina per tempo**. La ragione è AD-2: `transform` è pura e la patch nasce lì; l'alternativa era dare un orologio al dominio o far entrare l'identificatore dalla firma di `transform`, spostando su ogni chiamante un dato che nessuno possiede. La deviazione è dichiarata nel docstring del tipo e in `conia_da_contenuto`. **È la scelta di progetto su cui vale la pena dissentire per prima.**
+- **Nessun codice di produzione costruisce un `ProofGraph`.** `pipeline/` è vuoto. La ritenzione è implementata e verificata, ma il cablaggio fra `transform` e il grafo esiste solo nell'acceptance test. Finché non c'è uno stadio, `eval/` non ha ancora un grafo da leggere.
+- **`ProofNode.identifier` è un `ir_` che oggi nessuno conia.** `IR` porta `ir_version`, non un identificatore: l'entità `CircuitIR` ha per scrittore `ingest` (AD-8), che non esiste. Il nodo *nomina* uno stato circuitale che sarà `ingest` a identificare. Non ho aggiunto un campo id a `IR`: sarebbe stata l'entità di un altro modulo.
+- **`LayoutStore` è in memoria, non è la persistenza.** L'enforcement a permessi DB che AD-8 prescrive non è implementato, e l'adapter sta fuori dal kernel (AD-27).
+- `ProofGraph` copre ciò che la storia chiede — nodi, archi, relazione col layout. **Non** copre le altre clausole di AD-29: «la soluzione finale è l'ultimo nodo» e la persistenza non sono qui.
+
+## 4. Fuori ambito — trovato e NON toccato
+
+- **L'ERD non conosce ancora l'entità.** `ARCHITECTURE-SPINE.md` §ERD ha `IR_VERSION`/`PUBLISHED`/`STEP` della v1 e non `LAYOUT_IR`, `PROOF_GRAPH`, `LAYOUT_PATCH`. CV6 lo elenca fra le correzioni («va allineato o dichiarato v1»), ma è un documento sotto `planning-artifacts/`: autorità, non materiale.
+- **AD-15 non dice ancora su quale rappresentazione l'harness calcola lo scostamento** (primo punto di CV6). Il codice rende disponibile il `LayoutIR`; la riga nello spine manca.
+- **Il prefisso del layout di braccio 0 promesso da AD-8 non esiste.** AD-8 gli dà «identità propria e prefisso proprio» e le convenzioni non lo definiscono. `IdentityKind` ha sei generi e nessuno è quello: inventarne un settimo sarebbe una modifica delle `Consistency Conventions`.
+- **`check_boundaries.py` ha un solo recinto e non scandisce `render/`**, che ora ha codice vero. È la Story 1.5, per nome.
+- **`sprint-status.yaml` ha chiavi di un'altra epoca del backlog** (`1-1-insieme-di-riferimento-strutturato-a-risposta-nota` contro «Story 1.1: L'identità preservata dev'essere giustificata» di `epics.md`). Non l'ho toccato: il completamento oggi si legge dai rami fusi.
+- L'unità semantica di `reroute_scope` resta differita alla 1.4, come già dichiarato nel campo.
+[08:20:37Z] 
+[08:20:37Z] passo 2: verifica [-]
+  test...
+  [ok]  test: 617 passati
+  [ok]  copertura: 100.0%
+  [ok]  recinti di dipendenza
+  [ok]  copertura del dominio
+[08:20:53Z]   oracolo exit 0 — {"copertura": 100.0, "dominio": true, "recinti": true, "test_falliti": 0, "test_passati": 617, "verde": true}
+[08:20:53Z] 
+[08:20:53Z] passo 3: revisiona [Blind Hunter]
+[08:20:53Z]   → claude -p --model claude-fable-5 --effort max --max-budget-usd $15
+[08:32:04Z]   revisione exit 0
+- **AC2 non è soddisfatto alla lettera per il `LayoutPatch`.** Le `Consistency Conventions` (spine:839) dicono «ULID con prefisso per tipo … `patch_`»; `result.py:146-148` conia un'impronta di contenuto che «non è un ULID» per sua stessa dichiarazione. La deviazione è scritta nel materiale (`result.py`, `identity.py:109-125`, `AGENTS.md:111-113`), non nell'autorità, e il rapporto la presenta come scelta fatta invece che come decisione da chiedere. La dicotomia «orologio nel dominio oppure identificatore nella firma di `transform`» omette la terza via già adottata per il `LayoutIR`: identità assegnata da chi *ritiene* (con orologio iniettato), non da chi produce. L'asimmetria fra le due entità — `lay_` coniato alla ritenzione, `patch_` coniato alla produzione — non è motivata da nessuna parte.
+- **Un `patch_` identifica un contenuto, non un passo.** Verificato eseguendo: `ProofGraph` accetta due archi con lo stesso `patch_` (la guardia di `graph.py:161-167` confronta la quadrupla) e `transizioni()` restituisce due triple con lo stesso primo elemento. SM-14 conta i `LayoutPatch` che violano la continuità: un'evidenza «`patch_X` viola VCER» non sa a quale arco riferirsi. Nessun test in `test_proof.py` mette lo stesso `patch_` su due archi (usa sempre `p` ≠ `q`), quindi il comportamento non è né deciso né coperto.
+- **Il `LayoutPatch` ha un identificatore e nessuna ritenzione.** L'arco porta un `patch_` che nessun registro risolve; il fixture di `test_continuita_visuale.py:69-75` scarta gli oggetti e tiene solo gli id. Per calcolare `p_{k+1}(x) ≈ p_k(x)` serve il dominio di `x`, cioè `preserve`, che da `ProofGraph` + `LayoutStore` non si ricava. La tripla di CV6 è congiungibile su un lato solo, e AD-8 non ha un proprietario per il `LayoutPatch` persistito: il «so that» della storia (VCER calcolabile) resta aperto.
+- **Gli `ir_` degli stati intermedi non hanno un produttore possibile.** Il rapporto rimanda a `ingest` (AD-8), ma `ingest` vede solo C₀: C₁…Cₙ nascono da `transform`, che è pura — lo stesso problema risolto per il `patch_` con `conia_da_contenuto` e qui lasciato senza risposta, benché `domain/ir/canonical.py:44` offra già la forma canonica da cui derivare un'identità. Il fixture conia `ir_` da un orologio finto slegato dai circuiti (`test_continuita_visuale.py:85`): nessun test lega `stati[k]` a `circuiti[k]`, e una permutazione degli `ir_` fra i nodi passerebbe l'intera suite.
+- **AC1 «non è stato sovrascritto» è misurato per identificatore e insieme di entità, mai per piazzamenti.** Nessun test confronta i piazzamenti di `lay_k` *dopo* il deposito di `lay_{k+1}`: `test_un_layout_depositato_si_risolve_identico` ha un solo deposito; `test_il_registro_si_conta…` guarda solo gli id; i test di accettazione guardano `entita()`. Un mutante in cui `deposita` riscrive le coordinate dei layout già depositati (stesso `lay_`, stesse entità, `x+1`) sopravvive a tutti i 617 test — derivato per lettura dei test, perché l'esecuzione dei mutanti in copia temporanea mi è stata negata dai permessi. È precisamente il caso di CV6: `p_k` esiste ma non è più quello di prima.
+- **Nessun vettore noto per `conia`, `conia_da_contenuto` e `LayoutPatch.identifier`.** Tutti i test sono relativi (uguale/diverso/prefisso/ordine su 1000 e 2000). Ho verificato eseguendo che l'encoding è compatibile col layout ULID (`01ARZ3NDEK` per l'istante del vettore di specifica), ma nessun test lo fissa: un alfabeto permutato (A↔B) e i due campi invertiti (`(casualità << 48) | istante`) passano `test_conia_ordina_lessicograficamente_per_istante` e tutto il resto. L'impronta del `patch_` dipende dal `repr` di una dataclass — `EntityRef(kind='component', id='R1')` — quindi una rinomina di classe o di campo ri-conia ogni `patch_` senza un test rosso, e non esiste una versione dello schema d'impronta. «Citabile da evidenza, replay ed eval» richiede stabilità fra versioni del codice, che oggi nessuno misura.
+- **`verifica` accetta identificatori che nessun `conia` può produrre.** Verificato eseguendo: `verifica("lay_" + "Z"*26, "lay")` passa, mentre il massimo rappresentabile in 128 bit è `7ZZZ…` (`identity.py:136-168` controlla prefisso, lunghezza e alfabeto, non l'intervallo). Nessun test.
+- **`conia` non controlla il tipo di `casualita`.** Una `str` di 10 caratteri supera il controllo di lunghezza (`identity.py:101`) e muore in `int.from_bytes` con «cannot convert 'str' object to bytes». Nessuna guardia, nessun test, contro la regola di `AGENTS.md:67-68` (ogni invariante ha una guardia e un test che l'ha vista sollevare).
+- **`ProofGraph` accetta liste e la guardia sul layout condiviso si aggira per alias.** Verificato eseguendo: `ProofGraph([nodo], [])` costruisce, non è hashabile, e dopo un `append` esterno di un nodo con lo stesso `lay_` il grafo contiene due nodi sullo stesso layout mentre `nodo_di` restituisce il primo. `LayoutIR` normalizza a tupla (`schema.py:123`); `ProofGraph.__post_init__` (`graph.py:124-169`) no. Nessun test.
+- **Nessuna integrità referenziale grafo ↔ registro, nessuna coerenza patch ↔ layout.** Un nodo può nominare un `lay_` mai depositato; nulla verifica `patch.preserve ⊆ entita(lay_k) ∩ entita(lay_{k+1})`, `remove ⊆ entita(lay_k)`, `create ⊆ entita(lay_{k+1})`. Il fixture le soddisfa per costruzione ma nessun test le asserisce, e `render/layout` — che può importare `domain/proof` — non offre un predicato. Senza, `p_k(x)` non è definita per ogni `x ∈ Pₖ` e l'operando di VCER è un'ipotesi.
+- **L'entropia non ha un contratto.** AD-17 copre l'orologio; nessun port, convenzione o docstring dice chi fornisce `casualita` né che debba essere fresca per ogni conio. Ogni chiamante del repository usa la costante `bytes(range(10))`: a entropia costante due layout nello stesso millisecondo collidono e `deposita` solleva «coniato due volte» per un difetto che non è del chiamante. `LayoutIR.nuovo` (`schema.py:125-135`) non dichiara il requisito.
+- **La minaccia di CV6 non ha percorso di codice, quindi nessun test può fallire su di essa.** U2 — «applicare un `LayoutPatch` aggiorna il layout in luogo» — è l'oggetto della storia, ma non esiste `applica(LayoutIR, LayoutPatch) → LayoutIR` né un contratto scritto (firma o docstring in `render/layout/__init__.py`) che imponga a chi lo scriverà in 1.7 di restituire un `LayoutIR` nuovo con `lay_` nuovo. Il «When `k+1` è stato prodotto» dell'AC è simulato dal test (`_piazzamento_di_prova`), non da `render/layout`.
+- **`LayoutIR` non ha versione di schema e nulla si serializza.** `IR` porta `ir_version`; `LayoutIR` no. La direzione dell'owner dice «immutabile e versionato per ogni stato visuale **persistente**», AD-27 «serializzabile e ricostruibile»; il docstring di `con_passo` (`graph.py:232-235`) giustifica le guardie nel costruttore col caso «deserializzato», che non esiste in nessun modulo. «Recuperabile» vale solo dentro il processo che ha depositato.
+- **Manca la spec della storia e la mappa criterio → test.** `.claude/loop.md:337-338`: «Prima della review, scrivi nella spec la mappa criterio → test. Un criterio senza riga è un criterio non implementato.» Non esiste `spec-1-3-…md` in `implementation-artifacts/` e il rapporto non contiene la mappa: il revisore ha dovuto ricostruirla da quattro file di test.
+- **`sprint-status.yaml` non conosce la chiave della storia.** `1-3-un-layoutir-recuperabile-per-ogni-stato-visuale` non c'è; resta `1-3-metà-fotografica-dell-insieme-di-riferimento: backlog` di un'altra epoca. `sync-sprint-status.md` salta in silenzio quando la chiave manca; il file sta in `implementation-artifacts/`, non fra le autorità, e non è stato toccato.
+- **La storia è stata eseguita contro un verdetto di readiness ancora negativo.** `implementation-readiness.md:137` (v3, 24/08): «1.3 ⛔ non pronta — servono le quattro righe di CV6 nello spine». Tre sono entrate (AD-8 v2.1, AD-21 v2.1, convenzioni v2.1), l'ERD no. Il rapporto elenca l'ERD fra i fuori-ambito ma non nomina il verdetto né chi lo aggiorna.
+- **Ambiente degli oracoli.** Durante questa revisione `/System/Volumes/Data` era al 100% (268 MiB liberi) e un comando è fallito per `ENOSPC`. `verifica.sh` scrive in `mktemp -d` e pytest riscrive `coverage.json`: le metriche riportate sono precedenti, ma la prossima corsa può fallire per una causa che somiglia a un test rosso — la famiglia E-15 dell'error ledger.
+[08:32:04Z] 
+[08:32:04Z] passo 4: ripara [-]
+[08:32:04Z]   → claude -p --model claude-opus-5 --effort max --max-budget-usd $25
+Both oracles green. Here is the report.
+
+---
+
+# Rapporto — Story 1.3, giro di riparazione
+
+## 1. Che cosa ho cambiato, file per file
+
+**`src/kirchhoff/domain/transform/result.py` · `tests/test_transform.py` — ripristinati allo stato pre-storia.** `LayoutPatch.identifier` è stato **ritirato**. La storia non tocca più `domain/transform`.
+
+**`src/kirchhoff/domain/identity.py`** — rimossa `conia_da_contenuto` e con essa l'impronta `blake2b`: resta una sola maniera di coniare, il ULID. Aggiunta la guardia di tipo su `casualita` (prima del controllo di lunghezza), il controllo d'intervallo in `verifica` (`OLTRE_IL_MASSIMO = 1 << 128`, con `_decodifica`), e il contratto dell'entropia nel docstring del modulo e di `conia`.
+
+**`src/kirchhoff/render/layout/store.py`** — aggiunto `PatchStore`: registro append-only che **conia il `patch_` al deposito**, con istante ed entropia iniettati. Il messaggio di collisione di `LayoutStore.deposita` ora nomina l'entropia costante come causa tipica.
+
+**`src/kirchhoff/render/layout/continuity.py` (nuovo)** — `OperandiVCER` e `operandi_di_vcer(grafo, layout, patch)`: congiunge la tripla e verifica cinque condizioni (`lay_` depositato, `patch_` depositato, `preserve ⊆ entità(k) ∩ entità(k+1)`, `remove ⊆ entità(k)`, `create ⊆ entità(k+1)`). Non calcola VCER e non conosce la tolleranza.
+
+**`src/kirchhoff/render/layout/__init__.py`** — esporta i nomi nuovi e porta il **contratto scritto di `applica`** per la Story 1.7: firma, «restituisce un `LayoutIR` nuovo con `lay_` nuovo», e i due posti in cui il contratto si controlla.
+
+**`src/kirchhoff/render/layout/schema.py`** — corretto il docstring che diceva che il `LayoutPatch` non ha orologio; aggiunto a `LayoutIR.nuovo` il requisito «dieci byte nuovi a ogni chiamata».
+
+**`src/kirchhoff/domain/proof/graph.py`** — `nodes` ed `edges` normalizzati a tupla nel `__post_init__`; guardia nuova: **due archi non possono portare lo stesso `patch_`** (posta *dopo* quella sull'arco ripetuto, che resta la diagnosi più specifica); corretto il docstring di `con_passo` che giustificava le guardie con un caso «deserializzato» inesistente.
+
+**Test** — `test_identity.py` (vettori a risposta nota, ordine dell'alfabeto, posizione dei due campi, tipo di `casualita`, intervallo); `test_layout.py` (ritenzione **sui piazzamenti**, catena di depositi, `PatchStore`); `test_proof.py` (congelamento in tuple, `append` esterno, `patch_` condiviso); `test_giunzione_vcer.py` (nuovo, le cinque condizioni viste fallire una per una); `test_continuita_visuale.py` (riscritto: patch ritenuta, piazzamenti confrontati, nodo ↔ circuito legati).
+
+**`AGENTS.md`** — ritirata la riga sull'«eccezione dichiarata» (ora falsa); scritte tre regole nuove: *conia chi ritiene, non chi produce*; l'entropia dev'essere fresca e nessun port la fornisce; AD-8 non ha una riga per la `LayoutPatch` persistita.
+
+**Spec** — `_bmad-output/implementation-artifacts/spec-1-3-un-layoutir-recuperabile-per-ogni-stato-visuale.md`, con la mappa criterio → test.
+
+**`sprint-status.yaml`** — solo un commento; vedi §3.
+
+## 2. Oracoli eseguiti
+
+| Comando | Exit | Esito |
+|---|---|---|
+| `ops/loop/verifica.sh` | **0** | `{"copertura": 100.0, "dominio": true, "recinti": true, "test_falliti": 0, "test_passati": 647, "verde": true}` |
+| `uv run python scripts/bmad_chain.py verifica --con-loop` | **0** | catena coerente, 8/8 |
+
+**Mutante verificato eseguendo.** `LayoutStore.deposita` che riscrive le coordinate dei layout già depositati (stesso `lay_`, stesse entità, `x+1`) → suite **rossa**. Ripristinato subito dopo.
+
+## 3. Rilievi: confermati e refutati
+
+**Confermati eseguendo, e riparati:** `verifica("lay_"+"Z"*26)` passava (max `7ZZZ…`); `conia(…, "0123456789")` moriva in `int.from_bytes`; `ProofGraph([n],[])` costruiva non hashabile e un `append` esterno aggiungeva un nodo; due archi accettavano lo stesso `patch_` e `transizioni()` dava due triple con lo stesso primo elemento.
+
+**Il rilievo di fondo — `patch_` non è un ULID — è confermato, e ho preso la terza via che il revisore indicava.** Le tre conseguenze erano una sola causa: un'impronta di contenuto non è un ULID (AC2 non soddisfatto alla lettera), non identifica un *passo* (SM-14 non sa a quale arco riferirsi), e non ha ritenzione (`preserve` irrecuperabile). **Conia chi ritiene, non chi produce**: `transform` resta pura, il nome nasce in `PatchStore.deposita` con l'istante iniettato — la stessa regola di `LayoutIR.nuovo`. L'asimmetria fra le due entità è sparita, e con l'impronta è sparita anche la sua dipendenza dal `repr` di una dataclass.
+
+**Refutato, con prova.** «L'encoding è compatibile col layout ULID (`01ARZ3NDEK` per l'istante del vettore di specifica)» è **falso**: `01ARZ3NDEK` decodifica a 1469922850259, mentre l'istante del vettore di specifica è 1469918176385, che codifica a `01ARYZ6S41` — ed è ciò che il codice produce. Ho decodificato entrambe indipendentemente. La *sostanza* del rilievo regge — nessun vettore fissato — ed è riparata: `01ARYZ6S41` è ora pinnato insieme a due vettori che isolano i due campi.
+
+**Parzialmente refutato: `LayoutIR` non ha versione di schema.** AD-27 dice *«La **`ProofSession`** è serializzabile e ricostruibile»* — vincola la sessione (Story 6.1), non il `LayoutIR`. E «immutabile e versionato per ogni stato visuale persistente» si legge come *una versione per stato visuale*, che è ciò che il registro append-only implementa. Non ho aggiunto un campo versione che nessun serializzatore leggerebbe. La metà confermata — il docstring di `con_passo` giustificava le guardie con un caso «deserializzato» che non esiste — è corretta.
+
+**Parzialmente refutato: `ir_` senza produttore.** Confermato che `ingest` non può produrli e che nulla legava `stati[k]` a `circuiti[k]`; quest'ultima è riparata (`test_ogni_nodo_denota_il_proprio_circuito_e_non_un_altro`, con l'asserzione che i tre insiemi di entità sono distinti a due a due, altrimenti il controllo non discriminerebbe). La via suggerita — derivare l'identità dalla forma canonica — è però la stessa che ho appena ritirato per il `patch_`; la regola adottata vale anche per gli `ir_`, ma il registro dei `CircuitIR` è fuori dall'ambito.
+
+## 4. Incompleto o rischioso
+
+- **Il `PatchStore` sta in `render/layout` per assunzione, non per autorità.** AD-8 non nomina la `LayoutPatch` persistita — né come entità con scrittore, né come entità dichiarata non persistita (cosa che invece fa per `TransformOverlay`). L'ho messa dove stanno gli altri due operandi della stessa tripla. **Va ratificata da chi possiede lo spine.**
+- **Registrare la chiave della storia in `sprint-status.yaml` rende la suite rossa.** Verificato eseguendo: `test_chiave_canonica.py::test_la_derivazione_coincide_con_quella_di_bmad` confronta le chiavi derivate da `epics.md` con le `new_entries` che BMAD produce leggendo *quel* file — una chiave registrata sparisce da `new_entries` e le liste divergono. Quel test esercita `ops/loop/chiave.py`, che non posso correggere dal loop. Ho lasciato **solo un commento** nel file. È un difetto dell'armatura di Epic 0 che blocca R15 per *ogni* storia, non per questa.
+- **Nessun `EntropyPort`.** Il requisito «dieci byte nuovi a ogni conio» vive in un docstring, non in un contratto: `ports/` è fuori dalla storia.
+- **Disco.** `/System/Volumes/Data` era a 274 MiB liberi all'inizio, 430 MiB ora, sempre al 100%. Le due corse sono riuscite, ma la famiglia E-15 resta: un `ENOSPC` somiglia a un test rosso.
+
+## 5. Fuori ambito, non toccato
+
+- **L'ERD non conosce `LayoutIR` né `LayoutPatch`** — la quarta delle quattro righe di CV6. `implementation-readiness.md:137` tiene 1.3 a «⛔ non pronta — servono le quattro righe di CV6 nello spine»; tre sono entrate, questa no. Il readiness stesso indica chi lo chiude: `bmad-architecture (update)`. **Il verdetto non è mio da aggiornare, e questa storia è stata eseguita contro di esso.**
+- **Le chiavi di 1.1 e 1.2 mancano da `sprint-status.yaml`** come quella di 1.3, e **la Story 1.2 non ha spec** con la chiave corrente (c'è solo `spec-1-2-script-di-valutazione-…`, di un'altra pianificazione).
+- **`reroute_scope`** ha ancora l'unità semantica differita alla 1.4; `operandi_di_vcer` non lo verifica, per questo.
+[08:51:58Z] 
+[08:51:58Z] passo 5: verifica [-]
+  test...
+  [ok]  test: 647 passati
+  [ok]  copertura: 100.0%
+  [ok]  recinti di dipendenza
+  [ok]  copertura del dominio
+[08:52:18Z]   oracolo exit 0 — {"copertura": 100.0, "dominio": true, "recinti": true, "test_falliti": 0, "test_passati": 647, "verde": true}
+[08:52:18Z] 
+[08:52:18Z] passo 6: revisiona [ri-revisione]
+[08:52:18Z]   → claude -p --model claude-fable-5 --effort max --max-budget-usd $15
+[08:55:42Z]   revisione exit 1
+You've hit your session limit · resets 12:50pm (Europe/Rome)
+[08:55:42Z]   revisore non ha concluso
+[08:55:42Z] 
+[08:55:42Z] iterazione 1 NON promossa. Il ramo loop/iter-20260826T075916Z-1-3-un-layoutir-recuperabile-per-ogni-stato-visuale resta per l'ispezione.
