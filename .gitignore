@@ -23,3 +23,7 @@ vault/ruvector.db
 vault/.obsidian/workspace*
 vault/.obsidian/cache
 vault/.trash/
+
+# Dato locale, non versionato: un symlink a un percorso assoluto
+# funzionerebbe solo su questa macchina.
+reference-set
