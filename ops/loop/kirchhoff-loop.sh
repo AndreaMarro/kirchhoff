@@ -30,6 +30,11 @@ STATO="$QUI/stato"
 GIORNALE="$QUI/giornale"
 BASELINE="$STATO/ratchet.json"
 
+# Un solo modello su ogni passo, diagnosi inclusa (scelta del proprietario,
+# 26/08/2026). Il router lo dichiara per i passi del piano; qui serve per il
+# passo che il piano non prevede, cioe' la diagnosi di un oracolo rosso.
+MODELLO_DIAGNOSI="${KIRCHHOFF_MODELLO:-claude-opus-5}"
+
 # Tetti duri. Non sono stime: sono il punto oltre il quale si smette, comunque.
 # Il tetto per un passo che SCRIVE viene dal precedente del proprietario su
 # Ardesia: BUDGET=25, alzato deliberatamente il 2026-08-15 («dovrebbero avere
@@ -312,7 +317,45 @@ for i, s in enumerate(p):
         bash "$QUI/verifica.sh" > "$STATO/.metriche.json" 2>>"$DIARIO"
         e=$?
         log "  oracolo exit $e — $(cat "$STATO/.metriche.json" 2>/dev/null)"
-        if [ "$e" != "0" ]; then log "  verifica rossa"; fallito=1; break; fi
+        if [ "$e" != "0" ]; then
+          log "  verifica rossa"
+          # DIAGNOSI SISTEMATICA. Finora un oracolo rosso produceva la riga
+          # «verifica rossa» e nient'altro: chi apriva il giornale il mattino
+          # dopo trovava un giro fallito senza sapere PERCHE', e ricominciava
+          # dalla riproduzione a mano.
+          #
+          # Questo passo non ripara — il confine vale anche qui: chi diagnostica
+          # non corregge, altrimenti il primo sospetto plausibile diventa una
+          # patch che nessuno ha verificato. Produce una diagnosi che la
+          # riparazione, o una persona, puo' usare.
+          diagnosi="$STATO/.diagnosi-$i.md"
+          { printf 'Sei in un processo separato. Un oracolo e appena andato ROSSO e\n'
+            printf 'devi dire PERCHE. Non riparare: chi diagnostica non corregge.\n\n'
+            printf 'Segui la disciplina del debug sistematico, e in questo ordine:\n\n'
+            printf '1. RIPRODUCI il rosso, eseguendo. Se non lo riproduci, dillo e\n'
+            printf '   fermati: una diagnosi su un guasto non riprodotto e un indovinello.\n'
+            printf '2. ISOLA. Restringi al piu piccolo caso che ancora fallisce.\n'
+            printf '3. IPOTIZZA una causa, UNA sola, e scrivila prima di provarla.\n'
+            printf '4. PROVA lipotesi con un esperimento che potrebbe SMENTIRLA.\n'
+            printf '   Se la conferma solo perche non lhai messa alla prova, non vale.\n'
+            printf '5. Distingui CAUSA e SINTOMO. Il test che fallisce e il sintomo.\n\n'
+            printf 'Chiudi con: la causa radice, il caso minimo che la mostra, e la\n'
+            printf 'riparazione che proporresti — descritta, non applicata.\n\n'
+            printf '## La storia\n\n%s (classe %s)\n\n' "$storia" "$classe"
+            printf '## Le metriche dell oracolo\n\n```json\n%s\n```\n\n' \
+              "$(cat "$STATO/.metriche.json" 2>/dev/null)"
+            printf '## Il diff di questo giro\n\n```diff\n'
+            git -C "$REPO" diff "$base".."$ramo" -- src/ tests/ 2>/dev/null | head -1200
+            printf '\n```\n'
+          } > "$diagnosi"
+          log "  diagnosi sistematica del rosso"
+          passo_modello "$MODELLO_DIAGNOSI" max "$diagnosi" "$STATO/.diagnosi-$i.out" 12
+          {  printf '\n===== DIAGNOSI SISTEMATICA =====\n'
+             cat "$STATO/.diagnosi-$i.out" 2>/dev/null
+             printf '\n================================\n'
+          } >> "$INCISO"
+          fallito=1; break
+        fi
         ;;
 
       revisiona)
