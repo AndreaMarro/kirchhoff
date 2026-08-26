@@ -389,6 +389,157 @@ def _verifica_dormienti(
 _verifica_dormienti(COMPOSITION, DORMANT)
 
 
+# --- FR-49: le precondizioni sono dichiarate, non raccontate ------------------
+#
+# UX-DR23 chiede che «Perche' posso farlo?» risponda con **quattro campi gia'
+# calcolati** — terminali, precondizioni, formula, certificato — e **non generi
+# spiegazioni**. Tre dei quattro sono membri del `TransformResult`: il `Boundary`
+# porta i terminali, l'`Equation` la formula, il `Certificate` se stesso. Il
+# quarto no, ed e' l'unico che senza una dichiarazione andrebbe **composto al
+# momento della domanda** — cioe' sarebbe la prosa che UX-DR23 vieta.
+#
+# Sta qui e non in `render/` per la ragione di AD-26: le condizioni sotto cui un
+# passo e' lecito sono una proprieta' dell'operazione, e un renderer che le
+# deducesse dai due circuiti tornerebbe a dedurre cio' che il dominio ha gia'
+# deciso. Chi dipinge la risposta la legge; non la ricava.
+
+#: Vuoto e' *«non ancora dichiarate»*, e vale per ogni voce senza implementazione:
+#: scrivere le precondizioni di un'operazione che nessun corpo esercita
+#: significherebbe inventarne la semantica. Le due dichiarate qui sono
+#: **trascritte dalle guardie che le impongono** in `engine._serie` e
+#: `engine._parallelo`, non riformulate: `_verifica_le_precondizioni_degli_
+#: implementati` in `engine.py` fa fallire l'import se un'implementazione non ne
+#: dichiara nessuna, e `tests/test_catalog.py` esige che ognuna sia falsificabile
+#: — un circuito che la viola dev'essere respinto.
+#:
+#: **L'ordine e' quello di valutazione, non alfabetico** — al contrario di
+#: `_COMPOSIZIONE`, che porta molteplicita' e non sequenza. Per `serie` la terza
+#: presuppone la seconda: il grado del nodo comune si chiede dopo aver stabilito
+#: che un nodo comune c'e' ed e' eliminabile, e riordinarle direbbe a chi legge
+#: che si possono verificare in qualunque ordine.
+_PRECONDIZIONI: dict[str, tuple[str, ...]] = {nome: () for nome in sorted(CATALOG)}
+#:
+#: **Le prime tre sono comuni alle due riduzioni** e stavano fuori dalla
+#: dichiarazione perche' nessuna delle tre e' imposta dal corpo dell'operazione:
+#: l'arita' — esattamente due identificatori — e l'esistenza dei componenti
+#: nominati le impongono le due porte di `transform` che precedono lo
+#: smistamento (`engine.py:648` e `engine.py:656`), e «entrambi resistori» la
+#: impone `engine._resistore`, che le due riduzioni attraversano. La prima
+#: revisione ne aveva dichiarate due; la seconda ha trovato l'arita' — stessa
+#: classe, stessa porta — a dimostrazione che l'elenco delle esigite non si
+#: enumera guardando i soli corpi.
+#:
+#: **L'ultima riga di ciascuna dichiarazione e' a sua volta comune** e viene dopo
+#: le condizioni del corpo perche' e' li' che si valuta: `engine._prodotto`
+#: chiama `validate` su `Cₖ` (`engine.py:241`) e un circuito di partenza non
+#: valido e' respinto con un `Refusal`, non con un `ValueError` — e' un esito di
+#: dominio (AD-13), e resta una condizione esigita su `Cₖ` come le altre.
+#:
+#: Erano tutte condizioni **esigite e non dichiarate**: un circuito che le viola
+#: e' respinto, e «perche' posso farlo?» non nominava la ragione. Il verso
+#: mancante e' quello che rende l'elenco una risposta invece di una nota —
+#: dichiarata → esigita lo controlla `TestLePrecondizioniSonoFalsificabili`;
+#: esigita → dichiarata non e' meccanizzabile e resta registrato in
+#: `deferred-work.md` §7, dove la seconda revisione ha corretto la misura su cui
+#: la voce era archiviata.
+_COMUNI_ALLE_RIDUZIONI = (
+    "l'operazione nomina esattamente due componenti",
+    "i due componenti nominati esistono nel circuito",
+    "i due componenti sono entrambi resistori",
+)
+_VALIDITA_DI_PARTENZA = "il circuito di partenza supera la validazione elettrica"
+_PRECONDIZIONI["serie"] = (
+    *_COMUNI_ALLE_RIDUZIONI,
+    "i due componenti condividono esattamente un nodo",
+    "il nodo condiviso non e' il nodo di riferimento",
+    "al nodo condiviso non tocca un terzo componente",
+    _VALIDITA_DI_PARTENZA,
+)
+_PRECONDIZIONI["parallelo"] = (
+    *_COMUNI_ALLE_RIDUZIONI,
+    "i due componenti stanno fra gli stessi due nodi",
+    _VALIDITA_DI_PARTENZA,
+)
+
+#: Vista di sola lettura, per la stessa ragione di `MUTABLE_ATTRIBUTES` e
+#: `COMPOSITION`: una dichiarazione riscrivibile con un'assegnazione lascerebbe
+#: cambiare a runtime la risposta a «perche' posso farlo?», che e' un'affermazione
+#: sul dominio e non un testo di interfaccia.
+PRECONDITIONS: MappingProxyType[str, tuple[str, ...]] = MappingProxyType(_PRECONDIZIONI)
+
+
+def preconditions_of(operation: str) -> tuple[str, ...]:
+    """Le condizioni sotto cui `operation` e' lecita, in ordine di valutazione.
+
+    Solleva se l'operazione e' fuori dal catalogo, come `mutable_attributes` e
+    `primitives_of`: chiedere le precondizioni di un passo che non esiste e' un
+    errore di programmazione, e rispondere «nessuna» lo renderebbe silenzioso.
+
+    Vuoto e' invece una risposta legittima e significa **non ancora dichiarate**:
+    l'operazione esiste nel vocabolario e non ha un corpo che la eserciti.
+    """
+    if operation not in CATALOG:
+        raise ValueError(
+            f"operazione {operation!r} fuori dal catalogo chiuso: "
+            "non ha precondizioni perche' non esiste.")
+    return PRECONDITIONS[operation]
+
+
+def _verifica_precondizioni(dichiarazione: Mapping[str, tuple[str, ...]]) -> None:
+    """Le tre condizioni che rendono `_PRECONDIZIONI` una dichiarazione e non una nota.
+
+    **Le chiavi**, come per `_MUTABILI` e `_COMPOSIZIONE`: catalogo e dichiarazione
+    non possono divergere, o una voce avrebbe precondizioni indefinite invece che
+    vuote — e «indefinite» e «nessuna dichiarata» sono due risposte diverse.
+
+    **La forma dei valori**: una `tuple` di `str`. E' il caso speculare di quello che
+    `conia` guarda esplicitamente — *«una stringa di lunghezza giusta passerebbe ogni
+    altro controllo»*. Una `str` al posto della tupla e' iterabile, e i suoi elementi
+    sono caratteri: `"abc"` supera «ogni elemento e' testo non vuoto» e «nessuna
+    ripetizione», e `Justification.precondizioni` diventa allora un elenco di lettere
+    che chi la renderizza mostra come tre precondizioni. Il controllo di forma precede
+    quindi quelli sul contenuto, per la stessa ragione per cui in `conia` il controllo
+    di tipo precede quello di lunghezza: altrimenti il difetto si diagnostica leggendo
+    l'implementazione invece dell'errore.
+
+    **I valori**: testo non vuoto. Una stringa vuota nell'elenco si presenterebbe a
+    chi legge come una condizione, e non ne direbbe nessuna.
+
+    **Nessuna ripetizione dentro la stessa operazione**: due volte la stessa
+    condizione farebbe contare due volte una sola ragione, e il campo che UX-DR23
+    chiama «precondizioni» e' un elenco di ragioni distinte.
+    """
+    if set(dichiarazione) != CATALOG:
+        mancanti = sorted(CATALOG - set(dichiarazione))
+        estranee = sorted(set(dichiarazione) - CATALOG)
+        raise RuntimeError(
+            "la dichiarazione delle precondizioni non copre il catalogo: "
+            f"mancanti {mancanti}, estranee {estranee}.")
+    for nome, condizioni in dichiarazione.items():
+        if not isinstance(condizioni, tuple):
+            raise RuntimeError(
+                f"{nome}: precondizioni {type(condizioni).__name__} invece di tuple. "
+                "Una `str` si itera per caratteri, e l'elenco di ragioni distinte che "
+                "UX-DR23 chiama «precondizioni» diventerebbe un elenco di lettere.")
+        for c in condizioni:
+            if not isinstance(c, str):
+                raise RuntimeError(
+                    f"{nome}: precondizione {type(c).__name__} invece di str. Il "
+                    "campo si legge, non si valuta: e' testo dichiarato, non un "
+                    "predicato che qualcuno esegua al momento della domanda.")
+            if not c.strip():
+                raise RuntimeError(
+                    f"{nome}: precondizione vuota. Una riga senza testo si legge "
+                    "come una condizione e non ne enuncia nessuna.")
+        if len(set(condizioni)) != len(condizioni):
+            raise RuntimeError(
+                f"{nome}: la stessa precondizione dichiarata due volte. Due copie "
+                "di una ragione sono una ragione, e l'elenco ne annuncerebbe due.")
+
+
+_verifica_precondizioni(PRECONDITIONS)
+
+
 # --- FR-43: il Catalogo e' chiuso, e la sua apertura e' una decisione registrata ---
 #
 # Il **vocabolario** e' chiuso e non si estende mai: `CATALOG` e' definitivo, e

@@ -53,6 +53,7 @@ from ..refusal import Refusal
 from ..validate import validate
 from .catalog import (
     CATALOG,
+    PRECONDITIONS,
     CatalogOpening,
     TransformationKind,
     transformations_supported,
@@ -536,6 +537,35 @@ _IMPLEMENTAZIONI: dict[str, Callable[..., tuple[IR, TransformResult] | Refusal]]
 
 _REGISTRO: Mapping[str, Callable[..., tuple[IR, TransformResult] | Refusal]] = (
     MappingProxyType(_IMPLEMENTAZIONI))
+
+
+def _verifica_le_precondizioni_degli_implementati() -> None:
+    """Un corpo che gira senza precondizioni dichiarate fa fallire l'import.
+
+    `catalog._PRECONDIZIONI` lascia vuote le operazioni senza corpo, e vuoto vi
+    significa *«non ancora dichiarate»*. Qui vuoto e' invece un difetto, e la
+    differenza e' che **questo modulo esercita l'operazione**: le condizioni sotto
+    cui `serie` e' lecita sono imposte dalle guardie di `_serie`, e se il Catalogo
+    non le enuncia la risposta di UX-DR23 e' muta proprio sul passo che il sistema
+    sa eseguire.
+
+    Il controllo sta in `engine.py` e non in `catalog.py` perche' e' l'unico dei due
+    che vede entrambi gli insiemi: `catalog` non puo' importare `engine` — sarebbe
+    un ciclo — e non sa quali voci abbiano un corpo.
+
+    E' la lezione del gate scritto e non installato: una dichiarazione che nessuno
+    esige resta indietro alla prima operazione nuova, e resta indietro in silenzio.
+    """
+    mute = sorted(nome for nome in _REGISTRO if not PRECONDITIONS[nome])
+    if mute:
+        raise RuntimeError(
+            f"operazioni con un'implementazione e senza precondizioni dichiarate: "
+            f"{mute}. Le guardie che le impongono stanno nel corpo; il Catalogo le "
+            "deve enunciare, o «perche' posso farlo?» non ha il secondo dei quattro "
+            "campi di UX-DR23.")
+
+
+_verifica_le_precondizioni_degli_implementati()
 
 
 def implemented() -> frozenset[str]:
