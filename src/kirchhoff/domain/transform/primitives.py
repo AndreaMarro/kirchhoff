@@ -165,13 +165,27 @@ class Forma:
     genere: str
     ingressi_minimi: int
     uscite: int
+    #: Arita' massima in ingresso; `None` significa «nessun tetto».
+    #:
+    #: **Serve perche' un minimo da solo non separa due riscritture.**
+    #: `sostituzione_di_componente` dichiarava `ingressi_minimi=1` — «uno o piu'» —
+    #: mentre `fusione_di_componenti` chiede «due o piu'» dello stesso genere con la
+    #: stessa uscita singola: ogni forma di fusione era percio' ANCHE una
+    #: sostituzione valida. Misurato:
+    #: `{R1,R2} --sostituzione_di_componente--> {R1R2eq}` si costruiva, cioe' una
+    #: fusione che si dichiara sostituzione. L'intercambiabilita' che questa storia
+    #: esiste per chiudere restava aperta in quel verso.
+    #:
+    #: Una sostituzione sostituisce UN componente; non ne fonde due.
+    ingressi_massimi: int | None = None
 
 
 _FORME: dict[str, Forma] = {
     "fusione_di_componenti": Forma("component", ingressi_minimi=2, uscite=1),
     "fusione_di_nodi": Forma("node", ingressi_minimi=1, uscite=1),
     "eliminazione_di_nodo": Forma("node", ingressi_minimi=1, uscite=0),
-    "sostituzione_di_componente": Forma("component", ingressi_minimi=1, uscite=1),
+    "sostituzione_di_componente": Forma(
+        "component", ingressi_minimi=1, uscite=1, ingressi_massimi=1),
     "rimozione_di_componente": Forma("component", ingressi_minimi=1, uscite=0),
 }
 
@@ -211,3 +225,4 @@ def _verifica_forme(forme: Mapping[str, Forma]) -> None:
 
 
 _verifica_forme(FORME)
+

@@ -2378,3 +2378,27 @@ def test_un_parallelo_e_un_passo_di_una_riscrittura_sola():
     _, res = esito
     assert [d.operation for d in res.delta.derivations] == ["fusione_di_componenti"]
     assert res.certificate.operation == "parallelo"
+
+
+def test_i_due_insiemi_che_dichiarano_il_catalogo_coincidono():
+    """`AGENTS.md` promette questo test in due punti. Non esisteva.
+
+    Il catalogo pedagogico e' scritto DUE VOLTE — il `Literal` `TransformationKind`
+    e il `frozenset` `CATALOG` — e le due scritture possono divergere in silenzio:
+    un nome aggiunto all'uno e non all'altro non faceva protestare nulla, mentre
+    `AGENTS.md:35` e `AGENTS.md:101` affermano entrambe che «un test confronta i due
+    insiemi».
+
+    Un registro che attesta un controllo inesistente e' il difetto che E-65 vieta al
+    `Certificate`; non c'e' ragione perche' un documento possa farlo dove un prodotto
+    non puo'. La forma e' quella gia' usata per `Cause`/`CAUSES` e per
+    `StructuralPrimitive`/`PRIMITIVES`: la sola differenza era che qui mancava.
+    """
+    from typing import get_args
+
+    from kirchhoff.domain.transform.catalog import CATALOG, TransformationKind
+
+    assert set(get_args(TransformationKind)) == CATALOG, (
+        "TransformationKind e CATALOG divergono: "
+        f"solo nel Literal {sorted(set(get_args(TransformationKind)) - CATALOG)}, "
+        f"solo nel frozenset {sorted(CATALOG - set(get_args(TransformationKind)))}")

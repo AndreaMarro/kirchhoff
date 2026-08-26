@@ -166,6 +166,14 @@ class StructuralDerivation:
                 f"ingresso: ne vuole almeno {forma.ingressi_minimi}. Sotto quella "
                 "soglia la riscrittura afferma qualcosa di diverso da cio' che "
                 "il suo nome dichiara.")
+        if forma.ingressi_massimi is not None and len(self.inputs) > forma.ingressi_massimi:
+            raise ValueError(
+                f"derivazione {self.operation!r} con {len(self.inputs)} entita' in "
+                f"ingresso: ne ammette al massimo {forma.ingressi_massimi}. Sopra "
+                "quella soglia la riscrittura e' un'altra: una sostituzione che "
+                "consuma due componenti e ne produce uno e' una FUSIONE, e "
+                "chiamarla altrimenti rende i due nomi intercambiabili — cio' che "
+                "il vocabolario chiuso esiste per impedire.")
         if len(self.outputs) != forma.uscite:
             raise ValueError(
                 f"derivazione {self.operation!r} con {len(self.outputs)} entita' in "

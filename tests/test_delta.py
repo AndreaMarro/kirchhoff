@@ -428,3 +428,46 @@ class TestCoerenzaColCircuito:
         b = check_delta(delta, self.PRIMA, self.DOPO)
         assert a == b and len(a) > 0
         assert all(isinstance(v, DeltaViolation) for v in a)
+
+
+# ---------------------------------------------------------------------------
+# Passata fresca sulla riparazione di 1.2 — l'intercambiabilita' restava aperta
+# in un verso.
+#
+# `FORME` dava a `sostituzione_di_componente` `ingressi_minimi=1`, cioe' «uno o
+# piu'». Ma `fusione_di_componenti` chiede «due o piu'» dello stesso genere e la
+# stessa uscita singola: ogni forma di fusione era percio' ANCHE una sostituzione
+# valida. Misurato: `{R1,R2} --sostituzione_di_componente--> {R1R2eq}` si
+# costruiva — una fusione che si dichiara sostituzione.
+#
+# Una sostituzione sostituisce UN componente, non ne fonde due. L'arita' in
+# ingresso e' esatta, non minima.
+# ---------------------------------------------------------------------------
+
+
+def test_una_fusione_non_puo_dichiararsi_sostituzione():
+    with pytest.raises(ValueError, match="sostituzione_di_componente"):
+        StructuralDerivation("sostituzione_di_componente",
+                             (EntityRef("component", "R1"), EntityRef("component", "R2")),
+                             (EntityRef("component", "R1R2eq"),))
+
+
+def test_una_sostituzione_di_un_solo_componente_resta_ammessa():
+    d = StructuralDerivation("sostituzione_di_componente",
+                             (EntityRef("component", "R1"),),
+                             (EntityRef("component", "R2"),))
+    assert d.operation == "sostituzione_di_componente"
+
+
+def test_i_due_vocabolari_sono_disgiunti_e_una_guardia_lo_verifica():
+    """`AGENTS.md` dichiara questa guardia. Prima non esisteva.
+
+    Un nome che comparisse in entrambi i registri renderebbe ambiguo a quale
+    livello punta una `operation`, ed e' precisamente la confusione che la Story
+    1.2 esiste per togliere. La proprieta' era dichiarata in tre docstring e
+    verificata da nessuna riga.
+    """
+    from kirchhoff.domain.transform.catalog import CATALOG
+    from kirchhoff.domain.transform.primitives import PRIMITIVES
+    assert PRIMITIVES.isdisjoint(CATALOG), (
+        f"vocabolari non disgiunti: {sorted(PRIMITIVES & CATALOG)}")

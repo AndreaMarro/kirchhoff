@@ -526,3 +526,4 @@ def transformations_supported(opening: CatalogOpening | None = None) -> frozense
     esattamente il punto di FR-43.
     """
     return SUPPORTED if opening is None else SUPPORTED | opening.opens
+

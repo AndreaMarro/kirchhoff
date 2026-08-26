@@ -238,3 +238,15 @@ fatta emergere. Nessuna viene lasciata cadere in silenzio.
     conteggio misurabile e sbagliato: `_divergenze` gira sette volte, non il numero scritto.
     (3) Il criterio enunciato per l'elenco `CONTROLLI` è contraddetto dalla voce `boundary` due
     righe sotto — lo stesso rilievo già emerso nella sesta tornata manuale, che sopravvive.
+
+- source_spec: Story 1.2 — residui della passata fresca (26/08/2026)
+  summary: Due LOW restano aperti dopo la promozione di 1.2, più la disallineatura del ledger che
+    entrambe le revisioni hanno segnalato.
+  evidence: (1) `_verifica_dormienti` non impone `dormienti ⊆ PRIMITIVES`: un nome dormiente
+    inventato non farebbe protestare nulla. (2) Il docstring di `primitives.py:20` — «entrambi i
+    registri sono stati aggiornati con l'esito» — ha un antecedente ambiguo che fa sembrare falso
+    un claim vero. (3) **`sprint-status.yaml` non registra né 1.1 né 1.2**: le voci `1-1-…` e
+    `1-2-…` presenti appartengono alla numerazione v1, già dichiarata stale. Le due storie
+    implementate più di recente sono invisibili nel tracker. Il loop non ne dipende — avanza
+    leggendo gli artefatti di implementazione, non il ledger — ma chiunque legga il tracker vede
+    uno stato falso. Allinearlo tocca 46 chiavi ed è una decisione, non una patch.
