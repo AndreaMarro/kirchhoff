@@ -1,5 +1,5 @@
 ---
-sha: c51e6eef0f7b749268d3a1bfde3227ab551eb73f
+sha: a9d3bf68f31f5fab0ce7ab213a76ce8386a8e23f
 tipo: indice-derivato
 ---
 
@@ -10,8 +10,8 @@ tipo: indice-derivato
 > una nota, ha torto lui — e `--verifica` lo dice, invece di lasciartelo
 > scoprire.
 
-Costruito sulla revisione `c51e6eef0f7b749268d3a1bfde3227ab551eb73f`.
-46 note.
+Costruito sulla revisione `a9d3bf68f31f5fab0ce7ab213a76ce8386a8e23f`.
+47 note.
 
 ## (radice)
 
@@ -62,6 +62,7 @@ Costruito sulla revisione `c51e6eef0f7b749268d3a1bfde3227ab551eb73f`.
 
 - [[FIFO-greedy sotterra le task critiche]] — FIFO-greedy sotterra le task critiche · `lezione` → [[Lezioni sul loop]]
 - [[Fatto e non tracciato]] — Fatto e non tracciato · `lezione` → [[Catena BMAD v3]], [[Lezioni sul loop]], [[Tracciamento derivato dalle prove]]
+- [[I backtick in -m li esegue la shell]] — I backtick in `-m` li esegue la shell · `lezione` → [[00-INDICE]], [[Lezioni sul loop]]
 - [[Il delimitatore iniettato]] — Il delimitatore iniettato · `lezione` → [[Lezioni sul loop]]
 - [[Il gate scritto e non installato]] — Il gate scritto e non installato · `lezione` → [[Lezioni sul loop]]
 - [[Il refutatore è un imputato]] — Il refutatore è un imputato · `lezione` → [[Automiglioramento, cosa è misurato]], [[Lezioni sul loop]]
