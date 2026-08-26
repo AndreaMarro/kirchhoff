@@ -11,10 +11,12 @@ from .catalog import (
     DORMANT,
     IDENTITY_ATTRIBUTES,
     MUTABLE_ATTRIBUTES,
+    PRECONDITIONS,
     SUPPORTED,
     CatalogOpening,
     TransformationKind,
     mutable_attributes,
+    preconditions_of,
     primitives_of,
     transformations_supported,
 )
@@ -47,8 +49,9 @@ from .result import (
 
 __all__ = [
     "CATALOG", "COMPOSITION", "DORMANT", "IDENTITY_ATTRIBUTES",
-    "MUTABLE_ATTRIBUTES", "SUPPORTED", "CatalogOpening", "TransformationKind",
-    "mutable_attributes", "primitives_of", "transformations_supported",
+    "MUTABLE_ATTRIBUTES", "PRECONDITIONS", "SUPPORTED", "CatalogOpening",
+    "TransformationKind", "mutable_attributes", "preconditions_of",
+    "primitives_of", "transformations_supported",
     "FORME", "PRIMITIVES", "Forma", "StructuralPrimitive",
     "Delta", "EntityKind", "EntityRef", "StructuralDerivation",
     "DeltaViolation", "attributes_of", "check_delta", "check_transform",

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from fractions import Fraction
+from unittest.mock import patch
 
 import pytest
 
@@ -21,6 +22,7 @@ from kirchhoff.domain.transform import (
     DORMANT,
     IDENTITY_ATTRIBUTES,
     MUTABLE_ATTRIBUTES,
+    PRECONDITIONS,
     PRIMITIVES,
     SUPPORTED,
     Boundary,
@@ -43,6 +45,7 @@ from kirchhoff.domain.transform import (
     identity_attestations,
     implemented,
     mutable_attributes,
+    preconditions_of,
     preserve_set,
     transform,
     transformations_supported,
@@ -2402,3 +2405,117 @@ def test_i_due_insiemi_che_dichiarano_il_catalogo_coincidono():
         "TransformationKind e CATALOG divergono: "
         f"solo nel Literal {sorted(set(get_args(TransformationKind)) - CATALOG)}, "
         f"solo nel frozenset {sorted(CATALOG - set(get_args(TransformationKind)))}")
+
+
+class TestLePrecondizioniDichiarate:
+    """Il secondo dei quattro campi di UX-DR23, e perche' e' una dichiarazione.
+
+    «Perche' posso farlo?» risponde con *«quattro campi gia' calcolati — terminali,
+    precondizioni, formula, certificato — e non genera spiegazioni»*. Tre sono
+    membri del `TransformResult`; le precondizioni no, e senza una dichiarazione
+    sarebbero l'unico dei quattro **composto al momento della domanda**, cioe' la
+    prosa che UX-DR23 vieta.
+
+    Stanno nel Catalogo per la ragione di AD-26: le condizioni sotto cui un passo e'
+    lecito sono una proprieta' dell'operazione. Un renderer che le deducesse dai due
+    circuiti dedurrebbe cio' che il dominio ha gia' deciso.
+    """
+
+    def test_ogni_operazione_implementata_dichiara_almeno_una_precondizione(self):
+        """La guardia gira all'import di `engine`, e questo la rende leggibile.
+
+        Vuoto significa «non ancora dichiarate» per le voci senza corpo; su una voce
+        con un corpo significa che le condizioni che le sue guardie impongono non
+        sono enunciate da nessuna parte, e la risposta di UX-DR23 resta muta proprio
+        sul passo che il sistema sa eseguire.
+        """
+        assert all(preconditions_of(nome) for nome in implemented())
+
+    def test_una_voce_senza_corpo_non_dichiara_nulla_e_va_bene(self):
+        """«Non ancora dichiarate» e «nessuna» sono due risposte, e qui e' la prima:
+        scriverle per un'operazione che nessun corpo esercita ne inventerebbe la
+        semantica."""
+        assert preconditions_of("stella_triangolo") == ()
+        assert "stella_triangolo" not in implemented()
+
+    def test_chiedere_le_precondizioni_di_cio_che_non_esiste_solleva(self):
+        """Come `mutable_attributes` e `primitives_of`: rispondere «nessuna» a
+        un'operazione inesistente renderebbe silenzioso un errore di programmazione."""
+        with pytest.raises(ValueError, match="fuori dal catalogo chiuso"):
+            preconditions_of("trasfigurazione")
+
+    def test_una_dichiarazione_che_non_copre_il_catalogo_e_rifiutata(self):
+        from kirchhoff.domain.transform.catalog import _verifica_precondizioni
+        with pytest.raises(RuntimeError, match="non copre il catalogo"):
+            _verifica_precondizioni({"serie": ("una",)})
+
+    def test_una_precondizione_vuota_e_rifiutata(self):
+        """Una riga senza testo si presenta come una condizione e non ne enuncia
+        nessuna: chi legge la conta e non la puo' leggere."""
+        from kirchhoff.domain.transform.catalog import _verifica_precondizioni
+        guasta = {nome: () for nome in CATALOG}
+        guasta["serie"] = ("   ",)
+        with pytest.raises(RuntimeError, match="precondizione vuota"):
+            _verifica_precondizioni(guasta)
+
+    def test_la_stessa_precondizione_due_volte_e_rifiutata(self):
+        from kirchhoff.domain.transform.catalog import _verifica_precondizioni
+        guasta = {nome: () for nome in CATALOG}
+        guasta["serie"] = ("condividono un nodo", "condividono un nodo")
+        with pytest.raises(RuntimeError, match="due volte"):
+            _verifica_precondizioni(guasta)
+
+    def test_la_dichiarazione_reale_regge_al_proprio_controllo(self):
+        from kirchhoff.domain.transform.catalog import _verifica_precondizioni
+        assert _verifica_precondizioni(PRECONDITIONS) is None
+
+    def test_la_dichiarazione_non_e_riscrivibile_a_runtime(self):
+        """La risposta a «perche' posso farlo?» e' un'affermazione sul dominio: non
+        deve poter cambiare con un'assegnazione, come `MUTABLE_ATTRIBUTES`."""
+        with pytest.raises(TypeError):
+            PRECONDITIONS["serie"] = ()  # type: ignore[index]
+
+    def test_un_corpo_senza_precondizioni_dichiarate_fa_fallire_l_import(self):
+        """La guardia vista sollevare, non dedotta dal fatto che l'import e' passato.
+
+        Un controllo che gira solo all'import e che nessun test vede fallire e'
+        indistinguibile da un controllo che non gira: e' la lezione del gate scritto
+        e non installato, applicata al gate stesso.
+        """
+        from kirchhoff.domain.transform import catalog, engine
+
+        muta = dict(PRECONDITIONS)
+        muta["serie"] = ()
+        with patch.object(engine, "PRECONDITIONS", muta):
+            with pytest.raises(RuntimeError, match="senza precondizioni dichiarate"):
+                engine._verifica_le_precondizioni_degli_implementati()
+        assert catalog.PRECONDITIONS["serie"], "la dichiarazione vera e' intatta"
+
+    def test_una_str_al_posto_della_tupla_e_rifiutata(self):
+        """Il caso speculare di quello che `conia` guarda: la forma prima del contenuto.
+
+        `conia` dichiara che *«una stringa di lunghezza giusta passerebbe ogni altro
+        controllo»* e mette il controllo di tipo per primo. Qui la stessa cosa: una
+        `str` e' iterabile e i suoi elementi sono caratteri, quindi `"abc"` supera
+        «ogni elemento e' testo non vuoto» e «nessuna ripetizione» — e
+        `Justification.precondizioni` diventa un elenco di **lettere** che chi la
+        renderizza mostra come tre precondizioni.
+
+        Lo standard esisteva gia' nello stesso repository e qui non era applicato.
+        """
+        from kirchhoff.domain.transform.catalog import _verifica_precondizioni
+
+        guasta = {nome: () for nome in CATALOG}
+        guasta["serie"] = "abc"
+        with pytest.raises(RuntimeError, match="invece di tuple"):
+            _verifica_precondizioni(guasta)
+
+    def test_una_precondizione_che_non_e_testo_e_rifiutata(self):
+        """Il campo si legge, non si valuta: un predicato qui sarebbe una condizione
+        eseguita al momento della domanda, cioe' il contrario di «gia' calcolata»."""
+        from kirchhoff.domain.transform.catalog import _verifica_precondizioni
+
+        guasta = {nome: () for nome in CATALOG}
+        guasta["serie"] = (lambda ir: True,)
+        with pytest.raises(RuntimeError, match="invece di str"):
+            _verifica_precondizioni(guasta)

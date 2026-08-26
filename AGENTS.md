@@ -178,3 +178,44 @@ e verifica dopo il push che il conteggio remoto coincida col locale.
   un'assunzione dichiarata nel modulo, non un fatto dell'autorità. Va ratificata da chi possiede
   lo spine, insieme alla riga dell'ERD che CV6 chiedeva e che non è mai entrata — per la quale
   `implementation-readiness.md` tiene ancora 1.3 a «⛔ non pronta».
+- **Il passo composto ha un domicilio, ed e' `render/step/`.** Dalla Story 1.8
+  (26/08/2026) `componi` mette in fila i cinque atti che K-0 pretende — `transform`,
+  `applica`, `annota`, il deposito nei due registri, `render` due volte — e prima di
+  allora quella sequenza esisteva **solo dentro un file di test**. Non e' una scelta
+  di architettura ratificata: `pipeline/`, `api/` e `adapters/` restano vuoti, e
+  `render/` ospita il punto perche' e' l'unico pacchetto che gia' vede sia il
+  prodotto del dominio sia i registri del layout.
+- **`VisualStep` e' una proiezione per riferimento, e la differenza si testa con
+  `is`.** AD-21 v2 chiede *«gli identificatori dei quattro e un'istantanea immutabile
+  di cio' che serve a renderla»*: il passo porta due `lay_`, un `patch_` e i **due
+  SVG gia' emessi**, mai un `LayoutIR` o un `CircuitIR`. Ne segue che commutare
+  *Prima ↔ Dopo* sceglie fra due stringhe invece di ridisegnare, e che `esporta`
+  restituisce **gli stessi oggetti** — che e' AD-10 v2 alla lettera, *«`export()` non
+  ri-renderizza»*. I test di questa famiglia confrontano con `is` e non con `==`:
+  l'uguaglianza passerebbe anche su una seconda emissione, che e' cio' che escludono.
+- **I vocabolari chiusi del Catalogo sono ora quattro.** Accanto a `MUTABLE_ATTRIBUTES`,
+  `COMPOSITION` e `DORMANT` c'e' `PRECONDITIONS` (Story 1.8): le condizioni sotto cui
+  un passo e' lecito, in **ordine di valutazione** e non alfabetico — al contrario di
+  `COMPOSITION`, che porta molteplicita' e non sequenza. Vuoto significa «non ancora
+  dichiarate» e vale per le voci senza corpo; su una voce **implementata** vuoto fa
+  fallire l'import, e la guardia sta in `engine.py` perche' `catalog.py` non puo'
+  importare `engine` e non sa quali voci abbiano un corpo. Sono trascritte dalle
+  guardie che le impongono, e ogni riga ha un test che la vede respingere un circuito.
+  Le prime due di `serie` e `parallelo` sono **le stesse** e nessuna delle due sta
+  nel corpo delle due operazioni: l'esistenza dei componenti la impone la porta di
+  `transform` **prima** dello smistamento (`engine.py:656`), «entrambi resistori»
+  la impone `engine._resistore` (`engine.py:192`). Cercare le precondizioni di una
+  riduzione solo dentro `_serie` e `_parallelo` ne fa perdere due — ed e' cosi' che
+  sono rimaste esigite e non dichiarate fino al 26/08/2026. Il verso mancante — ogni guardia che respinge ha una riga nell'elenco
+  — non e' meccanizzabile: vedi `deferred-work.md` §7.
+- **UX-DR12 ha due significati nel repository, e per le storie vale quello di
+  `epics.md`.** `epics.md:181` lo definisce `beforeafter-toggle` («due stati
+  commutabili all'infinito»); `docs/inbox/kirchhoff_00_corpus_fonti_integrali.md` lo
+  usa per l'accessibilita' cromatica in scala di grigi. Le Story lo citano nel primo
+  senso, che e' quello coerente col loro testo. La numerazione dell'inbox e' un'altra
+  serie: non riconciliarli a mano, e non citare il corpus come autorita' di una UX-DR.
+- **Ci sono due file `deferred-work.md` con contenuti diversi**: quello in radice
+  tiene i rilievi delle storie recenti, quello in `_bmad-output/implementation-artifacts/`
+  e' il registro della fase *ship* di BMAD. Due nomi uguali e due contenuti diversi
+  sono E-62 in attesa: verificare **quale** si sta leggendo prima di aggiungervi una voce.
+
