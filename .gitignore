@@ -14,3 +14,12 @@ coverage.json
 ruvector.db
 .swarm/
 .claude-flow/
+
+# --- il vault Obsidian -------------------------------------------------------
+# L'indice vettoriale e DERIVATO dalle note: ricostruibile, e versionarlo
+# creerebbe una seconda verita che puo divergere da cio che descrive. Stessa
+# ragione per cui il dominio deriva CAUSES da Cause invece di scriverlo due volte.
+vault/ruvector.db
+vault/.obsidian/workspace*
+vault/.obsidian/cache
+vault/.trash/
