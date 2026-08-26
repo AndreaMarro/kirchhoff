@@ -17,9 +17,14 @@ costituzione del prodotto in `docs/`, il metodo di lavoro in `.claude/loop.md`.
   implementativo. Oggi: planning 8/8, readiness `CONCERNS`.
 - Lo sviluppo di Implementation Phase va orchestrato da Loop Kirchhoff v3 attraverso il suo
   entrypoint CLI: BMAD decide il lavoro eleggibile, il loop esegue build → verify → review → fix →
-  verify → commit → continuazione. Non sostituirlo con implementazioni manuali isolate una volta
-  che Epic 0 lo ha reso operativo. Il CLI **non è ancora validato**: le Story 0.1–0.3 sono il suo
-  bootstrap.
+  verify → commit → continuazione. Non sostituirlo con implementazioni manuali isolate.
+- **Il CLI è validato dall'uso.** Al 26/08/2026 ha prodotto e promosso 1.1, 1.2, 1.3, 1.4 e 1.7,
+  portando la suite da 0 a 799 test con copertura 100% a ogni cancello. Fino a quel giorno questa
+  riga diceva «il CLI non è ancora validato», ed era falsificata dalla misura: un agente che la
+  leggeva concludeva di dover lavorare a mano, cioè esattamente ciò che la riga sopra vieta.
+- Il loop **non promuove da solo** senza `--promuovi`: lascia il ramo e chi guarda decide. Un
+  verdetto di modello non apre un merge, e in cinque storie la verifica a mano ha sempre trovato
+  qualcosa — l'ultima un gate di AD-35 che passava senza aver letto un file.
 - Per l'orchestrazione CLI, cerca e riusa il pattern provato del loop Ardesia recente. Kirchhoff
   non deve dipendere a runtime da `~/ardesia-loop-control-plane-v2`: quello è implementazione di
   riferimento, non dipendenza.
@@ -33,6 +38,44 @@ costituzione del prodotto in `docs/`, il metodo di lavoro in `.claude/loop.md`.
   modifica manuale fa fallire la suite.
 - Non aggiungere un'operazione al catalogo delle Trasformazioni: è una modifica del catalogo in
   `src/kirchhoff/domain/transform/catalog.py`, e un test confronta i due insiemi che lo dichiarano.
+
+## Il loop, in pratica
+
+```bash
+./ops/loop/kirchhoff-loop dry-run 1.7   # il piano, zero token
+./ops/loop/kirchhoff-loop doctor        # precondizioni
+./ops/loop/kirchhoff-loop status        # dove siamo nella catena
+./ops/loop/kirchhoff-loop run --iterazioni 1
+```
+
+- **Il messaggio di merge va in un FILE**, mai in `-m`: i backtick dentro `-m` li esegue la shell
+  prima di git, e una parola sparisce dal commit senza errore. Misurato il 26/08/2026.
+- Il giornale di ogni giro è in `ops/loop/giornale/`. Un oracolo rosso fa partire una **diagnosi
+  sistematica** che non ripara: riproduce, isola, ipotizza una causa sola, prova a smentirla.
+- Quattro strumenti parlano col vault e con origin:
+  `receipt.py` incide nel vault cosa un giro ha lasciato (misure, mai giudizi);
+  `indice.py` costruisce l'indice derivato e `--verifica` dice se ricostruirlo lo cambierebbe;
+  `contesto.py` passa all'implementatore le decisioni APERTE del vault, non solo la Story;
+  `pubblica.sh` porta su origin e rilegge il conteggio remoto.
+
+## Il sapere: `vault/`
+
+Vault Obsidian versionato dentro il monorepo. `10-Costituzione` (K-0..K-5 e i confini
+owner-locked), `30-Decisioni-aperte` (D1–D12), `50-Lezioni-loop` (fallimenti già costati cari),
+`70-Receipt-di-giro`, `80-Operazioni` (il pacchetto del loop).
+
+`vault/ruvector.db` è fuori dal versionamento: è un indice derivato, e versionarlo creerebbe una
+seconda verità che può divergere da ciò che descrive.
+
+**I confini owner-locked di `vault/10-Costituzione/Confini owner-locked.md` non si toccano**, e
+incontrarne uno ferma il giro con un rapporto. Dentro ci sono la definizione di `Verified`, le
+soglie di qualità, l'holdout, gli invarianti di privacy e la costituzione stessa.
+
+## GitHub
+
+`origin` è `github.com/AndreaMarro/kirchhoff`, **privato**. Monorepo: prodotto, `vault/`, `ops/`.
+Si pubblica con `./ops/loop/pubblica.sh`, che rifiuta su ramo diverso da `main` e su albero sporco,
+e verifica dopo il push che il conteggio remoto coincida col locale.
 
 ## Where things are
 

@@ -47,21 +47,29 @@ import sys
 from pathlib import Path
 
 # --- la topologia -------------------------------------------------------------
-# **Un solo modello: claude-opus-5 a effort max, su ogni passo.** Scelta del
-# proprietario del 26/08/2026, ed e' anche cio' che ARDESIA faceva
-# incondizionatamente (ardesia-loop.sh:594-595).
+# **Tre modelli, per ruolo.** Scelta del proprietario del 26/08/2026, dopo un
+# giorno a modello unico.
 #
-# La versione precedente faceva seguire il livello al rischio e revisionava con
-# claude-fable-5. Cambia il MODELLO, non la TOPOLOGIA: i passi di revisione
-# restano `processo: nuovo`, cioe' processi avviati freschi che non hanno visto il
-# ragionamento di chi ha implementato. Quella separazione non e' una preferenza —
-# nella prima giornata di loop il contesto fresco ha trovato cinque difetti reali,
-# uno introdotto dall'agente che stava correggendone un altro
-# (vault/50-Lezioni-loop/Il revisore che rivede sé stesso.md). Collassare anche i
-# processi farebbe rivedere a ciascuno il proprio lavoro, ed e' un'altra cosa.
+#   SCRITTORE   claude-opus-5 max    implementa e ripara
+#   REVISORI    claude-opus-5 high   due revisioni, in processi separati
+#   COMPLESSO   claude-fable-5 max   dove serve programmazione o idee piu' dense
+#
+# I due revisori sono `processo: nuovo`: avviati freschi, senza il ragionamento
+# di chi ha implementato. Non e' una preferenza — nella prima giornata di loop il
+# contesto fresco ha trovato cinque difetti reali, uno introdotto dall'agente che
+# stava correggendone un altro (vault/50-Lezioni-loop/Il revisore che rivede sé
+# stesso.md). Cambiare i modelli non tocca quella separazione.
+#
+# `COMPLESSO` entra dove la storia e' R3, cioe' dove il rischio non e' «rompere
+# qualcosa» ma «non vedere la forma giusta»: analisi divergente, dove due letture
+# diverse valgono piu' di due letture accurate uguali.
 
-MODELLO = "claude-opus-5"
-EFFORT = "max"
+SCRITTORE = "claude-opus-5"
+SCRITTORE_EFFORT = "max"
+REVISORE = "claude-opus-5"
+REVISORE_EFFORT = "high"
+COMPLESSO = "claude-fable-5"
+COMPLESSO_EFFORT = "max"
 
 IMPLEMENTA = "implementa"
 VERIFICA = "verifica"
@@ -75,7 +83,7 @@ CLASSI: dict[str, dict] = {
         "nome": "ROUTINE",
         "quando": "lavoro meccanico o documentale, nessun contratto toccato",
         "piano": [
-            {"passo": IMPLEMENTA, "modello": MODELLO, "effort": EFFORT, "processo": "nuovo"},
+            {"passo": IMPLEMENTA, "modello": SCRITTORE, "effort": SCRITTORE_EFFORT, "processo": "nuovo"},
             {"passo": VERIFICA, "modello": None, "effort": None, "processo": "locale"},
         ],
     },
@@ -83,10 +91,10 @@ CLASSI: dict[str, dict] = {
         "nome": "NORMAL",
         "quando": "codice di prodotto che non tocca contratti bloccati",
         "piano": [
-            {"passo": IMPLEMENTA, "modello": MODELLO, "effort": EFFORT, "processo": "nuovo"},
+            {"passo": IMPLEMENTA, "modello": SCRITTORE, "effort": SCRITTORE_EFFORT, "processo": "nuovo"},
             {"passo": VERIFICA, "modello": None, "effort": None, "processo": "locale"},
-            {"passo": REVISIONA, "modello": MODELLO, "effort": EFFORT, "processo": "nuovo"},
-            {"passo": RIPARA, "modello": MODELLO, "effort": EFFORT, "processo": "contesto implementatore"},
+            {"passo": REVISIONA, "modello": REVISORE, "effort": REVISORE_EFFORT, "processo": "nuovo"},
+            {"passo": RIPARA, "modello": SCRITTORE, "effort": SCRITTORE_EFFORT, "processo": "contesto implementatore"},
             {"passo": VERIFICA, "modello": None, "effort": None, "processo": "locale"},
         ],
     },
@@ -94,20 +102,20 @@ CLASSI: dict[str, dict] = {
         "nome": "CRITICAL",
         "quando": "tocca un contratto architetturale, un recinto, il renderer o il grafo di prova",
         "piano": [
-            {"passo": IMPLEMENTA, "modello": MODELLO, "effort": EFFORT, "processo": "nuovo"},
+            {"passo": IMPLEMENTA, "modello": SCRITTORE, "effort": SCRITTORE_EFFORT, "processo": "nuovo"},
             {"passo": VERIFICA, "modello": None, "effort": None, "processo": "locale"},
-            {"passo": REVISIONA, "modello": MODELLO, "effort": EFFORT, "processo": "nuovo", "ruolo": "Blind Hunter"},
-            {"passo": RIPARA, "modello": MODELLO, "effort": EFFORT, "processo": "contesto implementatore"},
+            {"passo": REVISIONA, "modello": REVISORE, "effort": REVISORE_EFFORT, "processo": "nuovo", "ruolo": "Blind Hunter"},
+            {"passo": RIPARA, "modello": SCRITTORE, "effort": SCRITTORE_EFFORT, "processo": "contesto implementatore"},
             {"passo": VERIFICA, "modello": None, "effort": None, "processo": "locale"},
-            {"passo": REVISIONA, "modello": MODELLO, "effort": EFFORT, "processo": "nuovo", "ruolo": "ri-revisione"},
+            {"passo": REVISIONA, "modello": REVISORE, "effort": REVISORE_EFFORT, "processo": "nuovo", "ruolo": "ri-revisione"},
         ],
     },
     "R3": {
         "nome": "CHAIN-TOP",
         "quando": "decisione di proprieta': costituzione, gate, criteri di uccisione, holdout",
         "piano": [
-            {"passo": ANALIZZA, "modello": MODELLO, "effort": EFFORT, "processo": "nuovo"},
-            {"passo": ANALIZZA, "modello": MODELLO, "effort": EFFORT, "processo": "nuovo"},
+            {"passo": ANALIZZA, "modello": COMPLESSO, "effort": COMPLESSO_EFFORT, "processo": "nuovo"},
+            {"passo": ANALIZZA, "modello": COMPLESSO, "effort": COMPLESSO_EFFORT, "processo": "nuovo"},
             {"passo": CONFRONTA, "modello": None, "effort": None, "processo": "locale"},
         ],
         "se_non_converge": "proprietario",
