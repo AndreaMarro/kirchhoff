@@ -146,7 +146,18 @@ def test_render_non_ha_orologio_ne_casualita_fra_le_dipendenze():
     che accusa il commento che lo documenta e' peggio di nessun gate.
     """
     radice = Path(__file__).resolve().parent.parent / "src/kirchhoff/render/serialize"
-    for file in sorted(radice.glob("*.py")):
+    sorgenti = sorted(radice.glob("*.py"))
+
+    # Il glob e' costruito a mano: su una cartella rinominata o spostata sarebbe
+    # vuoto, il ciclo non eseguirebbe alcun assert e QUESTO GATE PASSEREBBE SENZA
+    # AVER LETTO UN FILE. Un gate che diventa verde perche' non ha guardato e'
+    # peggio di nessun gate: dichiara una garanzia che nessuno sta piu' dando.
+    assert sorgenti, (
+        f"nessun sorgente in {radice}: il gate di AD-35 non ha letto nulla e "
+        "sarebbe passato a vuoto. Se la cartella e' stata spostata, aggiorna qui "
+        "il percorso — non cancellare l'asserzione.")
+
+    for file in sorgenti:
         albero = ast.parse(file.read_text(encoding="utf-8"), filename=str(file))
         trovati = sorted(_moduli_importati(albero) & VIETATI_DA_AD_35)
         assert not trovati, f"{file.name}: {trovati}"
