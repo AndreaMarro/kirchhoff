@@ -1,0 +1,175 @@
+[06:20:06Z] kirchhoff-loop v3 — avvio
+[06:20:06Z] repository=/Users/andreamarro/MATJOURNEY/kirchhoff
+[06:20:06Z] iterazioni=1 prova=0 promuovi=0 watchdog=2700s scrittura=$25 revisione=$15
+[06:20:06Z] caffeinate: la macchina resta sveglia per la durata del giro
+[06:20:06Z] 
+[06:20:06Z] --- iterazione 1 di 1 ---
+  [ok]  nessun FERMO
+  [ok]  repository git: 00185fe
+  [ok]  uv: uv 0.11.8 (0e961dd9a 2026-04-27 aarch64-apple-darwin)
+  [ok]  helper runtime BMAD conformi al pin (5/5)
+  [ok]  holdout protetto da regola deny
+  [ok]  sprint-status.yaml leggibile
+  [ok]  albero di lavoro pulito
+[06:20:07Z] precondizioni: tutte verdi
+[06:20:07Z] storia: 1-2-il-vocabolario-chiuso-delle-riscritture-strutturali
+[06:20:07Z] classe di rischio: R1
+[06:20:07Z] ramo: loop/iter-20260826T062006Z-1-2-il-vocabolario-chiuso-delle-riscritture-strutturali (da main)
+[06:20:07Z] 
+[06:20:07Z] passo 1: implementa [-]
+[06:20:07Z]   → claude -p --model claude-opus-5 --effort xhigh --max-budget-usd $25
+## Rapporto
+
+### 1. Che cosa ho cambiato, file per file
+
+**`src/kirchhoff/domain/transform/primitives.py`** — nuovo. Il vocabolario chiuso delle riscritture strutturali: `PRIMITIVES` (5 nomi) e il `Literal` `StructuralPrimitive`. Il docstring registra l'esito della ricerca `search-before-build` e cita i due documenti che dichiarano l'assenza di un'autorità; spiega perché il livello è separato (SM-C5 e K-0) e perché `ZERO_VOLTAGE_SOURCE` **non** è fra i nomi.
+
+**`catalog.py`** — aggiunte `COMPOSITION` (dichiarazione per-operazione di quali riscritture compongono un passo: `serie` → due, `parallelo` → una, le altre quattordici vuote), `primitives_of()`, e due guardie d'import: `_verifica_livelli_distinti` (i due vocabolari non condividono nomi) e `_verifica_composizione` (chiavi = `CATALOG`, valori ⊆ `PRIMITIVES`). Corretta una riga del docstring che era diventata falsa — diceva che `CATALOG` sono «i nomi che una derivazione può portare» — e aggiornata la nota di `_MUTABILI` che rinviava a un vocabolario «che non esiste ancora».
+
+**`delta.py`** — `StructuralDerivation.operation` è ora `StructuralPrimitive`, validata contro `PRIMITIVES` invece che contro `CATALOG`. Docstring di modulo e di classe riscritti sul nuovo livello.
+
+**`result.py`** — sostituito il confronto `{d.operation} == {certificate.operation}` (era un'uguaglianza fra nomi dello stesso livello) con due controlli: un passo che non dichiara composizione **non produce** un `TransformResult`; una riscrittura che il passo non dichiara è rifiutata. Il riferimento resta dichiarato dal Catalogo.
+
+**`engine.py`** — `_prodotto` riceve `derivazioni` invece di `consumati`. `_serie` emette **due** riscritture (`fusione_di_componenti` + `eliminazione_di_nodo`), `_parallelo` una.
+
+**`__init__.py`** — esportati `PRIMITIVES`, `StructuralPrimitive`, `COMPOSITION`, `primitives_of`.
+
+**`tests/test_delta.py`, `tests/test_transform.py`** — derivazioni portate al livello strutturale; nuovi test per AC1 (rifiuto di ogni nome fuori insieme, più i sedici passi pedagogici uno per uno), AC2 (dal motore reale: `serie` → 2 derivazioni e 1 solo passo pedagogico; `parallelo` → 1), e per ciascuna guardia nuova.
+
+### 2. Oracoli eseguiti
+
+| Comando | Exit | Esito |
+|---|---|---|
+| `ops/loop/verifica.sh` | **0** | `{"copertura": 100.0, "dominio": true, "recinti": true, "test_falliti": 0, "test_passati": 469, "verde": true}` (base: 440) |
+| `uv run python scripts/bmad_chain.py verifica --con-loop` | **0** | catena 8/8 coerente |
+| Mutazione `delta.py`: guardia del vocabolario → `if False` | **1** | 17 FAILED, tutti `Failed: DID NOT RAISE ValueError` |
+| Mutazione `result.py`: entrambe le guardie di composizione → `if False` | **1** | 3 FAILED nominati |
+| Ripristino dopo ogni mutazione | **0** | suite verde |
+
+### 3. Che cosa resta incompleto o rischioso
+
+- **`derived_from(Req)` per la serie non include più `node:b`**: il nodo ha ora una riscrittura propria. È il cambiamento più contestabile — la rimediazione P0-A l'aveva deliberatamente messo fra gli ascendenti. La lineage resta interrogabile nelle due direzioni (`what_happened_to(node:b)` risponde con `eliminazione_di_nodo`), e ho aggiunto l'asserzione; ma è una scelta, non un fatto.
+- **`COMPOSITION` vuota ⇒ nessun `TransformResult`** è un vincolo nuovo accanto a `SUPPORTED`/`_REGISTRO`. L'alternativa — vuoto = nessun vincolo — sarebbe stata un controllo che non può fallire dove non è mai stato pensato.
+- **Tre dei cinque nomi** (`fusione_di_nodi`, `sostituzione_di_componente`, `rimozione_di_componente`) sono esercitati solo a livello `check_delta`, non da un passo implementato. Rispecchia `CATALOG ⊇ SUPPORTED`, ma va detto.
+- **`ZERO_VOLTAGE_SOURCE` è assente per scelta**: nominarlo qui deciderebbe in un modulo la questione che lo spine e `deferred-work.md` lasciano al proprietario. `REMOVE_LOAD` è coperto da `rimozione_di_componente`.
+- Nessun consumatore di `derivation.operation` esiste fuori dai test (verificato con grep su `src/`, `tests/`, `scripts/`).
+
+### 4. Trovato fuori ambito, NON toccato
+
+- `implementation-artifacts/matrice-impatto-cv1-cv6-su-delta.md` si chiude con *«Non l'ho risolto»* sulla scelta fra estendere il catalogo e modellare le atomiche come derivazioni interne. Questa storia la risolve, ma è un audit datato: non l'ho riscritto.
+- `deferred-work.md` (~riga 166) rinvia a *«un vocabolario delle primitive strutturali»* come inesistente. Ora esiste e continua deliberatamente a non decidere quella questione; l'ho documentato in `catalog.py` e `primitives.py`, non lì.
+- `AGENTS.md` vieta di estendere il catalogo delle Trasformazioni; c'è ora un secondo vocabolario con la stessa proprietà. La riga vive dentro il blocco gestito `<!-- bmad:context -->`, quindi non l'ho toccata.
+- `sprint-status.yaml` non aggiornato: non è un AC e non conosco la convenzione del loop.
+- Il docstring di `tests/test_transform.py` dice ancora *«Story 2.6»*; `matrice-ac-ramo-2-6.md` ha già stabilito che quella numerazione è stale. Rinumerare è oggetto dell'escalation, non di questa storia.
+- `tests/test_transform.py:245` porta un regex permissivo (`match="fuori dal\n?\s*catalogo chiuso|fuori dal "`) il cui secondo ramo accetta quasi ogni messaggio: preesistente, non toccato.
+[06:38:04Z] 
+[06:38:04Z] passo 2: verifica [-]
+  test...
+  [ok]  test: 469 passati
+  [ok]  copertura: 100.0%
+  [ok]  recinti di dipendenza
+  [ok]  copertura del dominio
+[06:38:21Z]   oracolo exit 0 — {"copertura": 100.0, "dominio": true, "recinti": true, "test_falliti": 0, "test_passati": 469, "verde": true}
+[06:38:21Z] 
+[06:38:21Z] passo 3: revisiona [-]
+[06:38:21Z]   → claude -p --model claude-opus-5 --effort high --max-budget-usd $15
+[06:44:45Z]   revisione exit 0
+# Rilievi — 1-2-il-vocabolario-chiuso-delle-riscritture-strutturali
+
+- **Nessun controllore legge mai `d.operation`.** `check_delta` (`check.py:249-337`) verifica gli aggregati `consumed`/`produced` contro i due circuiti e non ispeziona mai il nome della riscrittura; `result.py:372-386` verifica solo l'appartenenza all'insieme dichiarato. Il vocabolario è quindi chiuso e i cinque nomi sono **intercambiabili**. Misurato: preso il prodotto reale di `transform(SERIE, "serie", "R1", "R2")` e scambiati i due nomi fra le due derivazioni — `{R1,R2} --eliminazione_di_nodo--> {R1R2eq}` e `{node:b} --fusione_di_componenti--> {∅}` — `check_delta` restituisce zero violazioni e il `TransformResult` si costruisce. Costruibili senza proteste anche `{node:b} --eliminazione_di_nodo--> {node:a}`, `{node:b} --fusione_di_nodi--> {∅}`, `{R1} --rimozione_di_componente--> {R9}`, `{node:a,node:b} --fusione_di_componenti--> {node:z}`. La distinzione fra `fusione_di_nodi` («un nodo cessa di esistere dentro un altro, che sopravvive») ed `eliminazione_di_nodo` («nessun nodo lo eredita») — la coppia che il vocabolario esiste per separare — vive solo nella tabella del docstring.
+
+- **La giustificazione dell'assenza di vincoli di forma poggia su un controllo che non esiste a quel livello.** `primitives.py:72-76`: «la forma di una derivazione è già verificata dove la si può verificare davvero, cioè contro i due circuiti, da `check_delta`. Un vincolo di arità dichiarato qui sarebbe un secondo predicato per la stessa cosa». Non c'è un primo predicato: `check_delta` non distingue una riscrittura dall'altra. È E-62 nella forma inversa — un predicato dichiarato in un modulo e implementato in nessuno.
+
+- **La partizione delle entità fra le derivazioni è libera e non verificata, ed è una libertà che questa storia introduce.** Prima `_prodotto` costruiva l'unica derivazione da `consumati`/`prodotto`; ora ogni operazione le scrive a mano (`engine.py:403`, `engine.py:443`) accanto a `rimossi`, e solo gli *aggregati* sono ancorati ai circuiti. Misurato su `serie`: il `Delta` `{node:b} --eliminazione_di_nodo--> {R1R2eq}` + `{R1,R2} --fusione_di_componenti--> {∅}` passa `check_delta`, `check_patch`, `check_boundary` e `TransformResult`; `derived_from(R1R2eq)` risponde `node:b` e `what_happened_to(R1)` risponde «fusi in ∅». È parola per parola la lineage che il commento di `_serie` dichiara di aver corretto, e nulla la può distinguere da quella giusta.
+
+- **`COMPOSITION` è verificata come sottoinsieme, mai come esercizio.** Un `serie` che dichiara due riscritture e ne emette una sola — entrambe le derivazioni etichettate `fusione_di_componenti` — passa `check_delta` e `TransformResult` (misurato). Essendo un `frozenset` di nomi, `COMPOSITION` non può inoltre esprimere né molteplicità né ordine: un futuro passo che elimina due nodi lo dichiara identicamente a uno che ne elimina uno. AC2 è verificato solo sul prodotto che il motore emette oggi (`test_una_serie_e_un_passo_pedagogico_composto_da_due_riscritture`), non come proprietà del contratto.
+
+- **I cinque nomi sono scritti due volte a mano, senza guardia né test che li confronti** (`primitives.py:85` e `:93`). Il progetto ha già il modo di scriverli una volta sola: `refusal.py:62` fa `CAUSES = frozenset(get_args(Cause))`, e `test_transform.py:723-729` confronta `get_args(Cause)` con `CAUSES` e `get_args(SubjectKind)` con `SUBJECT_KINDS`. `primitives.py` riproduce invece la duplicazione preesistente di `catalog.py`, nel modulo il cui docstring cita E-62 contro i predicati doppi. Un nome aggiunto al `Literal` e non al `frozenset` (o viceversa) non fa protestare nulla.
+
+- **Nessun invariante impedisce a un `Delta` di essere ciclico**, ora che i `Delta` multi-derivazione sono reali. `Delta((SD("sostituzione_di_componente",(R1,),(R2,)), SD("sostituzione_di_componente",(R2,),(R1,))))` si costruisce: le due guardie di `delta.py:162-180` controllano ingressi ripetuti e uscite ripetute, mai l'incrocio uscita/ingresso. `derived_from` risponde allora in cerchio. `delta.py` afferma che ogni invariante ha una guardia che solleva e un test che l'ha vista sollevare; l'aciclicità della lineage non ne ha una, ed è una condizione che con una derivazione sola non poteva darsi.
+
+- **Tre nomi su cinque non sono emettibili da alcun prodotto, e nulla lo registra.** Nessuna voce di `COMPOSITION` dichiara `fusione_di_nodi`, `sostituzione_di_componente`, `rimozione_di_componente`: un `TransformResult` che li portasse verrebbe rifiutato da `result.py:381` qualunque sia il passo. Il parallelo con `CATALOG ⊇ SUPPORTED` addotto dal rapporto non regge nella parte che conta: lì il divario ha un meccanismo dichiarato (`CatalogOpening`), una misura (SM-C5) e tre porte distinte in `transform()`; qui non c'è né registrazione né test che dica quali riscritture sono dormienti né perché.
+
+- **L'assenza deliberata di `ZERO_VOLTAGE_SOURCE` non è dichiarata da nessun test, e il test designato a dichiararla usa l'esemplare sbagliato.** `primitives.py` indica `test_una_riscrittura_fuori_vocabolario_e_rifiutata` come «il posto dove dichiarare il caso nuovo»; quel test (`test_delta.py:43-46`) rifiuta `REMOVE_LOAD` — cioè l'unico dei due nomi che il vocabolario dichiara di **coprire** (`rimozione_di_componente`). Il nome la cui assenza è la decisione della storia non compare in alcun test.
+
+- **I due registri che documentano l'assenza ora contraddicono il codice, e restano intatti.** `deferred-work.md:160-171` adduce come prova, per la decisione del proprietario sul cambio di `type`, che la questione è lasciata «al vocabolario delle primitive strutturali, **che non esiste ancora**». Esiste. `matrice-impatto-cv1-cv6-su-delta.md` si chiude con «Non l'ho risolto» sulla scelta fra estendere il catalogo e modellare le atomiche come derivazioni interne: questa storia l'ha risolta. La correzione è stata scritta in `catalog.py` e `primitives.py`, cioè non dove il proprietario andrà a leggere: la decisione differita resta registrata su una premessa falsa.
+
+- **`AGENTS.md:34` conosce un solo vocabolario chiuso.** «Non aggiungere un'operazione al catalogo delle Trasformazioni: ... e un test confronta i due insiemi che lo dichiarano.» Esiste ora un secondo vocabolario con la stessa proprietà, che quella riga non nomina — e per il quale l'argomento addotto (il confronto fra due insiemi) non esiste, perché `PRIMITIVES` non ha alcun riflesso in `eval/`. Che il blocco sia `<!-- bmad:context -->` spiega perché non è stato toccato, non che l'istruzione resti vera.
+
+- **`sprint-status.yaml` non registra né questa storia né la 1.1**: le voci `1-1-…` e `1-2-…` presenti appartengono alla numerazione vecchia di epic-1, che `matrice-ac-ramo-2-6.md` ha già dichiarato stale. Le due storie implementate più di recente sono invisibili nel tracker, e l'ultimo commit che tocca quel file precede entrambe.
+[06:44:45Z] 
+[06:44:45Z] passo 4: ripara [-]
+[06:44:45Z]   → claude -p --model claude-opus-5 --effort xhigh --max-budget-usd $25
+Oracolo verde. Ecco il rapporto.
+
+---
+
+# Rapporto — Story 1.2, riparazione dei rilievi
+
+## 1. Che cosa ho cambiato, file per file
+
+**`src/kirchhoff/domain/transform/primitives.py`** — riscritto.
+- `PRIMITIVES` ora si **deriva** da `StructuralPrimitive` con `get_args`, come `refusal.CAUSES` da `Cause`. I cinque nomi sono scritti una volta sola.
+- Nuova `Forma(genere, ingressi_minimi, uscite)` e tabella `FORME`: ogni riscrittura dichiara su che genere di entità opera e con quale arità ai due capi. Le cinque forme sono `(component,2,1) (node,1,1) (node,1,0) (component,1,1) (component,1,0)`.
+- `_verifica_forme` impone tre condizioni all'import: ogni riscrittura ha una forma; le forme sono **distinte a due a due**; nessuna ammette zero ingressi (che sostituisce e assorbe la vecchia guardia sugli ingressi vuoti — un predicato invece di due).
+- Docstring: rimossa la giustificazione falsa sull'assenza di vincoli di forma; aggiunta la ripartizione esplicita dei tre livelli di controllo e la misura del difetto precedente.
+
+**`delta.py`** — `_verifica_generi_delle_forme` riconcilia all'import i generi nominati da `primitives.py` con `ENTITY_KINDS` (il ciclo di import vieta un tipo condiviso). `StructuralDerivation.__post_init__` applica la forma dopo i controlli sui duplicati. `Delta.__post_init__` guadagna la guardia di **aciclicità**: un'entità prodotta da una derivazione non può essere ingresso di un'altra; dentro una sola derivazione la coincidenza resta lecita (è la mutata in luogo di AD-22 v2.1).
+
+**`catalog.py`** — `_COMPOSIZIONE` passa da `frozenset` a **tupla**, che porta la molteplicità; `_verifica_composizione` guadagna la terza condizione (tuple ordinate alfabeticamente: la tupla non dichiara un ordine che il `Delta` non ha). Nuovi `_DORMIENTI`/`DORMANT` — le tre riscritture che nessun passo esercita, ciascuna col perché — e `_verifica_dormienti`, che impone la partizione **esatta**: usare una dormiente senza toglierla, o lasciarla dormiente dopo averla usata, fa fallire l'import.
+
+**`result.py`** — il confronto fra composizione dichiarata ed emessa passa da inclusione a **uguaglianza fra multinsiemi** (`Counter`).
+
+**`__init__.py`** — esporta `FORME`, `Forma`, `DORMANT`.
+
+**`tests/test_delta.py`** — `test_una_riscrittura_fuori_vocabolario_e_rifiutata` parametrizzato su tre esemplari genuinamente estranei (`REMOVE_LOAD` tolto da qui); nuove classi `TestIlVocabolarioEScrittoUnaVoltaSola` (derivazione da `Literal`; `REMOVE_LOAD` coperto sotto altro nome; **`ZERO_VOLTAGE_SOURCE` assente, con l'insieme pinnato per intero**), `TestLaFormaDiUnaRiscrittura`, `TestLaTabellaDelleForme`; due test sull'aciclicità. Tre test esistenti adeguati alla forma.
+
+**`tests/test_transform.py`** — `TestLeRiscrittureDormienti`; test sull'ordine e la molteplicità della composizione; `test_un_passo_che_dichiara_due_riscritture_e_ne_emette_una_e_rifiutato`; `test_la_partizione_delle_entita_fra_le_riscritture_di_una_serie_e_unica`, che **enumera** tutte le assegnazioni per ogni coppia di riscritture e verifica che ne sopravviva una.
+
+**`deferred-work.md`, `matrice-impatto-cv1-cv6-su-delta.md`, `AGENTS.md`** — i registri che il codice aveva reso falsi. In `AGENTS.md` la nota sta **fuori** dal blocco `bmad:context`, che il refresh sostituisce.
+
+## 2. Oracolo eseguito
+
+`ops/loop/verifica.sh` → **exit 0**
+`{"copertura": 100.0, "dominio": true, "recinti": true, "test_falliti": 0, "test_passati": 497, "verde": true}` (baseline: 469).
+
+Misure sui difetti originali, rieseguite dopo la correzione: le quattro derivazioni intercambiabili di R1, la partizione scambiata di R3, il ciclo di R6 e la `serie` che ne emette una sola di R4 **sollevano tutte**. Prova di mutazione sul test della partizione: disattivando le tre guardie di forma, i `Delta` che superano `check_delta` passano da **1 a 16**, e fra essi c'è parola per parola quello che il rilievo aveva misurato.
+
+## 3. Rilievi: dieci confermati e riparati, uno confermato e non riparato
+
+R1–R10 **confermati per misura** e riparati come sopra. Nessuno refutato.
+
+**R11 (`sprint-status.yaml`) — confermato come fatto, non riparato, e la ragione è una misura.** L'ho registrato a mano e `tests/test_chiave_canonica.py::test_la_derivazione_coincide_con_quella_di_bmad` è diventato rosso: quel test confronta le `new_entries` di `sprint_plan.py` con le chiavi di `epics.md`, e quindi **pinna il tracker come non sincronizzato**. In più la chiave che avevo scritto era sbagliata — `1-1-l-identita-…` contro la canonica `1-1-l-identità-…` — cioè esattamente il difetto («quattro consumatori, quattro nomi») che quel test esiste per impedire. Ho ripristinato il file: la sincronizzazione è di `sprint_plan.py`, non mia.
+
+## 4. Che cosa resta incompleto o rischioso
+
+- **La forma vincola genere e arità, non identità.** Che la partizione sia *unica* è misurato per `serie` e vale per le due composizioni dichiarate oggi; non è un teorema generale. Un passo futuro con due riscritture della stessa forma e contenuto distinguibile non sarebbe determinato, e nulla oggi lo segnalerebbe.
+- **`COMPOSITION` ora esige un multinsieme esatto**, quindi una composizione fissa per passo. Un passo futuro la cui composizione dipende dall'ingresso (un numero variabile di nodi eliminati) non ci sta: le righe da cambiare sono `_COMPOSIZIONE` e il confronto in `result.py`.
+- **`check_delta` continua a non leggere `d.operation`.** È deliberato — la forma sta alla costruzione, dove vale anche per un `Delta` deserializzato da fuori — ma significa che l'affermazione semantica «questo nodo non ha avuto eredi» resta verificata solo attraverso gli aggregati.
+- Le motivazioni in `DORMANT` sono prosa: un test verifica che ci siano, non che siano vere.
+
+## 5. Fuori ambito, trovato e non toccato
+
+- **`CATALOG` è ancora scritto due volte a mano** (`TransformationKind` e `CATALOG`) — la duplicazione che `primitives.py` aveva copiato. `PRIMITIVES` ora non ne ha bisogno; `CATALOG` ha almeno un riscontro esterno (`CATALOG == REFERENCE_TRANSFORMATIONS`). Non l'ho toccato: `AGENTS.md` lo vieta.
+- **Due funzioni `_risultato` al livello di modulo in `tests/test_transform.py`** (≈riga 266 e ≈riga 1403): la seconda oscura la prima, che è quindi codice morto insieme ai suoi valori predefiniti. Preesistente.
+- `matrice-impatto-cv1-cv6-su-delta.md:88` cita `test_operazione_fuori_catalogo_rifiutata`, rinominato nell'iterazione precedente. Ho corretto il fatto nella sezione di chiusura nuova invece di riscrivere il paragrafo storico.
+- La rinumerazione stale di epic-1 in `sprint-status.yaml` (R11) resta aperta e va risolta con `bmad-correct-course` o `sprint_plan.py`.
+[07:02:05Z] 
+[07:02:05Z] passo 5: verifica [-]
+  test...
+  [ok]  test: 497 passati
+  [ok]  copertura: 100.0%
+  [ok]  recinti di dipendenza
+  [ok]  copertura del dominio
+[07:02:15Z]   oracolo exit 0 — {"copertura": 100.0, "dominio": true, "recinti": true, "test_falliti": 0, "test_passati": 497, "verde": true}
+ratchet: avanzamento — test_passati: 245 -> 497
+[07:02:15Z] ratchet: verde
+[07:02:15Z] giro verde, NON promosso: manca --promuovi.
+[07:02:15Z] Ispeziona il ramo, poi decidi:
+[07:02:15Z]   promuovere: git merge --no-ff loop/iter-20260826T062006Z-1-2-il-vocabolario-chiuso-delle-riscritture-strutturali
+[07:02:15Z]   scartare:   git branch -D loop/iter-20260826T062006Z-1-2-il-vocabolario-chiuso-delle-riscritture-strutturali
+[07:02:15Z] I rilievi dell'ultima revisione sono nel giornale: nessun cancello
+[07:02:15Z] deterministico sa giudicarli, e un verdetto di modello non apre un merge.
+[07:02:15Z] pausa 20s
+[07:02:35Z] 
+[07:02:35Z] fine dopo 1 iterazione/i. Giornale: /Users/andreamarro/MATJOURNEY/kirchhoff/ops/loop/giornale/20260826T062006Z-ITERAZIONE.log
