@@ -14,8 +14,14 @@ Formato, una riga per bipolo:
     R2 a 0 220 ohm
     ? voltage R2
 
-Il tipo si deduce dalla lettera iniziale — `V` generatore, `R` resistore — e la
-riga che comincia con `?` e' una domanda. Righe vuote e `#` sono commenti.
+Sorgenti controllate da tensione:
+
+    E1 p q cp cq 2
+    G1 p q cp cq 1/10 siemens
+
+Il tipo si deduce dalla lettera iniziale — `V` generatore indipendente, `E`
+VCVS, `G` VCCS, `R` resistore — e la riga che comincia con `?` e' una domanda.
+Righe vuote e `#` sono commenti.
 """
 from __future__ import annotations
 
@@ -27,6 +33,11 @@ from kirchhoff.domain.ir import IR, Component, Magnitude, Request
 #: errore che nomina il colpevole, non un componente indovinato.
 LETTERE = {"V": "voltage_source_dc", "R": "resistor",
            "C": "capacitor", "L": "inductor", "I": "current_source_dc"}
+
+
+def _nodo(nodi: list[str], n: str) -> None:
+    if n not in nodi:
+        nodi.append(n)
 
 
 def leggi(testo: str) -> IR:
@@ -49,6 +60,51 @@ def leggi(testo: str) -> IR:
             richieste.append(Request(f"q{len(richieste)+1}", pezzi[1], pezzi[2]))
             continue
 
+        ident = pezzi[0]
+        iniziale = ident[0].upper()
+
+        if iniziale == "E":
+            if len(pezzi) not in (6, 7):
+                raise ValueError(
+                    f"riga {numero}: una VCVS e' «<id> <p> <q> <cp> <cq> <μ> "
+                    f"[dimensionless]», ricevuti {len(pezzi)} pezzi: {riga!r}")
+            _p, _q, cp, cq, valore = pezzi[1], pezzi[2], pezzi[3], pezzi[4], pezzi[5]
+            unita = pezzi[6] if len(pezzi) == 7 else "dimensionless"
+            try:
+                quanto = Fraction(valore)
+            except ValueError:
+                raise ValueError(
+                    f"riga {numero}: {valore!r} non e' un numero. Le frazioni si "
+                    "scrivono esatte — «1/3», non «0.333»: l'aritmetica di questo "
+                    "prodotto e' esatta e un decimale troncato la sporca.") from None
+            for n in (_p, _q, cp, cq):
+                _nodo(nodi, n)
+            componenti.append(Component(
+                ident, "voltage_controlled_voltage_source", (_p, _q),
+                Magnitude(quanto, unita), ident, control_nodes=(cp, cq)))
+            continue
+
+        if iniziale == "G":
+            if len(pezzi) not in (6, 7):
+                raise ValueError(
+                    f"riga {numero}: una VCCS e' «<id> <p> <q> <cp> <cq> <g> "
+                    f"[siemens]», ricevuti {len(pezzi)} pezzi: {riga!r}")
+            _p, _q, cp, cq, valore = pezzi[1], pezzi[2], pezzi[3], pezzi[4], pezzi[5]
+            unita = pezzi[6] if len(pezzi) == 7 else "siemens"
+            try:
+                quanto = Fraction(valore)
+            except ValueError:
+                raise ValueError(
+                    f"riga {numero}: {valore!r} non e' un numero. Le frazioni si "
+                    "scrivono esatte — «1/3», non «0.333»: l'aritmetica di questo "
+                    "prodotto e' esatta e un decimale troncato la sporca.") from None
+            for n in (_p, _q, cp, cq):
+                _nodo(nodi, n)
+            componenti.append(Component(
+                ident, "voltage_controlled_current_source", (_p, _q),
+                Magnitude(quanto, unita), ident, control_nodes=(cp, cq)))
+            continue
+
         if len(pezzi) != 5:
             raise ValueError(
                 f"riga {numero}: un bipolo e' «<id> <nodo> <nodo> <valore> "
@@ -58,7 +114,7 @@ def leggi(testo: str) -> IR:
         if tipo is None:
             raise ValueError(
                 f"riga {numero}: {ident!r} comincia per {ident[0]!r}, che non e' "
-                f"fra {', '.join(sorted(LETTERE))}. Il vocabolario e' chiuso: un "
+                f"fra {', '.join(sorted(list(LETTERE) + ['E', 'G']))}. Il vocabolario e' chiuso: un "
                 "componente indovinato verrebbe risolto male in silenzio.")
         try:
             quanto = Fraction(valore)
@@ -68,8 +124,7 @@ def leggi(testo: str) -> IR:
                 "scrivono esatte — «1/3», non «0.333»: l'aritmetica di questo "
                 "prodotto e' esatta e un decimale troncato la sporca.") from None
         for n in (na, nb):
-            if n not in nodi:
-                nodi.append(n)
+            _nodo(nodi, n)
         componenti.append(Component(ident, tipo, (na, nb),
                                     Magnitude(quanto, unita), ident))
 
