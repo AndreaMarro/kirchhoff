@@ -31,7 +31,8 @@ def test_il_partitore_passa_tutto_lo_spine():
     assert esito.svg is not None and esito.svg.startswith("<svg")
     assert esito.verifiche == (
         "legge dei nodi", "legge delle maglie",
-        "bilancio di potenza", "sanità fisica")
+        "bilancio di potenza", "sanità fisica",
+        "accordo fra percorsi indipendenti")
 
 
 def test_validate_precede_il_solutore():
