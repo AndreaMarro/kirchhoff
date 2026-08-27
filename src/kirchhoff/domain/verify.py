@@ -5,7 +5,8 @@
 3. bilancio di potenza in DC, identità di Tellegen in AC — stesso Σ V I, nomi diversi;
 4. sanità fisica — un passivo non eroga, e solo dove la potenza è un razionale.
 
-L'accordo fra percorsi (D6.4) resta fuori: non esiste un Percorso B sul prodotto.
+L'accordo fra Percorso A e Percorso B DC è un gate dello spine, in `resolve`,
+prima di questi controlli. Questo modulo non costruisce il secondo percorso.
 
 Puro: nessuna I/O, nessun orologio, nessuna casualità.
 """
