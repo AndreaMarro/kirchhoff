@@ -1,17 +1,11 @@
 """L'unico ingresso ammesso al prodotto: validate → dispatch → solve → verify → publish.
 
-Finché le parti si componevano da sole — `validate` in un modulo, `solve_dc`
-chiamato di punto in bianco, KCL e Tellegen dopo, il layout che solleva —
-il repository conteneva un solutore e il prodotto non lo attraversava.
-Questo modulo è lo spine applicativo. Chiunque risolva un circuito passa di qui.
-
 Esiti, tre, e non si mischiano (AD-13):
 
-- `Solved` — numeri certificati. Il disegno è accessorio: c'è se il layout
-  c'è, manca se il circuito non è una maglia sola. I numeri non dipendono
-  dal disegno.
+- `Solved` — numeri certificati. `verifiche` elenca solo i controlli realmente
+  eseguiti su quella soluzione. Il disegno è accessorio.
 - `Refusal` — il dominio ha detto no, con soggetto e diagnosi.
-- `Failure` — qualcosa di non previsto è esploso. Non è un circuito illecito.
+- `Failure` — guasto interno. `dove` è lo stadio, non un contenitore generico.
 """
 
 from __future__ import annotations
@@ -23,7 +17,7 @@ from kirchhoff.domain import mna
 from kirchhoff.domain.ir import IR
 from kirchhoff.domain.refusal import Refusal
 from kirchhoff.domain.validate import Validated, validate
-from kirchhoff.domain.verify import verify
+from kirchhoff.domain.verify import controlli_eseguiti, verify
 from kirchhoff.pipeline.failure import Failure
 from kirchhoff.render.layout import LayoutIR
 from kirchhoff.render.serialize import render
@@ -33,13 +27,6 @@ PHASOR_TYPES = frozenset({
     "resistor", "capacitor", "inductor", "voltage_source_ac",
 })
 REATTIVI = frozenset({"capacitor", "inductor"})
-
-VERIFICHE = (
-    "legge dei nodi",
-    "legge delle maglie",
-    "bilancio di potenza",
-    "sanità fisica",
-)
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
@@ -76,6 +63,9 @@ def _dispatch(ir: IR) -> tuple[str, Callable[[IR], dict]] | Refusal:
             return Refusal(
                 "unsolvable", c.id, "component",
                 f"{c.id} è un {c.type}: il percorso fasoriale non lo ammette.")
+        # Lo schema rifiuta già un VAC senza ω positiva. Questo ramo copre
+        # l'IR sinusoidale senza VAC (R+C, R+L) che lo schema lascia passare:
+        # le impedenze reattive non hanno frequenza a cui valutarsi.
         if ir.omega <= 0:
             return Refusal(
                 "unsolvable", ir.components[0].id, "component",
@@ -107,17 +97,38 @@ def _dispatch(ir: IR) -> tuple[str, Callable[[IR], dict]] | Refusal:
         f"con domain={dominio!r}.")
 
 
-def _disegna(ir: IR, layout: LayoutIR | None) -> tuple[LayoutIR | None, str | None]:
+def _senza_autolayout(exc: BaseException) -> bool:
+    return "non formano una maglia sola" in str(exc)
+
+
+def _disegna(ir: IR, layout: LayoutIR | None) -> tuple[LayoutIR | None, str | None] | Failure:
     from kirchhoff.pipeline.risolvi import layout_a_maglia
 
-    try:
-        disegno = layout if layout is not None else layout_a_maglia(ir)
-    except ValueError:
-        return None, None
+    if layout is None:
+        try:
+            disegno = layout_a_maglia(ir)
+        except ValueError as e:
+            if _senza_autolayout(e):
+                return None, None
+            return Failure("layout", f"ValueError: {e}")
+        except Exception as e:
+            return Failure("layout", f"{type(e).__name__}: {e}")
+    else:
+        disegno = layout
+
     try:
         return disegno, render(ir, disegno)
-    except ValueError:
-        return disegno, None
+    except Exception as e:
+        return Failure("render", f"{type(e).__name__}: {e}")
+
+
+def _guasto_del_solutore(exc: BaseException) -> bool:
+    """True solo per la singolarità che solve_linear dichiara per nome.
+
+    Ogni altro ValueError/KeyError/ZeroDivisionError uscito dal solver è un
+    buco del prodotto, non un circuito illecito: validate è già passato.
+    """
+    return isinstance(exc, ValueError) and "singolare" in str(exc)
 
 
 def resolve(circuito: IR, layout: LayoutIR | None = None) -> Solved | Refusal | Failure:
@@ -129,31 +140,46 @@ def resolve(circuito: IR, layout: LayoutIR | None = None) -> Solved | Refusal | 
 
 
 def _esegui(circuito: IR, layout: LayoutIR | None) -> Solved | Refusal | Failure:
-    ingresso = validate(circuito)
+    try:
+        ingresso = validate(circuito)
+    except Exception as e:
+        return Failure("validate", f"{type(e).__name__}: {e}")
     if isinstance(ingresso, Refusal):
         return ingresso
     if not isinstance(ingresso, Validated):
         return Failure("validate", f"esito inatteso: {type(ingresso)!r}")
 
-    scelto = _dispatch(ingresso.ir)
+    try:
+        scelto = _dispatch(ingresso.ir)
+    except Exception as e:
+        return Failure("dispatch", f"{type(e).__name__}: {e}")
     if isinstance(scelto, Refusal):
         return scelto
     nome, solutore = scelto
 
     try:
         soluzione = solutore(ingresso.ir)
-    except (ValueError, ZeroDivisionError, KeyError) as e:
-        return Refusal(
-            "unsolvable", ingresso.ir.components[0].id, "component",
-            f"il sistema non è risolvibile: {e}")
+    except Exception as e:
+        if _guasto_del_solutore(e):
+            return Refusal(
+                "unsolvable", ingresso.ir.components[0].id, "component",
+                f"il sistema non è risolvibile: {e}")
+        return Failure("solver", f"{type(e).__name__}: {e}")
 
-    rifiuto = verify(ingresso.ir, soluzione)
+    try:
+        rifiuto = verify(ingresso.ir, soluzione)
+        attestati = controlli_eseguiti(ingresso.ir, soluzione)
+    except Exception as e:
+        return Failure("verify", f"{type(e).__name__}: {e}")
     if rifiuto is not None:
         return rifiuto
 
-    disegno, svg = _disegna(ingresso.ir, layout)
-    return Solved(circuito=ingresso.ir, soluzione=soluzione, verifiche=VERIFICHE,
-                  solver=nome, layout=disegno, svg=svg)
+    disegno = _disegna(ingresso.ir, layout)
+    if isinstance(disegno, Failure):
+        return disegno
+    lay, svg = disegno
+    return Solved(circuito=ingresso.ir, soluzione=soluzione, verifiche=attestati,
+                  solver=nome, layout=lay, svg=svg)
 
 
 def risolvi(circuito: IR, layout: LayoutIR | None = None) -> Solved | Refusal | Failure:

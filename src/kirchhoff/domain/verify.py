@@ -1,17 +1,11 @@
 """Verifica indipendente dalla costruzione del sistema (D6, AD-19).
 
-Tre controlli oggi, due ancora senza secondo motore:
-
 1. residui KCL per nodo — sostituzione della soluzione, non riassemblaggio MNA;
-2. residui KVL per maglia fondamentale — albero ricoprente + corde, assente
-   dall'assemblaggio nodale;
-3. bilancio di potenza — Tellegen, cattura i segni che KCL/KVL lasciano passare;
-4. sanità fisica — un passivo non eroga.
+2. residui KVL per maglia fondamentale — albero ricoprente + corde;
+3. bilancio di potenza — Tellegen;
+4. sanità fisica — un passivo non eroga, e solo dove la potenza è un razionale.
 
 L'accordo fra percorsi (D6.4) resta fuori: non esiste un Percorso B sul prodotto.
-Aggiungerlo qui senza il secondo motore sarebbe una seconda lettura dello stesso
-numero, e questo prodotto tratta quella figura come un controllo che non può
-fallire.
 
 Puro: nessuna I/O, nessun orologio, nessuna casualità.
 """
@@ -25,17 +19,11 @@ from .mna import kcl_residuals, power_balance
 from .refusal import Refusal
 
 ZERO = Fraction(0)
+PASSIVI = frozenset({"resistor", "capacitor", "inductor"})
 
 
 def kvl_residuals(ir: IR, sol: dict[str, dict]) -> dict[str, object]:
-    """Residuo di tensione su ogni maglia fondamentale.
-
-    L'albero parte dal nodo di riferimento e propaga i potenziali dai rami
-    dell'albero. Ogni bipolo che non entra nell'albero è una corda: il suo
-    residuo è V_dichiarata − (v_p − v_q), dove v è il potenziale ricostruito
-    sull'albero. L'assemblaggio MNA non costruisce queste maglie: se un
-    potenziale nodale e una tensione di ramo divergono, è qui che si vede.
-    """
+    """Residuo di tensione su ogni maglia fondamentale."""
     vicini: dict[str, list[tuple[str, str]]] = {n: [] for n in ir.nodes}
     for c in ir.components:
         a, b = c.terminals
@@ -54,7 +42,6 @@ def kvl_residuals(ir: IR, sol: dict[str, dict]) -> dict[str, object]:
             usati.add(cid)
             c = ir.component(cid)
             v_ramo = sol[cid]["voltage"]
-            # V = v(term0) − v(term1). qui è un estremo già noto.
             if c.terminals[0] == qui:
                 potenziale[altro] = potenziale[qui] - v_ramo
             else:
@@ -73,18 +60,43 @@ def kvl_residuals(ir: IR, sol: dict[str, dict]) -> dict[str, object]:
     return residui
 
 
+def _potenza(sol: dict[str, dict], cid: str):
+    return sol[cid]["voltage"] * sol[cid]["current"]
+
+
+def _sanita_applicabile(ir: IR, sol: dict[str, dict]) -> bool:
+    """Vero solo se almeno un passivo ha potenza razionale da ispezionare."""
+    return any(
+        c.type in PASSIVI and isinstance(_potenza(sol, c.id), Fraction)
+        for c in ir.components
+    )
+
+
 def _sanita(ir: IR, sol: dict[str, dict]) -> Refusal | None:
     """Un passivo che eroga viola la convenzione degli utilizzatori, o il segno."""
     for c in sorted(ir.components, key=lambda x: x.id):
-        if c.type not in ("resistor", "capacitor", "inductor"):
+        if c.type not in PASSIVI:
             continue
-        potenza = sol[c.id]["voltage"] * sol[c.id]["current"]
+        potenza = _potenza(sol, c.id)
         if isinstance(potenza, Fraction) and potenza < 0:
             return Refusal(
                 "sanity", c.id, "component",
                 f"{c.id} è un {c.type} ma eroga {potenza} W: un passivo "
                 "dissipa, non genera. Il segno della soluzione è falso.")
     return None
+
+
+def controlli_eseguiti(ir: IR, sol: dict[str, dict]) -> tuple[str, ...]:
+    """I controlli che verify ha davvero applicato a questa soluzione.
+
+    KCL, KVL e Tellegen girano su Fraction e su Cyc12. La sanità razionale
+    gira solo se esiste un passivo la cui potenza è una Fraction: in regime
+    fasoriale non si attesta.
+    """
+    fatti = ["legge dei nodi", "legge delle maglie", "bilancio di potenza"]
+    if _sanita_applicabile(ir, sol):
+        fatti.append("sanità fisica")
+    return tuple(fatti)
 
 
 def verify(ir: IR, sol: dict[str, dict]) -> Refusal | None:
