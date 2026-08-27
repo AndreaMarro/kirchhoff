@@ -150,8 +150,6 @@ def _solve(ir: IR, kinds: list[tuple[Component, str, object]], zero) -> dict[str
         elif kind in ("E", "VCVS"):
             i_c = sol[src_idx[c.id]]
         elif kind == "VCCS":
-            if c.control_nodes is None:
-                raise ValueError(f"{c.id}: VCCS senza nodi di controllo")
             cp, cq = c.control_nodes
             i_c = val * (v[cp] - v[cq])
         else:
