@@ -127,7 +127,7 @@ def generate_vccs_case(seed: int) -> IR:
             Component.of("R1", "resistor", ("A", "B"), r1, "R_1"),
             Component.of("R2", "resistor", ("B", REFERENCE_NODE), r2, "R_2"),
             Component.of("G1", "voltage_controlled_current_source", ("C", "B"),
-                         g, "G_1", control_nodes=("A", "B")),
+                         g, "G_1", control_nodes=(REFERENCE_NODE, "A")),
             Component.of("R3", "resistor", ("C", REFERENCE_NODE), r3, "R_3"),
         ]
     elif famiglia == 3:
