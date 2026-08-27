@@ -146,6 +146,15 @@ def test_segno_e_percorso_albero():
         _percorso_albero(ir, parent_rotto, "A", "Z")
 
 
+def test_discesa_senza_lca():
+    from kirchhoff.domain.independent_dc import _discesa_dal_lca
+
+    with pytest.raises(TableauBuildError, match="LCA"):
+        _discesa_dal_lca([("A", "0", "E1")], "Z")
+    with pytest.raises(TableauBuildError, match="LCA"):
+        _discesa_dal_lca([], "0")
+
+
 def test_costitutiva_tipo_estraneo():
     from kirchhoff.domain.independent_dc import _costitutiva
 
