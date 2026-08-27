@@ -25,7 +25,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from fractions import Fraction
-from typing import Literal
+from typing import Literal, get_args
 
 ComponentType = Literal[
     "resistor",
@@ -45,6 +45,8 @@ Quantity = Literal[
     "root_1",
     "root_2",
 ]
+
+QUANTITIES: frozenset[str] = frozenset(get_args(Quantity))
 
 SourceKind = Literal["netlist", "latex", "image", "generated"]
 
@@ -158,6 +160,12 @@ class Request:
     quantity: Quantity
     target: str
 
+    def __post_init__(self) -> None:
+        if self.quantity not in QUANTITIES:
+            raise ValueError(
+                f"{self.id}: quantity {self.quantity!r} fuori dal vocabolario. "
+                f"Ammesse: {', '.join(sorted(QUANTITIES))}.")
+
 
 @dataclass(frozen=True, slots=True)
 class IR:
@@ -201,8 +209,6 @@ class IR:
 
         ids = {c.id for c in self.components}
         if len(ids) != len(self.components):
-            # La soluzione è indicizzata per id: due componenti omonimi si
-            # sovrascriverebbero, e il secondo sparirebbe senza che nulla protesti.
             visti: set[str] = set()
             doppi = sorted({c.id for c in self.components
                             if c.id in visti or visti.add(c.id)})  # type: ignore[func-returns-value]

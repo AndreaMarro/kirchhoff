@@ -2,7 +2,7 @@
 
 1. residui KCL per nodo — sostituzione della soluzione, non riassemblaggio MNA;
 2. residui KVL per maglia fondamentale — albero ricoprente + corde;
-3. bilancio di potenza — Tellegen;
+3. bilancio di potenza in DC, identità di Tellegen in AC — stesso Σ V I, nomi diversi;
 4. sanità fisica — un passivo non eroga, e solo dove la potenza è un razionale.
 
 L'accordo fra percorsi (D6.4) resta fuori: non esiste un Percorso B sul prodotto.
@@ -20,6 +20,7 @@ from .refusal import Refusal
 
 ZERO = Fraction(0)
 PASSIVI = frozenset({"resistor", "capacitor", "inductor"})
+PHASOR_DOMAINS = frozenset({"ac_sinusoidal", "three_phase"})
 
 
 def kvl_residuals(ir: IR, sol: dict[str, dict]) -> dict[str, object]:
@@ -86,14 +87,21 @@ def _sanita(ir: IR, sol: dict[str, dict]) -> Refusal | None:
     return None
 
 
+def _nome_tellegen(ir: IR) -> str:
+    if ir.domain in PHASOR_DOMAINS:
+        return "identità di Tellegen"
+    return "bilancio di potenza"
+
+
 def controlli_eseguiti(ir: IR, sol: dict[str, dict]) -> tuple[str, ...]:
     """I controlli che verify ha davvero applicato a questa soluzione.
 
-    KCL, KVL e Tellegen girano su Fraction e su Cyc12. La sanità razionale
-    gira solo se esiste un passivo la cui potenza è una Fraction: in regime
-    fasoriale non si attesta.
+    KCL, KVL e ΣVI girano su Fraction e su Cyc12. In DC ΣVI è un bilancio
+    di potenza. In regime fasoriale è l'identità di Tellegen, non S = V I*.
+    La sanità razionale gira solo se esiste un passivo la cui potenza è
+    una Fraction: in regime fasoriale non si attesta.
     """
-    fatti = ["legge dei nodi", "legge delle maglie", "bilancio di potenza"]
+    fatti = ["legge dei nodi", "legge delle maglie", _nome_tellegen(ir)]
     if _sanita_applicabile(ir, sol):
         fatti.append("sanità fisica")
     return tuple(fatti)
@@ -116,8 +124,9 @@ def verify(ir: IR, sol: dict[str, dict]) -> Refusal | None:
 
     bilancio = power_balance(ir, sol)
     if bilancio not in (0, None) and bilancio != ZERO:
+        nome = _nome_tellegen(ir)
         return Refusal(
             "residual", ir.components[0].id, "component",
-            f"erogata e dissipata non pareggiano: scarto {bilancio}")
+            f"{nome}: scarto {bilancio}")
 
     return _sanita(ir, sol)

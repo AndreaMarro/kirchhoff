@@ -20,6 +20,10 @@ PASSO = Fraction(200)
 Risolto = Solved
 
 
+class NotASingleMeshError(ValueError):
+    """Il circuito non è una maglia sola: niente autolayout, non è un crash."""
+
+
 def _giro(circuito: IR) -> list[str] | None:
     """L'ordine dei nodi lungo l'unica maglia, o None se maglia non è."""
     vicini: dict[str, list[tuple[str, str]]] = {n: [] for n in circuito.nodes}
@@ -45,15 +49,10 @@ def _giro(circuito: IR) -> list[str] | None:
 
 
 def layout_a_maglia(circuito: IR) -> LayoutIR:
-    """Dispone un circuito a UNA maglia, e rifiuta gli altri.
-
-    Non è autolayout e non finge di esserlo. Un circuito che non è a una
-    maglia solleva: chi pubblica i numeri è `resolve`, che tratta questa
-    eccezione come «niente disegno», non come crash del prodotto.
-    """
+    """Dispone un circuito a UNA maglia, e rifiuta gli altri."""
     giro = _giro(circuito)
     if giro is None:
-        raise ValueError(
+        raise NotASingleMeshError(
             f"{len(circuito.components)} bipoli su {len(circuito.nodes)} nodi non "
             "formano una maglia sola: questa disposizione farebbe passare fili "
             "attraverso nodi che non toccano, e il renderer la rifiuterebbe. "

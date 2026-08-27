@@ -63,6 +63,7 @@ def test_controlli_eseguiti_in_dc_includono_la_sanita():
     ir = leggi("V1 a 0 9 volt\nR1 a 0 3 ohm\n")
     fatti = controlli_eseguiti(ir, solve_dc(ir))
     assert fatti[-1] == "sanità fisica"
+    assert "bilancio di potenza" in fatti
 
 
 def test_controlli_eseguiti_in_ac_non_attestano_la_sanita_razionale():
@@ -75,3 +76,38 @@ def test_controlli_eseguiti_in_ac_non_attestano_la_sanita_razionale():
     fatti = controlli_eseguiti(ir, solve_phasor(ir))
     assert "sanità fisica" not in fatti
     assert "legge dei nodi" in fatti
+    assert "identità di Tellegen" in fatti
+    assert "bilancio di potenza" not in fatti
+
+
+def test_kvl_albero_percorre_il_primo_terminale():
+    """Ramo terminals[0] == qui: l'albero parte dal primo morsetto del ramo."""
+    ir = IR(
+        "1.0.0", "dc_resistive", "generated", ("0", "A"),
+        (Component.of("E1", "voltage_source_dc", ("0", "A"), F(10), "E_1"),
+         Component.of("R1", "resistor", ("A", "0"), F(10), "R_1")),
+        ())
+    from kirchhoff.domain.mna import solve_dc
+    residui = kvl_residuals(ir, solve_dc(ir))
+    assert all(r == 0 for r in residui.values())
+
+
+def test_passivo_che_eroga_e_rifiuto_di_sanita(monkeypatch):
+    """Potenza razionale negativa su un passivo, dopo KCL/KVL/ΣVI."""
+    import kirchhoff.domain.verify as ver
+    monkeypatch.setattr(ver, "kcl_residuals", lambda ir, sol: {})
+    monkeypatch.setattr(ver, "kvl_residuals", lambda ir, sol: {})
+    monkeypatch.setattr(ver, "power_balance", lambda ir, sol: F(0))
+    ir = IR(
+        "1.0.0", "dc", "generated", ("0", "A"),
+        (Component.of("E1", "voltage_source_dc", ("A", "0"), F(10), "E_1"),
+         Component.of("R1", "resistor", ("A", "0"), F(10), "R_1")),
+        ())
+    sol = {
+        "E1": {"voltage": F(10), "current": F(1)},
+        "R1": {"voltage": F(10), "current": F(-1)},
+    }
+    esito = verify(ir, sol)
+    assert isinstance(esito, Refusal)
+    assert esito.cause == "sanity"
+    assert esito.subject == "R1"
