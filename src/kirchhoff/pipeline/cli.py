@@ -1,12 +1,7 @@
 """`kirchhoff` — il comando che rende usabile il prodotto.
 
-Legge una netlist, risolve in aritmetica esatta, **verifica prima di disegnare**,
-e scrive la risposta, l'SVG e — se richiesto — il PDF.
-
-Il PDF passa da un browser gia' presente sul disco invece che da una libreria
-nuova: `cairosvg` e simili reimplementano il rendering SVG, e un secondo motore
-di rendering vuol dire due disegni che possono divergere da byte identici. Un
-browser e' lo stesso motore che vedra' lo studente.
+Legge una netlist e la consegna a `resolve`. Non risolve da sé: lo spine è
+l'unico ingresso, e il CLI è un adattatore di processo.
 """
 from __future__ import annotations
 
@@ -16,8 +11,10 @@ import subprocess
 import sys
 from fractions import Fraction
 
+from kirchhoff.domain.refusal import Refusal
+from kirchhoff.pipeline.failure import Failure
 from kirchhoff.pipeline.netlist import leggi
-from kirchhoff.pipeline.risolvi import Rifiuto, risolvi
+from kirchhoff.pipeline.resolve import Solved, resolve
 
 
 def _decimale(f: Fraction, cifre: int = 4) -> str:
@@ -36,17 +33,13 @@ def _chromium() -> pathlib.Path | None:
 
 
 def in_pdf(svg: str, dove: pathlib.Path) -> None:
-    """Stampa l'SVG in PDF con un browser gia' installato.
-
-    Se il browser non c'e', **lo dice e non finge**: un PDF mancante annunciato
-    e' un problema, un PDF vuoto scritto in silenzio e' un difetto.
-    """
+    """Stampa l'SVG in PDF con un browser già installato."""
     chrome = _chromium()
     if chrome is None:
         raise RuntimeError(
             "nessun chromium sul disco per stampare il PDF. Installalo con "
             "`npx playwright install chromium-headless-shell`, oppure chiedi il "
-            "solo SVG: e' il formato sorgente, il PDF ne e' una copia.")
+            "solo SVG: è il formato sorgente, il PDF ne è una copia.")
     html = dove.with_suffix(".stampa.html")
     html.write_text(
         f'<!doctype html><style>@page{{margin:12mm}}'
@@ -81,19 +74,24 @@ def main(argv: list[str] | None = None) -> int:
         print(f"netlist: {e}", file=sys.stderr)
         return 65
 
-    esito = risolvi(circuito)
-    if isinstance(esito, Rifiuto):
-        # K-3: il rifiuto e' un output valido, e dice PERCHE'.
+    esito = resolve(circuito)
+    if isinstance(esito, Refusal):
         print(f"RIFIUTATO — {esito}", file=sys.stderr)
         return 3
+    if isinstance(esito, Failure):
+        print(f"GUASTO — {esito}", file=sys.stderr)
+        return 70
+    if not isinstance(esito, Solved):
+        print(f"GUASTO — esito inatteso {type(esito)!r}", file=sys.stderr)
+        return 70
 
     print(f"{len(circuito.components)} bipoli · {len(circuito.nodes)} nodi · "
-          f"verificato da {' e '.join(esito.verifiche)}\n")
+          f"solver {esito.solver} · verificato da {' e '.join(esito.verifiche)}\n")
     largo = max(len(c.id) for c in circuito.components)
     for c in sorted(circuito.components, key=lambda c: c.id):
         v = esito.soluzione.get(c.id, {})
         tensione, corrente = v.get("voltage"), v.get("current")
-        if tensione is None:
+        if tensione is None or not isinstance(tensione, Fraction):
             continue
         print(f"  {c.id:<{largo}}  V = {str(tensione):>10}  = {_decimale(tensione):>9} V"
               f"   I = {str(corrente):>10}  = {_decimale(corrente):>9} A")
@@ -103,13 +101,20 @@ def main(argv: list[str] | None = None) -> int:
         for r in circuito.requests:
             v = esito.soluzione.get(r.target, {}).get(r.quantity)
             print(f"  chiesto: {r.quantity} di {r.target} = {v}  "
-                  f"({_decimale(v)})" if v is not None else
+                  f"({_decimale(v)})" if isinstance(v, Fraction) else
                   f"  chiesto: {r.quantity} di {r.target} — non risolto")
 
     if n.svg:
-        n.svg.write_text(esito.svg, encoding="utf-8")
-        print(f"\n  disegno: {n.svg}")
+        if not esito.svg:
+            print("  disegno NON scritto: il circuito non è una maglia sola "
+                  "e l'autolayout generale non è sul percorso", file=sys.stderr)
+        else:
+            n.svg.write_text(esito.svg, encoding="utf-8")
+            print(f"\n  disegno: {n.svg}")
     if n.pdf:
+        if not esito.svg:
+            print("  pdf NON scritto: manca il disegno certificato", file=sys.stderr)
+            return 70
         try:
             in_pdf(esito.svg, n.pdf)
             print(f"  pdf:     {n.pdf}")
