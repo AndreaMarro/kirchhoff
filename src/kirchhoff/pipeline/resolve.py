@@ -1,12 +1,4 @@
-"""L'unico ingresso ammesso al prodotto: validate → dispatch → solve → verify → publish.
-
-Esiti, tre, e non si mischiano (AD-13):
-
-- `Solved` — numeri certificati. `verifiche` elenca solo i controlli realmente
-  eseguiti su quella soluzione. Il disegno è accessorio.
-- `Refusal` — il dominio ha detto no, con soggetto e diagnosi.
-- `Failure` — guasto interno. `dove` è lo stadio, non un contenitore generico.
-"""
+"""L'unico ingresso ammesso al prodotto: validate → dispatch → solve → verify → publish."""
 
 from __future__ import annotations
 
@@ -14,6 +6,7 @@ import dataclasses
 from typing import Callable
 
 from kirchhoff.domain import mna
+from kirchhoff.domain.exact import SingularSystemError
 from kirchhoff.domain.ir import IR
 from kirchhoff.domain.refusal import Refusal
 from kirchhoff.domain.validate import Validated, validate
@@ -28,11 +21,20 @@ PHASOR_TYPES = frozenset({
 })
 REATTIVI = frozenset({"capacitor", "inductor"})
 
+SUPPORTED_DOMAINS = frozenset({
+    "dc", "dc_resistive", "ac_sinusoidal", "three_phase", "transient",
+})
+DC_DOMAINS = frozenset({"dc", "dc_resistive"})
+PHASOR_DOMAINS = frozenset({"ac_sinusoidal", "three_phase"})
+
+QUANTITIES_BY_SOLVER: dict[str, frozenset[str]] = {
+    "dc": frozenset({"voltage", "current"}),
+    "phasor": frozenset({"voltage", "current"}),
+}
+
 
 @dataclasses.dataclass(frozen=True, slots=True)
 class Solved:
-    """Numeri certificati. Il disegno è presente solo se è stato possibile."""
-
     circuito: IR
     soluzione: dict
     verifiche: tuple[str, ...]
@@ -52,20 +54,43 @@ def _primo(ir: IR, ammessi: frozenset[str]):
     return next(c for c in ir.components if c.type not in ammessi)
 
 
+def _rifiuto_richieste(ir: IR, solver: str, soluzione: dict | None = None) -> Refusal | None:
+    ammesse = QUANTITIES_BY_SOLVER[solver]
+    for r in ir.requests:
+        if r.quantity not in ammesse:
+            return Refusal(
+                "unsolvable", r.id, "request",
+                f"la richiesta {r.id} chiede {r.quantity} di {r.target}: "
+                f"il percorso {solver} produce solo "
+                f"{', '.join(sorted(ammesse))}.")
+        if soluzione is None:
+            continue
+        valore = soluzione.get(r.target, {}).get(r.quantity)
+        if valore is None:
+            return Refusal(
+                "unsolvable", r.id, "request",
+                f"la richiesta {r.id} chiede {r.quantity} di {r.target} "
+                "ma il solutore non l'ha prodotta.")
+    return None
+
+
 def _dispatch(ir: IR) -> tuple[str, Callable[[IR], dict]] | Refusal:
-    """Sceglie un solutore già presente nel kernel. Non ne inventa uno."""
     tipi = _tipi(ir)
     dominio = ir.domain
 
-    if dominio in ("ac_sinusoidal", "three_phase"):
+    if dominio not in SUPPORTED_DOMAINS:
+        return Refusal(
+            "unsolvable", dominio, "operation",
+            f"domain={dominio!r} non è fra i domini supportati "
+            f"({', '.join(sorted(SUPPORTED_DOMAINS))}): "
+            "non viene interpretato come continua.")
+
+    if dominio in PHASOR_DOMAINS:
         if tipi - PHASOR_TYPES:
             c = _primo(ir, PHASOR_TYPES)
             return Refusal(
                 "unsolvable", c.id, "component",
                 f"{c.id} è un {c.type}: il percorso fasoriale non lo ammette.")
-        # Lo schema rifiuta già un VAC senza ω positiva. Questo ramo copre
-        # l'IR sinusoidale senza VAC (R+C, R+L) che lo schema lascia passare:
-        # le impedenze reattive non hanno frequenza a cui valutarsi.
         if ir.omega <= 0:
             return Refusal(
                 "unsolvable", ir.components[0].id, "component",
@@ -81,36 +106,34 @@ def _dispatch(ir: IR) -> tuple[str, Callable[[IR], dict]] | Refusal:
             "percorso di pubblicazione: non si certifica uno stato iniziale "
             "senza dire quale rete sostituita è stata verificata.")
 
-    if tipi <= DC_TYPES:
-        return "dc", mna.solve_dc
-
-    c = _primo(ir, DC_TYPES)
-    if c.type in REATTIVI:
+    if dominio in DC_DOMAINS:
+        if tipi <= DC_TYPES:
+            return "dc", mna.solve_dc
+        c = _primo(ir, DC_TYPES)
+        if c.type in REATTIVI:
+            return Refusal(
+                "unsolvable", c.id, "component",
+                f"{c.id} è un {c.type}: il percorso in continua non lo ammette. "
+                "Non viene spento in silenzio (aperto o corto): sarebbe la "
+                "soluzione di un circuito diverso da quello dichiarato.")
         return Refusal(
             "unsolvable", c.id, "component",
-            f"{c.id} è un {c.type}: il percorso in continua non lo ammette. "
-            "Non viene spento in silenzio (aperto o corto): sarebbe la "
-            "soluzione di un circuito diverso da quello dichiarato.")
+            f"{c.id} è un {c.type}: nessun percorso del prodotto lo risolve "
+            f"con domain={dominio!r}.")
+
     return Refusal(
-        "unsolvable", c.id, "component",
-        f"{c.id} è un {c.type}: nessun percorso del prodotto lo risolve "
-        f"con domain={dominio!r}.")
-
-
-def _senza_autolayout(exc: BaseException) -> bool:
-    return "non formano una maglia sola" in str(exc)
+        "unsolvable", dominio, "operation",
+        f"domain={dominio!r} è nominato ma non ha un percorso di pubblicazione.")
 
 
 def _disegna(ir: IR, layout: LayoutIR | None) -> tuple[LayoutIR | None, str | None] | Failure:
-    from kirchhoff.pipeline.risolvi import layout_a_maglia
+    from kirchhoff.pipeline.risolvi import NotASingleMeshError, layout_a_maglia
 
     if layout is None:
         try:
             disegno = layout_a_maglia(ir)
-        except ValueError as e:
-            if _senza_autolayout(e):
-                return None, None
-            return Failure("layout", f"ValueError: {e}")
+        except NotASingleMeshError:
+            return None, None
         except Exception as e:
             return Failure("layout", f"{type(e).__name__}: {e}")
     else:
@@ -122,17 +145,7 @@ def _disegna(ir: IR, layout: LayoutIR | None) -> tuple[LayoutIR | None, str | No
         return Failure("render", f"{type(e).__name__}: {e}")
 
 
-def _guasto_del_solutore(exc: BaseException) -> bool:
-    """True solo per la singolarità che solve_linear dichiara per nome.
-
-    Ogni altro ValueError/KeyError/ZeroDivisionError uscito dal solver è un
-    buco del prodotto, non un circuito illecito: validate è già passato.
-    """
-    return isinstance(exc, ValueError) and "singolare" in str(exc)
-
-
 def resolve(circuito: IR, layout: LayoutIR | None = None) -> Solved | Refusal | Failure:
-    """validate → dispatch → solver → verify → publish. Unico ingresso."""
     try:
         return _esegui(circuito, layout)
     except Exception as e:
@@ -157,14 +170,22 @@ def _esegui(circuito: IR, layout: LayoutIR | None) -> Solved | Refusal | Failure
         return scelto
     nome, solutore = scelto
 
+    rifiuto = _rifiuto_richieste(ingresso.ir, nome)
+    if rifiuto is not None:
+        return rifiuto
+
     try:
         soluzione = solutore(ingresso.ir)
+    except SingularSystemError as e:
+        return Refusal(
+            "unsolvable", ingresso.ir.components[0].id, "component",
+            f"il sistema non è risolvibile: {e}")
     except Exception as e:
-        if _guasto_del_solutore(e):
-            return Refusal(
-                "unsolvable", ingresso.ir.components[0].id, "component",
-                f"il sistema non è risolvibile: {e}")
         return Failure("solver", f"{type(e).__name__}: {e}")
+
+    rifiuto = _rifiuto_richieste(ingresso.ir, nome, soluzione)
+    if rifiuto is not None:
+        return rifiuto
 
     try:
         rifiuto = verify(ingresso.ir, soluzione)
@@ -183,5 +204,4 @@ def _esegui(circuito: IR, layout: LayoutIR | None) -> Solved | Refusal | Failure
 
 
 def risolvi(circuito: IR, layout: LayoutIR | None = None) -> Solved | Refusal | Failure:
-    """Alias pubblico storico. Non esiste un secondo percorso."""
     return resolve(circuito, layout)
