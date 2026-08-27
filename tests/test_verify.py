@@ -42,7 +42,6 @@ def test_verify_rifiuta_la_corda_falsa():
 
 
 def test_una_isola_non_entra_nei_residui_di_maglia():
-    """Un ramo su nodi che l'albero dal riferimento non raggiunge si salta."""
     ir = leggi("V1 a 0 12 volt\nR1 a 0 10 ohm\nR2 c d 20 ohm\nR3 c d 30 ohm\n")
     sol = {c.id: {"voltage": F(0), "current": F(0)} for c in ir.components}
     residui = kvl_residuals(ir, sol)
@@ -50,10 +49,29 @@ def test_una_isola_non_entra_nei_residui_di_maglia():
 
 
 def test_un_passivo_fasoriale_non_passa_dalla_sanita_razionale():
-    """Cyc12 non è Fraction: la sanità DC non lo accusa a caso."""
     ir = IR("1.0.0", "ac_sinusoidal", "generated", ("0", "A"),
             (Component.of("E1", "voltage_source_ac", ("A", "0"), F(10), "E_1"),
              Component.of("R1", "resistor", ("A", "0"), F(10), "R_1")),
             (), F(314))
     from kirchhoff.domain.mna import solve_phasor
     assert verify(ir, solve_phasor(ir)) is None
+
+
+def test_controlli_eseguiti_in_dc_includono_la_sanita():
+    from kirchhoff.domain.mna import solve_dc
+    from kirchhoff.domain.verify import controlli_eseguiti
+    ir = leggi("V1 a 0 9 volt\nR1 a 0 3 ohm\n")
+    fatti = controlli_eseguiti(ir, solve_dc(ir))
+    assert fatti[-1] == "sanità fisica"
+
+
+def test_controlli_eseguiti_in_ac_non_attestano_la_sanita_razionale():
+    from kirchhoff.domain.mna import solve_phasor
+    from kirchhoff.domain.verify import controlli_eseguiti
+    ir = IR("1.0.0", "ac_sinusoidal", "generated", ("0", "A"),
+            (Component.of("E1", "voltage_source_ac", ("A", "0"), F(10), "E_1"),
+             Component.of("R1", "resistor", ("A", "0"), F(10), "R_1")),
+            (), F(314))
+    fatti = controlli_eseguiti(ir, solve_phasor(ir))
+    assert "sanità fisica" not in fatti
+    assert "legge dei nodi" in fatti

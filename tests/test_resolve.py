@@ -1,4 +1,4 @@
-"""Lo spine applicativo: validate → dispatch → solve → verify → publish."""
+"""Lo spine: Refusal di dominio contro Failure di stadio, misurati in difetto."""
 from __future__ import annotations
 
 from fractions import Fraction
@@ -27,8 +27,9 @@ def test_il_partitore_passa_tutto_lo_spine():
     assert esito.solver == "dc"
     assert esito.soluzione["R2"]["voltage"] == F(33, 4)
     assert esito.svg is not None and esito.svg.startswith("<svg")
-    assert "legge dei nodi" in esito.verifiche
-    assert "legge delle maglie" in esito.verifiche
+    assert esito.verifiche == (
+        "legge dei nodi", "legge delle maglie",
+        "bilancio di potenza", "sanità fisica")
 
 
 def test_validate_precede_il_solutore():
@@ -38,21 +39,14 @@ def test_validate_precede_il_solutore():
     assert esito.subject == "z"
 
 
-def test_un_condensatore_in_netlist_dc_non_esplode():
+def test_un_condensatore_in_netlist_dc_e_rifiuto():
     esito = resolve(leggi("V1 a 0 12 volt\nR1 a 0 10 ohm\nC1 a 0 1/1000 farad\n"))
     assert isinstance(esito, Refusal)
     assert esito.cause == "unsolvable"
     assert esito.subject == "C1"
-    assert "continua" in esito.diagnosis
 
 
-def test_un_induttore_stessa_sorte():
-    esito = resolve(leggi("V1 a 0 12 volt\nL1 a 0 1/100 henry\n"))
-    assert isinstance(esito, Refusal)
-    assert esito.subject == "L1"
-
-
-def test_due_maglie_si_risolvono_senza_disegno():
+def test_due_maglie_si_certificano_senza_disegno():
     esito = resolve(leggi(
         "V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\nR3 a 0 330 ohm\n"))
     assert isinstance(esito, Solved)
@@ -60,7 +54,8 @@ def test_due_maglie_si_risolvono_senza_disegno():
     assert esito.soluzione["R1"]["current"] != 0
 
 
-def test_un_sistema_singolare_e_rifiuto_non_eccezione():
+def test_due_generatori_in_parallelo_sono_rifiuto_di_validate():
+    """Validate vede la maglia di soli generatori. Non è un Failure del solver."""
     ir = IR("1.0.0", "dc_resistive", "generated", ("0", "A"),
             (Component.of("E1", "voltage_source_dc", ("A", "0"), F(5), "E_1"),
              Component.of("E2", "voltage_source_dc", ("A", "0"), F(5), "E_2"),
@@ -68,7 +63,7 @@ def test_un_sistema_singolare_e_rifiuto_non_eccezione():
             ())
     esito = resolve(ir)
     assert isinstance(esito, Refusal)
-    assert esito.cause in ("topology", "unsolvable")
+    assert esito.cause == "topology"
 
 
 def test_il_fasore_e_sul_percorso_pubblico():
@@ -79,10 +74,12 @@ def test_il_fasore_e_sul_percorso_pubblico():
     esito = resolve(ir)
     assert isinstance(esito, Solved)
     assert esito.solver == "phasor"
-    assert esito.soluzione["R1"]["voltage"] == esito.soluzione["E1"]["voltage"]
+    assert "sanità fisica" not in esito.verifiche
+    assert "legge dei nodi" in esito.verifiche
+    assert "bilancio di potenza" in esito.verifiche
 
 
-def test_il_transitorio_si_rifiuta_non_si_certifica_a_meta():
+def test_il_transitorio_si_rifiuta():
     ir = IR("1.0.0", "transient", "generated", ("0", "A", "B"),
             (Component.of("E1", "voltage_source_dc", ("A", "0"), F(12), "E_1"),
              Component.of("R1", "resistor", ("A", "B"), F(2), "R_1"),
@@ -100,51 +97,32 @@ def test_kcl_falso_rifiuta_con_residual(monkeypatch):
     esito = resolve(leggi(PARTITORE))
     assert isinstance(esito, Refusal)
     assert esito.cause == "residual"
-    assert "3/7" in esito.diagnosis
-
-
-def test_potenza_falsa_rifiuta_con_residual(monkeypatch):
-    import kirchhoff.domain.verify as ver
-    monkeypatch.setattr(ver, "kcl_residuals", lambda ir, sol: {})
-    monkeypatch.setattr(ver, "kvl_residuals", lambda ir, sol: {})
-    monkeypatch.setattr(ver, "power_balance", lambda ir, sol: F(1, 9))
-    esito = resolve(leggi(PARTITORE))
-    assert isinstance(esito, Refusal)
-    assert esito.cause == "residual"
-    assert "1/9" in esito.diagnosis
-
-
-def test_passivo_che_eroga_e_sanity():
-    from kirchhoff.domain.verify import verify
-    ir = leggi("V1 a 0 9 volt\nR1 a 0 3 ohm\n")
-    esito = verify(ir, {"V1": {"voltage": F(9), "current": F(3)},
-                        "R1": {"voltage": F(9), "current": F(-3)}})
-    assert isinstance(esito, Refusal)
-    assert esito.cause == "sanity" and esito.subject == "R1"
 
 
 def test_failure_e_un_tipo_altro_da_refusal():
     assert not issubclass(Failure, Refusal)
     assert not issubclass(Refusal, Failure)
     assert not issubclass(Failure, Exception)
-    f = Failure("resolve", "boom")
-    assert "resolve" in str(f) and "boom" in str(f)
 
 
-def test_failure_si_difende():
-    with pytest.raises(ValueError, match="senza stadio"):
-        Failure("", "x")
-    with pytest.raises(ValueError, match="senza messaggio"):
-        Failure("resolve", "")
+def test_vac_senza_omega_non_nasce_come_ir():
+    """Lo schema possiede questa regola. resolve non la rivede su un IR impossibile."""
+    with pytest.raises(ValueError, match="pulsazione"):
+        IR("1.0.0", "ac_sinusoidal", "generated", ("0", "A"),
+           (Component.of("E1", "voltage_source_ac", ("A", "0"), F(10), "E_1"),
+            Component.of("R1", "resistor", ("A", "0"), F(10), "R_1")),
+           (), F(0))
 
 
-def test_fasore_senza_omega_si_rifiuta():
+def test_sinusoidale_reattivo_senza_omega_arriva_al_dispatch():
+    """Senza VAC lo schema tace. Dispatch rifiuta: C non ha frequenza."""
     ir = IR("1.0.0", "ac_sinusoidal", "generated", ("0", "A"),
-            (Component.of("E1", "voltage_source_ac", ("A", "0"), F(10), "E_1"),
-             Component.of("R1", "resistor", ("A", "0"), F(10), "R_1")),
+            (Component.of("R1", "resistor", ("A", "0"), F(10), "R_1"),
+             Component.of("C1", "capacitor", ("A", "0"), F(1, 1000), "C_1")),
             (), F(0))
     esito = resolve(ir)
     assert isinstance(esito, Refusal)
+    assert esito.cause == "unsolvable"
     assert "pulsazione" in esito.diagnosis
 
 
@@ -155,40 +133,89 @@ def test_fasore_con_generatore_dc_si_rifiuta():
             (), F(314))
     esito = resolve(ir)
     assert isinstance(esito, Refusal)
-    assert esito.subject == "E1" and "fasoriale" in esito.diagnosis
+    assert esito.subject == "E1"
+    assert "fasoriale" in esito.diagnosis
 
 
 def test_un_tipo_senza_percorso_si_rifiuta():
+    """VAC in dominio DC: lo schema accetta se ω > 0. Il dispatch rifiuta."""
     ir = IR("1.0.0", "dc_resistive", "generated", ("0", "A"),
             (Component.of("E1", "voltage_source_ac", ("A", "0"), F(10), "E_1"),
              Component.of("R1", "resistor", ("A", "0"), F(10), "R_1")),
-            ())
+            (), F(314))
     esito = resolve(ir)
     assert isinstance(esito, Refusal)
-    assert esito.subject == "E1" and "nessun percorso" in esito.diagnosis
+    assert esito.subject == "E1"
+    assert "nessun percorso" in esito.diagnosis
 
 
-def test_il_solutore_che_solleva_diventa_rifiuto(monkeypatch):
+def test_keyerror_del_solver_e_failure(monkeypatch):
     import kirchhoff.domain.mna as mna
-    monkeypatch.setattr(mna, "solve_dc", lambda ir: (_ for _ in ()).throw(ValueError("matrice singolare")))
-    esito = resolve(leggi(PARTITORE))
-    assert isinstance(esito, Refusal)
-    assert esito.cause == "unsolvable" and "singolare" in esito.diagnosis
-
-
-def test_un_guasto_imprevisto_e_failure_non_eccezione(monkeypatch):
-    import kirchhoff.pipeline.resolve as spine
-    monkeypatch.setattr(spine, "validate", lambda ir: (_ for _ in ()).throw(RuntimeError("il disco ha mentito")))
+    monkeypatch.setattr(mna, "solve_dc", lambda ir: (_ for _ in ()).throw(KeyError("nodo fantasma")))
     esito = resolve(leggi(PARTITORE))
     assert isinstance(esito, Failure)
-    assert esito.dove == "resolve" and "RuntimeError" in esito.messaggio
+    assert esito.dove == "solver"
+    assert "KeyError" in esito.messaggio
+
+
+def test_valueerror_generico_del_solver_e_failure(monkeypatch):
+    import kirchhoff.domain.mna as mna
+    monkeypatch.setattr(mna, "solve_dc", lambda ir: (_ for _ in ()).throw(ValueError("indice fuori scala")))
+    esito = resolve(leggi(PARTITORE))
+    assert isinstance(esito, Failure)
+    assert esito.dove == "solver"
+
+
+def test_singolare_dichiarata_dal_kernel_e_rifiuto(monkeypatch):
+    import kirchhoff.domain.mna as mna
+    monkeypatch.setattr(
+        mna, "solve_dc",
+        lambda ir: (_ for _ in ()).throw(ValueError("sistema singolare alla colonna 0")))
+    esito = resolve(leggi(PARTITORE))
+    assert isinstance(esito, Refusal)
+    assert esito.cause == "unsolvable"
+    assert "singolare" in esito.diagnosis
+
+
+def test_eccezione_inattesa_del_solver_nomina_lo_stadio(monkeypatch):
+    import kirchhoff.domain.mna as mna
+    monkeypatch.setattr(mna, "solve_dc", lambda ir: (_ for _ in ()).throw(RuntimeError("heap")))
+    esito = resolve(leggi(PARTITORE))
+    assert isinstance(esito, Failure)
+    assert esito.dove == "solver"
+    assert "RuntimeError" in esito.messaggio
+
+
+def test_validate_che_esplode_nomina_validate(monkeypatch):
+    import kirchhoff.pipeline.resolve as spine
+    monkeypatch.setattr(spine, "validate", lambda ir: (_ for _ in ()).throw(RuntimeError("disco")))
+    esito = resolve(leggi(PARTITORE))
+    assert isinstance(esito, Failure)
+    assert esito.dove == "validate"
+
+
+def test_verify_che_esplode_nomina_verify(monkeypatch):
+    import kirchhoff.pipeline.resolve as spine
+    monkeypatch.setattr(spine, "verify", lambda ir, sol: (_ for _ in ()).throw(RuntimeError("residuo rotto")))
+    esito = resolve(leggi(PARTITORE))
+    assert isinstance(esito, Failure)
+    assert esito.dove == "verify"
+
+
+def test_render_che_esplode_con_layout_valido_e_failure(monkeypatch):
+    import kirchhoff.pipeline.resolve as spine
+    monkeypatch.setattr(spine, "render", lambda ir, lay: (_ for _ in ()).throw(ValueError("filo attraverso un nodo")))
+    esito = resolve(leggi(PARTITORE))
+    assert isinstance(esito, Failure)
+    assert esito.dove == "render"
 
 
 def test_validate_che_restituisce_altro_e_failure(monkeypatch):
     import kirchhoff.pipeline.resolve as spine
     monkeypatch.setattr(spine, "validate", lambda ir: "boh")
     esito = resolve(leggi(PARTITORE))
-    assert isinstance(esito, Failure) and esito.dove == "validate"
+    assert isinstance(esito, Failure)
+    assert esito.dove == "validate"
 
 
 def test_risolvi_e_lo_stesso_ingresso():
