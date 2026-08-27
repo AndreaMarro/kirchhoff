@@ -133,6 +133,16 @@ def _verso_radice(
     return passi
 
 
+def _discesa_dal_lca(su_end: list[tuple[str, str, str]], lca: str) -> list[tuple[str, str, str]]:
+    acc: list[tuple[str, str, str]] = []
+    for qui, padre, cid in su_end:
+        acc.append((qui, padre, cid))
+        if padre == lca:
+            acc.reverse()
+            return acc
+    raise TableauBuildError(f"il LCA {lca} non sta sul percorso verso il riferimento")
+
+
 def _percorso_albero(
     ir: IR,
     parent: dict[str, tuple[str, str] | None],
@@ -162,13 +172,7 @@ def _percorso_albero(
         if lca is None:
             raise TableauBuildError(f"nessun antenato comune fra {start} e {end}")
 
-    da_lca: list[tuple[str, str, str]] = []
-    if end != lca:
-        for qui, padre, cid in su_end:
-            da_lca.append((qui, padre, cid))
-            if padre == lca:
-                break
-        da_lca.reverse()
+    da_lca = _discesa_dal_lca(su_end, lca) if end != lca else []
 
     passi: list[tuple[str, Fraction]] = []
     for qui, padre, cid in verso_lca:
