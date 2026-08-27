@@ -7,6 +7,7 @@ from typing import Callable
 
 from kirchhoff.domain import mna
 from kirchhoff.domain.exact import SingularSystemError
+from kirchhoff.domain.independent_dc import TableauSingularError, solve_dc_tableau
 from kirchhoff.domain.ir import IR
 from kirchhoff.domain.refusal import Refusal
 from kirchhoff.domain.validate import Validated, validate
@@ -31,6 +32,9 @@ QUANTITIES_BY_SOLVER: dict[str, frozenset[str]] = {
     "dc": frozenset({"voltage", "current"}),
     "phasor": frozenset({"voltage", "current"}),
 }
+
+ATTESTAZIONE_PERCORSI = "accordo fra percorsi indipendenti"
+GRANDEZZE_CONFRONTO = ("voltage", "current")
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
@@ -76,6 +80,40 @@ def _rifiuto_richieste(ir: IR, solver: str, soluzione: dict | None = None) -> Re
                 "unsolvable", r.id, "request",
                 f"la richiesta {r.id} chiede {r.quantity} di {r.target} "
                 "ma il solutore non l'ha prodotta.")
+    return None
+
+
+def _confronta_percorsi(sol_a: dict, sol_b: dict) -> Refusal | None:
+    """Confronto esatto fra Percorso A e Percorso B. Nessuna tolleranza."""
+    ids_a, ids_b = set(sol_a), set(sol_b)
+    if ids_a != ids_b:
+        solo_a = sorted(ids_a - ids_b)
+        solo_b = sorted(ids_b - ids_a)
+        if solo_a:
+            cid = solo_a[0]
+            return Refusal(
+                "path_disagreement", cid, "component",
+                f"{cid}: presente nel percorso A, assente nel percorso B.")
+        cid = solo_b[0]
+        return Refusal(
+            "path_disagreement", cid, "component",
+            f"{cid}: presente nel percorso B, assente nel percorso A.")
+
+    for cid in sorted(ids_a):
+        qa, qb = sol_a[cid], sol_b[cid]
+        for q in GRANDEZZE_CONFRONTO:
+            if q not in qa:
+                return Refusal(
+                    "path_disagreement", cid, "component",
+                    f"{cid}:\n{q}:\npercorso A = assente\npercorso B = {qb.get(q, 'assente')}")
+            if q not in qb:
+                return Refusal(
+                    "path_disagreement", cid, "component",
+                    f"{cid}:\n{q}:\npercorso A = {qa[q]}\npercorso B = assente")
+            if qa[q] != qb[q]:
+                return Refusal(
+                    "path_disagreement", cid, "component",
+                    f"{cid}:\n{q}:\npercorso A = {qa[q]}\npercorso B = {qb[q]}")
     return None
 
 
@@ -160,6 +198,20 @@ def resolve(circuito: IR, layout: LayoutIR | None = None) -> Solved | Refusal | 
         return Failure("resolve", f"{type(e).__name__}: {e}")
 
 
+def _oracolo_percorso_b(ir: IR, soluzione_a: dict) -> Refusal | Failure | None:
+    """Gate interno: A e B devono concordare esattamente. None se concordano."""
+    try:
+        soluzione_b = solve_dc_tableau(ir)
+    except TableauSingularError as e:
+        return Refusal(
+            "path_disagreement", ir.components[0].id, "component",
+            "percorso A ha una soluzione, percorso B dichiara sistema "
+            f"singolare: {e}")
+    except Exception as e:
+        return Failure("verify", f"{type(e).__name__}: {e}")
+    return _confronta_percorsi(soluzione_a, soluzione_b)
+
+
 def _esegui(circuito: IR, layout: LayoutIR | None) -> Solved | Refusal | Failure:
     try:
         ingresso = validate(circuito)
@@ -195,6 +247,11 @@ def _esegui(circuito: IR, layout: LayoutIR | None) -> Solved | Refusal | Failure
     if rifiuto is not None:
         return rifiuto
 
+    if nome == "dc":
+        esito_b = _oracolo_percorso_b(ingresso.ir, soluzione)
+        if esito_b is not None:
+            return esito_b
+
     try:
         rifiuto = verify(ingresso.ir, soluzione)
         attestati = controlli_eseguiti(ingresso.ir, soluzione)
@@ -202,6 +259,9 @@ def _esegui(circuito: IR, layout: LayoutIR | None) -> Solved | Refusal | Failure
         return Failure("verify", f"{type(e).__name__}: {e}")
     if rifiuto is not None:
         return rifiuto
+
+    if nome == "dc":
+        attestati = (*attestati, ATTESTAZIONE_PERCORSI)
 
     disegno = _disegna(ingresso.ir, layout)
     if isinstance(disegno, Failure):
