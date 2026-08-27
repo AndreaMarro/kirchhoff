@@ -2,6 +2,7 @@
 
 from .canonical import SYMMETRIC, canonicalize, orienta
 from .schema import (
+    CONTROLLED_SOURCE_TYPES,
     EXPECTED_UNIT,
     IR,
     POSITIVE_VALUED,
@@ -18,6 +19,7 @@ from .schema import (
 )
 
 __all__ = [
+    "CONTROLLED_SOURCE_TYPES",
     "EXPECTED_UNIT",
     "IR",
     "POSITIVE_VALUED",

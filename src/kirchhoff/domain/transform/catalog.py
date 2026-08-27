@@ -95,6 +95,7 @@ CATALOG: frozenset[str] = frozenset({
 #: componente.
 IDENTITY_ATTRIBUTES: tuple[str, ...] = (
     "type", "terminals", "value", "symbolic", "phase_steps",
+    "control_nodes",
 )
 
 #: **Il discriminante di AD-22 v2.1.** Per ciascuna operazione, gli attributi che
@@ -677,4 +678,3 @@ def transformations_supported(opening: CatalogOpening | None = None) -> frozense
     esattamente il punto di FR-43.
     """
     return SUPPORTED if opening is None else SUPPORTED | opening.opens
-

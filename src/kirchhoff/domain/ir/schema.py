@@ -34,6 +34,8 @@ ComponentType = Literal[
     "voltage_source_dc",
     "current_source_dc",
     "voltage_source_ac",
+    "voltage_controlled_voltage_source",
+    "voltage_controlled_current_source",
 ]
 
 Quantity = Literal[
@@ -64,10 +66,19 @@ EXPECTED_UNIT: dict[str, str] = {
     "voltage_source_dc": "volt",
     "voltage_source_ac": "volt",
     "current_source_dc": "ampere",
+    "voltage_controlled_voltage_source": "dimensionless",
+    "voltage_controlled_current_source": "siemens",
 }
 
 #: Componenti il cui valore è una grandezza fisica strettamente positiva.
 POSITIVE_VALUED: frozenset[str] = frozenset({"resistor", "capacitor", "inductor"})
+
+#: Sorgenti controllate da una tensione altrove. I nodi di controllo non sono
+#: terminali del ramo: il ramo resta (p, q).
+CONTROLLED_SOURCE_TYPES: frozenset[str] = frozenset({
+    "voltage_controlled_voltage_source",
+    "voltage_controlled_current_source",
+})
 
 _SEMVER = re.compile(r"^\d+\.\d+\.\d+$")
 
@@ -119,6 +130,7 @@ class Component:
     symbolic: str
     phase_steps: int = 0
     provenance: Provenance | None = None
+    control_nodes: tuple[str, str] | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.value, Magnitude):
@@ -137,6 +149,17 @@ class Component:
                 f"{self.id}: valore non positivo per {self.type} ({self.value.amount})")
         if self.phase_steps and self.type != "voltage_source_ac":
             raise ValueError(f"{self.id}: sfasamento su un {self.type}, che non ne ha uno")
+        if self.type in CONTROLLED_SOURCE_TYPES:
+            if self.control_nodes is None:
+                raise ValueError(
+                    f"{self.id}: un {self.type} senza nodi di controllo. "
+                    "Il ramo è (p, q); il controllo è metadata separato.")
+            if len(self.control_nodes) != 2:
+                raise ValueError(
+                    f"{self.id}: control_nodes deve essere una coppia (cp, cq)")
+        elif self.control_nodes is not None:
+            raise ValueError(
+                f"{self.id}: control_nodes su un {self.type}, che non è controllato")
 
     @staticmethod
     def of(
@@ -148,10 +171,12 @@ class Component:
         *,
         phase_steps: int = 0,
         provenance: Provenance | None = None,
+        control_nodes: tuple[str, str] | None = None,
     ) -> Component:
         """Costruisce con l'unità che il tipo impone. Il numero non resta mai nudo."""
-        return Component(cid, ctype, terminals, Magnitude(amount, EXPECTED_UNIT[ctype]),
-                         symbolic, phase_steps, provenance)
+        return Component(
+            cid, ctype, terminals, Magnitude(amount, EXPECTED_UNIT[ctype]),
+            symbolic, phase_steps, provenance, control_nodes)
 
 
 @dataclass(frozen=True, slots=True)

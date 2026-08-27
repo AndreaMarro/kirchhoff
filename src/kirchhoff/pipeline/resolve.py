@@ -16,7 +16,13 @@ from kirchhoff.pipeline.failure import Failure
 from kirchhoff.render.layout import LayoutIR
 from kirchhoff.render.serialize import FORME, render
 
-DC_TYPES = frozenset({"resistor", "voltage_source_dc", "current_source_dc"})
+DC_TYPES = frozenset({
+    "resistor",
+    "voltage_source_dc",
+    "current_source_dc",
+    "voltage_controlled_voltage_source",
+    "voltage_controlled_current_source",
+})
 PHASOR_TYPES = frozenset({
     "resistor", "capacitor", "inductor", "voltage_source_ac",
 })

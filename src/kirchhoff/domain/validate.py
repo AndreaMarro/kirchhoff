@@ -23,7 +23,7 @@ from dataclasses import dataclass
 from fractions import Fraction
 
 from .ir import IR, REFERENCE_NODE, Component
-from .ir.schema import EXPECTED_UNIT
+from .ir.schema import CONTROLLED_SOURCE_TYPES, EXPECTED_UNIT
 from .refusal import Refusal, SubjectKind
 
 #: Serie normalizzate dei valori resistivi, per decade. Un resistore manoscritto
@@ -95,6 +95,27 @@ def _controlla_unita(ir: IR) -> Refusal | None:
                 "units", c.id, "component",
                 f"{c.id} e' un {c.type} ma il suo valore e' espresso in "
                 f"{c.value.unit}; per quel tipo l'unita' e' {attesa}.")
+    return None
+
+
+def _controlla_controllo(ir: IR) -> Refusal | None:
+    """Nodi di controllo: metadata, non terminali. Devono esistere prima del solver."""
+    noti = set(ir.nodes)
+    for c in sorted(ir.components, key=lambda x: x.id):
+        if c.type in CONTROLLED_SOURCE_TYPES:
+            if c.control_nodes is None:
+                return Refusal(
+                    "topology", c.id, "component",
+                    f"{c.id} e' un {c.type} senza nodi di controllo.")
+            for n in c.control_nodes:
+                if n not in noti:
+                    return Refusal(
+                        "topology", n, "node",
+                        f"{c.id}: il nodo di controllo {n} non appartiene al circuito.")
+        elif c.control_nodes is not None:
+            return Refusal(
+                "topology", c.id, "component",
+                f"{c.id} e' un {c.type} ma dichiara nodi di controllo.")
     return None
 
 
@@ -180,6 +201,7 @@ def _controlla_tagli_di_soli_generatori(ir: IR) -> Refusal | None:
 #: I controlli, nell'ordine in cui girano. Il primo che fallisce vince.
 _CONTROLLI = (
     _controlla_unita,
+    _controlla_controllo,
     _controlla_richieste,
     _controlla_connessione,
     _controlla_grado,
