@@ -18,7 +18,13 @@ from kirchhoff.domain.ir import IR, REFERENCE_NODE, Component
 ZERO = Fraction(0)
 ONE = Fraction(1)
 
-DC_TABLEAU_TYPES = frozenset({"resistor", "voltage_source_dc", "current_source_dc"})
+DC_TABLEAU_TYPES = frozenset({
+    "resistor",
+    "voltage_source_dc",
+    "current_source_dc",
+    "voltage_controlled_voltage_source",
+    "voltage_controlled_current_source",
+})
 
 
 class TableauSingularError(ValueError):
@@ -149,7 +155,11 @@ def _percorso_albero(
     start: str,
     end: str,
 ) -> list[tuple[str, Fraction]]:
-    """(id_ramo, segno) per andare da start a end sull'albero."""
+    """(id_ramo, segno) per andare da start a end sull'albero.
+
+    La somma Σ s_j v_j vale V(start) - V(end), perché ogni ramo contribuisce
+    con il proprio v = V(t0) - V(t1) orientato nel verso di percorrenza.
+    """
     if start == end:
         return []
     su_start = _verso_radice(parent, start)
@@ -182,19 +192,58 @@ def _percorso_albero(
     return passi
 
 
-def _costitutiva(c: Component, i_v: int, i_i: int, row: list[Fraction], known: list[Fraction]) -> None:
+def _vcontrol_coeffs(
+    ir: IR,
+    parent: dict[str, tuple[str, str] | None],
+    cp: str,
+    cq: str,
+) -> list[tuple[str, Fraction]]:
+    """Coefficienti (id_ramo, segno) tali che V(cp)-V(cq) = Σ s_j v_j sull'albero."""
+    if cp == cq:
+        return []
+    if cp not in parent or cq not in parent:
+        raise TableauBuildError(
+            f"nodi di controllo {cp},{cq} non raggiungibili sull'albero ricoprente"
+        )
+    return _percorso_albero(ir, parent, cp, cq)
+
+
+def _costitutiva(
+    c: Component,
+    col_v,
+    col_i,
+    row: list[Fraction],
+    known: list[Fraction],
+    vcontrol: list[tuple[str, Fraction]] | None = None,
+) -> None:
+    if vcontrol is None:
+        vcontrol = []
     if c.type == "resistor":
-        row[i_v] = ONE
-        row[i_i] = -c.value.amount
+        row[col_v(c.id)] = ONE
+        row[col_i(c.id)] = -c.value.amount
         known[0] = ZERO
         return
     if c.type == "voltage_source_dc":
-        row[i_v] = ONE
+        row[col_v(c.id)] = ONE
         known[0] = c.value.amount
         return
     if c.type == "current_source_dc":
-        row[i_i] = ONE
+        row[col_i(c.id)] = ONE
         known[0] = c.value.amount
+        return
+    if c.type == "voltage_controlled_voltage_source":
+        row[col_v(c.id)] += ONE
+        mu = c.value.amount
+        for cid, segno in vcontrol:
+            row[col_v(cid)] -= mu * segno
+        known[0] = ZERO
+        return
+    if c.type == "voltage_controlled_current_source":
+        row[col_i(c.id)] += ONE
+        g = c.value.amount
+        for cid, segno in vcontrol:
+            row[col_v(cid)] -= g * segno
+        known[0] = ZERO
         return
     raise ValueError(f"{c.id}: {c.type} non ammesso nel tableau DC resistivo")
 
@@ -250,7 +299,15 @@ def solve_dc_tableau(ir: IR) -> dict[str, dict[str, Fraction]]:
 
     for c in rami:
         known = [ZERO]
-        _costitutiva(c, col_v(c.id), col_i(c.id), a[r], known)
+        coeffs: list[tuple[str, Fraction]] = []
+        if c.type in {
+            "voltage_controlled_voltage_source",
+            "voltage_controlled_current_source",
+        }:
+            if c.control_nodes is None:
+                raise ValueError(f"{c.id}: {c.type} senza nodi di controllo")
+            coeffs = _vcontrol_coeffs(ir, parent, c.control_nodes[0], c.control_nodes[1])
+        _costitutiva(c, col_v, col_i, a[r], known, coeffs)
         b[r] = known[0]
         r += 1
 
