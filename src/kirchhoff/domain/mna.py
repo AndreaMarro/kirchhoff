@@ -34,6 +34,10 @@ def _classify_dc(c: Component) -> tuple[str, Fraction]:
         return "E", c.value.amount
     if c.type == "current_source_dc":
         return "I", c.value.amount
+    if c.type == "voltage_controlled_voltage_source":
+        return "VCVS", c.value.amount
+    if c.type == "voltage_controlled_current_source":
+        return "VCCS", c.value.amount
     raise ValueError(f"{c.id}: {c.type} non ammesso in analisi in continua")
 
 
@@ -68,7 +72,7 @@ def _assemble(ir: IR, kinds: list[tuple[Component, str, object]], zero):
     """Costruisce (matrice, termine noto, indice dei nodi, indice delle sorgenti)."""
     unknown_nodes = [n for n in ir.nodes if n != REFERENCE_NODE]
     idx = {n: i for i, n in enumerate(unknown_nodes)}
-    sources = [c for c, kind, _ in kinds if kind == "E"]
+    sources = [c for c, kind, _ in kinds if kind in ("E", "VCVS")]
     src_idx = {c.id: len(unknown_nodes) + i for i, c in enumerate(sources)}
     size = len(unknown_nodes) + len(sources)
 
@@ -92,6 +96,35 @@ def _assemble(ir: IR, kinds: list[tuple[Component, str, object]], zero):
                 a[idx[q]][k] -= 1
                 a[k][idx[q]] -= 1
             b[k] = val
+        elif kind == "VCVS":
+            k = src_idx[c.id]
+            if c.control_nodes is None:
+                raise ValueError(f"{c.id}: VCVS senza nodi di controllo")
+            cp, cq = c.control_nodes
+            if p in idx:
+                a[idx[p]][k] += 1
+                a[k][idx[p]] += 1
+            if q in idx:
+                a[idx[q]][k] -= 1
+                a[k][idx[q]] -= 1
+            if cp in idx:
+                a[k][idx[cp]] -= val
+            if cq in idx:
+                a[k][idx[cq]] += val
+        elif kind == "VCCS":
+            if c.control_nodes is None:
+                raise ValueError(f"{c.id}: VCCS senza nodi di controllo")
+            cp, cq = c.control_nodes
+            if p in idx:
+                if cp in idx:
+                    a[idx[p]][idx[cp]] += val
+                if cq in idx:
+                    a[idx[p]][idx[cq]] -= val
+            if q in idx:
+                if cp in idx:
+                    a[idx[q]][idx[cp]] -= val
+                if cq in idx:
+                    a[idx[q]][idx[cq]] += val
         else:  # "I": corrente nota, va al termine noto
             if p in idx:
                 b[idx[p]] -= val
@@ -114,8 +147,13 @@ def _solve(ir: IR, kinds: list[tuple[Component, str, object]], zero) -> dict[str
         vd = v[p] - v[q]
         if kind == "Y":
             i_c = vd * val
-        elif kind == "E":
+        elif kind in ("E", "VCVS"):
             i_c = sol[src_idx[c.id]]
+        elif kind == "VCCS":
+            if c.control_nodes is None:
+                raise ValueError(f"{c.id}: VCCS senza nodi di controllo")
+            cp, cq = c.control_nodes
+            i_c = val * (v[cp] - v[cq])
         else:
             i_c = val
         out[c.id] = {"voltage": vd, "current": i_c}
