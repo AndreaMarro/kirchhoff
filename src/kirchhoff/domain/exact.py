@@ -1,21 +1,4 @@
-"""Aritmetica esatta: campo ciclotomico Q(zeta_12) e algebra lineare su un campo.
-
-Perche' non basta un complesso razionale. Il regime sinusoidale si accontenta di
-`a + jb` con `a, b` razionali, ma il trifase no: `e^(j120) = -1/2 + j*sqrt(3)/2`
-porta `sqrt(3)`, che razionale non e'. Q(zeta_12) e' la piu' piccola estensione di
-Q che contiene insieme `j` e `sqrt(3)`. Ha grado 4, base `(1, z, z^2, z^3)` con
-`z = e^(j30)`, e polinomio minimo `z^4 = z^2 - 1`.
-
-Dentro ci sono, esatti:
-    j       = z^3
-    sqrt(3) = 2z - z^3
-    e^(j120)= z^4 = z^2 - 1
-
-Cosi' la somma delle tre fasi di un sistema equilibrato e' zero *esattamente*, e un
-residuo diverso da zero e' un bug e non arrotondamento (D6, controllo 1).
-
-Questo modulo sta sotto `domain/`: nessuna I/O, nessun orologio, nessuna casualita'.
-"""
+"""Aritmetica esatta: campo ciclotomico Q(zeta_12) e algebra lineare su un campo."""
 
 from __future__ import annotations
 
@@ -26,6 +9,10 @@ _Q0 = Fraction(0)
 _Q1 = Fraction(1)
 
 
+class SingularSystemError(ValueError):
+    """Il sistema lineare è matematicamente singolare."""
+
+
 @dataclass(frozen=True, slots=True, eq=False)
 class Cyc12:
     """Elemento di Q(zeta_12), come quattro razionali sulla base (1, z, z^2, z^3)."""
@@ -34,19 +21,11 @@ class Cyc12:
 
     @staticmethod
     def of(x: int | Fraction) -> Cyc12:
-        """Immersione di un razionale nel campo. Un float non passa di qui.
-
-        `Fraction(0.1)` non fallisce: restituisce 3602879701896397/36028797018963968,
-        cioe' il rumore binario travestito da razionale esatto. Da quel momento ogni
-        confronto a zero e' compromesso e nessuno protesta. La porta si chiude qui.
-        """
         if not isinstance(x, (int, Fraction)):
             raise TypeError(
                 f"valore non esatto nel campo ciclotomico: {type(x).__name__}. "
                 "Serve un int o una Fraction; un float porta rumore binario.")
         return Cyc12((Fraction(x), _Q0, _Q0, _Q0))
-
-    # -- aritmetica ---------------------------------------------------------
 
     def __add__(self, o: object) -> Cyc12:
         q = _lift(o)
@@ -70,13 +49,11 @@ class Cyc12:
         for i, a in enumerate(self.c):
             for k, b in enumerate(q.c):
                 p[i + k] += a * b
-        # riduzione: z^4 = z^2 - 1, z^5 = z^3 - z, z^6 = -1
         return Cyc12((p[0] - p[4] - p[6], p[1] - p[5], p[2] + p[4], p[3] + p[5]))
 
     __rmul__ = __mul__
 
     def inverse(self) -> Cyc12:
-        """Inverso per soluzione del sistema lineare della moltiplicazione."""
         if not self:
             raise ZeroDivisionError("inverso di zero nel campo ciclotomico")
         cols = [(self * b).c for b in (ONE, ZETA, ZETA2, ZETA3)]
@@ -91,11 +68,8 @@ class Cyc12:
         return _lift(o) * self.inverse()
 
     def conjugate(self) -> Cyc12:
-        """Coniugio complesso: z -> z^-1, cioe' z^-1 = z - z^3 e z^-2 = 1 - z^2."""
         a0, a1, a2, a3 = self.c
         return Cyc12((a0 + a2, a1, -a2, -a1 - a3))
-
-    # -- confronto ----------------------------------------------------------
 
     def __eq__(self, o: object) -> bool:
         if isinstance(o, Cyc12):
@@ -108,8 +82,6 @@ class Cyc12:
         return any(x != 0 for x in self.c)
 
     def __hash__(self) -> int:
-        # Definire `__eq__` in un corpo di classe azzera `__hash__`: senza questo,
-        # un insieme di fasori esploderebbe al primo inserimento.
         return hash(self.c)
 
 
@@ -125,14 +97,13 @@ ZETA = Cyc12((_Q0, _Q1, _Q0, _Q0))
 ZETA2 = Cyc12((_Q0, _Q0, _Q1, _Q0))
 ZETA3 = Cyc12((_Q0, _Q0, _Q0, _Q1))
 
-J = ZETA3                       # e^(j90)
-SQRT3 = Cyc12((_Q0, Fraction(2), _Q0, Fraction(-1)))   # 2z - z^3
-A120 = Cyc12((Fraction(-1), _Q0, _Q1, _Q0))            # z^4 = z^2 - 1
-A240 = Cyc12((_Q0, _Q0, Fraction(-1), _Q0))            # z^8 = -z^2
+J = ZETA3
+SQRT3 = Cyc12((_Q0, Fraction(2), _Q0, Fraction(-1)))
+A120 = Cyc12((Fraction(-1), _Q0, _Q1, _Q0))
+A240 = Cyc12((_Q0, _Q0, Fraction(-1), _Q0))
 
 
 def zeta_pow(k: int) -> Cyc12:
-    """`z^k` per k intero qualsiasi: uno sfasamento di k volte 30 gradi, esatto."""
     out = ONE
     for _ in range(k % 12):
         out = out * ZETA
@@ -140,18 +111,12 @@ def zeta_pow(k: int) -> Cyc12:
 
 
 def solve_linear(a: list[list], b: list) -> list:
-    """Eliminazione di Gauss con pivot parziale, su qualunque campo esatto.
-
-    Funziona identica su `Fraction` e su `Cyc12`: divide, non approssima. Il pivot
-    si sceglie per non-nullita', non per grandezza — non essendoci errore di
-    arrotondamento, non c'e' stabilita' numerica da difendere.
-    """
     n = len(b)
     m = [list(row) + [b[i]] for i, row in enumerate(a)]
     for col in range(n):
         pivot = next((r for r in range(col, n) if m[r][col]), None)
         if pivot is None:
-            raise ValueError(f"sistema singolare alla colonna {col}")
+            raise SingularSystemError(f"sistema singolare alla colonna {col}")
         m[col], m[pivot] = m[pivot], m[col]
         p = m[col][col]
         m[col] = [v / p for v in m[col]]
@@ -163,7 +128,6 @@ def solve_linear(a: list[list], b: list) -> list:
 
 
 def determinant(m: list[list[Fraction]]) -> Fraction:
-    """Determinante esatto su razionali. Zero significa singolare, senza sfumature."""
     n = len(m)
     rows = [row[:] for row in m]
     det = _Q1
