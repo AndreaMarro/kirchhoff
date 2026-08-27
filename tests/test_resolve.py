@@ -5,6 +5,7 @@ from fractions import Fraction
 
 import pytest
 
+from kirchhoff.domain.exact import SingularSystemError
 from kirchhoff.domain.ir import IR, Component
 from kirchhoff.domain.refusal import Refusal
 from kirchhoff.pipeline.failure import Failure
@@ -55,7 +56,6 @@ def test_due_maglie_si_certificano_senza_disegno():
 
 
 def test_due_generatori_in_parallelo_sono_rifiuto_di_validate():
-    """Validate vede la maglia di soli generatori. Non è un Failure del solver."""
     ir = IR("1.0.0", "dc_resistive", "generated", ("0", "A"),
             (Component.of("E1", "voltage_source_dc", ("A", "0"), F(5), "E_1"),
              Component.of("E2", "voltage_source_dc", ("A", "0"), F(5), "E_2"),
@@ -76,7 +76,8 @@ def test_il_fasore_e_sul_percorso_pubblico():
     assert esito.solver == "phasor"
     assert "sanità fisica" not in esito.verifiche
     assert "legge dei nodi" in esito.verifiche
-    assert "bilancio di potenza" in esito.verifiche
+    assert "identità di Tellegen" in esito.verifiche
+    assert "bilancio di potenza" not in esito.verifiche
 
 
 def test_il_transitorio_si_rifiuta():
@@ -106,7 +107,6 @@ def test_failure_e_un_tipo_altro_da_refusal():
 
 
 def test_vac_senza_omega_non_nasce_come_ir():
-    """Lo schema possiede questa regola. resolve non la rivede su un IR impossibile."""
     with pytest.raises(ValueError, match="pulsazione"):
         IR("1.0.0", "ac_sinusoidal", "generated", ("0", "A"),
            (Component.of("E1", "voltage_source_ac", ("A", "0"), F(10), "E_1"),
@@ -115,7 +115,6 @@ def test_vac_senza_omega_non_nasce_come_ir():
 
 
 def test_sinusoidale_reattivo_senza_omega_arriva_al_dispatch():
-    """Senza VAC lo schema tace. Dispatch rifiuta: C non ha frequenza."""
     ir = IR("1.0.0", "ac_sinusoidal", "generated", ("0", "A"),
             (Component.of("R1", "resistor", ("A", "0"), F(10), "R_1"),
              Component.of("C1", "capacitor", ("A", "0"), F(1, 1000), "C_1")),
@@ -138,7 +137,6 @@ def test_fasore_con_generatore_dc_si_rifiuta():
 
 
 def test_un_tipo_senza_percorso_si_rifiuta():
-    """VAC in dominio DC: lo schema accetta se ω > 0. Il dispatch rifiuta."""
     ir = IR("1.0.0", "dc_resistive", "generated", ("0", "A"),
             (Component.of("E1", "voltage_source_ac", ("A", "0"), F(10), "E_1"),
              Component.of("R1", "resistor", ("A", "0"), F(10), "R_1")),
@@ -170,7 +168,7 @@ def test_singolare_dichiarata_dal_kernel_e_rifiuto(monkeypatch):
     import kirchhoff.domain.mna as mna
     monkeypatch.setattr(
         mna, "solve_dc",
-        lambda ir: (_ for _ in ()).throw(ValueError("sistema singolare alla colonna 0")))
+        lambda ir: (_ for _ in ()).throw(SingularSystemError("sistema singolare alla colonna 0")))
     esito = resolve(leggi(PARTITORE))
     assert isinstance(esito, Refusal)
     assert esito.cause == "unsolvable"
