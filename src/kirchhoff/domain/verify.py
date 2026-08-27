@@ -204,7 +204,4 @@ def verify(ir: IR, sol: dict[str, dict]) -> Refusal | None:
                 f"{cid}: la legge costitutiva della sorgente controllata "
                 f"non si annulla: {r}")
 
-    rifiuto = _rifiuta_scarto_potenza(ir, power_balance(ir, sol))
-    if rifiuto is not None:
-        return rifiuto
-    return _sanita(ir, sol)
+    return _rifiuta_scarto_potenza(ir, power_balance(ir, sol)) or _sanita(ir, sol)
