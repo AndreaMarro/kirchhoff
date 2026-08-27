@@ -75,3 +75,36 @@ def test_verify_rifiuta_bilancio_di_potenza(monkeypatch):
     assert isinstance(esito, Refusal)
     assert esito.cause == "residual"
     assert "scarto" in esito.diagnosis
+
+
+def test_verify_rifiuta_legge_costitutiva_con_kcl_kvl_ok():
+    """KCL e KVL passano; la legge Vout = μ Vcontrol no.
+
+    Correre solo la tensione della VCVS fa fallire KVL prima. Qui le due
+    tensioni sul nodo di uscita restano coerenti fra loro, cosi' verify
+    arriva al residuo costitutivo.
+    """
+    ir = IR(
+        "1.0.0", "dc", "generated", ("0", "A", "C"),
+        (
+            Component.of("V1", "voltage_source_dc", ("A", "0"), F(10), "V_1"),
+            Component.of("R1", "resistor", ("A", "0"), F(10), "R_1"),
+            Component.of(
+                "E1", "voltage_controlled_voltage_source", ("C", "0"),
+                F(2), "E_1", control_nodes=("A", "0"),
+            ),
+            Component.of("R2", "resistor", ("C", "0"), F(5), "R_2"),
+        ),
+        (),
+    )
+    sol = {
+        "V1": {"voltage": F(10), "current": F(-1)},
+        "R1": {"voltage": F(10), "current": F(1)},
+        "E1": {"voltage": F(21), "current": F(-4)},
+        "R2": {"voltage": F(21), "current": F(4)},
+    }
+    esito = verify(ir, sol)
+    assert isinstance(esito, Refusal)
+    assert esito.cause == "residual"
+    assert esito.subject == "E1"
+    assert "legge costitutiva" in esito.diagnosis
