@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import ast
+import importlib
 from fractions import Fraction
 from pathlib import Path
 
@@ -38,6 +39,10 @@ I1 b 0 1 ampere
 R2 b 0 6 ohm
 """
 NEGATIVA = "V1 a 0 10 volt\nR1 0 a 10 ohm\n"
+
+
+def _spine():
+    return importlib.import_module("kirchhoff.pipeline.resolve")
 
 
 def test_vr_a_uguale_b():
@@ -131,7 +136,6 @@ def test_a_corrotto_produce_path_disagreement(monkeypatch):
 
 def test_b_corrotto_produce_path_disagreement(monkeypatch):
     import kirchhoff.domain.independent_dc as b
-    import kirchhoff.pipeline.resolve as spine
 
     vero = b.solve_dc_tableau
 
@@ -144,17 +148,15 @@ def test_b_corrotto_produce_path_disagreement(monkeypatch):
         sporco[cid] = ramo
         return sporco
 
-    monkeypatch.setattr(spine, "solve_dc_tableau", rotto)
+    monkeypatch.setattr(_spine(), "solve_dc_tableau", rotto)
     esito = resolve(leggi(PARTITORE))
     assert isinstance(esito, Refusal)
     assert esito.cause == "path_disagreement"
 
 
 def test_bug_interno_b_e_failure(monkeypatch):
-    import kirchhoff.pipeline.resolve as spine
-
     monkeypatch.setattr(
-        spine, "solve_dc_tableau",
+        _spine(), "solve_dc_tableau",
         lambda ir: (_ for _ in ()).throw(RuntimeError("boom")),
     )
     esito = resolve(leggi(PARTITORE))
@@ -165,10 +167,8 @@ def test_bug_interno_b_e_failure(monkeypatch):
 
 
 def test_b_singolare_mentre_a_risolve_e_path_disagreement(monkeypatch):
-    import kirchhoff.pipeline.resolve as spine
-
     monkeypatch.setattr(
-        spine, "solve_dc_tableau",
+        _spine(), "solve_dc_tableau",
         lambda ir: (_ for _ in ()).throw(TableauSingularError("colonna 0")),
     )
     esito = resolve(leggi(PARTITORE))
@@ -179,7 +179,6 @@ def test_b_singolare_mentre_a_risolve_e_path_disagreement(monkeypatch):
 
 def test_disaccordo_non_chiama_render(monkeypatch):
     import kirchhoff.domain.mna as mna
-    import kirchhoff.pipeline.resolve as spine
 
     chiamato = {"render": False}
     vero = mna.solve_dc
@@ -194,22 +193,20 @@ def test_disaccordo_non_chiama_render(monkeypatch):
         return sporco
 
     monkeypatch.setattr(mna, "solve_dc", rotto)
-    monkeypatch.setattr(spine, "render", lambda ir, lay: chiamato.__setitem__("render", True) or "<svg/>")
+    monkeypatch.setattr(_spine(), "render", lambda ir, lay: chiamato.__setitem__("render", True) or "<svg/>")
     esito = resolve(leggi(PARTITORE))
     assert isinstance(esito, Refusal)
     assert chiamato["render"] is False
 
 
 def test_ac_non_invoca_b_e_non_attesta_accordo(monkeypatch):
-    import kirchhoff.pipeline.resolve as spine
-
     chiamato = {"b": False}
 
     def boom(ir):
         chiamato["b"] = True
         raise AssertionError("Percorso B non deve girare in AC")
 
-    monkeypatch.setattr(spine, "solve_dc_tableau", boom)
+    monkeypatch.setattr(_spine(), "solve_dc_tableau", boom)
     ir = IR(
         "1.0.0", "ac_sinusoidal", "generated", ("0", "A"),
         (Component.of("E1", "voltage_source_ac", ("A", "0"), F(10), "E_1"),
@@ -231,22 +228,18 @@ def test_dc_solved_attesta_accordo_percorsi():
 
 
 def test_b_senza_un_componente_e_path_disagreement(monkeypatch):
-    import kirchhoff.pipeline.resolve as spine
-
     def incompleto(ir):
         sol = solve_dc_tableau(ir)
         cid = next(iter(sol))
         return {k: v for k, v in sol.items() if k != cid}
 
-    monkeypatch.setattr(spine, "solve_dc_tableau", incompleto)
+    monkeypatch.setattr(_spine(), "solve_dc_tableau", incompleto)
     esito = resolve(leggi(PARTITORE))
     assert isinstance(esito, Refusal)
     assert esito.cause == "path_disagreement"
 
 
 def test_b_senza_una_grandezza_e_path_disagreement(monkeypatch):
-    import kirchhoff.pipeline.resolve as spine
-
     def monco(ir):
         sol = solve_dc_tableau(ir)
         cid = next(iter(sol))
@@ -254,7 +247,7 @@ def test_b_senza_una_grandezza_e_path_disagreement(monkeypatch):
         del out[cid]["current"]
         return out
 
-    monkeypatch.setattr(spine, "solve_dc_tableau", monco)
+    monkeypatch.setattr(_spine(), "solve_dc_tableau", monco)
     esito = resolve(leggi(PARTITORE))
     assert isinstance(esito, Refusal)
     assert esito.cause == "path_disagreement"
@@ -281,14 +274,12 @@ def test_a_senza_una_grandezza_e_path_disagreement(monkeypatch):
 
 
 def test_b_con_componente_in_piu_e_path_disagreement(monkeypatch):
-    import kirchhoff.pipeline.resolve as spine
-
     def extra(ir):
         sol = dict(solve_dc_tableau(ir))
         sol["ZX"] = {"voltage": F(0), "current": F(0)}
         return sol
 
-    monkeypatch.setattr(spine, "solve_dc_tableau", extra)
+    monkeypatch.setattr(_spine(), "solve_dc_tableau", extra)
     esito = resolve(leggi(VR))
     assert isinstance(esito, Refusal)
     assert esito.cause == "path_disagreement"
