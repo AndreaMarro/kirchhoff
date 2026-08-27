@@ -78,3 +78,38 @@ def test_controlli_eseguiti_in_ac_non_attestano_la_sanita_razionale():
     assert "legge dei nodi" in fatti
     assert "identità di Tellegen" in fatti
     assert "bilancio di potenza" not in fatti
+
+
+def test_isola_dichiarata_nell_ir_non_entra_nei_residui_kvl():
+    """Ramo 47: un componente i cui nodi non stanno nell'albero dal riferimento."""
+    ir = IR(
+        "1.0.0", "dc_resistive", "generated", ("0", "A", "C", "D"),
+        (Component.of("E1", "voltage_source_dc", ("A", "0"), F(10), "E_1"),
+         Component.of("R1", "resistor", ("A", "0"), F(10), "R_1"),
+         Component.of("R2", "resistor", ("C", "D"), F(20), "R_2"),
+         Component.of("R3", "resistor", ("C", "D"), F(30), "R_3")),
+        ())
+    sol = {c.id: {"voltage": F(0), "current": F(0)} for c in ir.components}
+    residui = kvl_residuals(ir, sol)
+    assert "R2" not in residui and "R3" not in residui
+
+
+def test_passivo_che_eroga_e_rifiuto_di_sanita(monkeypatch):
+    """Ramo 83: potenza razionale negativa su un passivo, dopo KCL/KVL/ΣVI."""
+    import kirchhoff.domain.verify as ver
+    monkeypatch.setattr(ver, "kcl_residuals", lambda ir, sol: {})
+    monkeypatch.setattr(ver, "kvl_residuals", lambda ir, sol: {})
+    monkeypatch.setattr(ver, "power_balance", lambda ir, sol: F(0))
+    ir = IR(
+        "1.0.0", "dc", "generated", ("0", "A"),
+        (Component.of("E1", "voltage_source_dc", ("A", "0"), F(10), "E_1"),
+         Component.of("R1", "resistor", ("A", "0"), F(10), "R_1")),
+        ())
+    sol = {
+        "E1": {"voltage": F(10), "current": F(1)},
+        "R1": {"voltage": F(10), "current": F(-1)},
+    }
+    esito = verify(ir, sol)
+    assert isinstance(esito, Refusal)
+    assert esito.cause == "sanity"
+    assert esito.subject == "R1"
