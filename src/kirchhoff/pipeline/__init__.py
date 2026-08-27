@@ -1,10 +1,15 @@
 """Il punto in cui le parti del prodotto si incontrano.
 
-Fino al 26/08/2026 questo pacchetto era vuoto, e la revisione della Story 1.7 lo
-aveva misurato: le parti si componevano solo dentro i test.
+L'ingresso è `resolve`. `risolvi` è lo stesso oggetto sotto il nome storico.
 """
+from kirchhoff.domain.refusal import Refusal
+from kirchhoff.pipeline.failure import Failure
+from kirchhoff.pipeline.resolve import Solved, resolve
 from kirchhoff.pipeline.risolvi import (
-    PASSO, Rifiuto, Risolto, layout_a_maglia, risolvi,
+    PASSO, Risolto, layout_a_maglia, risolvi,
 )
 
-__all__ = ["PASSO", "Rifiuto", "Risolto", "layout_a_maglia", "risolvi"]
+__all__ = [
+    "PASSO", "Failure", "Refusal", "Risolto", "Solved",
+    "layout_a_maglia", "resolve", "risolvi",
+]
