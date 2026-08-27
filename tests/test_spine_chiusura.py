@@ -128,6 +128,17 @@ def test_valueerror_generico_solver_e_failure(monkeypatch):
     assert esito.dove == "solver"
 
 
+def test_valueerror_con_testo_singolare_non_e_refusal(monkeypatch):
+    """La classificazione non legge la frase. Solo SingularSystemError è Refusal."""
+    import kirchhoff.domain.mna as mna
+    monkeypatch.setattr(
+        mna, "solve_dc",
+        lambda ir: (_ for _ in ()).throw(ValueError("sistema singolare alla colonna 0")))
+    esito = resolve(leggi(PARTITORE))
+    assert isinstance(esito, Failure)
+    assert esito.dove == "solver"
+
+
 def test_keyerror_solver_e_failure(monkeypatch):
     import kirchhoff.domain.mna as mna
     monkeypatch.setattr(mna, "solve_dc", lambda ir: (_ for _ in ()).throw(KeyError("nodo")))
@@ -160,6 +171,11 @@ def test_cli_request_non_supportata_e_rifiuto_non_solved(tmp_path, capsys):
     f.write_text(PARTITORE + "? time_constant R1\n", encoding="utf-8")
     assert main([str(f)]) == 3
     assert "RIFIUTATO" in capsys.readouterr().err
+
+
+def test_quantity_fuori_vocabolario_non_nasce():
+    with pytest.raises(ValueError, match="quantity"):
+        Request("q1", "impedance", "R1")  # type: ignore[arg-type]
 
 
 def test_ci_esiste_e_invoca_i_test_reali():

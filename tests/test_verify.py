@@ -63,6 +63,7 @@ def test_controlli_eseguiti_in_dc_includono_la_sanita():
     ir = leggi("V1 a 0 9 volt\nR1 a 0 3 ohm\n")
     fatti = controlli_eseguiti(ir, solve_dc(ir))
     assert fatti[-1] == "sanità fisica"
+    assert "bilancio di potenza" in fatti
 
 
 def test_controlli_eseguiti_in_ac_non_attestano_la_sanita_razionale():
@@ -75,3 +76,5 @@ def test_controlli_eseguiti_in_ac_non_attestano_la_sanita_razionale():
     fatti = controlli_eseguiti(ir, solve_phasor(ir))
     assert "sanità fisica" not in fatti
     assert "legge dei nodi" in fatti
+    assert "identità di Tellegen" in fatti
+    assert "bilancio di potenza" not in fatti
