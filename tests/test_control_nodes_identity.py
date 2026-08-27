@@ -108,12 +108,12 @@ def test_serie_con_vcvs_non_coinvolta_la_preserva():
 
 
 def test_serie_con_vccs_non_coinvolta_la_preserva():
-    ir = _rete_con(_vccs("G1", ("C", "0"), F(1, 10), ("A", "B")))
+    ir = _rete_con(_vccs("G1", ("C", "0"), F(1, 10), ("A", "0")))
     esito = transform(ir, "serie", "R1", "R2")
     assert not isinstance(esito, Refusal)
     _dopo, prodotto = esito
     assert C("G1") in prodotto.preserve
-    assert _dopo.component("G1").control_nodes == ("A", "B")
+    assert _dopo.component("G1").control_nodes == ("A", "0")
 
 
 def test_trasformazione_corrotta_sul_controllo_e_identity_violation():
