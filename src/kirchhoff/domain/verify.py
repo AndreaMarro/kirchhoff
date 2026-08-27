@@ -172,6 +172,16 @@ def controlli_eseguiti(ir: IR, sol: dict[str, dict]) -> tuple[str, ...]:
     return tuple(fatti)
 
 
+def _rifiuta_scarto_potenza(ir: IR, bilancio) -> Refusal | None:
+    """None se ΣVI si annulla; altrimenti Refusal tipizzato sul bilancio."""
+    if bilancio in (0, None) or bilancio == ZERO:
+        return None
+    nome = _nome_tellegen(ir)
+    return Refusal(
+        "residual", ir.components[0].id, "component",
+        f"{nome}: scarto {bilancio}")
+
+
 def verify(ir: IR, sol: dict[str, dict]) -> Refusal | None:
     """Il primo controllo che fallisce vince. None se la soluzione regge."""
     for nodo, r in sorted(kcl_residuals(ir, sol).items()):
@@ -194,11 +204,7 @@ def verify(ir: IR, sol: dict[str, dict]) -> Refusal | None:
                 f"{cid}: la legge costitutiva della sorgente controllata "
                 f"non si annulla: {r}")
 
-    bilancio = power_balance(ir, sol)
-    if bilancio not in (0, None) and bilancio != ZERO:
-        nome = _nome_tellegen(ir)
-        return Refusal(
-            "residual", ir.components[0].id, "component",
-            f"{nome}: scarto {bilancio}")
-
+    rifiuto = _rifiuta_scarto_potenza(ir, power_balance(ir, sol))
+    if rifiuto is not None:
+        return rifiuto
     return _sanita(ir, sol)

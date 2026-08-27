@@ -6,14 +6,14 @@ from fractions import Fraction
 from kirchhoff.domain.ir import Component, IR
 from kirchhoff.domain.mna import solve_dc
 from kirchhoff.domain.refusal import Refusal
-from kirchhoff.domain.verify import verify
+from kirchhoff.domain.verify import _rifiuta_scarto_potenza, verify
 from kirchhoff.pipeline.resolve import Solved, resolve
 
 F = Fraction
 
 
 def test_vccs_cp_a_massa_e_uscita_flottante():
-    """p e q non a massa, cp a massa: stamp MNA 119→121 e 124→126."""
+    """p e q non a massa, cp a massa: stamp MNA con cp a riferimento."""
     ir = IR(
         "1.0.0", "dc", "generated", ("0", "A", "B", "C"),
         (
@@ -31,6 +31,25 @@ def test_vccs_cp_a_massa_e_uscita_flottante():
     esito = resolve(ir)
     assert isinstance(esito, Solved)
     assert esito.soluzione["G1"]["current"] == solve_dc(ir)["G1"]["current"]
+
+
+def test_rifiuta_scarto_potenza_zero_e_niente():
+    ir = IR(
+        "1.0.0", "dc", "generated", ("0", "A"),
+        (
+            Component.of("V1", "voltage_source_dc", ("A", "0"), F(10), "V_1"),
+            Component.of("R1", "resistor", ("A", "0"), F(10), "R_1"),
+        ),
+        (),
+    )
+    assert _rifiuta_scarto_potenza(ir, F(0)) is None
+    assert _rifiuta_scarto_potenza(ir, 0) is None
+    assert _rifiuta_scarto_potenza(ir, None) is None
+    esito = _rifiuta_scarto_potenza(ir, F(3))
+    assert isinstance(esito, Refusal)
+    assert esito.cause == "residual"
+    assert "scarto" in esito.diagnosis
+    assert "bilancio di potenza" in esito.diagnosis
 
 
 def test_verify_rifiuta_bilancio_di_potenza(monkeypatch):
@@ -52,7 +71,7 @@ def test_verify_rifiuta_bilancio_di_potenza(monkeypatch):
         "V1": {"voltage": F(10), "current": F(-1)},
         "R1": {"voltage": F(10), "current": F(1)},
     }
-    esito = verify(ir, sol)
+    esito = ver.verify(ir, sol)
     assert isinstance(esito, Refusal)
     assert esito.cause == "residual"
     assert "scarto" in esito.diagnosis
