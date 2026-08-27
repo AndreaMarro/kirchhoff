@@ -13,7 +13,7 @@ from kirchhoff.domain.validate import Validated, validate
 from kirchhoff.domain.verify import controlli_eseguiti, verify
 from kirchhoff.pipeline.failure import Failure
 from kirchhoff.render.layout import LayoutIR
-from kirchhoff.render.serialize import render
+from kirchhoff.render.serialize import FORME, render
 
 DC_TYPES = frozenset({"resistor", "voltage_source_dc", "current_source_dc"})
 PHASOR_TYPES = frozenset({
@@ -44,6 +44,11 @@ class Solved:
 
 
 Risolto = Solved
+
+
+def renderer_supports(ir: IR) -> bool:
+    """Il renderer dichiara i tipi che sa disegnare in `FORME`. Nient'altro."""
+    return all(c.type in FORME for c in ir.components)
 
 
 def _tipi(ir: IR) -> frozenset[str]:
@@ -138,6 +143,9 @@ def _disegna(ir: IR, layout: LayoutIR | None) -> tuple[LayoutIR | None, str | No
             return Failure("layout", f"{type(e).__name__}: {e}")
     else:
         disegno = layout
+
+    if not renderer_supports(ir):
+        return disegno, None
 
     try:
         return disegno, render(ir, disegno)
