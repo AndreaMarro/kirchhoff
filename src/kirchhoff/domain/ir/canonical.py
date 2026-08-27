@@ -10,6 +10,9 @@ Riordinarlo produrrebbe un circuito diverso che si dichiara uguale — l'errore
 silenzioso che il prodotto esiste per prevenire. Per questo la simmetria si applica
 solo ai bipoli che sono davvero simmetrici.
 
+I nodi di controllo di una sorgente controllata fanno parte dell'identità:
+lo stesso ramo di uscita con un altro (cp, cq) è un altro componente.
+
 Pura e idempotente: restituisce un nuovo IR e non tocca quello ricevuto.
 """
 
@@ -45,7 +48,7 @@ def canonicalize(ir: IR) -> IR:
     """La forma su cui due IR dello stesso circuito devono coincidere."""
     componenti = tuple(sorted(
         (orienta(c) for c in ir.components),
-        key=lambda c: (c.type, c.id, c.terminals),
+        key=lambda c: (c.type, c.id, c.terminals, c.control_nodes),
     ))
     return IR(
         ir.ir_version,
