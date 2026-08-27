@@ -100,9 +100,14 @@ def main(argv: list[str] | None = None) -> int:
         print()
         for r in circuito.requests:
             v = esito.soluzione.get(r.target, {}).get(r.quantity)
-            print(f"  chiesto: {r.quantity} di {r.target} = {v}  "
-                  f"({_decimale(v)})" if isinstance(v, Fraction) else
-                  f"  chiesto: {r.quantity} di {r.target} — non risolto")
+            if v is None:
+                print(
+                    f"GUASTO — Solved senza {r.quantity} di {r.target}: "
+                    "lo spine non doveva pubblicare",
+                    file=sys.stderr)
+                return 70
+            extra = f"  ({_decimale(v)})" if isinstance(v, Fraction) else ""
+            print(f"  chiesto: {r.quantity} di {r.target} = {v}{extra}")
 
     if n.svg:
         if not esito.svg:
