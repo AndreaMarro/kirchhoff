@@ -80,22 +80,20 @@ def test_controlli_eseguiti_in_ac_non_attestano_la_sanita_razionale():
     assert "bilancio di potenza" not in fatti
 
 
-def test_isola_dichiarata_nell_ir_non_entra_nei_residui_kvl():
-    """Ramo 47: un componente i cui nodi non stanno nell'albero dal riferimento."""
+def test_kvl_albero_percorre_il_primo_terminale():
+    """Ramo terminals[0] == qui: l'albero parte dal primo morsetto del ramo."""
     ir = IR(
-        "1.0.0", "dc_resistive", "generated", ("0", "A", "C", "D"),
-        (Component.of("E1", "voltage_source_dc", ("A", "0"), F(10), "E_1"),
-         Component.of("R1", "resistor", ("A", "0"), F(10), "R_1"),
-         Component.of("R2", "resistor", ("C", "D"), F(20), "R_2"),
-         Component.of("R3", "resistor", ("C", "D"), F(30), "R_3")),
+        "1.0.0", "dc_resistive", "generated", ("0", "A"),
+        (Component.of("E1", "voltage_source_dc", ("0", "A"), F(10), "E_1"),
+         Component.of("R1", "resistor", ("A", "0"), F(10), "R_1")),
         ())
-    sol = {c.id: {"voltage": F(0), "current": F(0)} for c in ir.components}
-    residui = kvl_residuals(ir, sol)
-    assert "R2" not in residui and "R3" not in residui
+    from kirchhoff.domain.mna import solve_dc
+    residui = kvl_residuals(ir, solve_dc(ir))
+    assert all(r == 0 for r in residui.values())
 
 
 def test_passivo_che_eroga_e_rifiuto_di_sanita(monkeypatch):
-    """Ramo 83: potenza razionale negativa su un passivo, dopo KCL/KVL/ΣVI."""
+    """Potenza razionale negativa su un passivo, dopo KCL/KVL/ΣVI."""
     import kirchhoff.domain.verify as ver
     monkeypatch.setattr(ver, "kcl_residuals", lambda ir, sol: {})
     monkeypatch.setattr(ver, "kvl_residuals", lambda ir, sol: {})
