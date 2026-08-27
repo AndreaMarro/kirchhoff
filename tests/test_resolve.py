@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from fractions import Fraction
+import importlib
 
 import pytest
 
@@ -78,6 +79,7 @@ def test_il_fasore_e_sul_percorso_pubblico():
     assert "legge dei nodi" in esito.verifiche
     assert "identità di Tellegen" in esito.verifiche
     assert "bilancio di potenza" not in esito.verifiche
+    assert esito.svg is None
 
 
 def test_il_transitorio_si_rifiuta():
@@ -185,7 +187,7 @@ def test_eccezione_inattesa_del_solver_nomina_lo_stadio(monkeypatch):
 
 
 def test_validate_che_esplode_nomina_validate(monkeypatch):
-    import kirchhoff.pipeline.resolve as spine
+    spine = importlib.import_module("kirchhoff.pipeline.resolve")
     monkeypatch.setattr(spine, "validate", lambda ir: (_ for _ in ()).throw(RuntimeError("disco")))
     esito = resolve(leggi(PARTITORE))
     assert isinstance(esito, Failure)
@@ -193,7 +195,7 @@ def test_validate_che_esplode_nomina_validate(monkeypatch):
 
 
 def test_verify_che_esplode_nomina_verify(monkeypatch):
-    import kirchhoff.pipeline.resolve as spine
+    spine = importlib.import_module("kirchhoff.pipeline.resolve")
     monkeypatch.setattr(spine, "verify", lambda ir, sol: (_ for _ in ()).throw(RuntimeError("residuo rotto")))
     esito = resolve(leggi(PARTITORE))
     assert isinstance(esito, Failure)
@@ -201,7 +203,7 @@ def test_verify_che_esplode_nomina_verify(monkeypatch):
 
 
 def test_render_che_esplode_con_layout_valido_e_failure(monkeypatch):
-    import kirchhoff.pipeline.resolve as spine
+    spine = importlib.import_module("kirchhoff.pipeline.resolve")
     monkeypatch.setattr(spine, "render", lambda ir, lay: (_ for _ in ()).throw(ValueError("filo attraverso un nodo")))
     esito = resolve(leggi(PARTITORE))
     assert isinstance(esito, Failure)
@@ -209,7 +211,7 @@ def test_render_che_esplode_con_layout_valido_e_failure(monkeypatch):
 
 
 def test_validate_che_restituisce_altro_e_failure(monkeypatch):
-    import kirchhoff.pipeline.resolve as spine
+    spine = importlib.import_module("kirchhoff.pipeline.resolve")
     monkeypatch.setattr(spine, "validate", lambda ir: "boh")
     esito = resolve(leggi(PARTITORE))
     assert isinstance(esito, Failure)

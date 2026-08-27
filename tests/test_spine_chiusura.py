@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from fractions import Fraction
 from pathlib import Path
+import importlib
 
 import pytest
 
@@ -11,7 +12,7 @@ from kirchhoff.domain.ir import IR, Component, Request
 from kirchhoff.domain.refusal import Refusal
 from kirchhoff.pipeline.failure import Failure
 from kirchhoff.pipeline.netlist import leggi
-from kirchhoff.pipeline.resolve import Solved, resolve
+from kirchhoff.pipeline.resolve import Solved, renderer_supports, resolve
 
 F = Fraction
 PARTITORE = "V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\n"
@@ -183,8 +184,51 @@ def test_ci_esiste_e_invoca_i_test_reali():
     assert "pytest" in testo
     assert "check_domain_coverage.py" in testo
     assert "3.12" in testo
+    assert "kirchhoff-eval build" in testo
+    assert testo.index("kirchhoff-eval build") < testo.index("run: pytest")
 
 
 def test_solve_linear_solleva_singular_system_error():
     with pytest.raises(SingularSystemError, match="singolare"):
         solve_linear([[F(1), F(2)], [F(2), F(4)]], [F(1), F(2)])
+
+
+def test_ac_valido_e_solved_non_failure():
+    esito = resolve(_ac())
+    assert isinstance(esito, Solved)
+    assert not isinstance(esito, Failure)
+    assert esito.solver == "phasor"
+
+
+def test_ac_solved_puo_avere_svg_assente():
+    esito = resolve(_ac())
+    assert isinstance(esito, Solved)
+    assert esito.svg is None
+    assert not renderer_supports(_ac())
+
+
+def test_dc_con_tipi_supportati_produce_svg():
+    esito = resolve(_dc())
+    assert isinstance(esito, Solved)
+    assert esito.svg is not None and esito.svg.startswith("<svg")
+    assert renderer_supports(_dc())
+
+
+def test_multimaglia_senza_autolayout_resta_solved_numerico():
+    esito = resolve(leggi(
+        "V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\nR3 a 0 330 ohm\n"))
+    assert isinstance(esito, Solved)
+    assert esito.svg is None
+    assert esito.layout is None
+
+
+def test_render_rotto_su_circuito_supportato_e_failure_anche_se_il_messaggio_sembra_un_simbolo(monkeypatch):
+    """La distinzione è FORME, non il testo dell'eccezione."""
+    spine = importlib.import_module("kirchhoff.pipeline.resolve")
+    monkeypatch.setattr(
+        spine, "render",
+        lambda ir, lay: (_ for _ in ()).throw(
+            ValueError("E1: nessun simbolo per un voltage_source_dc")))
+    esito = resolve(_dc())
+    assert isinstance(esito, Failure)
+    assert esito.dove == "render"
