@@ -9,79 +9,37 @@ Quattro concetti distinti, e il planner interroga l'ultimo:
 
 `partitore_di_tensione` è nel catalogo e in `SUPPORTED` ma non ha corpo: qui
 non compare mai fra le riduzioni eseguibili.
+
+Le guardie di serie/parallelo non vivono qui: la sola fonte è
+`transform.applicability.enumerate_executable_transforms`.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from itertools import combinations
+from ..ir import IR, REFERENCE_NODE
+from ..transform.applicability import (
+    ExecutableTransform,
+    enumerate_executable_transforms,
+)
+from .analytical import nodo_della_prima_kcl
 
-from ..ir import IR, REFERENCE_NODE, Component
-from ..transform.engine import implemented
-
-#: I tipi su cui l'analisi nodale DC esatta del core sa formulare un sistema.
-NODAL_COMPONENT_TYPES: frozenset[str] = frozenset({
+#: Sottoinsieme per cui lo slice didattico sa davvero scrivere equazioni.
+#: MNA risolve anche generatori di corrente e sorgenti controllate; il
+#: formulatore KCL di questo slice costruisce soltanto termini resistivi e
+#: tensioni fissate da un generatore verso il riferimento.
+DIDACTIC_NODAL_COMPONENT_TYPES: frozenset[str] = frozenset({
     "resistor",
     "voltage_source_dc",
-    "current_source_dc",
-    "voltage_controlled_voltage_source",
-    "voltage_controlled_current_source",
 })
 
 QUANTITA_NODALI: frozenset[str] = frozenset({"voltage", "current"})
 
-
-@dataclass(frozen=True, slots=True, order=True)
-class RiduzioneEseguibile:
-    """Una riduzione certificata applicabile a una coppia concreta."""
-
-    operation: str
-    first: str
-    second: str
-
-    @property
-    def operands(self) -> tuple[str, str]:
-        return (self.first, self.second)
-
-
-def _resistori(ir: IR) -> tuple[Component, ...]:
-    return tuple(c for c in ir.components if c.type == "resistor")
-
-
-def _grado(ir: IR, nodo: str) -> tuple[str, ...]:
-    return tuple(sorted(c.id for c in ir.components if nodo in c.terminals))
-
-
-def _serie_applicabile(ir: IR, a: Component, b: Component) -> bool:
-    comune = set(a.terminals) & set(b.terminals)
-    if len(comune) != 1:
-        return False
-    nodo = next(iter(comune))
-    if nodo == REFERENCE_NODE:
-        return False
-    return _grado(ir, nodo) == tuple(sorted((a.id, b.id)))
-
-
-def _parallelo_applicabile(a: Component, b: Component) -> bool:
-    return set(a.terminals) == set(b.terminals)
+RiduzioneEseguibile = ExecutableTransform
 
 
 def riduzioni_eseguibili(ir: IR) -> tuple[RiduzioneEseguibile, ...]:
-    """Le riduzioni con corpo *e* precondizioni soddisfatte su questo IR.
-
-    L'ordine è canonico: operazione, poi i due identificatori già ordinati.
-    Permutare i componenti dell'IR non cambia il risultato.
-    """
-    corpo = implemented()
-    trovate: list[RiduzioneEseguibile] = []
-    for a, b in combinations(_resistori(ir), 2):
-        primo, secondo = sorted((a.id, b.id))
-        ca, cb = ir.component(primo), ir.component(secondo)
-        if "serie" in corpo and _serie_applicabile(ir, ca, cb):
-            trovate.append(RiduzioneEseguibile("serie", primo, secondo))
-        if "parallelo" in corpo and _parallelo_applicabile(ca, cb):
-            trovate.append(RiduzioneEseguibile("parallelo", primo, secondo))
-    return tuple(sorted(trovate))
+    """Le riduzioni con corpo *e* precondizioni soddisfatte su questo IR."""
+    return enumerate_executable_transforms(ir)
 
 
 def contribuisce(riduzione: RiduzioneEseguibile, target: str, quantity: str) -> bool:
@@ -109,11 +67,25 @@ def riduzioni_che_contribuiscono(
     )
 
 
+def _generatori_tensione_verso_riferimento(ir: IR) -> bool:
+    for c in ir.components:
+        if c.type != "voltage_source_dc":
+            continue
+        if REFERENCE_NODE not in c.terminals:
+            return False
+    return True
+
+
 def nodale_disponibile(ir: IR, quantity: str) -> bool:
+    """Vero solo se plan → azioni analitiche → equazioni esatte è eseguibile."""
     if ir.domain != "dc":
         return False
     if quantity not in QUANTITA_NODALI:
         return False
     if not ir.components:
         return False
-    return all(c.type in NODAL_COMPONENT_TYPES for c in ir.components)
+    if not all(c.type in DIDACTIC_NODAL_COMPONENT_TYPES for c in ir.components):
+        return False
+    if not _generatori_tensione_verso_riferimento(ir):
+        return False
+    return nodo_della_prima_kcl(ir) is not None
