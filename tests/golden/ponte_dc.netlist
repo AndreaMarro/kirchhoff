@@ -1,0 +1,10 @@
+# Ponte DC certificato A/B — identico a tests/test_percorso_b.py::PONTE
+# più la Request esistente: corrente sul ramo R4.
+# Risolve con A == B e verify verde; nessuna riduzione serie/parallelo eseguibile.
+V1 c 0 12 volt
+R1 c a 10 ohm
+R2 c b 20 ohm
+R3 a 0 30 ohm
+R4 b 0 40 ohm
+Rg a b 50 ohm
+? current R4
