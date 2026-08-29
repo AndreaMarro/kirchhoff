@@ -1,1 +1,32 @@
-"""Spine didattico 0.1: planner deterministico e primo passo analitico.\n\nIl ponte è quello già certificato da `tests/test_percorso_b.py` (A == B).\nNessun nome di fixture decide la strategia.\n"""\nfrom __future__ import annotations\n\nfrom fractions import Fraction\nfrom pathlib import Path\n\nimport pytest\n\nfrom kirchhoff.domain.didactic import (\n    AnalyticalStep,\n    DerivationState,\n    DidacticPlan,\n    ExactEquation,\n    NodalTerm,\n    NodalVariable,\n    PLAN_SCHEMA_VERSION,\n    PROFILE,\n    PlanReason,\n    PlannedAction,\n    applica_passo,\n    il_grafo_resta_fermo,\n    pianifica,\n    stato_iniziale,\n)\nfrom kirchhoff.domain.didactic.analytical import nodo_della_prima_kcl\nfrom kirchhoff.domain.didactic.capabilities import (\n    contribuisce,\n    nodale_disponibile,\n    riduzioni_che_contribuiscono,\n    riduzioni_eseguibili,\n)\nfrom kirchhoff.domain.didactic.derivation import nome_tensione\nfrom kirchhoff.domain.identity import conia\nfrom kirchhoff.domain.ir import IR, Component, Request\nfrom kirchhoff.domain.proof import ProofGraph, ProofNode\nfrom kirchhoff.domain.refusal import Refusal\nfrom kirchhoff.domain.transform import SUPPORTED, implemented\nfrom kirchhoff.pipeline.netlist import leggi\nfrom kirchhoff.pipeline.resolve import Solved, resolve\n\nF = Fraction\nENTROPIA = bytes(range(10))\nGOLDEN_NETLIST = Path(__file__).resolve().parent / \"golden\" / \"ponte_dc.netlist\"\n
+"""Spine didattico 0.1: planner deterministico e capacita realmente eseguibili.
+
+Il ponte e quello gia certificato da `tests/test_percorso_b.py` (A == B).
+Nessun nome di fixture decide la strategia.
+"""
+from __future__ import annotations
+
+import inspect
+from pathlib import Path
+from unittest.mock import patch
+
+from kirchhoff.domain.didactic import DidacticPlan, pianifica
+from kirchhoff.domain.didactic.capabilities import (
+    DIDACTIC_NODAL_COMPONENT_TYPES,
+    contribuisce,
+    nodale_disponibile,
+    riduzioni_che_contribuiscono,
+    riduzioni_eseguibili,
+)
+from kirchhoff.domain.ir import IR, Request
+from kirchhoff.domain.refusal import Refusal
+from kirchhoff.domain.transform import SUPPORTED, implemented
+from kirchhoff.domain.transform.applicability import (
+    ExecutableTransform,
+    enumerate_executable_transforms,
+)
+from kirchhoff.pipeline.netlist import leggi
+from kirchhoff.pipeline.resolve import Solved, resolve
+
+from test_percorso_b import PONTE
+
+GOLDEN_NETLIST = Path(__file__).resolve().parent / "golden" / "ponte_dc.netlist"
