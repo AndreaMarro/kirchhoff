@@ -1,0 +1,99 @@
+diff --git a/src/kirchhoff/domain/didactic/analytical.py b/src/kirchhoff/domain/didactic/analytical.py
+index 1c98244..74799f7 100644
+--- a/src/kirchhoff/domain/didactic/analytical.py
++++ b/src/kirchhoff/domain/didactic/analytical.py
+@@ -312,14 +312,6 @@ def scrivi_kcl_al_nodo(
+     return passo, dopo
+ 
+ 
+-def _scrivi_kcl(ir: IR, prima: DerivationState) -> tuple[AnalyticalStep, DerivationState]:
+-    nodo = nodo_della_prima_kcl(ir)
+-    if nodo is None:
+-        raise ValueError(
+-            "nessun nodo ammette una KCL ordinaria senza supernodo in questo slice")
+-    return scrivi_kcl_al_nodo(ir, prima, nodo)
+-
+-
+ @dataclass(frozen=True, slots=True, order=True)
+ class SimpleSupernode:
+     """Una voltage_source_dc flottante fra due nodi unknown disgiunti."""
+@@ -558,26 +550,71 @@ def scrivi_vincolo_tensione(
+     return passo, dopo
+ 
+ 
+-def _scrivi_vincolo(ir: IR, prima: DerivationState) -> tuple[AnalyticalStep, DerivationState]:
+-    candidati = supernodi_semplici(ir)
+-    if not candidati:
++def _nessun_operando(kind: str, operands: tuple[str, ...]) -> None:
++    """I passi senza operando rifiutano qualsiasi tupla non vuota."""
++    if operands:
+         raise ValueError(
+-            "nessun vincolo di tensione da supernodo semplice in questo slice")
+-    return scrivi_vincolo_tensione(ir, prima, candidati[0].source_id)
++            f"kind {kind!r} non ammette operands, "
++            f"operands ricevuti {operands}")
++
++
++def _dispatch_write_kcl(
++    ir: IR, prima: DerivationState, operands: tuple[str, ...],
++) -> tuple[AnalyticalStep, DerivationState]:
++    """KCL ordinaria (1 operando-nodo) o KCL di supernodo (sorgente, p, q).
++
++    Non riseleziona il primo candidato: gli operands del piano sono
++    l'identità dell'equazione. Una arità diversa da 1 o 3 è illegale.
++    """
++    if len(operands) == 1:
++        return scrivi_kcl_al_nodo(ir, prima, operands[0])
++    if len(operands) != 3:
++        raise ValueError(
++            f"kind 'write_kcl' richiede 1 o 3 operands, "
++            f"operands ricevuti {operands}")
++    source_id, p, q = operands
++    sn = _supernodo_di(ir, source_id)
++    attesi = (sn.source_id, sn.p, sn.q)
++    if (source_id, p, q) != attesi:
++        raise ValueError(
++            f"operands {operands} non coincidono con {attesi}")
++    return scrivi_kcl_del_supernodo(ir, prima, source_id)
++
++
++def _dispatch_write_voltage_constraint(
++    ir: IR, prima: DerivationState, operands: tuple[str, ...],
++) -> tuple[AnalyticalStep, DerivationState]:
++    """Vincolo di tensione: un solo operando, il source_id del generatore."""
++    if len(operands) != 1:
++        raise ValueError(
++            f"kind 'write_voltage_constraint' richiede 1 operand, "
++            f"operands ricevuti {operands}")
++    return scrivi_vincolo_tensione(ir, prima, operands[0])
+ 
+ 
+ def applica_passo(
+-    kind: str, ir: IR, prima: DerivationState,
++    kind: str,
++    ir: IR,
++    prima: DerivationState,
++    *,
++    operands: tuple[str, ...],
+ ) -> tuple[AnalyticalStep, DerivationState]:
+-    """Esegue un passo analitico. Il `CircuitIR` non entra nel prodotto."""
++    """Esegue un passo analitico onorando gli operands della PlannedAction.
++
++    `operands` è keyword-only e obbligatorio. Il dispatch non sceglie
++    il primo nodo o il primo supernodo: formula esattamente ciò che
++    il piano ha nominato. Il `CircuitIR` non entra nel prodotto.
++    """
+     if kind == "choose_reference":
++        _nessun_operando(kind, operands)
+         return _scegli_riferimento(ir, prima)
+     if kind == "define_nodal_unknowns":
++        _nessun_operando(kind, operands)
+         return _definisci_incognite(ir, prima)
+     if kind == "write_kcl":
+-        return _scrivi_kcl(ir, prima)
++        return _dispatch_write_kcl(ir, prima, operands)
+     if kind == "write_voltage_constraint":
+-        return _scrivi_vincolo(ir, prima)
++        return _dispatch_write_voltage_constraint(ir, prima, operands)
+     raise ValueError(
+         f"passo {kind!r} fuori da {', '.join(sorted(ANALYTICAL_KINDS))}")
