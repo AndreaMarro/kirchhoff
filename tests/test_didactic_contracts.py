@@ -50,9 +50,25 @@ def test_nodal_variable_guardie():
         NodalVariable("v_a", "a", "known_from_source")
     with pytest.raises(ValueError, match="source_id su un ruolo"):
         NodalVariable("v_a", "a", "unknown", "V1")
-    nota = NodalVariable("v_a", "a", "known_from_source", "V1")
+    with pytest.raises(ValueError, match="senza known_value"):
+        NodalVariable("v_a", "a", "known_from_source", "V1")
+    with pytest.raises(ValueError, match="riferimento senza known_value"):
+        NodalVariable("v_0", "0", "reference")
+    with pytest.raises(ValueError, match="riferimento con known_value"):
+        NodalVariable("v_0", "0", "reference", known_value=F(1))
+    with pytest.raises(ValueError, match="source_id su un ruolo"):
+        NodalVariable("v_0", "0", "reference", "V1", F(0))
+    with pytest.raises(ValueError, match="known_value su un ruolo"):
+        NodalVariable("v_a", "a", "unknown", known_value=F(5))
+    with pytest.raises(TypeError, match="Fraction"):
+        NodalVariable("v_a", "a", "known_from_source", "V1", 5.0)  # type: ignore[arg-type]
+    nota = NodalVariable("v_a", "a", "known_from_source", "V1", F(5))
     assert nota.source_id == "V1"
+    assert nota.known_value == F(5)
     assert nota.ref() == VariableRef("node_voltage", "a")
+    zero = NodalVariable("v_a", "a", "known_from_source", "V1", F(0))
+    assert zero.known_value == F(0)
+    assert zero.known_value is not None
 
 
 def test_nodal_term_e_exact_equation_guardie():
@@ -105,7 +121,7 @@ def test_derivation_state_guardie_e_lookup():
         DerivationState("D0", NODO, reference_node="")
     s = DerivationState(
         "D1", NODO, reference_node="0",
-        variables=(NodalVariable("v_0", "0", "reference"),),
+        variables=(NodalVariable("v_0", "0", "reference", known_value=F(0)),),
         assumptions=("verso_dai_terminali",),
     )
     assert s.variabile_del_nodo("0").role == "reference"
@@ -138,10 +154,10 @@ def test_generatori_verso_riferimento_polarita_e_flottante():
         Component.of("R1", "resistor", ("a", "0"), F(10), "R1"),
         Component.of("R2", "resistor", ("b", "0"), F(10), "R2"),
     ))
-    assert _generatori_verso_riferimento(verso_p) == {"a": "V1"}
-    assert _generatori_verso_riferimento(verso_q) == {"a": "V1"}
+    assert _generatori_verso_riferimento(verso_p) == {"a": ("V1", -F(5))}
+    assert _generatori_verso_riferimento(verso_q) == {"a": ("V1", F(5))}
     assert _generatori_verso_riferimento(flottante) == {}
-    assert _generatori_verso_riferimento(leggi(PONTE)) == {"c": "V1"}
+    assert _generatori_verso_riferimento(leggi(PONTE)) == {"c": ("V1", F(12))}
 
 
 def test_nodo_della_prima_kcl_deterministico():
