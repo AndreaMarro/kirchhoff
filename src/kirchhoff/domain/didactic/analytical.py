@@ -72,21 +72,51 @@ def _generatori_verso_riferimento(ir: IR) -> dict[str, str]:
     return fissi
 
 
-def nodo_della_prima_kcl(ir: IR) -> str | None:
-    """Il primo nodo, in ordine, su cui una KCL resistiva è scrivibile senza supernodo."""
-    toccati_da_v = {
-        t
-        for c in ir.components
-        if c.type == "voltage_source_dc"
-        for t in c.terminals
-    }
+def _rami_incidenti(ir: IR, nodo: str):
+    """Componenti il cui ramo tocca `nodo`. Ordine = ordine dell'IR."""
+    return tuple(c for c in ir.components if nodo in c.terminals)
+
+
+def _precondizioni_kcl_ordinaria(ir: IR, nodo: str) -> None:
+    """Fail-closed: questo slice formula solo KCL resistive complete.
+
+    Non filtra i rami sconosciuti: se un incidente non è un resistore,
+    la KCL non si scrive. Una somma sui soli resistori sarebbe falsa.
+    """
+    if nodo not in ir.nodes:
+        raise ValueError(f"nodo {nodo!r} assente dal CircuitIR")
+    if nodo == REFERENCE_NODE:
+        raise ValueError(
+            f"KCL al riferimento {nodo}: non è un'equazione indipendente "
+            "del sistema nodale scelto in questo slice")
+    incidenti = _rami_incidenti(ir, nodo)
+    if not incidenti:
+        raise ValueError(f"nodo {nodo}: nessun ramo incidente")
+    non_resistivi = tuple(c for c in incidenti if c.type != "resistor")
+    if non_resistivi:
+        tipi = ", ".join(sorted({c.type for c in non_resistivi}))
+        ids = ", ".join(c.id for c in non_resistivi)
+        raise ValueError(
+            f"nodo {nodo}: KCL ordinaria incompleta, componenti non "
+            f"rappresentabili nello slice ({tipi}: {ids})")
+
+
+def nodi_kcl_ordinarie(ir: IR) -> tuple[str, ...]:
+    """Nodi, in ordine canonico, su cui una KCL resistiva è scrivibile senza supernodo."""
     candidati = []
     for nodo in ir.nodes:
-        if nodo == REFERENCE_NODE or nodo in toccati_da_v:
+        try:
+            _precondizioni_kcl_ordinaria(ir, nodo)
+        except ValueError:
             continue
-        if any(c.type == "resistor" and nodo in c.terminals for c in ir.components):
-            candidati.append(nodo)
-    return min(candidati) if candidati else None
+        candidati.append(nodo)
+    return tuple(sorted(candidati))
+
+
+def nodo_della_prima_kcl(ir: IR) -> str | None:
+    """Il primo nodo, in ordine, su cui una KCL resistiva è scrivibile senza supernodo."""
+    nodi = nodi_kcl_ordinarie(ir)
+    return nodi[0] if nodi else None
 
 
 def _kcl_al_nodo(ir: IR, nodo: str) -> ExactEquation:
@@ -94,16 +124,33 @@ def _kcl_al_nodo(ir: IR, nodo: str) -> ExactEquation:
 
     I contributi di V(0) restano nei termini. Il ruolo `reference` vive
     sulla dichiarazione `NodalVariable`, non sull'algebra.
+
+    Formula ESATTAMENTE `nodo`. Non ne sceglie un altro. Rifiuta se
+    un ramo incidente non è rappresentabile nello slice resistivo.
     """
+    _precondizioni_kcl_ordinaria(ir, nodo)
     termini: list[LinearTerm] = []
-    for c in ir.components:
-        if c.type != "resistor" or nodo not in c.terminals:
-            continue
+    for c in _rami_incidenti(ir, nodo):
         altro = c.terminals[1] if c.terminals[0] == nodo else c.terminals[0]
         g = Fraction(1, c.value.amount)
         termini.append(LinearTerm(g, tensione_nodo(nodo)))
         termini.append(LinearTerm(-g, tensione_nodo(altro)))
     return ExactEquation("kcl", tuple(termini), Fraction(0), nodo)
+
+
+def _variabili_dell_equazione_dichiarate(
+    stato: DerivationState, equazione: ExactEquation,
+) -> None:
+    """Ogni VariableRef dell'equazione deve essere già dichiarato nello stato."""
+    for termine in equazione.terms:
+        try:
+            stato.variabile_del_nodo(termine.variable.node)
+        except KeyError as exc:
+            raise ValueError(
+                f"{stato.identifier}: l'equazione {equazione.kind}@"
+                f"{equazione.focus} introduce {termine.variable.kind}@"
+                f"{termine.variable.node} non dichiarato"
+            ) from exc
 
 
 def _scegli_riferimento(ir: IR, prima: DerivationState) -> tuple[AnalyticalStep, DerivationState]:
@@ -166,21 +213,35 @@ def _definisci_incognite(ir: IR, prima: DerivationState) -> tuple[AnalyticalStep
     return passo, dopo
 
 
-def _scrivi_kcl(ir: IR, prima: DerivationState) -> tuple[AnalyticalStep, DerivationState]:
+def scrivi_kcl_al_nodo(
+    ir: IR, prima: DerivationState, nodo: str,
+) -> tuple[AnalyticalStep, DerivationState]:
+    """Formula e persiste la KCL ordinaria del nodo richiesto.
+
+    Il planner sceglie il nodo. Questa primitiva esegue quel nodo,
+    senza riselezionarne un altro.
+    """
     if not any(v.role == "unknown" for v in prima.variables):
         raise ValueError(
             f"{prima.identifier}: KCL senza incognite nodali definite")
-    nodo = nodo_della_prima_kcl(ir)
-    if nodo is None:
+    if nodo not in ir.nodes:
+        raise ValueError(f"nodo {nodo!r} assente dal CircuitIR")
+    if nodo == REFERENCE_NODE:
         raise ValueError(
-            "nessun nodo ammette una KCL resistiva senza supernodo in questo slice")
+            f"KCL al riferimento {nodo}: non è un'equazione indipendente "
+            "del sistema nodale scelto in questo slice")
     try:
-        prima.variabile_del_nodo(nodo)
+        variabile = prima.variabile_del_nodo(nodo)
     except KeyError as exc:
         raise ValueError(
             f"il nodo {nodo} della KCL non ha una variabile in {prima.identifier}"
         ) from exc
+    if variabile.role != "unknown":
+        raise ValueError(
+            f"{prima.identifier}: il nodo {nodo} ha ruolo {variabile.role}, "
+            "non ammette una KCL ordinaria in questo slice")
     equazione = _kcl_al_nodo(ir, nodo)
+    _variabili_dell_equazione_dichiarate(prima, equazione)
     if equazione in prima.equations:
         raise ValueError(
             f"{prima.identifier}: equazioni duplicate {equazione.kind}@{equazione.focus}")
@@ -199,6 +260,14 @@ def _scrivi_kcl(ir: IR, prima: DerivationState) -> tuple[AnalyticalStep, Derivat
         evidence="kcl_leaving_currents_ohm",
     )
     return passo, dopo
+
+
+def _scrivi_kcl(ir: IR, prima: DerivationState) -> tuple[AnalyticalStep, DerivationState]:
+    nodo = nodo_della_prima_kcl(ir)
+    if nodo is None:
+        raise ValueError(
+            "nessun nodo ammette una KCL resistiva senza supernodo in questo slice")
+    return scrivi_kcl_al_nodo(ir, prima, nodo)
 
 
 def applica_passo(
