@@ -7,12 +7,17 @@ non cambiano il circuito. Puro: nessuna I/O, nessun orologio, nessuna casualità
 
 from .analytical import (
     AnalyticalStep,
+    SimpleSupernode,
     applica_passo,
     il_grafo_resta_fermo,
     nodo_della_prima_kcl,
+    nodi_dei_supernodi_semplici,
     nodi_kcl_ordinarie,
     scrivi_kcl_al_nodo,
+    scrivi_kcl_del_supernodo,
+    scrivi_vincolo_tensione,
     stato_iniziale,
+    supernodi_semplici,
 )
 from .derivation import (
     DerivationState,
@@ -44,11 +49,16 @@ __all__ = [
     "PROFILE",
     "PlanReason",
     "PlannedAction",
+    "SimpleSupernode",
     "applica_passo",
     "il_grafo_resta_fermo",
     "nodo_della_prima_kcl",
+    "nodi_dei_supernodi_semplici",
     "nodi_kcl_ordinarie",
     "pianifica",
     "scrivi_kcl_al_nodo",
+    "scrivi_kcl_del_supernodo",
+    "scrivi_vincolo_tensione",
     "stato_iniziale",
+    "supernodi_semplici",
 ]

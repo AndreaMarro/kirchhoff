@@ -21,11 +21,19 @@ from ..transform.applicability import (
     ExecutableTransform,
     enumerate_executable_transforms,
 )
-from .analytical import _generatori_verso_riferimento, nodi_kcl_ordinarie
+from .analytical import (
+    _generatori_verso_riferimento,
+    _precondizioni_kcl_supernodo,
+    _sorgenti_tensione_flottanti,
+    nodi_dei_supernodi_semplici,
+    nodi_kcl_ordinarie,
+    supernodi_semplici,
+)
 
 #: Sottoinsieme per cui lo slice didattico sa davvero scrivere equazioni.
 #: I generatori di corrente indipendenti entrano nel termine noto della
-#: KCL ordinaria. Le sorgenti controllate e i supernodi restano fuori.
+#: KCL. I supernodi semplici (una voltage_source_dc flottante a due nodi
+#: unknown disgiunti) sono ammessi. Sorgenti controllate e catene no.
 DIDACTIC_NODAL_COMPONENT_TYPES: frozenset[str] = frozenset({
     "resistor",
     "voltage_source_dc",
@@ -67,15 +75,6 @@ def riduzioni_che_contribuiscono(
     )
 
 
-def _generatori_tensione_verso_riferimento(ir: IR) -> bool:
-    for c in ir.components:
-        if c.type != "voltage_source_dc":
-            continue
-        if REFERENCE_NODE not in c.terminals:
-            return False
-    return True
-
-
 def _nodi_incogniti(ir: IR) -> tuple[str, ...]:
     """Nodi che `define_nodal_unknowns` dichiarerebbe `unknown`.
 
@@ -89,12 +88,31 @@ def _nodi_incogniti(ir: IR) -> tuple[str, ...]:
     ))
 
 
+def _copertura_nodale(ir: IR) -> bool:
+    """Partizione: U = O ∪ S e ogni floating appartiene a un supernodo."""
+    flottanti = {c.id for c in _sorgenti_tensione_flottanti(ir)}
+    supernodi = supernodi_semplici(ir)
+    if flottanti != {sn.source_id for sn in supernodi}:
+        return False
+    for sn in supernodi:
+        try:
+            _precondizioni_kcl_supernodo(ir, sn)
+        except ValueError:
+            return False
+    U = set(_nodi_incogniti(ir))
+    O = set(nodi_kcl_ordinarie(ir))
+    S = set(nodi_dei_supernodi_semplici(ir))
+    if U != O | S:
+        return False
+    return bool(U)
+
+
 def nodale_disponibile(ir: IR, quantity: str) -> bool:
     """Vero solo se plan → azioni analitiche → equazioni esatte è eseguibile.
 
-    Nello slice attuale «eseguibile» significa: ogni tensione nodale
-    `unknown` ha esattamente una KCL ordinaria formulabile. Una sola
-    KCL su un sottoinsieme delle incognite non basta.
+    Ogni unknown sta o su una KCL ordinaria o in esattamente un supernodo
+    semplice supportato. Ogni voltage_source_dc flottante deve coincidere
+    con un supernodo supportato: niente floating ignorate.
     """
     if ir.domain != "dc":
         return False
@@ -104,7 +122,4 @@ def nodale_disponibile(ir: IR, quantity: str) -> bool:
         return False
     if not all(c.type in DIDACTIC_NODAL_COMPONENT_TYPES for c in ir.components):
         return False
-    if not _generatori_tensione_verso_riferimento(ir):
-        return False
-    incogniti = _nodi_incogniti(ir)
-    return bool(incogniti) and incogniti == nodi_kcl_ordinarie(ir)
+    return _copertura_nodale(ir)
