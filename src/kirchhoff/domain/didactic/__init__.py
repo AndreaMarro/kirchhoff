@@ -34,14 +34,23 @@ from .kinds import (
 )
 from .plan import DidacticPlan, PlanReason, PlannedAction
 from .planner import pianifica
+from .solve import (
+    DerivationSolution,
+    ExactLinearSystem,
+    SolvedVariable,
+    build_linear_system,
+    solve_derivation,
+)
 
 __all__ = [
     "AnalyticalStep",
     "AnalyticalStepKind",
     "DerivationState",
+    "DerivationSolution",
     "DidacticPlan",
     "DidacticTechniqueKind",
     "ExactEquation",
+    "ExactLinearSystem",
     "LinearTerm",
     "NodalVariable",
     "VariableRef",
@@ -50,7 +59,9 @@ __all__ = [
     "PlanReason",
     "PlannedAction",
     "SimpleSupernode",
+    "SolvedVariable",
     "applica_passo",
+    "build_linear_system",
     "il_grafo_resta_fermo",
     "nodo_della_prima_kcl",
     "nodi_dei_supernodi_semplici",
@@ -59,6 +70,7 @@ __all__ = [
     "scrivi_kcl_al_nodo",
     "scrivi_kcl_del_supernodo",
     "scrivi_vincolo_tensione",
+    "solve_derivation",
     "stato_iniziale",
     "supernodi_semplici",
 ]
