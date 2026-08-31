@@ -207,7 +207,7 @@ def test_generatore_di_corrente_entra_nello_slice():
     assert _kcl_pianificate(_azioni_nodali(ir)) == ("a",)
 
 
-def test_sorgente_di_tensione_flottante_resta_fuori():
+def test_sorgente_di_tensione_flottante_semplice_entra_nello_slice():
     ir = _ir(("0", "a", "b"), (
         Component.of("V1", "voltage_source_dc", ("a", "b"), F(5), "V1"),
         Component.of("R1", "resistor", ("a", "0"), F(10), "R1"),
@@ -217,9 +217,11 @@ def test_sorgente_di_tensione_flottante_resta_fuori():
         "1.0.0", "dc", "netlist", ir.nodes, ir.components,
         (_req("R1", "voltage"),),
     )), Solved)
-    assert not nodale_disponibile(ir, "voltage")
+    assert nodale_disponibile(ir, "voltage")
     assert nodi_kcl_ordinarie(ir) == ()
-    assert isinstance(pianifica(ir, _req("R1", "voltage")), Refusal)
+    piano = pianifica(ir, _req("R1", "voltage"))
+    assert isinstance(piano, DidacticPlan)
+    assert piano.technique == "nodal_analysis"
 
 
 def test_vcvs_e_vccs_restano_fuori():
@@ -260,5 +262,7 @@ def test_vocabolario_analitico_invariato():
         "choose_reference",
         "define_nodal_unknowns",
         "write_kcl",
+        "write_voltage_constraint",
     })
     assert "write_all_kcl" not in ANALYTICAL_KINDS
+    assert "supernode_kcl" not in ANALYTICAL_KINDS
