@@ -253,7 +253,7 @@ def test_sorgente_flottante_non_fissa_valori():
         Component.of("R2", "resistor", ("b", "0"), F(10), "R2"),
     ))
     assert _generatori_verso_riferimento(ir) == {}
-    assert not nodale_disponibile(ir, "voltage")
+    assert nodale_disponibile(ir, "voltage")
     stato = _fino_alle_incognite(ir)
     assert stato.variabile_del_nodo("a").role == "unknown"
     assert stato.variabile_del_nodo("b").role == "unknown"
@@ -326,7 +326,9 @@ def test_nessun_voltage_constraint_e_planner_invariato():
     assert all(eq.kind == "kcl" for eq in stato.equations)
     assert ANALYTICAL_KINDS == frozenset({
         "choose_reference", "define_nodal_unknowns", "write_kcl",
+        "write_voltage_constraint",
     })
+    assert "supernode_kcl" not in ANALYTICAL_KINDS
     assert [a.kind for a in _azioni_nodali(ir)] == [
         "choose_reference", "define_nodal_unknowns", "write_kcl",
     ]
