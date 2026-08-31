@@ -32,6 +32,12 @@ from .kinds import (
     PLAN_SCHEMA_VERSION,
     PROFILE,
 )
+from .execute import (
+    DidacticExecution,
+    NodalExecution,
+    TransformExecution,
+    execute_plan,
+)
 from .plan import DidacticPlan, PlanReason, PlannedAction
 from .planner import pianifica
 from .request import ResolvedQuantity, resolve_request
@@ -48,8 +54,11 @@ __all__ = [
     "AnalyticalStepKind",
     "DerivationState",
     "DerivationSolution",
+    "DidacticExecution",
     "DidacticPlan",
     "DidacticTechniqueKind",
+    "NodalExecution",
+    "TransformExecution",
     "ExactEquation",
     "ExactLinearSystem",
     "LinearTerm",
@@ -64,6 +73,7 @@ __all__ = [
     "SolvedVariable",
     "applica_passo",
     "build_linear_system",
+    "execute_plan",
     "il_grafo_resta_fermo",
     "nodo_della_prima_kcl",
     "nodi_dei_supernodi_semplici",
