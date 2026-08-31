@@ -144,7 +144,7 @@ def test_derivation_state_accetta_ir_nuovo_e_rifiuta_duplicati_canonici():
     assert eq == permutata
     stato = DerivationState(
         "D1", NODO, reference_node="0",
-        variables=(NodalVariable("v_0", "0", "reference"),),
+        variables=(NodalVariable("v_0", "0", "reference", known_value=F(0)),),
         equations=(eq,),
     )
     assert stato.equations == (eq,)
