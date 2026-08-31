@@ -10,8 +10,9 @@ from kirchhoff.domain.didactic import (
     AnalyticalStep,
     DerivationState,
     ExactEquation,
-    NodalTerm,
+    LinearTerm,
     NodalVariable,
+    VariableRef,
     applica_passo,
     il_grafo_resta_fermo,
     nodo_della_prima_kcl,
@@ -22,7 +23,7 @@ from kirchhoff.domain.didactic.analytical import (
     _kcl_al_nodo,
     _prossimo_id,
 )
-from kirchhoff.domain.didactic.derivation import nome_tensione
+from kirchhoff.domain.didactic.derivation import nome_tensione, tensione_nodo
 from kirchhoff.domain.ir import IR, REFERENCE_NODE, Component
 from kirchhoff.domain.proof import ProofEdge, ProofGraph, ProofNode
 from kirchhoff.pipeline.netlist import leggi
@@ -49,28 +50,34 @@ def test_nodal_variable_guardie():
         NodalVariable("v_a", "a", "known_from_source")
     with pytest.raises(ValueError, match="source_id su un ruolo"):
         NodalVariable("v_a", "a", "unknown", "V1")
-    assert NodalVariable("v_a", "a", "known_from_source", "V1").source_id == "V1"
+    nota = NodalVariable("v_a", "a", "known_from_source", "V1")
+    assert nota.source_id == "V1"
+    assert nota.ref() == VariableRef("node_voltage", "a")
 
 
 def test_nodal_term_e_exact_equation_guardie():
+    va, vb = tensione_nodo("a"), tensione_nodo("b")
     with pytest.raises(TypeError, match="Fraction"):
-        NodalTerm("R1", 0.5, "a", "0")  # type: ignore[arg-type]
-    with pytest.raises(ValueError, match="non positiva"):
-        NodalTerm("R1", F(0), "a", "0")
-    with pytest.raises(ValueError, match="non positiva"):
-        NodalTerm("R1", F(-1, 2), "a", "0")
-    with pytest.raises(ValueError, match="stesso nodo"):
-        NodalTerm("R1", F(1, 2), "a", "a")
-    t1 = NodalTerm("R2", F(1, 3), "a", "0")
-    t2 = NodalTerm("R1", F(1, 2), "a", "b")
-    with pytest.raises(ValueError, match="solo kind"):
-        ExactEquation("kvl", "a", (t1,))
+        LinearTerm(0.5, va)  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="nullo"):
+        LinearTerm(F(0), va)
+    with pytest.raises(TypeError, match="VariableRef"):
+        LinearTerm(F(1, 2), "v_a")  # type: ignore[arg-type]
+    t1 = LinearTerm(F(1, 3), va)
+    t2 = LinearTerm(F(1, 2), vb)
+    with pytest.raises(ValueError, match="fuori da"):
+        ExactEquation("kvl", (t1,), F(0), "a")
     with pytest.raises(ValueError, match="senza nodo"):
-        ExactEquation("kcl", "", (t1,))
-    with pytest.raises(ValueError, match="senza termini"):
-        ExactEquation("kcl", "a", ())
-    eq = ExactEquation("kcl", "a", (t1, t2))
-    assert eq.terms == tuple(sorted((t1, t2)))
+        ExactEquation("kcl", (t1,), F(0), "")
+    with pytest.raises(ValueError, match="senza variabili"):
+        ExactEquation("kcl", (), F(0), "a")
+    with pytest.raises(TypeError, match="rhs"):
+        ExactEquation("kcl", (t1,), 0.0, "a")  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="LinearTerm"):
+        ExactEquation("kcl", ("x",), F(0), "a")  # type: ignore[arg-type]
+    eq = ExactEquation("kcl", (t2, t1), F(0), "a")
+    assert eq.terms == (t1, t2)
+    assert eq.focus == "a"
 
 
 def test_derivation_state_guardie_e_lookup():
@@ -80,8 +87,8 @@ def test_derivation_state_guardie_e_lookup():
         DerivationState("D0", "")
     with pytest.raises(TypeError, match="invece di ExactEquation"):
         DerivationState("D0", NODO, equations=("x",))  # type: ignore[arg-type]
-    t = NodalTerm("R1", F(1, 2), "a", "0")
-    eq = ExactEquation("kcl", "a", (t,))
+    t = LinearTerm(F(1, 2), tensione_nodo("a"))
+    eq = ExactEquation("kcl", (t,), F(0), "a")
     with pytest.raises(ValueError, match="duplicate"):
         DerivationState("D0", NODO, equations=(eq, eq))
     with pytest.raises(ValueError, match="variabili ripetute"):
@@ -161,19 +168,24 @@ def test_nodo_della_prima_kcl_deterministico():
 def test_kcl_al_nodo_termini_esatti_e_canoni():
     ir = leggi(PONTE)
     eq = _kcl_al_nodo(ir, "a")
-    assert eq.kind == "kcl" and eq.node == "a"
-    assert eq.terms == tuple(sorted(eq.terms))
-    assert {t.component for t in eq.terms} == {"R1", "R3", "Rg"}
-    assert all(isinstance(t.conductance, Fraction) for t in eq.terms)
-    assert all(t.plus_node == "a" for t in eq.terms)
+    assert eq.kind == "kcl" and eq.focus == "a" and eq.rhs == F(0)
+    nodi = {t.variable.node for t in eq.terms}
+    assert nodi == {"a", "c", "0", "b"}
+    coeff = {t.variable.node: t.coefficient for t in eq.terms}
+    assert coeff["a"] == F(1, 10) + F(1, 30) + F(1, 50)
+    assert coeff["c"] == -F(1, 10)
+    assert coeff["0"] == -F(1, 30)
+    assert coeff["b"] == -F(1, 50)
+    assert all(isinstance(t.coefficient, Fraction) for t in eq.terms)
+    assert all(t.variable.kind == "node_voltage" for t in eq.terms)
+    assert eq.terms == tuple(sorted(eq.terms, key=lambda t: t.variable))
     verso = _ir(("0", "a", "b"), (
         Component.of("V1", "voltage_source_dc", ("b", "0"), F(1), "V1"),
         Component.of("R1", "resistor", ("a", "b"), F(2), "R1"),
         Component.of("R2", "resistor", ("0", "a"), F(4), "R2"),
     ))
-    termini = _kcl_al_nodo(verso, "a").terms
-    nodi_lontani = {t.minus_node for t in termini}
-    assert nodi_lontani == {"0", "b"}
+    nodi_presenti = {t.variable.node for t in _kcl_al_nodo(verso, "a").terms}
+    assert nodi_presenti == {"0", "a", "b"}
 
 
 def test_passi_analitici_precondizioni_e_successo():
