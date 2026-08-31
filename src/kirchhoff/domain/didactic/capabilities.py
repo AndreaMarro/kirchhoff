@@ -21,7 +21,7 @@ from ..transform.applicability import (
     ExecutableTransform,
     enumerate_executable_transforms,
 )
-from .analytical import nodo_della_prima_kcl
+from .analytical import _generatori_verso_riferimento, nodi_kcl_ordinarie
 
 #: Sottoinsieme per cui lo slice didattico sa davvero scrivere equazioni.
 #: MNA risolve anche generatori di corrente e sorgenti controllate; il
@@ -76,8 +76,26 @@ def _generatori_tensione_verso_riferimento(ir: IR) -> bool:
     return True
 
 
+def _nodi_incogniti(ir: IR) -> tuple[str, ...]:
+    """Nodi che `define_nodal_unknowns` dichiarerebbe `unknown`.
+
+    Non è una seconda discovery delle KCL: è il complemento di
+    riferimento e generatori verso massa, in ordine canonico.
+    """
+    fissi = _generatori_verso_riferimento(ir)
+    return tuple(sorted(
+        n for n in ir.nodes
+        if n != REFERENCE_NODE and n not in fissi
+    ))
+
+
 def nodale_disponibile(ir: IR, quantity: str) -> bool:
-    """Vero solo se plan → azioni analitiche → equazioni esatte è eseguibile."""
+    """Vero solo se plan → azioni analitiche → equazioni esatte è eseguibile.
+
+    Nello slice attuale «eseguibile» significa: ogni tensione nodale
+    `unknown` ha esattamente una KCL ordinaria formulabile. Una sola
+    KCL su un sottoinsieme delle incognite non basta.
+    """
     if ir.domain != "dc":
         return False
     if quantity not in QUANTITA_NODALI:
@@ -88,4 +106,5 @@ def nodale_disponibile(ir: IR, quantity: str) -> bool:
         return False
     if not _generatori_tensione_verso_riferimento(ir):
         return False
-    return nodo_della_prima_kcl(ir) is not None
+    incogniti = _nodi_incogniti(ir)
+    return bool(incogniti) and incogniti == nodi_kcl_ordinarie(ir)
