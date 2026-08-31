@@ -2,7 +2,7 @@
 
 Non è un secondo `CircuitIR` e non è un CAS. Registra variabili nodali,
 legami con i nodi del circuito, le convenzioni già poste e le equazioni
-ormai attive. Puro.
+lineari ormai attive. Puro.
 """
 
 from __future__ import annotations
@@ -17,10 +17,54 @@ from ..ir import REFERENCE_NODE
 VariableRole = Literal["reference", "unknown", "known_from_source"]
 ROLES: frozenset[str] = frozenset(("reference", "unknown", "known_from_source"))
 
+VariableKind = Literal["node_voltage"]
+VARIABLE_KINDS: frozenset[str] = frozenset(("node_voltage",))
+
+EquationKind = Literal["kcl", "voltage_constraint"]
+EQUATION_KINDS: frozenset[str] = frozenset(("kcl", "voltage_constraint"))
+
+
+@dataclass(frozen=True, slots=True, order=True)
+class VariableRef:
+    """Identità matematica di una variabile. Il rendering non è autorità."""
+
+    kind: str
+    node: str
+
+    def __post_init__(self) -> None:
+        if self.kind not in VARIABLE_KINDS:
+            raise ValueError(
+                f"variabile kind {self.kind!r} fuori da "
+                f"{', '.join(sorted(VARIABLE_KINDS))}")
+        if not self.node:
+            raise ValueError("variabile nodale senza nodo")
+
+
+@dataclass(frozen=True, slots=True)
+class LinearTerm:
+    """Termine algebrico `coefficient * variable`. Nessun float, nessun rendering."""
+
+    coefficient: Fraction
+    variable: VariableRef
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.coefficient, Fraction):
+            raise TypeError(
+                f"coefficiente {type(self.coefficient).__name__}, serve una Fraction")
+        if self.coefficient == 0:
+            raise ValueError("termine lineare con coefficiente nullo")
+        if not isinstance(self.variable, VariableRef):
+            raise TypeError(
+                f"variabile {type(self.variable).__name__}, serve un VariableRef")
+
 
 @dataclass(frozen=True, slots=True, order=True)
 class NodalVariable:
-    """Una tensione nodale legata a un nodo reale del circuito."""
+    """Dichiarazione di una tensione nodale nello stato di derivazione.
+
+    L'identità matematica della variabile è `VariableRef`. Qui stanno
+    ruolo didattico e, se serve, il generatore che la fissa.
+    """
 
     name: str
     node: str
@@ -42,50 +86,55 @@ class NodalVariable:
             raise ValueError(
                 f"{self.name}: source_id su un ruolo {self.role}")
 
-
-@dataclass(frozen=True, slots=True, order=True)
-class NodalTerm:
-    """Termine di conducibilità in una KCL: G · (v_plus − v_minus).
-
-    `conductance` è esatta (`Fraction`). Nessun float, nessuna stringa come
-    unica fonte semantica.
-    """
-
-    component: str
-    conductance: Fraction
-    plus_node: str
-    minus_node: str
-
-    def __post_init__(self) -> None:
-        if not isinstance(self.conductance, Fraction):
-            raise TypeError(
-                f"{self.component}: conductance {type(self.conductance).__name__}, "
-                "serve una Fraction")
-        if self.conductance <= 0:
-            raise ValueError(
-                f"{self.component}: conductance non positiva ({self.conductance})")
-        if self.plus_node == self.minus_node:
-            raise ValueError(
-                f"{self.component}: termine KCL fra lo stesso nodo {self.plus_node}")
+    def ref(self) -> VariableRef:
+        """Identità matematica corrispondente a questa dichiarazione."""
+        return VariableRef("node_voltage", self.node)
 
 
 @dataclass(frozen=True, slots=True)
 class ExactEquation:
-    """Equazione strutturata. Il rendering può aggiungersi dopo; il contenuto è qui."""
+    """Equazione lineare esatta `Σ a_i x_i = b`.
+
+    Autorità matematica: `terms` e `rhs`. `kind` e `focus` sono metadata
+    didattici (specie e ancoraggio topologico), distinti dall'algebra.
+    """
 
     kind: str
-    node: str
-    terms: tuple[NodalTerm, ...]
+    terms: tuple[LinearTerm, ...]
+    rhs: Fraction
+    focus: str = ""
 
     def __post_init__(self) -> None:
-        if self.kind != "kcl":
+        if self.kind not in EQUATION_KINDS:
             raise ValueError(
-                f"equazione {self.kind!r}: in questo slice esiste solo kind 'kcl'")
-        if not self.node:
+                f"equazione {self.kind!r}: kind fuori da "
+                f"{', '.join(sorted(EQUATION_KINDS))}")
+        if self.kind == "kcl" and not self.focus:
             raise ValueError("KCL senza nodo")
-        object.__setattr__(self, "terms", tuple(sorted(self.terms)))
+        if not isinstance(self.rhs, Fraction):
+            raise TypeError(
+                f"rhs {type(self.rhs).__name__}, serve una Fraction")
+        object.__setattr__(self, "terms", _termini_canonici(self.terms))
         if not self.terms:
-            raise ValueError(f"KCL al nodo {self.node} senza termini")
+            raise ValueError(
+                f"equazione {self.kind} senza variabili dopo la canonicalizzazione")
+
+
+def _termini_canonici(termini: tuple[LinearTerm, ...] | list[LinearTerm]) -> tuple[LinearTerm, ...]:
+    """Aggrega i coefficienti per variabile, scarta i nulli, ordina per `VariableRef`."""
+    acc: dict[VariableRef, Fraction] = {}
+    for termine in termini:
+        if not isinstance(termine, LinearTerm):
+            raise TypeError(
+                f"{type(termine).__name__} fra i termini invece di LinearTerm")
+        acc[termine.variable] = acc.get(termine.variable, Fraction(0)) + termine.coefficient
+    vivi = [
+        LinearTerm(coeff, variabile)
+        for variabile, coeff in acc.items()
+        if coeff != 0
+    ]
+    vivi.sort(key=lambda t: t.variable)
+    return tuple(vivi)
 
 
 @dataclass(frozen=True, slots=True)
@@ -117,7 +166,7 @@ class DerivationState:
         if doppie:
             raise ValueError(
                 f"{self.identifier}: equazioni duplicate "
-                f"{', '.join(f'{eq.kind}@{eq.node}' for eq in doppie)}")
+                f"{', '.join(_etichetta(eq) for eq in doppie)}")
         nomi = [v.name for v in self.variables]
         doppi = sorted({n for n in nomi if nomi.count(n) > 1})
         if doppi:
@@ -137,8 +186,20 @@ class DerivationState:
         raise KeyError(nodo)
 
 
+def _etichetta(eq: ExactEquation) -> str:
+    return f"{eq.kind}@{eq.focus}" if eq.focus else eq.kind
+
+
 def nome_tensione(nodo: str) -> str:
-    """Nome deterministico della tensione nodale. Il riferimento resta `v_0`."""
+    """Nome deterministico della tensione nodale. Il riferimento resta `v_0`.
+
+    È rendering derivabile, non identità matematica.
+    """
     if nodo == REFERENCE_NODE:
         return "v_0"
     return f"v_{nodo}"
+
+
+def tensione_nodo(nodo: str) -> VariableRef:
+    """Riferimento matematico alla tensione del nodo `nodo` del CircuitIR."""
+    return VariableRef("node_voltage", nodo)

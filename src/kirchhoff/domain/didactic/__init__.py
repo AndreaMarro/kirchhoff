@@ -12,7 +12,13 @@ from .analytical import (
     nodo_della_prima_kcl,
     stato_iniziale,
 )
-from .derivation import DerivationState, ExactEquation, NodalTerm, NodalVariable
+from .derivation import (
+    DerivationState,
+    ExactEquation,
+    LinearTerm,
+    NodalVariable,
+    VariableRef,
+)
 from .kinds import (
     AnalyticalStepKind,
     DidacticTechniqueKind,
@@ -29,8 +35,9 @@ __all__ = [
     "DidacticPlan",
     "DidacticTechniqueKind",
     "ExactEquation",
-    "NodalTerm",
+    "LinearTerm",
     "NodalVariable",
+    "VariableRef",
     "PLAN_SCHEMA_VERSION",
     "PROFILE",
     "PlanReason",

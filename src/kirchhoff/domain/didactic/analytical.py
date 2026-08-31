@@ -10,9 +10,10 @@ from ..proof.graph import ProofGraph
 from .derivation import (
     DerivationState,
     ExactEquation,
-    NodalTerm,
+    LinearTerm,
     NodalVariable,
     nome_tensione,
+    tensione_nodo,
 )
 from .kinds import ANALYTICAL_KINDS
 
@@ -89,15 +90,20 @@ def nodo_della_prima_kcl(ir: IR) -> str | None:
 
 
 def _kcl_al_nodo(ir: IR, nodo: str) -> ExactEquation:
-    termini: list[NodalTerm] = []
+    """KCL resistiva al nodo: Σ (V_nodo − V_altro)/R = 0.
+
+    I contributi di V(0) restano nei termini. Il ruolo `reference` vive
+    sulla dichiarazione `NodalVariable`, non sull'algebra.
+    """
+    termini: list[LinearTerm] = []
     for c in ir.components:
         if c.type != "resistor" or nodo not in c.terminals:
             continue
         altro = c.terminals[1] if c.terminals[0] == nodo else c.terminals[0]
-        termini.append(NodalTerm(
-            c.id, Fraction(1, c.value.amount), nodo, altro,
-        ))
-    return ExactEquation("kcl", nodo, tuple(termini))
+        g = Fraction(1, c.value.amount)
+        termini.append(LinearTerm(g, tensione_nodo(nodo)))
+        termini.append(LinearTerm(-g, tensione_nodo(altro)))
+    return ExactEquation("kcl", tuple(termini), Fraction(0), nodo)
 
 
 def _scegli_riferimento(ir: IR, prima: DerivationState) -> tuple[AnalyticalStep, DerivationState]:
@@ -177,7 +183,7 @@ def _scrivi_kcl(ir: IR, prima: DerivationState) -> tuple[AnalyticalStep, Derivat
     equazione = _kcl_al_nodo(ir, nodo)
     if equazione in prima.equations:
         raise ValueError(
-            f"{prima.identifier}: equazioni duplicate {equazione.kind}@{equazione.node}")
+            f"{prima.identifier}: equazioni duplicate {equazione.kind}@{equazione.focus}")
     dopo = replace(
         prima,
         identifier=_prossimo_id(prima),
