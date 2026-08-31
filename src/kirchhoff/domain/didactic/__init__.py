@@ -34,6 +34,7 @@ from .kinds import (
 )
 from .plan import DidacticPlan, PlanReason, PlannedAction
 from .planner import pianifica
+from .request import ResolvedQuantity, resolve_request
 from .solve import (
     DerivationSolution,
     ExactLinearSystem,
@@ -58,6 +59,7 @@ __all__ = [
     "PROFILE",
     "PlanReason",
     "PlannedAction",
+    "ResolvedQuantity",
     "SimpleSupernode",
     "SolvedVariable",
     "applica_passo",
@@ -67,6 +69,7 @@ __all__ = [
     "nodi_dei_supernodi_semplici",
     "nodi_kcl_ordinarie",
     "pianifica",
+    "resolve_request",
     "scrivi_kcl_al_nodo",
     "scrivi_kcl_del_supernodo",
     "scrivi_vincolo_tensione",
