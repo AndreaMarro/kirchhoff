@@ -7,14 +7,12 @@ non cambiano il circuito. Puro: nessuna I/O, nessun orologio, nessuna casualità
 
 from .analytical import (
     AnalyticalStep,
-    ExactEquation,
-    NodalTerm,
     applica_passo,
     il_grafo_resta_fermo,
     nodo_della_prima_kcl,
     stato_iniziale,
 )
-from .derivation import DerivationState, NodalVariable
+from .derivation import DerivationState, ExactEquation, NodalTerm, NodalVariable
 from .kinds import (
     AnalyticalStepKind,
     DidacticTechniqueKind,

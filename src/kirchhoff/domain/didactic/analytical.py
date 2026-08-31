@@ -7,53 +7,14 @@ from fractions import Fraction
 
 from ..ir import IR, REFERENCE_NODE
 from ..proof.graph import ProofGraph
-from .derivation import DerivationState, NodalVariable, nome_tensione
+from .derivation import (
+    DerivationState,
+    ExactEquation,
+    NodalTerm,
+    NodalVariable,
+    nome_tensione,
+)
 from .kinds import ANALYTICAL_KINDS
-
-
-@dataclass(frozen=True, slots=True, order=True)
-class NodalTerm:
-    """Termine di conducibilità in una KCL: G · (v_plus − v_minus).
-
-    `conductance` è esatta (`Fraction`). Nessun float, nessuna stringa come
-    unica fonte semantica.
-    """
-
-    component: str
-    conductance: Fraction
-    plus_node: str
-    minus_node: str
-
-    def __post_init__(self) -> None:
-        if not isinstance(self.conductance, Fraction):
-            raise TypeError(
-                f"{self.component}: conductance {type(self.conductance).__name__}, "
-                "serve una Fraction")
-        if self.conductance <= 0:
-            raise ValueError(
-                f"{self.component}: conductance non positiva ({self.conductance})")
-        if self.plus_node == self.minus_node:
-            raise ValueError(
-                f"{self.component}: termine KCL fra lo stesso nodo {self.plus_node}")
-
-
-@dataclass(frozen=True, slots=True)
-class ExactEquation:
-    """Equazione strutturata. Il rendering può aggiungersi dopo; il contenuto è qui."""
-
-    kind: str
-    node: str
-    terms: tuple[NodalTerm, ...]
-
-    def __post_init__(self) -> None:
-        if self.kind != "kcl":
-            raise ValueError(
-                f"equazione {self.kind!r}: in questo slice esiste solo kind 'kcl'")
-        if not self.node:
-            raise ValueError("KCL senza nodo")
-        object.__setattr__(self, "terms", tuple(sorted(self.terms)))
-        if not self.terms:
-            raise ValueError(f"KCL al nodo {self.node} senza termini")
 
 
 @dataclass(frozen=True, slots=True)
