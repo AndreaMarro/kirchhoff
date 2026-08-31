@@ -26,14 +26,13 @@ def _nomi_supportati_senza_corpo() -> tuple[str, ...]:
 
 
 def _azioni_nodali(ir: IR) -> tuple[PlannedAction, ...]:
-    from .analytical import _generatori_verso_riferimento, nodo_della_prima_kcl
+    from .analytical import _generatori_verso_riferimento, nodi_kcl_ordinarie
 
     azioni = [PlannedAction("choose_reference", ())]
     fissi = _generatori_verso_riferimento(ir)
     if any(n != REFERENCE_NODE and n not in fissi for n in ir.nodes):
         azioni.append(PlannedAction("define_nodal_unknowns", ()))
-    nodo = nodo_della_prima_kcl(ir)
-    if nodo is not None:
+    for nodo in nodi_kcl_ordinarie(ir):
         azioni.append(PlannedAction("write_kcl", (nodo,)))
     return tuple(azioni)
 
