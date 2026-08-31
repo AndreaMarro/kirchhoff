@@ -151,12 +151,12 @@ def _kcl_al_nodo(ir: IR, nodo: str) -> ExactEquation:
             g = Fraction(1, c.value.amount)
             termini.append(LinearTerm(g, tensione_nodo(nodo)))
             termini.append(LinearTerm(-g, tensione_nodo(altro)))
-        elif c.type == "current_source_dc":
-            p, q = c.terminals
-            if nodo == p:
-                rhs -= c.value.amount
-            elif nodo == q:
-                rhs += c.value.amount
+            continue
+        p, q = c.terminals
+        if nodo == p:
+            rhs -= c.value.amount
+        else:
+            rhs += c.value.amount
     return ExactEquation("kcl", tuple(termini), rhs, nodo)
 
 
