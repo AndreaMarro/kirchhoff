@@ -63,13 +63,15 @@ class NodalVariable:
     """Dichiarazione di una tensione nodale nello stato di derivazione.
 
     L'identità matematica della variabile è `VariableRef`. Qui stanno
-    ruolo didattico e, se serve, il generatore che la fissa.
+    ruolo didattico, l'eventuale generatore che la fissa e, se il ruolo
+    lo ammette, il valore esatto già noto.
     """
 
     name: str
     node: str
     role: str
     source_id: str | None = None
+    known_value: Fraction | None = None
 
     def __post_init__(self) -> None:
         if not self.name:
@@ -79,12 +81,36 @@ class NodalVariable:
         if self.role not in ROLES:
             raise ValueError(
                 f"{self.name}: ruolo {self.role!r} fuori da {', '.join(sorted(ROLES))}")
-        if self.role == "known_from_source" and not self.source_id:
+        if self.known_value is not None and not isinstance(self.known_value, Fraction):
+            raise TypeError(
+                f"{self.name}: known_value {type(self.known_value).__name__}, "
+                "serve una Fraction")
+        if self.role == "reference":
+            if self.source_id is not None:
+                raise ValueError(
+                    f"{self.name}: source_id su un ruolo {self.role}")
+            if self.known_value is None:
+                raise ValueError(
+                    f"{self.name}: riferimento senza known_value")
+            if self.known_value != Fraction(0):
+                raise ValueError(
+                    f"{self.name}: riferimento con known_value "
+                    f"{self.known_value}, serve 0")
+            return
+        if self.role == "unknown":
+            if self.source_id is not None:
+                raise ValueError(
+                    f"{self.name}: source_id su un ruolo {self.role}")
+            if self.known_value is not None:
+                raise ValueError(
+                    f"{self.name}: known_value su un ruolo {self.role}")
+            return
+        if not self.source_id:
             raise ValueError(
                 f"{self.name}: tensione nota da generatore senza source_id")
-        if self.role != "known_from_source" and self.source_id is not None:
+        if self.known_value is None:
             raise ValueError(
-                f"{self.name}: source_id su un ruolo {self.role}")
+                f"{self.name}: tensione nota da generatore senza known_value")
 
     def ref(self) -> VariableRef:
         """Identità matematica corrispondente a questa dichiarazione."""
@@ -93,7 +119,7 @@ class NodalVariable:
 
 @dataclass(frozen=True, slots=True)
 class ExactEquation:
-    """Equazione lineare esatta `Σ a_i x_i = b`.
+    """Equazione lineare esatta `\u03a3 a_i x_i = b`.
 
     Autorità matematica: `terms` e `rhs`. `kind` e `focus` sono metadata
     didattici (specie e ancoraggio topologico), distinti dall'algebra.
