@@ -77,11 +77,18 @@ def _rami_incidenti(ir: IR, nodo: str):
     return tuple(c for c in ir.components if nodo in c.terminals)
 
 
-def _precondizioni_kcl_ordinaria(ir: IR, nodo: str) -> None:
-    """Fail-closed: questo slice formula solo KCL resistive complete.
+_KCL_ORDINARIA_TIPI: frozenset[str] = frozenset({
+    "resistor",
+    "current_source_dc",
+})
 
-    Non filtra i rami sconosciuti: se un incidente non è un resistore,
-    la KCL non si scrive. Una somma sui soli resistori sarebbe falsa.
+
+def _precondizioni_kcl_ordinaria(ir: IR, nodo: str) -> None:
+    """Fail-closed: KCL ordinaria con resistori e generatori di corrente.
+
+    Un ramo incidente non rappresentabile rende la KCL incompleta: non
+    si omette. Serve almeno un resistore, altrimenti l'equazione non
+    contiene variabili di tensione e non determina il nodo.
     """
     if nodo not in ir.nodes:
         raise ValueError(f"nodo {nodo!r} assente dal CircuitIR")
@@ -92,17 +99,20 @@ def _precondizioni_kcl_ordinaria(ir: IR, nodo: str) -> None:
     incidenti = _rami_incidenti(ir, nodo)
     if not incidenti:
         raise ValueError(f"nodo {nodo}: nessun ramo incidente")
-    non_resistivi = tuple(c for c in incidenti if c.type != "resistor")
-    if non_resistivi:
-        tipi = ", ".join(sorted({c.type for c in non_resistivi}))
-        ids = ", ".join(c.id for c in non_resistivi)
+    non_ammessi = tuple(c for c in incidenti if c.type not in _KCL_ORDINARIA_TIPI)
+    if non_ammessi:
+        tipi = ", ".join(sorted({c.type for c in non_ammessi}))
+        ids = ", ".join(c.id for c in non_ammessi)
         raise ValueError(
             f"nodo {nodo}: KCL ordinaria incompleta, componenti non "
             f"rappresentabili nello slice ({tipi}: {ids})")
+    if not any(c.type == "resistor" for c in incidenti):
+        raise ValueError(
+            f"nodo {nodo}: KCL ordinaria senza contributo resistivo")
 
 
 def nodi_kcl_ordinarie(ir: IR) -> tuple[str, ...]:
-    """Nodi, in ordine canonico, su cui una KCL resistiva è scrivibile senza supernodo."""
+    """Nodi, in ordine canonico, su cui una KCL ordinaria è scrivibile senza supernodo."""
     candidati = []
     for nodo in ir.nodes:
         try:
@@ -114,28 +124,40 @@ def nodi_kcl_ordinarie(ir: IR) -> tuple[str, ...]:
 
 
 def nodo_della_prima_kcl(ir: IR) -> str | None:
-    """Il primo nodo, in ordine, su cui una KCL resistiva è scrivibile senza supernodo."""
+    """Il primo nodo, in ordine, su cui una KCL ordinaria è scrivibile senza supernodo."""
     nodi = nodi_kcl_ordinarie(ir)
     return nodi[0] if nodi else None
 
 
 def _kcl_al_nodo(ir: IR, nodo: str) -> ExactEquation:
-    """KCL resistiva al nodo: Σ (V_nodo − V_altro)/R = 0.
+    """KCL ordinaria al nodo: Σ I_res,out = −Σ I_src,out.
+
+    I resistori restano a sinistra come (V_nodo − V_altro)/R. I generatori
+    di corrente indipendenti vanno nel termine noto, con la convenzione
+    uscente positiva e l'orientamento p → q del CircuitIR.
 
     I contributi di V(0) restano nei termini. Il ruolo `reference` vive
     sulla dichiarazione `NodalVariable`, non sull'algebra.
 
     Formula ESATTAMENTE `nodo`. Non ne sceglie un altro. Rifiuta se
-    un ramo incidente non è rappresentabile nello slice resistivo.
+    un ramo incidente non è rappresentabile in questo slice.
     """
     _precondizioni_kcl_ordinaria(ir, nodo)
     termini: list[LinearTerm] = []
+    rhs = Fraction(0)
     for c in _rami_incidenti(ir, nodo):
-        altro = c.terminals[1] if c.terminals[0] == nodo else c.terminals[0]
-        g = Fraction(1, c.value.amount)
-        termini.append(LinearTerm(g, tensione_nodo(nodo)))
-        termini.append(LinearTerm(-g, tensione_nodo(altro)))
-    return ExactEquation("kcl", tuple(termini), Fraction(0), nodo)
+        if c.type == "resistor":
+            altro = c.terminals[1] if c.terminals[0] == nodo else c.terminals[0]
+            g = Fraction(1, c.value.amount)
+            termini.append(LinearTerm(g, tensione_nodo(nodo)))
+            termini.append(LinearTerm(-g, tensione_nodo(altro)))
+        elif c.type == "current_source_dc":
+            p, q = c.terminals
+            if nodo == p:
+                rhs -= c.value.amount
+            elif nodo == q:
+                rhs += c.value.amount
+    return ExactEquation("kcl", tuple(termini), rhs, nodo)
 
 
 def _variabili_dell_equazione_dichiarate(
@@ -257,7 +279,7 @@ def scrivi_kcl_al_nodo(
         derivation_after=dopo.identifier,
         focused_entities=(nodo,),
         equations=(equazione,),
-        evidence="kcl_leaving_currents_ohm",
+        evidence="kcl_leaving_currents_dc",
     )
     return passo, dopo
 
@@ -266,7 +288,7 @@ def _scrivi_kcl(ir: IR, prima: DerivationState) -> tuple[AnalyticalStep, Derivat
     nodo = nodo_della_prima_kcl(ir)
     if nodo is None:
         raise ValueError(
-            "nessun nodo ammette una KCL resistiva senza supernodo in questo slice")
+            "nessun nodo ammette una KCL ordinaria senza supernodo in questo slice")
     return scrivi_kcl_al_nodo(ir, prima, nodo)
 
 

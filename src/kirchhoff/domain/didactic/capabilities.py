@@ -24,12 +24,12 @@ from ..transform.applicability import (
 from .analytical import _generatori_verso_riferimento, nodi_kcl_ordinarie
 
 #: Sottoinsieme per cui lo slice didattico sa davvero scrivere equazioni.
-#: MNA risolve anche generatori di corrente e sorgenti controllate; il
-#: formulatore KCL di questo slice costruisce soltanto termini resistivi e
-#: tensioni fissate da un generatore verso il riferimento.
+#: I generatori di corrente indipendenti entrano nel termine noto della
+#: KCL ordinaria. Le sorgenti controllate e i supernodi restano fuori.
 DIDACTIC_NODAL_COMPONENT_TYPES: frozenset[str] = frozenset({
     "resistor",
     "voltage_source_dc",
+    "current_source_dc",
 })
 
 QUANTITA_NODALI: frozenset[str] = frozenset({"voltage", "current"})
