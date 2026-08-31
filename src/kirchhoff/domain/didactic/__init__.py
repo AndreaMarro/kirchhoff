@@ -10,6 +10,8 @@ from .analytical import (
     applica_passo,
     il_grafo_resta_fermo,
     nodo_della_prima_kcl,
+    nodi_kcl_ordinarie,
+    scrivi_kcl_al_nodo,
     stato_iniziale,
 )
 from .derivation import (
@@ -45,6 +47,8 @@ __all__ = [
     "applica_passo",
     "il_grafo_resta_fermo",
     "nodo_della_prima_kcl",
+    "nodi_kcl_ordinarie",
     "pianifica",
+    "scrivi_kcl_al_nodo",
     "stato_iniziale",
 ]
