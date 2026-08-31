@@ -175,7 +175,14 @@ def _scrivi_kcl(ir: IR, prima: DerivationState) -> tuple[AnalyticalStep, Derivat
             f"il nodo {nodo} della KCL non ha una variabile in {prima.identifier}"
         ) from exc
     equazione = _kcl_al_nodo(ir, nodo)
-    dopo = replace(prima, identifier=_prossimo_id(prima))
+    if equazione in prima.equations:
+        raise ValueError(
+            f"{prima.identifier}: equazioni duplicate {equazione.kind}@{equazione.node}")
+    dopo = replace(
+        prima,
+        identifier=_prossimo_id(prima),
+        equations=(*prima.equations, equazione),
+    )
     passo = AnalyticalStep(
         kind="write_kcl",
         proof_node=prima.proof_node,
