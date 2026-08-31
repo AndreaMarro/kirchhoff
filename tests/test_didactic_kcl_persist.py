@@ -50,7 +50,7 @@ def test_kcl_si_accumula_alle_equazioni_precedenti():
     passo, dopo = applica_passo("write_kcl", ir, con_eq)
     nuova = passo.equations[0]
     assert dopo.equations == (precedente, nuova)
-    assert nuova.node != precedente.node
+    assert nuova.focus != precedente.focus
     assert con_eq.equations == (precedente,)
 
 
