@@ -145,7 +145,11 @@ def test_azioni_nodali_senza_incognite_non_definiscono():
 
 
 def test_planner_rifiuta_quando_niente_e_eseguibile():
-    ir = leggi(CORRENTE)
+    ir = _ir(("0", "a", "b"), (
+        Component.of("V1", "voltage_source_dc", ("a", "b"), F(5), "V1"),
+        Component.of("R1", "resistor", ("a", "0"), F(10), "R1"),
+        Component.of("R2", "resistor", ("b", "0"), F(10), "R2"),
+    ))
     kernel = resolve(replace(ir, requests=(_req("R1", "voltage"),)))
     assert isinstance(kernel, Solved)
     esito = pianifica(ir, _req("R1", "voltage"))
@@ -155,7 +159,7 @@ def test_planner_rifiuta_quando_niente_e_eseguibile():
 
 
 def test_nodale_capability_boundaries():
-    assert "current_source_dc" not in DIDACTIC_NODAL_COMPONENT_TYPES
+    assert "current_source_dc" in DIDACTIC_NODAL_COMPONENT_TYPES
     ponte = leggi(PONTE)
     assert nodale_disponibile(ponte, "voltage")
     assert nodale_disponibile(ponte, "current")
@@ -163,7 +167,8 @@ def test_nodale_capability_boundaries():
     assert not nodale_disponibile(ponte, "time_constant")
     vuoto = IR("1.0.0", "dc", "netlist", ("0",), (), ())
     assert not nodale_disponibile(vuoto, "voltage")
-    assert not nodale_disponibile(leggi(CORRENTE), "current")
+    assert nodale_disponibile(leggi(CORRENTE), "current")
+    assert nodale_disponibile(leggi(CORRENTE), "voltage")
     vcvs = _ir(("0", "A", "C"), (
         Component.of("V1", "voltage_source_dc", ("A", "0"), F(4), "V1"),
         Component.of("R1", "resistor", ("A", "0"), F(2), "R1"),
