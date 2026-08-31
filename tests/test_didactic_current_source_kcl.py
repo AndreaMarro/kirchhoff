@@ -229,16 +229,18 @@ def test_nodo_solo_correnti_fail_closed():
         ExactEquation("kcl", (), F(1), "a")
 
 
-def test_tensione_flottante_resta_fuori():
+def test_tensione_flottante_semplice_entra_nello_slice():
     ir = _ir(("0", "a", "b"), (
         Component.of("V1", "voltage_source_dc", ("a", "b"), F(5), "V1"),
         Component.of("R1", "resistor", ("a", "0"), F(10), "R1"),
         Component.of("I1", "current_source_dc", ("a", "0"), F(1), "I1"),
         Component.of("R2", "resistor", ("b", "0"), F(10), "R2"),
     ))
-    assert not nodale_disponibile(ir, "voltage")
+    assert nodale_disponibile(ir, "voltage")
     assert nodi_kcl_ordinarie(ir) == ()
-    assert isinstance(pianifica(ir, _req("R1")), Refusal)
+    piano = pianifica(ir, _req("R1"))
+    assert isinstance(piano, DidacticPlan)
+    assert piano.technique == "nodal_analysis"
 
 
 def test_vcvs_e_vccs_restano_fuori():
@@ -301,7 +303,9 @@ def test_vocabolario_analitico_invariato():
         "choose_reference",
         "define_nodal_unknowns",
         "write_kcl",
+        "write_voltage_constraint",
     })
+    assert "supernode_kcl" not in ANALYTICAL_KINDS
 
 
 def test_cross_check_segno_con_mna():
