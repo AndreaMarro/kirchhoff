@@ -67,8 +67,8 @@ def _tre_unknown():
 
 def _fino_alle_incognite(ir: IR):
     d0 = stato_iniziale(NODO)
-    _, d1 = applica_passo("choose_reference", ir, d0)
-    _, d2 = applica_passo("define_nodal_unknowns", ir, d1)
+    _, d1 = applica_passo("choose_reference", ir, d0, operands=())
+    _, d2 = applica_passo("define_nodal_unknowns", ir, d1, operands=())
     return d2
 
 
@@ -147,8 +147,8 @@ def test_esecuzione_sequenziale_manuale_e_catena():
     ir = _tre_unknown()
     piano = pianifica(ir, _req("R5"))
     d0 = stato_iniziale(NODO)
-    _, d1 = applica_passo("choose_reference", ir, d0)
-    _, d2 = applica_passo("define_nodal_unknowns", ir, d1)
+    _, d1 = applica_passo("choose_reference", ir, d0, operands=())
+    _, d2 = applica_passo("define_nodal_unknowns", ir, d1, operands=())
     assert d2.equations == ()
     snap_d2 = d2.equations
 

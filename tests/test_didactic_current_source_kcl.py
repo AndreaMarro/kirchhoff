@@ -43,8 +43,8 @@ def _req(target: str, quantity: str = "voltage", rid: str = "q1") -> Request:
 
 
 def _fino_alle_incognite(ir: IR):
-    _, d1 = applica_passo("choose_reference", ir, stato_iniziale(NODO))
-    _, d2 = applica_passo("define_nodal_unknowns", ir, d1)
+    _, d1 = applica_passo("choose_reference", ir, stato_iniziale(NODO), operands=())
+    _, d2 = applica_passo("define_nodal_unknowns", ir, d1, operands=())
     return d2
 
 

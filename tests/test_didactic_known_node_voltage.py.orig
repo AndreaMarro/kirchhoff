@@ -40,12 +40,12 @@ def _divisore(v_term: tuple[str, str], amount: Fraction) -> IR:
 
 
 def _fino_al_riferimento(ir: IR):
-    _, d1 = applica_passo("choose_reference", ir, stato_iniziale(NODO), operands=())
+    _, d1 = applica_passo("choose_reference", ir, stato_iniziale(NODO))
     return d1
 
 
 def _fino_alle_incognite(ir: IR):
-    _, d2 = applica_passo("define_nodal_unknowns", ir, _fino_al_riferimento(ir), operands=())
+    _, d2 = applica_passo("define_nodal_unknowns", ir, _fino_al_riferimento(ir))
     return d2
 
 
@@ -306,7 +306,7 @@ def test_binding_duplicata_fail_closed():
         _generatori_verso_riferimento(ir)
     d1 = _fino_al_riferimento(ir)
     with pytest.raises(ValueError, match="due generatori verso riferimento"):
-        applica_passo("define_nodal_unknowns", ir, d1, operands=())
+        applica_passo("define_nodal_unknowns", ir, d1)
 
 
 def test_contratto_di_segno_del_helper():

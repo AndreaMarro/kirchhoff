@@ -64,8 +64,8 @@ def _tre_nodi_ordinari():
 
 def _fino_alle_incognite(ir: IR):
     d0 = stato_iniziale(NODO)
-    _, d1 = applica_passo("choose_reference", ir, d0)
-    _, d2 = applica_passo("define_nodal_unknowns", ir, d1)
+    _, d1 = applica_passo("choose_reference", ir, d0, operands=())
+    _, d2 = applica_passo("define_nodal_unknowns", ir, d1, operands=())
     return d2
 
 
@@ -136,8 +136,8 @@ def test_replay_manuale_del_piano_accumula_le_kcl():
     ir = _tre_nodi_ordinari()
     piano = pianifica(ir, _req("R4"))
     d0 = stato_iniziale(NODO)
-    passo_ref, d1 = applica_passo("choose_reference", ir, d0)
-    passo_inc, d2 = applica_passo("define_nodal_unknowns", ir, d1)
+    passo_ref, d1 = applica_passo("choose_reference", ir, d0, operands=())
+    passo_inc, d2 = applica_passo("define_nodal_unknowns", ir, d1, operands=())
     assert passo_ref.derivation_before == "D0"
     assert passo_ref.derivation_after == d1.identifier == "D1"
     assert passo_inc.derivation_before == "D1"

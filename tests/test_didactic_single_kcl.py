@@ -33,8 +33,8 @@ def _ir(nodes, comps) -> IR:
 
 def _fino_alle_incognite(ir: IR):
     d0 = stato_iniziale(NODO)
-    _, d1 = applica_passo("choose_reference", ir, d0)
-    _, d2 = applica_passo("define_nodal_unknowns", ir, d1)
+    _, d1 = applica_passo("choose_reference", ir, d0, operands=())
+    _, d2 = applica_passo("define_nodal_unknowns", ir, d1, operands=())
     return d2
 
 
@@ -246,8 +246,8 @@ def test_corrente_incidente_entra_nella_kcl_ordinaria():
     assert "a" in nodi_kcl_ordinarie(ir)
     eq = _kcl_al_nodo(ir, "a")
     assert eq.rhs == -F(1)
-    _, d1 = applica_passo("choose_reference", ir, stato_iniziale(NODO))
-    _, d2 = applica_passo("define_nodal_unknowns", ir, d1)
+    _, d1 = applica_passo("choose_reference", ir, stato_iniziale(NODO), operands=())
+    _, d2 = applica_passo("define_nodal_unknowns", ir, d1, operands=())
     passo, _ = scrivi_kcl_al_nodo(ir, d2, "a")
     assert passo.equations[0].rhs == -F(1)
     assert passo.evidence == "kcl_leaving_currents_dc"
@@ -307,7 +307,12 @@ def test_nodo_isolato_senza_rami():
 def test_wrapper_legacy_delega_al_primo_nodo_ordinario():
     ir = _due_nodi_ordinari()
     prima = _fino_alle_incognite(ir)
-    via_legacy = applica_passo("write_kcl", ir, prima)
+    with pytest.raises(TypeError):
+        applica_passo("write_kcl", ir, prima)
+    via_dispatch = applica_passo("write_kcl", ir, prima, operands=("a",))
     via_esplicita = scrivi_kcl_al_nodo(ir, prima, "a")
-    assert via_legacy == via_esplicita
-    assert via_legacy[0].focused_entities == ("a",)
+    assert via_dispatch == via_esplicita
+    assert via_dispatch[0].focused_entities == ("a",)
+    via_b = applica_passo("write_kcl", ir, prima, operands=("b",))
+    assert via_b[0].focused_entities == ("b",)
+    assert via_b[0].focused_entities != via_dispatch[0].focused_entities

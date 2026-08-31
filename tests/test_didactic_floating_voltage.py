@@ -76,8 +76,8 @@ def _catena() -> IR:
 
 
 def _fino_alle_incognite(ir: IR):
-    _, d1 = applica_passo("choose_reference", ir, stato_iniziale(NODO))
-    _, d2 = applica_passo("define_nodal_unknowns", ir, d1)
+    _, d1 = applica_passo("choose_reference", ir, stato_iniziale(NODO), operands=())
+    _, d2 = applica_passo("define_nodal_unknowns", ir, d1, operands=())
     return d2
 
 
@@ -183,18 +183,24 @@ def test_esecuzione_kcl_e_vincolo_nello_stato():
 def test_applica_passo_vincolo_e_write_kcl_resta_ordinaria():
     ir = _flottante()
     d2 = _fino_alle_incognite(ir)
-    with pytest.raises(ValueError, match="senza supernodo"):
+    with pytest.raises(TypeError):
         applica_passo("write_kcl", ir, d2)
-    p, d3 = applica_passo("write_voltage_constraint", ir, d2)
+    with pytest.raises(ValueError, match="KCL ordinaria incompleta"):
+        applica_passo("write_kcl", ir, d2, operands=("a",))
+    p, d3 = applica_passo(
+        "write_voltage_constraint", ir, d2, operands=("V1",),
+    )
     assert p.kind == "write_voltage_constraint"
     assert d3.equations[0].kind == "voltage_constraint"
     massa = _ir(("0", "a"), (
         Component.of("V1", "voltage_source_dc", ("a", "0"), F(5), "V1"),
         Component.of("R1", "resistor", ("a", "0"), F(4), "R1"),
     ))
-    _, m1 = applica_passo("choose_reference", massa, stato_iniziale(NODO))
-    with pytest.raises(ValueError, match="nessun vincolo"):
+    _, m1 = applica_passo("choose_reference", massa, stato_iniziale(NODO), operands=())
+    with pytest.raises(TypeError):
         applica_passo("write_voltage_constraint", massa, m1)
+    with pytest.raises(ValueError, match="non definisce un supernodo"):
+        applica_passo("write_voltage_constraint", massa, m1, operands=("V1",))
 
 
 def test_planner_azioni_supernodo():
@@ -311,7 +317,7 @@ def test_scrittura_senza_incognite_o_ruolo_errato():
     d0 = stato_iniziale(NODO)
     with pytest.raises(ValueError, match="senza incognite"):
         scrivi_vincolo_tensione(ir, d0, "V1")
-    _, d1 = applica_passo("choose_reference", ir, d0)
+    _, d1 = applica_passo("choose_reference", ir, d0, operands=())
     amputato = DerivationState(
         "D1", NODO, reference_node=REFERENCE_NODE,
         variables=d1.variables,
