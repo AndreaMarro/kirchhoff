@@ -19,10 +19,11 @@ AnalyticalStepKind = Literal[
     "choose_reference",
     "define_nodal_unknowns",
     "write_kcl",
+    "write_voltage_constraint",
 ]
 
 TECHNIQUES: frozenset[str] = frozenset(get_args(DidacticTechniqueKind))
 ANALYTICAL_KINDS: frozenset[str] = frozenset(get_args(AnalyticalStepKind))
 
-PLAN_SCHEMA_VERSION = "didactic-plan.v0.1"
+PLAN_SCHEMA_VERSION = "didactic-plan.v0.2"
 PROFILE = "student-dc-v0.1"
