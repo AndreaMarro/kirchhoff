@@ -237,19 +237,20 @@ def test_determinismo_stessi_ir_stato_nodo():
     assert s1.equations[0] == s2.equations[0]
 
 
-def test_corrente_incidente_non_viene_omessa():
+def test_corrente_incidente_entra_nella_kcl_ordinaria():
     ir = _ir(("0", "a", "b"), (
         Component.of("V1", "voltage_source_dc", ("b", "0"), F(5), "V1"),
         Component.of("R1", "resistor", ("a", "b"), F(10), "R1"),
         Component.of("I1", "current_source_dc", ("a", "0"), F(1), "I1"),
     ))
-    assert "a" not in nodi_kcl_ordinarie(ir)
-    with pytest.raises(ValueError, match="non rappresentabili"):
-        _kcl_al_nodo(ir, "a")
+    assert "a" in nodi_kcl_ordinarie(ir)
+    eq = _kcl_al_nodo(ir, "a")
+    assert eq.rhs == -F(1)
     _, d1 = applica_passo("choose_reference", ir, stato_iniziale(NODO))
     _, d2 = applica_passo("define_nodal_unknowns", ir, d1)
-    with pytest.raises(ValueError, match="non rappresentabili"):
-        scrivi_kcl_al_nodo(ir, d2, "a")
+    passo, _ = scrivi_kcl_al_nodo(ir, d2, "a")
+    assert passo.equations[0].rhs == -F(1)
+    assert passo.evidence == "kcl_leaving_currents_dc"
 
 
 def test_sorgente_controllata_incidente_rifiutata():
