@@ -20,8 +20,8 @@ NODO = "nodo-prova"
 def _fino_alle_incognite():
     ir = leggi(PONTE)
     d0 = stato_iniziale(NODO)
-    _, d1 = applica_passo("choose_reference", ir, d0)
-    _, d2 = applica_passo("define_nodal_unknowns", ir, d1)
+    _, d1 = applica_passo("choose_reference", ir, d0, operands=())
+    _, d2 = applica_passo("define_nodal_unknowns", ir, d1, operands=())
     return ir, d2
 
 
@@ -29,7 +29,7 @@ def test_kcl_persiste_nello_stato_successivo():
     ir, prima = _fino_alle_incognite()
     assert prima.equations == ()
     snap = prima.equations
-    passo, dopo = applica_passo("write_kcl", ir, prima)
+    passo, dopo = applica_passo("write_kcl", ir, prima, operands=("a",))
     assert len(passo.equations) == 1
     assert dopo.equations == passo.equations
     assert passo.equations[0] is dopo.equations[-1]
@@ -47,7 +47,7 @@ def test_kcl_si_accumula_alle_equazioni_precedenti():
         assumptions=d2.assumptions,
         equations=(precedente,),
     )
-    passo, dopo = applica_passo("write_kcl", ir, con_eq)
+    passo, dopo = applica_passo("write_kcl", ir, con_eq, operands=("a",))
     nuova = passo.equations[0]
     assert dopo.equations == (precedente, nuova)
     assert nuova.focus != precedente.focus
@@ -56,9 +56,9 @@ def test_kcl_si_accumula_alle_equazioni_precedenti():
 
 def test_kcl_duplicata_e_rifiutata():
     ir, d2 = _fino_alle_incognite()
-    passo, d3 = applica_passo("write_kcl", ir, d2)
+    passo, d3 = applica_passo("write_kcl", ir, d2, operands=("a",))
     with pytest.raises(ValueError, match="duplicate"):
-        applica_passo("write_kcl", ir, d3)
+        applica_passo("write_kcl", ir, d3, operands=("a",))
     eq = passo.equations[0]
     with pytest.raises(ValueError, match="duplicate"):
         DerivationState(
@@ -72,8 +72,8 @@ def test_kcl_duplicata_e_rifiutata():
 
 def test_kcl_deterministica():
     ir, d2 = _fino_alle_incognite()
-    p1, s1 = applica_passo("write_kcl", ir, d2)
-    p2, s2 = applica_passo("write_kcl", ir, d2)
+    p1, s1 = applica_passo("write_kcl", ir, d2, operands=("a",))
+    p2, s2 = applica_passo("write_kcl", ir, d2, operands=("a",))
     assert p1 == p2
     assert s1 == s2
     assert s1.equations[0] == s2.equations[0]
