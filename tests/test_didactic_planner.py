@@ -145,10 +145,11 @@ def test_azioni_nodali_senza_incognite_non_definiscono():
 
 
 def test_planner_rifiuta_quando_niente_e_eseguibile():
-    ir = _ir(("0", "a", "b"), (
+    ir = _ir(("0", "a", "b", "c"), (
         Component.of("V1", "voltage_source_dc", ("a", "b"), F(5), "V1"),
+        Component.of("V2", "voltage_source_dc", ("b", "c"), F(3), "V2"),
         Component.of("R1", "resistor", ("a", "0"), F(10), "R1"),
-        Component.of("R2", "resistor", ("b", "0"), F(10), "R2"),
+        Component.of("R2", "resistor", ("c", "0"), F(10), "R2"),
     ))
     kernel = resolve(replace(ir, requests=(_req("R1", "voltage"),)))
     assert isinstance(kernel, Solved)
@@ -187,7 +188,7 @@ def test_nodale_capability_boundaries():
         Component.of("R2", "resistor", ("b", "0"), F(10), "R2"),
     ))
     assert isinstance(resolve(replace(flottante, requests=(_req("R1", "voltage"),))), Solved)
-    assert not nodale_disponibile(flottante, "voltage")
+    assert nodale_disponibile(flottante, "voltage")
 
 
 def test_contribuisce_e_ordinamento_riduzioni():
