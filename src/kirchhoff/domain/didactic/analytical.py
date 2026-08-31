@@ -150,3 +150,75 @@ def nodo_della_prima_kcl(ir: IR) -> str | None:
     """Il primo nodo, in ordine, su cui una KCL ordinaria è scrivibile senza supernodo."""
     nodi = nodi_kcl_ordinarie(ir)
     return nodi[0] if nodi else None
+
+
+def _kcl_al_nodo(ir: IR, nodo: str) -> ExactEquation:
+    """KCL ordinaria al nodo: Σ I_res,out = −Σ I_src,out.
+
+    I resistori restano a sinistra come (V_nodo − V_altro)/R. I generatori
+    di corrente indipendenti vanno nel termine noto, con la convenzione
+    uscente positiva e l'orientamento p → q del CircuitIR.
+
+    I contributi di V(0) restano nei termini. Il ruolo `reference` vive
+    sulla dichiarazione `NodalVariable`, non sull'algebra.
+
+    Formula ESATTAMENTE `nodo`. Non ne sceglie un altro. Rifiuta se
+    un ramo incidente non è rappresentabile in questo slice.
+    """
+    _precondizioni_kcl_ordinaria(ir, nodo)
+    termini: list[LinearTerm] = []
+    rhs = Fraction(0)
+    for c in _rami_incidenti(ir, nodo):
+        if c.type == "resistor":
+            altro = c.terminals[1] if c.terminals[0] == nodo else c.terminals[0]
+            g = Fraction(1, c.value.amount)
+            termini.append(LinearTerm(g, tensione_nodo(nodo)))
+            termini.append(LinearTerm(-g, tensione_nodo(altro)))
+            continue
+        p, q = c.terminals
+        if nodo == p:
+            rhs -= c.value.amount
+        else:
+            rhs += c.value.amount
+    return ExactEquation("kcl", tuple(termini), rhs, nodo)
+
+
+def _variabili_dell_equazione_dichiarate(
+    stato: DerivationState, equazione: ExactEquation,
+) -> None:
+    """Ogni VariableRef dell'equazione deve essere già dichiarato nello stato."""
+    for termine in equazione.terms:
+        try:
+            stato.variabile_del_nodo(termine.variable.node)
+        except KeyError as exc:
+            raise ValueError(
+                f"{stato.identifier}: l'equazione {equazione.kind}@"
+                f"{equazione.focus} introduce {termine.variable.kind}@"
+                f"{termine.variable.node} non dichiarato"
+            ) from exc
+
+
+def _scegli_riferimento(ir: IR, prima: DerivationState) -> tuple[AnalyticalStep, DerivationState]:
+    if prima.reference_node is not None:
+        raise ValueError(
+            f"{prima.identifier}: il riferimento è già {prima.reference_node}")
+    dopo = DerivationState(
+        identifier=_prossimo_id(prima),
+        proof_node=prima.proof_node,
+        reference_node=REFERENCE_NODE,
+        variables=(NodalVariable(
+            nome_tensione(REFERENCE_NODE), REFERENCE_NODE, "reference",
+            known_value=Fraction(0),
+        ),),
+        assumptions=("verso_dai_terminali", "riferimento_convenzione_IR"),
+    )
+    passo = AnalyticalStep(
+        kind="choose_reference",
+        proof_node=prima.proof_node,
+        derivation_before=prima.identifier,
+        derivation_after=dopo.identifier,
+        focused_entities=(REFERENCE_NODE,),
+        equations=(),
+        evidence="reference_node_convention",
+    )
+    return passo, dopo
