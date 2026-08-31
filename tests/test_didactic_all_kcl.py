@@ -191,16 +191,20 @@ def test_nodo_isolato_non_e_sistema_nodale_completo():
     assert _kcl_pianificate(_azioni_nodali(ir)) == ("a",)
 
 
-def test_generatore_di_corrente_resta_fuori():
+def test_generatore_di_corrente_entra_nello_slice():
     ir = leggi(CORRENTE)
     kernel = resolve(IR(
         "1.0.0", "dc", "netlist", ir.nodes, ir.components,
         (_req("R1", "voltage"),),
     ))
     assert isinstance(kernel, Solved)
-    assert not nodale_disponibile(ir, "voltage")
-    assert not nodale_disponibile(ir, "current")
-    assert isinstance(pianifica(ir, _req("R1", "voltage")), Refusal)
+    assert nodale_disponibile(ir, "voltage")
+    assert nodale_disponibile(ir, "current")
+    piano = pianifica(ir, _req("R1", "voltage"))
+    assert isinstance(piano, DidacticPlan)
+    assert piano.technique == "nodal_analysis"
+    assert nodi_kcl_ordinarie(ir) == ("a",)
+    assert _kcl_pianificate(_azioni_nodali(ir)) == ("a",)
 
 
 def test_sorgente_di_tensione_flottante_resta_fuori():
