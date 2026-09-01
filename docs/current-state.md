@@ -38,3 +38,11 @@
 - Il Claim finale resolved_quantity e' emesso dal TruthfulnessGate dopo MNA, tableau indipendente, verify() e confronto Fraction esatto.
 - TransformExecution resta intermedio; gli AnalyticalStep sono prove ispezionabili, non certificati semantici indipendenti.
 - Il binding oggetto CircuitIR/proof_node resta debito residuo: qui e' validato soltanto il genere ir_.
+
+## P1-K candidate
+
+- P1-J resta baseline storico; P1-K e' candidato al codice 05f7a98dede8af2729b313f3999e1859455dbf13, non merged.
+- Il Claim finale resolved_quantity e' emesso dal TruthfulnessGate soltanto dopo MNA, tableau indipendente, verify() e confronto esatto Fraction su ogni tensione/corrente di ogni ramo.
+- CI GitHub 33531886082: pytest verde, copertura globale >=95%, domain/ e truthfulness.py al 100%, reference-set 60/0 e boundaries verdi.
+- TransformExecution resta intermedio. AnalyticalStep e' evidenza ispezionabile, non certificazione semantica indipendente.
+- Il binding tra oggetto CircuitIR e proof_node resta debito residuo: P1-K convalida soltanto il genere ir_. Nessun CAS o runtime dependency esterna.
