@@ -83,7 +83,7 @@ def test_certify_propagates_gate_refusal_and_execute_propagates_executor_refusal
     execution = execute_plan(ir, request, plan, proof_node=PROOF)
     assert isinstance(execution, TransformExecution)
     assert certify_execution(ir, request, execution) == truthfulness_gate(ir, request, execution)
-    rejected_plan = replace(plan, actions=(PlannedAction("serie", ("R1", "V1")),))
+    rejected_plan = replace(plan, actions=(PlannedAction("parallelo", ("R1", "R2")),))
     result = execute_certified_plan(ir, request, rejected_plan, proof_node=PROOF)
     assert isinstance(result, Refusal)
 
