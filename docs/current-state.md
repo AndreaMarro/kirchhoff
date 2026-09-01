@@ -34,15 +34,20 @@
 
 ## P1-K candidate
 
-- P1-J e' il baseline storico; P1-K e' un candidato non merged.
-- Il Claim finale resolved_quantity e' emesso dal TruthfulnessGate dopo MNA, tableau indipendente, verify() e confronto Fraction esatto.
-- TransformExecution resta intermedio; gli AnalyticalStep sono prove ispezionabili, non certificati semantici indipendenti.
-- Il binding oggetto CircuitIR/proof_node resta debito residuo: qui e' validato soltanto il genere ir_.
-
-## P1-K candidate
-
-- P1-J resta baseline storico; P1-K e' candidato al codice 05f7a98dede8af2729b313f3999e1859455dbf13, non merged.
-- Il Claim finale resolved_quantity e' emesso dal TruthfulnessGate soltanto dopo MNA, tableau indipendente, verify() e confronto esatto Fraction su ogni tensione/corrente di ogni ramo.
-- CI GitHub 33531886082: pytest verde, copertura globale >=95%, domain/ e truthfulness.py al 100%, reference-set 60/0 e boundaries verdi.
-- TransformExecution resta intermedio. AnalyticalStep e' evidenza ispezionabile, non certificazione semantica indipendente.
-- Il binding tra oggetto CircuitIR e proof_node resta debito residuo: P1-K convalida soltanto il genere ir_. Nessun CAS o runtime dependency esterna.
+- P1-J is the certified historical baseline.
+- P1-K adds the owned resolved_quantity Claim and TruthfulnessGate.
+- A VERIFIED final nodal DC Claim requires:
+  - exact MNA
+  - independent exact tableau
+  - full A/B comparison on every branch voltage/current
+  - Fraction-only values
+  - verify()
+  - exact didactic-vs-oracle agreement
+  - correct unit
+- TransformExecution remains intermediate.
+- AnalyticalStep remains inspectable evidence, not an independently
+  certified semantic Claim.
+- CircuitIR object ↔ proof_node binding remains residual debt.
+- No external CAS or new runtime dependency.
+- Certification evidence is recorded in GitHub Actions / git history,
+  rather than embedding a self-invalidating branch SHA here.
