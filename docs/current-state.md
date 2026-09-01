@@ -31,3 +31,10 @@
 - Punteggio e ricerca di strategie multi-passo, soltanto con un contratto dedicato.
 - Adapter di percezione con validazione e conferma utente.
 - Percorsi di prodotto AC e transitori.
+
+## P1-K candidate
+
+- P1-J e' il baseline storico; P1-K e' un candidato non merged.
+- Il Claim finale resolved_quantity e' emesso dal TruthfulnessGate dopo MNA, tableau indipendente, verify() e confronto Fraction esatto.
+- TransformExecution resta intermedio; gli AnalyticalStep sono prove ispezionabili, non certificati semantici indipendenti.
+- Il binding oggetto CircuitIR/proof_node resta debito residuo: qui e' validato soltanto il genere ir_.
