@@ -20,3 +20,5 @@ jobs:
         run: pytest
       - name: domain coverage
         run: python scripts/check_domain_coverage.py
+      - name: boundaries
+        run: python scripts/check_boundaries.py
