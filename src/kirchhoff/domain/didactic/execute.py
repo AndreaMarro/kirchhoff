@@ -22,6 +22,14 @@ from ..transform.result import TransformResult
 from .analytical import AnalyticalStep, applica_passo, stato_iniziale
 from .derivation import DerivationState
 from .kinds import ANALYTICAL_KINDS, PLAN_SCHEMA_VERSION
+from .observation import (
+    ObservationContract,
+    ObservationEffect,
+    RequestLineageStep,
+    apply_observation_effect,
+    observation_effect,
+    validate_request_lineage,
+)
 from .plan import DidacticPlan
 from .request import ResolvedQuantity, resolve_request
 from .solve import DerivationSolution, solve_derivation
@@ -115,6 +123,10 @@ class TransformExecution:
     before: IR
     after: IR
     results: tuple[TransformResult, ...]
+    observation: ObservationContract | None = None
+    observation_effect: ObservationEffect | None = None
+    successor_request: Request | None = None
+    request_lineage: RequestLineageStep | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "proof_node", verifica(self.proof_node, "ir"))
@@ -141,6 +153,35 @@ class TransformExecution:
                 raise TypeError(
                     f"results[{i}] {type(risultato).__name__} "
                     "invece di TransformResult")
+        fields = (
+            self.observation,
+            self.observation_effect,
+            self.request_lineage,
+        )
+        if any(field is None for field in fields):
+            if any(field is not None for field in fields) or self.successor_request is not None:
+                raise ValueError("TransformExecution con lineage osservativa parziale")
+            return
+        assert self.observation is not None  # per il type checker, dopo la guardia
+        assert self.observation_effect is not None
+        assert self.request_lineage is not None
+        if self.observation.request_id != self.plan.request_id:
+            raise ValueError("lineage osservativa su una Request diversa dal piano")
+        if len(self.results) != 1 or len(self.plan.actions) != 1:
+            raise ValueError("lineage osservativa richiede un solo passo certificato")
+        action = self.plan.actions[0]
+        expected_effect = observation_effect(
+            self.before, self.after, self.results[0], action.kind, self.observation)
+        if self.observation_effect != expected_effect:
+            raise ValueError("effetto osservativo incoerente col risultato certificato")
+        request = Request(
+            self.observation.request_id,
+            self.observation.quantity,  # type: ignore[arg-type]
+            self.observation.target,
+        )
+        validate_request_lineage(
+            self.before, self.after, request, self.observation_effect,
+            self.successor_request, self.request_lineage, operation=action.kind)
 
 
 DidacticExecution: TypeAlias = NodalExecution | TransformExecution
@@ -162,7 +203,7 @@ def execute_plan(
     if plan.technique == "nodal_analysis":
         return _execute_nodal(ir, request, plan, proof_node)
     if plan.technique == "certified_transform_path":
-        return _execute_transform(ir, plan, proof_node)
+        return _execute_transform(ir, request, plan, proof_node)
     raise ValueError(  # pragma: no cover
         f"tecnica {plan.technique!r} senza percorso di esecuzione")
 
@@ -235,6 +276,7 @@ def _execute_nodal(
 
 def _execute_transform(
     ir: IR,
+    request: Request,
     plan: DidacticPlan,
     proof_node: str,
 ) -> TransformExecution | Refusal:
@@ -247,10 +289,17 @@ def _execute_transform(
     if isinstance(outcome, Refusal):
         return outcome
     after, result = outcome
+    observation = ObservationContract.from_request(request)
+    effect = observation_effect(ir, after, result, action.kind, observation)
+    successor, lineage = apply_observation_effect(request, effect, operation=action.kind)
     return TransformExecution(
         proof_node=proof_node,
         plan=plan,
         before=ir,
         after=after,
         results=(result,),
+        observation=observation,
+        observation_effect=effect,
+        successor_request=successor,
+        request_lineage=lineage,
     )

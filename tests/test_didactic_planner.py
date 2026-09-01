@@ -23,6 +23,7 @@ from kirchhoff.domain.didactic.capabilities import (
     riduzioni_che_contribuiscono,
     riduzioni_eseguibili,
 )
+from kirchhoff.domain.didactic.capabilities import effetto_osservazione
 from kirchhoff.domain.didactic.observation import ObservationContract
 from kirchhoff.domain.didactic.planner import _azioni_nodali
 from kirchhoff.domain.ir import IR, Component, Request
@@ -192,7 +193,7 @@ def test_nodale_capability_boundaries():
     assert nodale_disponibile(flottante, "voltage")
 
 
-def test_contribuisce_e_ordinamento_riduzioni():
+def test_contribuisce_e_ordinamento_riduzioni(monkeypatch):
     serie = ExecutableTransform("serie", "R1", "R2")
     par = ExecutableTransform("parallelo", "R1", "R2")
     part = leggi(PARTITORE)
@@ -211,3 +212,10 @@ def test_contribuisce_e_ordinamento_riduzioni():
     assert elenco == tuple(sorted(elenco))
     assert riduzioni_eseguibili(par_ir)
     assert all(r.operation == "parallelo" for r in riduzioni_eseguibili(par_ir))
+
+    monkeypatch.setattr(
+        "kirchhoff.domain.didactic.capabilities.transform",
+        lambda *_: Refusal("unsolvable", "q1", "request", "rifiuto sintetico"),
+    )
+    assert effetto_osservazione(
+        part, serie, ObservationContract("q1", "R1", "current")).kind == "blocked"
