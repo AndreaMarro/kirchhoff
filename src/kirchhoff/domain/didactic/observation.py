@@ -198,7 +198,34 @@ def apply_observation_effect(
     )
 
 
-def validate_request_lineage(
+def validate_observation_lineage(
+    before: IR,
+    after: IR,
+    result: TransformResult,
+    operation: str,
+    request: Request,
+    successor: Request | None,
+    lineage: RequestLineageStep,
+) -> None:
+    """Rifiuta una lineage che diverge dall'effetto certificato del passo.
+
+    L'effetto non e' un ingresso: viene ricalcolato dal circuito prima/dopo e dal
+    `TransformResult`, per impedire che una lineage internamente coerente ma
+    semanticamente falsa passi il controllo.
+    """
+    contract = ObservationContract.from_request(request)
+    if request.target not in {component.id for component in before.components}:
+        raise ValueError("Request di partenza su componente assente dal circuito prima")
+    if successor is not None and successor.target not in {
+        component.id for component in after.components
+    }:
+        raise ValueError("successore Request su componente assente dal circuito dopo")
+    effect = observation_effect(before, after, result, operation, contract)
+    _validate_request_lineage_for_effect(
+        before, after, request, effect, successor, lineage, operation=operation)
+
+
+def _validate_request_lineage_for_effect(
     before: IR,
     after: IR,
     request: Request,
@@ -208,16 +235,10 @@ def validate_request_lineage(
     *,
     operation: str,
 ) -> None:
-    """Rifiuta una lineage che non sia il risultato deterministico dell'effetto."""
+    """Controlla il derivato di un effetto gia' certificato; uso interno soltanto."""
     expected_successor, expected_lineage = apply_observation_effect(
         request, effect, operation=operation)
     if successor != expected_successor:
         raise ValueError("successore Request incoerente con l'effetto certificato")
     if lineage != expected_lineage:
         raise ValueError("lineage della Request incoerente con l'effetto certificato")
-    if successor is not None:
-        after_ids = {component.id for component in after.components}
-        if successor.target not in after_ids:
-            raise ValueError("successore Request su componente assente dal circuito dopo")
-    if request.target not in {component.id for component in before.components}:
-        raise ValueError("Request di partenza su componente assente dal circuito prima")

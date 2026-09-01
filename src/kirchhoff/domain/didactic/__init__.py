@@ -44,7 +44,7 @@ from .observation import (
     RequestLineageStep,
     apply_observation_effect,
     observation_effect,
-    validate_request_lineage,
+    validate_observation_lineage,
 )
 from .plan import DidacticPlan, PlanReason, PlannedAction
 from .planner import pianifica
@@ -99,5 +99,5 @@ __all__ = [
     "solve_derivation",
     "stato_iniziale",
     "supernodi_semplici",
-    "validate_request_lineage",
+    "validate_observation_lineage",
 ]

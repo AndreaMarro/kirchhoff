@@ -13,9 +13,11 @@ from kirchhoff.domain.didactic.observation import (
     RequestLineageStep,
     apply_observation_effect,
     observation_effect,
-    validate_request_lineage,
+    validate_observation_lineage,
 )
+from kirchhoff.domain.didactic import DidacticPlan, pianifica
 from kirchhoff.domain.ir import Request
+from kirchhoff.domain.refusal import Refusal
 from kirchhoff.domain.transform import transform
 from kirchhoff.pipeline.netlist import leggi
 
@@ -111,7 +113,8 @@ def test_retarget_conserva_id_e_quantita_e_registra_lineage():
     assert successor.quantity == request.quantity
     assert successor.target == effect.target_after
     assert lineage == RequestLineageStep("q1", "current", "R1", successor.target, "serie", "retarget")
-    validate_request_lineage(before, after, request, effect, successor, lineage, operation="serie")
+    validate_observation_lineage(
+        before, after, result, "serie", request, successor, lineage)
 
 
 def test_corruzioni_della_lineage_sono_rifiutate():
@@ -122,17 +125,17 @@ def test_corruzioni_della_lineage_sono_rifiutate():
     successor, lineage = apply_observation_effect(request, effect, operation="serie")
     assert successor is not None
     with pytest.raises(ValueError, match="lineage"):
-        validate_request_lineage(
-            before, after, request, effect, successor,
-            replace(lineage, request_id="q_altra"), operation="serie")
+        validate_observation_lineage(
+            before, after, result, "serie", request, successor,
+            replace(lineage, request_id="q_altra"))
     with pytest.raises(ValueError, match="lineage"):
-        validate_request_lineage(
-            before, after, request, effect, successor,
-            replace(lineage, quantity="voltage"), operation="serie")
-    with pytest.raises(ValueError, match="successore Request"):
-        validate_request_lineage(
-            before, after, request, effect, Request("q1", "current", "inventato"),
-            lineage, operation="serie")
+        validate_observation_lineage(
+            before, after, result, "serie", request, successor,
+            replace(lineage, quantity="voltage"))
+    with pytest.raises(ValueError, match="componente assente"):
+        validate_observation_lineage(
+            before, after, result, "serie", request,
+            Request("q1", "current", "inventato"), lineage)
 
 
 def test_identity_e_blocked_non_ammettono_successori_inventati():
@@ -146,9 +149,8 @@ def test_identity_e_blocked_non_ammettono_successori_inventati():
     successor_identity, lineage_identity = apply_observation_effect(
         request, identity, operation="serie")
     assert successor_identity is request
-    validate_request_lineage(
-        before, after, request, identity, successor_identity, lineage_identity,
-        operation="serie")
+    validate_observation_lineage(
+        before, after, result, "serie", request, successor_identity, lineage_identity)
 
     blocked_request = Request("q2", "voltage", "R1")
     before, after, result = _outcome(PARTITORE, "serie", blocked_request)
@@ -157,8 +159,8 @@ def test_identity_e_blocked_non_ammettono_successori_inventati():
     successor, lineage = apply_observation_effect(blocked_request, blocked, operation="serie")
     assert successor is None
     assert lineage.target_after is None
-    validate_request_lineage(
-        before, after, blocked_request, blocked, successor, lineage, operation="serie")
+    validate_observation_lineage(
+        before, after, result, "serie", blocked_request, successor, lineage)
 
 
 def test_piu_componenti_creati_fallisce_chiuso():
@@ -219,19 +221,63 @@ def test_applicazione_e_validazione_rifiutano_input_corrotto():
         after,
         components=tuple(c for c in after.components if c.id != successor.target),
     )
-    with pytest.raises(ValueError, match="componente assente"):
-        validate_request_lineage(
-            before, after_without_successor, request, effect, successor, lineage,
-            operation="serie")
+    with pytest.raises(ValueError, match="successore Request"):
+        validate_observation_lineage(
+            before, after_without_successor, result, "serie", request, successor, lineage)
     before_without_request_target = replace(
         before,
         components=tuple(c for c in before.components if c.id != request.target),
         requests=(),
     )
     with pytest.raises(ValueError, match="partenza"):
-        validate_request_lineage(
-            before_without_request_target, after, request, effect, successor, lineage,
-            operation="serie")
+        validate_observation_lineage(
+            before_without_request_target, after, result, "serie", request, successor, lineage)
+
+
+@pytest.mark.parametrize(
+    ("operation", "netlist", "quantity", "forced_kind"),
+    (
+        ("serie", PARTITORE, "current", "blocked"),
+        ("serie", PARTITORE, "voltage", "retarget"),
+        ("parallelo", PARALLELO, "voltage", "blocked"),
+        ("parallelo", PARALLELO, "current", "retarget"),
+    ),
+)
+def test_validator_rifiuta_effetti_corotti_ma_internamente_coerenti(
+    operation, netlist, quantity, forced_kind,
+):
+    request = Request("q1", quantity, "R1")  # type: ignore[arg-type]
+    before, after, result = _outcome(netlist, operation, request)
+    target_after = (
+        None if forced_kind == "blocked" else result.layout_patch.create[0].id
+    )
+    forced = ObservationEffect(forced_kind, target_after, "corruzione")  # type: ignore[arg-type]
+    successor, lineage = apply_observation_effect(request, forced, operation=operation)
+    with pytest.raises(ValueError, match="successore Request|lineage"):
+        validate_observation_lineage(
+            before, after, result, operation, request, successor, lineage)
+
+
+@pytest.mark.parametrize(
+    "quantity",
+    ("time_constant", "initial_value", "final_value", "root_1", "root_2"),
+)
+def test_planner_rifiuta_quantity_valida_ma_non_osservabile_senza_sollevare(quantity):
+    request = Request("q1", quantity, "R1")  # type: ignore[arg-type]
+    ir = replace(leggi(PARTITORE), requests=(request,))
+    assert isinstance(pianifica(ir, request), Refusal)
+
+
+@pytest.mark.parametrize(
+    ("quantity", "technique"),
+    (("current", "certified_transform_path"), ("voltage", "nodal_analysis")),
+)
+def test_planner_mantiene_il_comportamento_per_quantita_osservabili(quantity, technique):
+    request = Request("q1", quantity, "R1")  # type: ignore[arg-type]
+    ir = replace(leggi(PARTITORE), requests=(request,))
+    plan = pianifica(ir, request)
+    assert isinstance(plan, DidacticPlan)
+    assert plan.technique == technique
 
 
 def test_p1j_non_aggiunge_planner_o_cas_runtime():

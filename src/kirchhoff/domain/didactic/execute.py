@@ -28,7 +28,7 @@ from .observation import (
     RequestLineageStep,
     apply_observation_effect,
     observation_effect,
-    validate_request_lineage,
+    validate_observation_lineage,
 )
 from .plan import DidacticPlan
 from .request import ResolvedQuantity, resolve_request
@@ -116,17 +116,23 @@ class NodalExecution:
 
 @dataclass(frozen=True, slots=True)
 class TransformExecution:
-    """Replay di un piano `certified_transform_path`. Non risolve la Request."""
+    """Replay di un piano `certified_transform_path` con lineage completa.
+
+    P1-J non mantiene una forma legacy senza osservazione: nessun consumatore di
+    produzione costruisce manualmente questo risultato, e ogni esecuzione riuscita
+    deve rendere ispezionabile contratto, effetto e Request successiva (se esiste).
+    Non risolve ne' ripianifica la Request.
+    """
 
     proof_node: str
     plan: DidacticPlan
     before: IR
     after: IR
     results: tuple[TransformResult, ...]
-    observation: ObservationContract | None = None
-    observation_effect: ObservationEffect | None = None
-    successor_request: Request | None = None
-    request_lineage: RequestLineageStep | None = None
+    observation: ObservationContract
+    observation_effect: ObservationEffect
+    successor_request: Request | None
+    request_lineage: RequestLineageStep
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "proof_node", verifica(self.proof_node, "ir"))
@@ -153,35 +159,31 @@ class TransformExecution:
                 raise TypeError(
                     f"results[{i}] {type(risultato).__name__} "
                     "invece di TransformResult")
-        fields = (
-            self.observation,
-            self.observation_effect,
-            self.request_lineage,
-        )
-        if any(field is None for field in fields):
-            if any(field is not None for field in fields) or self.successor_request is not None:
-                raise ValueError("TransformExecution con lineage osservativa parziale")
-            return
-        assert self.observation is not None  # per il type checker, dopo la guardia
-        assert self.observation_effect is not None
-        assert self.request_lineage is not None
+        if not isinstance(self.observation, ObservationContract):
+            raise TypeError("TransformExecution senza ObservationContract")
+        if not isinstance(self.observation_effect, ObservationEffect):
+            raise TypeError("TransformExecution senza ObservationEffect")
+        if not isinstance(self.request_lineage, RequestLineageStep):
+            raise TypeError("TransformExecution senza RequestLineageStep")
+        if self.successor_request is not None and not isinstance(self.successor_request, Request):
+            raise TypeError("TransformExecution con successore che non e' Request")
         if self.observation.request_id != self.plan.request_id:
             raise ValueError("lineage osservativa su una Request diversa dal piano")
         if len(self.results) != 1 or len(self.plan.actions) != 1:
             raise ValueError("lineage osservativa richiede un solo passo certificato")
         action = self.plan.actions[0]
-        expected_effect = observation_effect(
-            self.before, self.after, self.results[0], action.kind, self.observation)
-        if self.observation_effect != expected_effect:
-            raise ValueError("effetto osservativo incoerente col risultato certificato")
         request = Request(
             self.observation.request_id,
             self.observation.quantity,  # type: ignore[arg-type]
             self.observation.target,
         )
-        validate_request_lineage(
-            self.before, self.after, request, self.observation_effect,
-            self.successor_request, self.request_lineage, operation=action.kind)
+        validate_observation_lineage(
+            self.before, self.after, self.results[0], action.kind, request,
+            self.successor_request, self.request_lineage)
+        expected_effect = observation_effect(
+            self.before, self.after, self.results[0], action.kind, self.observation)
+        if self.observation_effect != expected_effect:
+            raise ValueError("effetto osservativo incoerente col risultato certificato")
 
 
 DidacticExecution: TypeAlias = NodalExecution | TransformExecution
