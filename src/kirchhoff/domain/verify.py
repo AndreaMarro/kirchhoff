@@ -27,6 +27,29 @@ PHASOR_DOMAINS = frozenset({"ac_sinusoidal", "three_phase"})
 
 ATTESTAZIONE_COSTITUTIVE = "leggi costitutive delle sorgenti controllate"
 
+GRANDEZZE_CONFRONTO = ("voltage", "current")
+
+def compare_exact_solution_paths(sol_a: dict, sol_b: dict) -> Refusal | None:
+    """Confronto esatto completo fra Percorso A e Percorso B, senza tolleranza."""
+    ids_a, ids_b = set(sol_a), set(sol_b)
+    if ids_a != ids_b:
+        solo_a, solo_b = sorted(ids_a - ids_b), sorted(ids_b - ids_a)
+        if solo_a:
+            cid = solo_a[0]
+            return Refusal("path_disagreement", cid, "component", f"{cid}: presente nel percorso A, assente nel percorso B.")
+        cid = solo_b[0]
+        return Refusal("path_disagreement", cid, "component", f"{cid}: presente nel percorso B, assente nel percorso A.")
+    for cid in sorted(ids_a):
+        qa, qb = sol_a[cid], sol_b[cid]
+        for quantity in GRANDEZZE_CONFRONTO:
+            if quantity not in qa:
+                return Refusal("path_disagreement", cid, "component", f"{cid}: {quantity}: percorso A = assente; percorso B = {qb.get(quantity, 'assente')}")
+            if quantity not in qb:
+                return Refusal("path_disagreement", cid, "component", f"{cid}: {quantity}: percorso A = {qa[quantity]}; percorso B = assente")
+            if qa[quantity] != qb[quantity]:
+                return Refusal("path_disagreement", cid, "component", f"{cid}: {quantity}: percorso A = {qa[quantity]}; percorso B = {qb[quantity]}")
+    return None
+
 
 def kvl_residuals(ir: IR, sol: dict[str, dict]) -> dict[str, object]:
     """Residuo di tensione su ogni maglia fondamentale."""

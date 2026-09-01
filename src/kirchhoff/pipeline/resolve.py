@@ -11,7 +11,7 @@ from kirchhoff.domain.independent_dc import TableauSingularError, solve_dc_table
 from kirchhoff.domain.ir import IR
 from kirchhoff.domain.refusal import Refusal
 from kirchhoff.domain.validate import Validated, validate
-from kirchhoff.domain.verify import controlli_eseguiti, verify
+from kirchhoff.domain.verify import compare_exact_solution_paths, controlli_eseguiti, verify
 from kirchhoff.pipeline.failure import Failure
 from kirchhoff.render.layout import LayoutIR
 from kirchhoff.render.serialize import FORME, render
@@ -40,89 +40,6 @@ QUANTITIES_BY_SOLVER: dict[str, frozenset[str]] = {
 }
 
 ATTESTAZIONE_PERCORSI = "accordo fra percorsi indipendenti"
-GRANDEZZE_CONFRONTO = ("voltage", "current")
-
-
-@dataclasses.dataclass(frozen=True, slots=True)
-class Solved:
-    circuito: IR
-    soluzione: dict
-    verifiche: tuple[str, ...]
-    solver: str
-    layout: LayoutIR | None = None
-    svg: str | None = None
-
-
-Risolto = Solved
-
-
-def renderer_supports(ir: IR) -> bool:
-    """Il renderer dichiara i tipi che sa disegnare in `FORME`. Nient'altro."""
-    return all(c.type in FORME for c in ir.components)
-
-
-def _tipi(ir: IR) -> frozenset[str]:
-    return frozenset(c.type for c in ir.components)
-
-
-def _primo(ir: IR, ammessi: frozenset[str]):
-    return next(c for c in ir.components if c.type not in ammessi)
-
-
-def _rifiuto_richieste(ir: IR, solver: str, soluzione: dict | None = None) -> Refusal | None:
-    ammesse = QUANTITIES_BY_SOLVER[solver]
-    for r in ir.requests:
-        if r.quantity not in ammesse:
-            return Refusal(
-                "unsolvable", r.id, "request",
-                f"la richiesta {r.id} chiede {r.quantity} di {r.target}: "
-                f"il percorso {solver} produce solo "
-                f"{', '.join(sorted(ammesse))}.")
-        if soluzione is None:
-            continue
-        valore = soluzione.get(r.target, {}).get(r.quantity)
-        if valore is None:
-            return Refusal(
-                "unsolvable", r.id, "request",
-                f"la richiesta {r.id} chiede {r.quantity} di {r.target} "
-                "ma il solutore non l'ha prodotta.")
-    return None
-
-
-def _confronta_percorsi(sol_a: dict, sol_b: dict) -> Refusal | None:
-    """Confronto esatto fra Percorso A e Percorso B. Nessuna tolleranza."""
-    ids_a, ids_b = set(sol_a), set(sol_b)
-    if ids_a != ids_b:
-        solo_a = sorted(ids_a - ids_b)
-        solo_b = sorted(ids_b - ids_a)
-        if solo_a:
-            cid = solo_a[0]
-            return Refusal(
-                "path_disagreement", cid, "component",
-                f"{cid}: presente nel percorso A, assente nel percorso B.")
-        cid = solo_b[0]
-        return Refusal(
-            "path_disagreement", cid, "component",
-            f"{cid}: presente nel percorso B, assente nel percorso A.")
-
-    for cid in sorted(ids_a):
-        qa, qb = sol_a[cid], sol_b[cid]
-        for q in GRANDEZZE_CONFRONTO:
-            if q not in qa:
-                return Refusal(
-                    "path_disagreement", cid, "component",
-                    f"{cid}:\n{q}:\npercorso A = assente\npercorso B = {qb.get(q, 'assente')}")
-            if q not in qb:
-                return Refusal(
-                    "path_disagreement", cid, "component",
-                    f"{cid}:\n{q}:\npercorso A = {qa[q]}\npercorso B = assente")
-            if qa[q] != qb[q]:
-                return Refusal(
-                    "path_disagreement", cid, "component",
-                    f"{cid}:\n{q}:\npercorso A = {qa[q]}\npercorso B = {qb[q]}")
-    return None
-
-
 def _dispatch(ir: IR) -> tuple[str, Callable[[IR], dict]] | Refusal:
     tipi = _tipi(ir)
     dominio = ir.domain
@@ -215,7 +132,7 @@ def _oracolo_percorso_b(ir: IR, soluzione_a: dict) -> Refusal | Failure | None:
             f"singolare: {e}")
     except Exception as e:
         return Failure("verify", f"{type(e).__name__}: {e}")
-    return _confronta_percorsi(soluzione_a, soluzione_b)
+    return compare_exact_solution_paths(soluzione_a, soluzione_b)
 
 
 def _esegui(circuito: IR, layout: LayoutIR | None) -> Solved | Refusal | Failure:
