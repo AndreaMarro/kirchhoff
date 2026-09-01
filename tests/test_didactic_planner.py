@@ -23,6 +23,8 @@ from kirchhoff.domain.didactic.capabilities import (
     riduzioni_che_contribuiscono,
     riduzioni_eseguibili,
 )
+from kirchhoff.domain.didactic.capabilities import effetto_osservazione
+from kirchhoff.domain.didactic.observation import ObservationContract
 from kirchhoff.domain.didactic.planner import _azioni_nodali
 from kirchhoff.domain.ir import IR, Component, Request
 from kirchhoff.domain.refusal import Refusal
@@ -191,21 +193,29 @@ def test_nodale_capability_boundaries():
     assert nodale_disponibile(flottante, "voltage")
 
 
-def test_contribuisce_e_ordinamento_riduzioni():
+def test_contribuisce_e_ordinamento_riduzioni(monkeypatch):
     serie = ExecutableTransform("serie", "R1", "R2")
     par = ExecutableTransform("parallelo", "R1", "R2")
-    assert contribuisce(serie, "R3", "voltage")
-    assert contribuisce(serie, "R1", "current")
-    assert not contribuisce(serie, "R1", "voltage")
-    assert contribuisce(par, "R1", "voltage")
-    assert not contribuisce(par, "R1", "current")
     part = leggi(PARTITORE)
-    utili_i = riduzioni_che_contribuiscono(part, "R1", "current")
-    utili_v = riduzioni_che_contribuiscono(part, "R1", "voltage")
+    assert contribuisce(part, serie, ObservationContract("q1", "R1", "current"))
+    assert not contribuisce(part, serie, ObservationContract("q1", "R1", "voltage"))
+    par_ir = leggi(PARALLELO)
+    assert contribuisce(par_ir, par, ObservationContract("q1", "R1", "voltage"))
+    assert not contribuisce(par_ir, par, ObservationContract("q1", "R1", "current"))
+    utili_i = riduzioni_che_contribuiscono(
+        part, ObservationContract("q1", "R1", "current"))
+    utili_v = riduzioni_che_contribuiscono(
+        part, ObservationContract("q1", "R1", "voltage"))
     assert utili_i and all(r.operation == "serie" for r in utili_i)
     assert not utili_v
     elenco = riduzioni_eseguibili(part)
     assert elenco == tuple(sorted(elenco))
-    par_ir = leggi(PARALLELO)
     assert riduzioni_eseguibili(par_ir)
     assert all(r.operation == "parallelo" for r in riduzioni_eseguibili(par_ir))
+
+    monkeypatch.setattr(
+        "kirchhoff.domain.didactic.capabilities.transform",
+        lambda *_: Refusal("unsolvable", "q1", "request", "rifiuto sintetico"),
+    )
+    assert effetto_osservazione(
+        part, serie, ObservationContract("q1", "R1", "current")).kind == "blocked"

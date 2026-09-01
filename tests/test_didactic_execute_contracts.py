@@ -265,6 +265,8 @@ def test_r8_transform_rifiuta_tecnica_non_transform():
     with pytest.raises(ValueError, match="certified_transform_path"):
         TransformExecution(
             base.proof_node, piano, base.before, base.after, base.results,
+            base.observation, base.observation_effect, base.successor_request,
+            base.request_lineage,
         )
 
 
@@ -273,6 +275,8 @@ def test_r9_transform_rifiuta_zero_results():
     with pytest.raises(ValueError, match="senza risultati"):
         TransformExecution(
             base.proof_node, base.plan, base.before, base.after, (),
+            base.observation, base.observation_effect, base.successor_request,
+            base.request_lineage,
         )
 
 
@@ -282,6 +286,8 @@ def test_r10_transform_rifiuta_conteggio_results():
         TransformExecution(
             base.proof_node, base.plan, base.before, base.after,
             base.results + base.results,
+            base.observation, base.observation_effect, base.successor_request,
+            base.request_lineage,
         )
 
 
@@ -349,18 +355,26 @@ def test_transform_type_guards():
     with pytest.raises(TypeError, match="DidacticPlan"):
         TransformExecution(
             base.proof_node, object(), base.before, base.after, base.results,
+            base.observation, base.observation_effect, base.successor_request,
+            base.request_lineage,
         )
     with pytest.raises(TypeError, match="before"):
         TransformExecution(
             base.proof_node, base.plan, object(), base.after, base.results,
+            base.observation, base.observation_effect, base.successor_request,
+            base.request_lineage,
         )
     with pytest.raises(TypeError, match="after"):
         TransformExecution(
             base.proof_node, base.plan, base.before, object(), base.results,
+            base.observation, base.observation_effect, base.successor_request,
+            base.request_lineage,
         )
     with pytest.raises(TypeError, match="TransformResult"):
         TransformExecution(
             base.proof_node, base.plan, base.before, base.after, ("x",),
+            base.observation, base.observation_effect, base.successor_request,
+            base.request_lineage,
         )
 
 

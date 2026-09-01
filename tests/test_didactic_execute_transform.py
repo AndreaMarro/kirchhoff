@@ -87,6 +87,48 @@ def test_t4_parallelo_tensione_target_consumato():
     assert not any(r.target in equivalenti for r in esito.after.requests)
 
 
+def test_t4b_esecutore_registra_la_lineage_senza_remappare_l_ir():
+    request = _req("R2", "current")
+    ir = _con(leggi(PARTITORE), request)
+    piano = pianifica(ir, request)
+    esito = execute_plan(ir, request, piano, proof_node=PROOF)
+    assert isinstance(esito, TransformExecution)
+    assert esito.observation_effect is not None
+    assert esito.observation_effect.kind == "retarget"
+    assert esito.successor_request is not None
+    assert esito.successor_request.id == request.id
+    assert esito.successor_request.quantity == request.quantity
+    assert esito.successor_request.target not in {c.id for c in ir.components}
+    assert esito.request_lineage is not None
+    assert esito.request_lineage.target_before == request.target
+    assert esito.request_lineage.target_after == esito.successor_request.target
+    assert all(r.target != esito.successor_request.target for r in esito.after.requests)
+
+
+def test_t4c_transform_execution_rifiuta_lineage_mancante_o_incoerente():
+    request = _req("R2", "current")
+    ir = _con(leggi(PARTITORE), request)
+    piano = pianifica(ir, request)
+    esito = execute_plan(ir, request, piano, proof_node=PROOF)
+    assert isinstance(esito, TransformExecution)
+    with pytest.raises(TypeError, match="ObservationContract"):
+        replace(esito, observation=None)
+    with pytest.raises(TypeError, match="ObservationEffect"):
+        replace(esito, observation_effect=object())
+    with pytest.raises(TypeError, match="RequestLineageStep"):
+        replace(esito, request_lineage=object())
+    with pytest.raises(TypeError, match="successore"):
+        replace(esito, successor_request=object())
+    with pytest.raises(ValueError, match="diversa dal piano"):
+        replace(esito, observation=replace(esito.observation, request_id="q_altra"))
+    doppio = replace(esito.plan, actions=(esito.plan.actions[0], esito.plan.actions[0]))
+    with pytest.raises(ValueError, match="un solo passo"):
+        replace(esito, plan=doppio, results=(esito.results[0], esito.results[0]))
+    with pytest.raises(ValueError, match="effetto osservativo"):
+        replace(esito, observation_effect=esito.observation_effect.__class__(
+            "blocked", None, "corrotto"))
+
+
 def test_t5_non_chiama_pianifica(monkeypatch):
     request = _req("R2", "current")
     ir = _con(leggi(PARTITORE), request)
