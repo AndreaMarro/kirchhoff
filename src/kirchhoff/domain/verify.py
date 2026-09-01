@@ -30,7 +30,7 @@ ATTESTAZIONE_COSTITUTIVE = "leggi costitutive delle sorgenti controllate"
 GRANDEZZE_CONFRONTO = ("voltage", "current")
 
 def compare_exact_solution_paths(sol_a: dict, sol_b: dict) -> Refusal | None:
-    """Confronto esatto completo fra Percorso A e Percorso B, senza tolleranza."""
+    """Confronto completo A/B DC: solo Fraction, nessuna tolleranza."""
     ids_a, ids_b = set(sol_a), set(sol_b)
     if ids_a != ids_b:
         solo_a, solo_b = sorted(ids_a - ids_b), sorted(ids_b - ids_a)
@@ -46,6 +46,10 @@ def compare_exact_solution_paths(sol_a: dict, sol_b: dict) -> Refusal | None:
                 return Refusal("path_disagreement", cid, "component", f"{cid}: {quantity}: percorso A = assente; percorso B = {qb.get(quantity, 'assente')}")
             if quantity not in qb:
                 return Refusal("path_disagreement", cid, "component", f"{cid}: {quantity}: percorso A = {qa[quantity]}; percorso B = assente")
+            if not isinstance(qa[quantity], Fraction):
+                return Refusal("path_disagreement", cid, "component", f"{cid}: {quantity}: percorso A non e' Fraction")
+            if not isinstance(qb[quantity], Fraction):
+                return Refusal("path_disagreement", cid, "component", f"{cid}: {quantity}: percorso B non e' Fraction")
             if qa[quantity] != qb[quantity]:
                 return Refusal("path_disagreement", cid, "component", f"{cid}: {quantity}: percorso A = {qa[quantity]}; percorso B = {qb[quantity]}")
     return None

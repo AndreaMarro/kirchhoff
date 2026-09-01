@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from fractions import Fraction
 from typing import Iterable, Literal, get_args
 
@@ -45,13 +45,14 @@ def _normalizza_ids(nome: str, ids: Iterable[str]) -> tuple[str, ...]:
 @dataclass(frozen=True, slots=True)
 class Claim:
     """Affermazione verificata con stato, soggetti ed evidenze ispezionabili."""
+
     claim_type: ClaimType
     state_id: str
     subject_ids: tuple[str, ...]
     evidence_ids: tuple[str, ...]
     verifier_id: str
     verifier_version: str
-    status: ClaimStatus = "VERIFIED"
+    status: ClaimStatus = field(init=False, default="VERIFIED")
 
     def __post_init__(self) -> None:
         if self.claim_type not in CLAIM_TYPES:
@@ -63,13 +64,12 @@ class Claim:
             raise ValueError("Claim senza verifier_id")
         if not isinstance(self.verifier_version, str) or not _SEMVER.fullmatch(self.verifier_version):
             raise ValueError("Claim con verifier_version non semantica")
-        if self.status not in CLAIM_STATUSES:
-            raise ValueError(f"status {self.status!r} fuori dal vocabolario chiuso")
 
 
 @dataclass(frozen=True, slots=True)
 class CertifiedNodalExecution:
     """Esecuzione nodale e Claim finale verificato."""
+
     execution: NodalExecution
     claim: Claim
 
@@ -78,10 +78,22 @@ class CertifiedNodalExecution:
             raise TypeError("CertifiedNodalExecution richiede NodalExecution")
         if not isinstance(self.claim, Claim):
             raise TypeError("CertifiedNodalExecution richiede Claim")
+        expected_subjects = (self.execution.resolved.request_id, self.execution.resolved.target)
+        expected_evidence = tuple(step.derivation_after for step in self.execution.steps)
         if self.claim.claim_type != "resolved_quantity":
             raise ValueError("Claim incompatibile con una quantita' risolta")
         if self.claim.state_id != self.execution.proof_node:
             raise ValueError("Claim ancorato a uno stato diverso dall'esecuzione")
+        if self.claim.subject_ids != expected_subjects:
+            raise ValueError("Claim con subject_ids incoerenti con l'esecuzione")
+        if self.claim.evidence_ids != expected_evidence:
+            raise ValueError("Claim con evidence_ids incoerenti con l'esecuzione")
+        if self.claim.verifier_id != VERIFIER_ID:
+            raise ValueError("Claim con verifier_id non autorevole")
+        if self.claim.verifier_version != VERIFIER_VERSION:
+            raise ValueError("Claim con verifier_version non autorevole")
+        if self.claim.status != "VERIFIED":
+            raise ValueError("Claim finale senza status VERIFIED")
 
 
 def _binding(request: Request, diagnosis: str) -> Refusal:
@@ -168,8 +180,6 @@ def certify_execution(ir: IR, request: Request, execution: DidacticExecution) ->
     claim = truthfulness_gate(ir, request, execution)
     if isinstance(claim, Refusal):
         return claim
-    if not isinstance(execution, NodalExecution):
-        raise TypeError("un Claim finale richiede NodalExecution")
     return CertifiedNodalExecution(execution, claim)
 
 
