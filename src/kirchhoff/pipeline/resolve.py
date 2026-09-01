@@ -40,6 +40,55 @@ QUANTITIES_BY_SOLVER: dict[str, frozenset[str]] = {
 }
 
 ATTESTAZIONE_PERCORSI = "accordo fra percorsi indipendenti"
+GRANDEZZE_CONFRONTO = ("voltage", "current")
+
+
+@dataclasses.dataclass(frozen=True, slots=True)
+class Solved:
+    circuito: IR
+    soluzione: dict
+    verifiche: tuple[str, ...]
+    solver: str
+    layout: LayoutIR | None = None
+    svg: str | None = None
+
+
+Risolto = Solved
+
+
+def renderer_supports(ir: IR) -> bool:
+    """Il renderer dichiara i tipi che sa disegnare in `FORME`. Nient'altro."""
+    return all(c.type in FORME for c in ir.components)
+
+
+def _tipi(ir: IR) -> frozenset[str]:
+    return frozenset(c.type for c in ir.components)
+
+
+def _primo(ir: IR, ammessi: frozenset[str]):
+    return next(c for c in ir.components if c.type not in ammessi)
+
+
+def _rifiuto_richieste(ir: IR, solver: str, soluzione: dict | None = None) -> Refusal | None:
+    ammesse = QUANTITIES_BY_SOLVER[solver]
+    for r in ir.requests:
+        if r.quantity not in ammesse:
+            return Refusal(
+                "unsolvable", r.id, "request",
+                f"la richiesta {r.id} chiede {r.quantity} di {r.target}: "
+                f"il percorso {solver} produce solo "
+                f"{', '.join(sorted(ammesse))}.")
+        if soluzione is None:
+            continue
+        valore = soluzione.get(r.target, {}).get(r.quantity)
+        if valore is None:
+            return Refusal(
+                "unsolvable", r.id, "request",
+                f"la richiesta {r.id} chiede {r.quantity} di {r.target} "
+                "ma il solutore non l'ha prodotta.")
+    return None
+
+
 def _dispatch(ir: IR) -> tuple[str, Callable[[IR], dict]] | Refusal:
     tipi = _tipi(ir)
     dominio = ir.domain
