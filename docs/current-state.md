@@ -31,3 +31,23 @@
 - Punteggio e ricerca di strategie multi-passo, soltanto con un contratto dedicato.
 - Adapter di percezione con validazione e conferma utente.
 - Percorsi di prodotto AC e transitori.
+
+## P1-K candidate
+
+- P1-J is the certified historical baseline.
+- P1-K adds the owned resolved_quantity Claim and TruthfulnessGate.
+- A VERIFIED final nodal DC Claim requires:
+  - exact MNA
+  - independent exact tableau
+  - full A/B comparison on every branch voltage/current
+  - Fraction-only values
+  - verify()
+  - exact didactic-vs-oracle agreement
+  - correct unit
+- TransformExecution remains intermediate.
+- AnalyticalStep remains inspectable evidence, not an independently
+  certified semantic Claim.
+- CircuitIR object ↔ proof_node binding remains residual debt.
+- No external CAS or new runtime dependency.
+- Certification evidence is recorded in GitHub Actions / git history,
+  rather than embedding a self-invalidating branch SHA here.
