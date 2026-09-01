@@ -121,7 +121,6 @@ def _context(ir: IR, request: Request, execution: NodalExecution) -> Refusal | N
         return _binding(request, "execution.resolved.quantity non coincide con Request.quantity")
     try:
         verifica(execution.proof_node, "ir")
-        NodalExecution(execution.proof_node, execution.plan, execution.steps, execution.derivation, execution.solution, execution.resolved)
     except (TypeError, ValueError) as exc:
         return _binding(request, f"invarianti di NodalExecution non verificabili: {exc}")
     return None
