@@ -38,6 +38,14 @@ from .execute import (
     TransformExecution,
     execute_plan,
 )
+from .observation import (
+    ObservationContract,
+    ObservationEffect,
+    RequestLineageStep,
+    apply_observation_effect,
+    observation_effect,
+    validate_request_lineage,
+)
 from .plan import DidacticPlan, PlanReason, PlannedAction
 from .planner import pianifica
 from .request import ResolvedQuantity, resolve_request
@@ -58,6 +66,8 @@ __all__ = [
     "DidacticPlan",
     "DidacticTechniqueKind",
     "NodalExecution",
+    "ObservationContract",
+    "ObservationEffect",
     "TransformExecution",
     "ExactEquation",
     "ExactLinearSystem",
@@ -69,15 +79,18 @@ __all__ = [
     "PlanReason",
     "PlannedAction",
     "ResolvedQuantity",
+    "RequestLineageStep",
     "SimpleSupernode",
     "SolvedVariable",
     "applica_passo",
+    "apply_observation_effect",
     "build_linear_system",
     "execute_plan",
     "il_grafo_resta_fermo",
     "nodo_della_prima_kcl",
     "nodi_dei_supernodi_semplici",
     "nodi_kcl_ordinarie",
+    "observation_effect",
     "pianifica",
     "resolve_request",
     "scrivi_kcl_al_nodo",
@@ -86,4 +99,5 @@ __all__ = [
     "solve_derivation",
     "stato_iniziale",
     "supernodi_semplici",
+    "validate_request_lineage",
 ]

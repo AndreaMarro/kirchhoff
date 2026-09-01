@@ -18,6 +18,7 @@ from .capabilities import (
     riduzioni_eseguibili,
 )
 from .kinds import PLAN_SCHEMA_VERSION, PROFILE
+from .observation import ObservationContract
 from .plan import DidacticPlan, PlanReason, PlannedAction
 
 
@@ -60,7 +61,8 @@ def pianifica(ir: IR, request: Request) -> DidacticPlan | Refusal:
         )
 
     riduzioni = riduzioni_eseguibili(ir)
-    utili = riduzioni_che_contribuiscono(ir, request.target, request.quantity)
+    utili = riduzioni_che_contribuiscono(
+        ir, ObservationContract.from_request(request))
     solver = nodale_disponibile(ir, request.quantity)
     raggiungibile = bool(utili) or solver
     reason = PlanReason(

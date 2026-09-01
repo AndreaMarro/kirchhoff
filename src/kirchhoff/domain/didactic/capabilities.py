@@ -17,6 +17,7 @@ Le guardie di serie/parallelo non vivono qui: la sola fonte è
 from __future__ import annotations
 
 from ..ir import IR, REFERENCE_NODE
+from ..refusal import Refusal
 from ..transform.applicability import (
     ExecutableTransform,
     enumerate_executable_transforms,
@@ -29,6 +30,8 @@ from .analytical import (
     nodi_kcl_ordinarie,
     supernodi_semplici,
 )
+from .observation import ObservationContract, ObservationEffect, observation_effect
+from ..transform.engine import transform
 
 #: Sottoinsieme per cui lo slice didattico sa davvero scrivere equazioni.
 #: I generatori di corrente indipendenti entrano nel termine noto della
@@ -50,28 +53,40 @@ def riduzioni_eseguibili(ir: IR) -> tuple[RiduzioneEseguibile, ...]:
     return enumerate_executable_transforms(ir)
 
 
-def contribuisce(riduzione: RiduzioneEseguibile, target: str, quantity: str) -> bool:
-    """La riduzione aiuta a raggiungere la grandezza richiesta.
+def effetto_osservazione(
+    ir: IR,
+    riduzione: RiduzioneEseguibile,
+    contract: ObservationContract,
+) -> ObservationEffect:
+    """Interroga la sola autorita' semantica su una riduzione eseguibile.
 
-    Il target sopravvive, oppure la grandezza è condivisa dalla coppia fusa:
-    la corrente in serie, la tensione in parallelo.
+    L'esecuzione qui e' pura e serve a leggere il suo risultato certificato; non
+    pianifica un percorso e non muta l'IR. Un rifiuto del prodotto non diventa una
+    scorciatoia semantica: la riduzione non contribuisce.
     """
-    fusi = {riduzione.first, riduzione.second}
-    if target not in fusi:
-        return True
-    if riduzione.operation == "serie" and quantity == "current":
-        return True
-    if riduzione.operation == "parallelo" and quantity == "voltage":
-        return True
-    return False
+    outcome = transform(ir, riduzione.operation, *riduzione.operands)
+    if isinstance(outcome, Refusal):
+        return ObservationEffect(
+            "blocked", None, "la riduzione eseguibile non produce un circuito valido")
+    after, result = outcome
+    return observation_effect(ir, after, result, riduzione.operation, contract)
+
+
+def contribuisce(
+    ir: IR,
+    riduzione: RiduzioneEseguibile,
+    contract: ObservationContract,
+) -> bool:
+    """Compatibilita': delega integralmente alla semantica osservativa P1-J."""
+    return effetto_osservazione(ir, riduzione, contract).kind != "blocked"
 
 
 def riduzioni_che_contribuiscono(
-    ir: IR, target: str, quantity: str,
+    ir: IR, contract: ObservationContract,
 ) -> tuple[RiduzioneEseguibile, ...]:
     return tuple(
         r for r in riduzioni_eseguibili(ir)
-        if contribuisce(r, target, quantity)
+        if contribuisce(ir, r, contract)
     )
 
 
