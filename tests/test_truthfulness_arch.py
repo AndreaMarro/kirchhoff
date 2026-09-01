@@ -19,3 +19,10 @@ def test_truthfulness_domain_only():
 def test_execute_has_no_oracle():
     text=EXECUTE.read_text()
     assert all(word not in text for word in ("solve_dc","solve_dc_tableau","truthfulness","from ..mna","from ..independent_dc"))
+
+
+def test_one_shared_comparator_and_no_private_pipeline_copy():
+    source = ROOT / "src"
+    definitions = sum(path.read_text(encoding="utf-8").count("def compare_exact_solution_paths") for path in source.rglob("*.py"))
+    assert definitions == 1
+    assert "_confronta_percorsi" not in (source / "kirchhoff/pipeline/resolve.py").read_text(encoding="utf-8")
