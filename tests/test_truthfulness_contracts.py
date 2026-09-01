@@ -14,6 +14,7 @@ from kirchhoff.domain.identity import conia
 from kirchhoff.domain.ir import Magnitude, Request
 from kirchhoff.domain.refusal import Refusal
 from kirchhoff.domain.truthfulness import Claim, CertifiedNodalExecution, certify_execution, execute_certified_plan, truthfulness_gate
+from kirchhoff.pipeline.netlist import leggi
 
 from test_didactic_execute_nodal import _semplice
 from test_didactic_execute_transform import PARTITORE
@@ -77,7 +78,7 @@ def test_claim_status_is_not_public_input():
 
 def test_certify_propagates_gate_refusal_and_execute_propagates_executor_refusal():
     request = Request("q-transform", "current", "R2")
-    ir = replace(PARTITORE, requests=(request,))
+    ir = replace(leggi(PARTITORE), requests=(request,))
     plan = pianifica(ir, request)
     execution = execute_plan(ir, request, plan, proof_node=PROOF)
     assert isinstance(execution, TransformExecution)
@@ -109,3 +110,14 @@ def test_resolved_invalid_unit_or_type_is_path_disagreement():
     ir, request, execution = _nodal()
     object.__setattr__(execution.resolved, "value", object())
     assert truthfulness_gate(ir, request, execution).cause == "path_disagreement"
+
+
+def test_gate_propagates_missing_oracle_result(monkeypatch):
+    ir, request, execution = _nodal()
+    incomplete = {"I1": {"voltage": F(-10), "current": F(2)}}
+    monkeypatch.setattr(truthfulness.mna, "solve_dc", lambda _ir: incomplete)
+    monkeypatch.setattr(truthfulness, "solve_dc_tableau", lambda _ir: incomplete)
+    monkeypatch.setattr(truthfulness, "verify", lambda *_args: None)
+    refused = truthfulness_gate(ir, request, execution)
+    assert isinstance(refused, Refusal)
+    assert refused.cause == "path_disagreement"

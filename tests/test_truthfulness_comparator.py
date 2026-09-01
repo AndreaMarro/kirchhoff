@@ -37,3 +37,13 @@ def test_comparator_rejects_identical_float_and_nonrequested_branch_float():
     other_b = _solution()
     other_a["B"]["current"] = other_b["B"]["current"] = 4.0
     assert compare_exact_solution_paths(other_a, other_b).cause == "path_disagreement"
+
+
+def test_comparator_rejects_non_fraction_from_path_b_and_missing_b_component():
+    a = _solution()
+    b = _solution()
+    b["A"]["current"] = 2.0
+    assert compare_exact_solution_paths(a, b).cause == "path_disagreement"
+    b = _solution()
+    del b["A"]
+    assert compare_exact_solution_paths(a, b).cause == "path_disagreement"
