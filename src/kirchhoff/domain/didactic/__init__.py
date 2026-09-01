@@ -60,6 +60,7 @@ from .solve import (
 __all__ = [
     "AnalyticalStep",
     "AnalyticalStepKind",
+    "CertifiedDidacticRun",
     "DerivationState",
     "DerivationSolution",
     "DidacticExecution",
@@ -91,6 +92,7 @@ __all__ = [
     "nodi_dei_supernodi_semplici",
     "nodi_kcl_ordinarie",
     "observation_effect",
+    "orchestrate_didactic_run",
     "pianifica",
     "resolve_request",
     "scrivi_kcl_al_nodo",
@@ -101,3 +103,15 @@ __all__ = [
     "supernodi_semplici",
     "validate_observation_lineage",
 ]
+
+
+def __getattr__(name: str):
+    """Espone P1-L senza creare il ciclo didactic -> truthfulness -> didactic."""
+    if name in {"CertifiedDidacticRun", "orchestrate_didactic_run"}:
+        from .orchestrate import CertifiedDidacticRun, orchestrate_didactic_run
+
+        return {
+            "CertifiedDidacticRun": CertifiedDidacticRun,
+            "orchestrate_didactic_run": orchestrate_didactic_run,
+        }[name]
+    raise AttributeError(f"module {__name__!r} non esporta {name!r}")

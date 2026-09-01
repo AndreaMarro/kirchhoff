@@ -15,6 +15,12 @@ from ..ir import IR, Request
 from ..refusal import Refusal
 from ..truthfulness import CertifiedNodalExecution, certify_execution
 from .execute import NodalExecution, TransformExecution, execute_plan
+from .observation import (
+    ObservationContract,
+    observation_effect,
+    validate_observation_lineage,
+)
+from .plan import DidacticPlan
 from .planner import pianifica
 
 
@@ -53,6 +59,11 @@ class CertifiedDidacticRun:
         current_request = self.original_request
         _assert_request_bound(current_ir, current_request)
         for index, execution in enumerate(executions):
+            if not isinstance(execution, TransformExecution):
+                raise TypeError(
+                    f"trasformazione {index}: {type(execution).__name__} invece di TransformExecution")
+            _require_canonical_plan(
+                current_ir, current_request, execution.plan, phase=f"trasformazione {index}")
             _validate_transform_continuity(execution, current_ir, current_request, index)
             successor = execution.successor_request
             assert successor is not None  # garantito da _validate_transform_continuity
@@ -66,6 +77,8 @@ class CertifiedDidacticRun:
         _assert_request_bound(self.final_ir, self.final_request)
 
         execution = self.final_execution.execution
+        if not isinstance(execution, NodalExecution):
+            raise ValueError("certificazione finale senza NodalExecution")
         resolved = execution.resolved
         if execution.plan.request_id != self.final_request.id:
             raise ValueError("il piano nodale finale non appartiene alla final_request")
@@ -75,9 +88,30 @@ class CertifiedDidacticRun:
             raise ValueError("il Claim P1-K finale non riguarda final_request.target")
         if resolved.quantity != self.final_request.quantity:
             raise ValueError("il Claim P1-K finale non riguarda final_request.quantity")
+        _require_canonical_plan(
+            self.final_ir, self.final_request, execution.plan, phase="stato nodale finale")
         state_ids = tuple(step.proof_node for step in executions) + (execution.proof_node,)
         if len(set(state_ids)) != len(state_ids):
             raise ValueError("la run riusa un state-id fra stati circuitali distinti")
+
+        replayed_execution = execute_plan(
+            self.final_ir, self.final_request, execution.plan, proof_node=execution.proof_node)
+        if not isinstance(replayed_execution, NodalExecution):
+            raise ValueError("certificazione finale: esecuzione nodale non riproducibile")
+        if replayed_execution != execution:
+            raise ValueError("certificazione finale: esecuzione nodale non corrisponde al suo IR")
+        recertified = certify_execution(self.final_ir, self.final_request, execution)
+        if isinstance(recertified, Refusal):
+            raise ValueError("certificazione finale rifiutata sul suo IR")
+        if recertified != self.final_execution:
+            raise ValueError("certificazione finale non corrisponde al suo IR")
+
+    @property
+    def state_ids(self) -> tuple[str, ...]:
+        """Identificatori effettivamente consumati dalla trace, nell'ordine."""
+        return tuple(step.proof_node for step in self.transform_executions) + (
+            self.final_execution.execution.proof_node,
+        )
 
 
 def orchestrate_didactic_run(
@@ -90,7 +124,8 @@ def orchestrate_didactic_run(
 
     La supply e' un input del chiamante: il dominio non conia identificatori, non
     introduce un registro oggetto↔identificatore e non riusa un proof-node per
-    due stati distinti. Il numero richiesto e' esattamente ``trasformazioni + 1``.
+    due stati distinti. La supply puo' essere sovradimensionata: gli identificatori
+    non consumati non entrano nella trace risultante.
     """
     if not isinstance(initial_ir, IR):
         raise TypeError(f"initial_ir {type(initial_ir).__name__} invece di IR")
@@ -142,8 +177,6 @@ def orchestrate_didactic_run(
             if isinstance(certified, Refusal):
                 return certified
             state_index += 1
-            if state_index != len(identifiers):
-                raise ValueError("state_ids eccedenti rispetto agli stati della run")
             return CertifiedDidacticRun(
                 initial_ir,
                 original_request,
@@ -197,10 +230,21 @@ def _validate_transform_continuity(
     current_request: Request,
     index: int,
 ) -> None:
+    if not isinstance(execution, TransformExecution):
+        raise TypeError(
+            f"trasformazione {index}: {type(execution).__name__} invece di TransformExecution")
     if execution.before != current_ir:
         raise ValueError(f"trasformazione {index}: before non coincide con lo stato corrente")
+    if not isinstance(execution.plan, DidacticPlan):
+        raise TypeError(f"trasformazione {index}: piano non DidacticPlan")
+    if len(execution.plan.actions) != 1:
+        raise ValueError(f"trasformazione {index}: piano senza un solo passo")
+    if not isinstance(execution.results, tuple) or len(execution.results) != 1:
+        raise ValueError(f"trasformazione {index}: risultato trasformativo non singolo")
     if execution.observation.request_id != current_request.id:
         raise ValueError(f"trasformazione {index}: observation.request_id corrotto")
+    if execution.observation.target != current_request.target:
+        raise ValueError(f"trasformazione {index}: observation.target discontinuo")
     if execution.observation.quantity != current_request.quantity:
         raise ValueError(f"trasformazione {index}: observation.quantity corrotta")
     lineage = execution.request_lineage
@@ -214,9 +258,20 @@ def _validate_transform_continuity(
         raise ValueError(
             f"trasformazione {index}: non riduce il numero di componenti "
             f"({len(execution.before.components)} -> {len(execution.after.components)})")
-    if execution.observation_effect.kind == "blocked":
+    action = execution.plan.actions[0]
+    expected_effect = observation_effect(
+        current_ir,
+        execution.after,
+        execution.results[0],
+        action.kind,
+        ObservationContract.from_request(current_request),
+    )
+    if execution.observation_effect != expected_effect:
+        raise ValueError(f"trasformazione {index}: effetto osservativo non autorevole")
+    if expected_effect.kind == "blocked":
         raise RuntimeError(
             "violazione interna: trasformazione selezionata con osservazione blocked")
+
     successor = execution.successor_request
     if successor is None:
         raise RuntimeError("trasformazione non blocked senza Request successiva")
@@ -228,6 +283,42 @@ def _validate_transform_continuity(
         raise ValueError(f"trasformazione {index}: successor_request.target discontinuo")
     if execution.observation_effect.kind == "identity" and successor != current_request:
         raise ValueError(f"trasformazione {index}: identity ha cambiato Request")
+    validate_observation_lineage(
+        current_ir,
+        execution.after,
+        execution.results[0],
+        action.kind,
+        current_request,
+        successor,
+        lineage,
+    )
+
+    replayed = execute_plan(
+        current_ir, current_request, execution.plan, proof_node=execution.proof_node)
+    if not isinstance(replayed, TransformExecution):
+        raise ValueError(f"trasformazione {index}: risultato non riproducibile")
+    if replayed != execution:
+        raise ValueError(
+            f"trasformazione {index}: risultato certificato non corrisponde agli stati")
+
+
+def _require_canonical_plan(
+    ir: IR,
+    request: Request,
+    supplied: DidacticPlan,
+    *,
+    phase: str,
+) -> None:
+    """Rigioca il planner: una CertifiedDidacticRun e' la trace canonica P1-L."""
+    if not isinstance(supplied, DidacticPlan):
+        raise TypeError(f"{phase}: piano {type(supplied).__name__} invece di DidacticPlan")
+    expected = pianifica(ir, request)
+    if isinstance(expected, Refusal):
+        raise ValueError(f"{phase}: il planner ha rifiutato lo stato della trace")
+    if not isinstance(expected, DidacticPlan):
+        raise RuntimeError(f"{phase}: il planner ha prodotto un esito sconosciuto")
+    if supplied != expected:
+        raise ValueError(f"{phase}: piano pianificato diverso dalla trace certificata")
 
 
 __all__ = ["CertifiedDidacticRun", "orchestrate_didactic_run"]

@@ -9,6 +9,7 @@ from types import SimpleNamespace
 
 import pytest
 
+import kirchhoff.domain.didactic as didactic
 import kirchhoff.domain.didactic.orchestrate as orchestrate
 from kirchhoff.domain.didactic import DidacticPlan, PlanReason, PlannedAction, pianifica
 from kirchhoff.domain.didactic.kinds import PLAN_SCHEMA_VERSION, PROFILE
@@ -16,6 +17,7 @@ from kirchhoff.domain.didactic.orchestrate import (
     CertifiedDidacticRun,
     orchestrate_didactic_run,
 )
+from kirchhoff.domain.didactic.execute import TransformExecution, execute_plan
 from kirchhoff.domain.identity import conia
 from kirchhoff.domain.ir import Request
 from kirchhoff.domain.refusal import Refusal
@@ -89,6 +91,36 @@ def _zero_run() -> CertifiedDidacticRun:
     return run
 
 
+def _traccia_valida_ma_non_scelta_dal_planner() -> CertifiedDidacticRun:
+    ir, request = _input(MULTI_SERIE, "R1", "current")
+    selected = pianifica(ir, request)
+    assert isinstance(selected, DidacticPlan)
+    alternative = replace(
+        selected,
+        actions=(PlannedAction("serie", ("R2", "R3")),),
+    )
+    first = execute_plan(ir, request, alternative, proof_node=_states(1, start=500)[0])
+    assert isinstance(first, TransformExecution)
+    assert first.plan != selected
+    assert first.successor_request is not None
+
+    next_ir = orchestrate._bind_successor_request(first.after, first.successor_request)
+    continuation = orchestrate_didactic_run(
+        next_ir,
+        first.successor_request,
+        state_ids=_states(2, start=600),
+    )
+    assert isinstance(continuation, CertifiedDidacticRun)
+    return CertifiedDidacticRun(
+        ir,
+        request,
+        (first, *continuation.transform_executions),
+        continuation.final_ir,
+        continuation.final_request,
+        continuation.final_execution,
+    )
+
+
 def test_zero_transform_esegue_nodale_e_certifica_il_claim_finale():
     ir, request = _input("I1 0 a 2 ampere\nR1 a 0 5 ohm\n", "R1", "current")
     run = orchestrate_didactic_run(
@@ -101,6 +133,49 @@ def test_zero_transform_esegue_nodale_e_certifica_il_claim_finale():
     assert isinstance(run.final_execution, CertifiedNodalExecution)
     assert run.transform_executions == ()
     assert run.final_execution.claim.status == "VERIFIED"
+
+
+def test_api_pubblica_didactic_esporta_solo_l_orchestrazione_pubblica():
+    from kirchhoff.domain.didactic import (
+        CertifiedDidacticRun as imported_run,
+        orchestrate_didactic_run as imported_orchestrate,
+    )
+
+    assert imported_run is CertifiedDidacticRun
+    assert imported_orchestrate is orchestrate_didactic_run
+    assert "CertifiedDidacticRun" in didactic.__all__
+    assert "orchestrate_didactic_run" in didactic.__all__
+    assert "_bind_successor_request" not in didactic.__all__
+    assert "_validate_transform_continuity" not in didactic.__all__
+    assert "_validate_state_ids" not in didactic.__all__
+
+
+def test_run_rifiuta_certificazione_finale_valida_ma_di_un_altro_circuito():
+    ir_a, request_a = _input(
+        "I1 0 a 2 ampere\nR1 a 0 5 ohm\n", "R1", "current")
+    ir_b, request_b = _input(
+        "I1 0 a 3 ampere\nR1 a 0 5 ohm\n", "R1", "current")
+    run_a = orchestrate_didactic_run(ir_a, request_a, state_ids=_states(1))
+    run_b = orchestrate_didactic_run(ir_b, request_b, state_ids=_states(1, start=200))
+
+    assert isinstance(run_a, CertifiedDidacticRun)
+    assert isinstance(run_b, CertifiedDidacticRun)
+    assert run_a.final_execution.execution.resolved.value != run_b.final_execution.execution.resolved.value
+
+    with pytest.raises(ValueError, match="certificazione finale"):
+        CertifiedDidacticRun(
+            ir_a,
+            request_a,
+            (),
+            ir_a,
+            request_a,
+            run_b.final_execution,
+        )
+
+
+def test_run_rifiuta_un_percorso_valido_ma_non_selezionato_dal_planner():
+    with pytest.raises(ValueError, match="piano pianificato"):
+        _traccia_valida_ma_non_scelta_dal_planner()
 
 
 @pytest.mark.parametrize(
@@ -247,7 +322,7 @@ def test_corruzioni_della_traccia_sono_rifiutate(monkeypatch, field, replacement
         orchestrate_didactic_run(ir, request, state_ids=_states(2))
 
 
-def test_state_id_supply_e_esplicita_unica_ed_esatta():
+def test_state_id_supply_rifiuta_tipo_invalidi_duplicati_ed_esaurimento():
     ir, request = _input(SERIE, "R1", "current")
     with pytest.raises(TypeError, match="tuple"):
         orchestrate_didactic_run(ir, request, state_ids=list(_states(2)))  # type: ignore[arg-type]
@@ -257,8 +332,46 @@ def test_state_id_supply_e_esplicita_unica_ed_esatta():
         orchestrate_didactic_run(ir, request, state_ids=(_states(1)[0],) * 2)
     with pytest.raises(ValueError, match="insufficienti"):
         orchestrate_didactic_run(ir, request, state_ids=_states(1))
-    with pytest.raises(ValueError, match="eccedenti"):
-        orchestrate_didactic_run(ir, request, state_ids=_states(3))
+
+
+def test_state_id_supply_accetta_un_limite_superiore_e_espone_solo_il_prefisso_usato():
+    ir, request = _input(SERIE, "R1", "current")
+    exact = _states(2)
+    upper_bound = _states(len(ir.components), start=100)
+
+    exact_run = orchestrate_didactic_run(ir, request, state_ids=exact)
+    upper_bound_run = orchestrate_didactic_run(ir, request, state_ids=upper_bound)
+
+    assert isinstance(exact_run, CertifiedDidacticRun)
+    assert isinstance(upper_bound_run, CertifiedDidacticRun)
+    assert exact_run.state_ids == exact
+    assert upper_bound_run.state_ids == upper_bound[:2]
+    assert upper_bound_run.transform_executions[0].proof_node == upper_bound[0]
+    assert upper_bound_run.final_execution.execution.proof_node == upper_bound[1]
+
+
+def test_state_id_supply_valida_anche_il_suffisso_non_consumato():
+    ir, request = _input(SERIE, "R1", "current")
+    exact = _states(2)
+
+    with pytest.raises(ValueError, match="riusare"):
+        orchestrate_didactic_run(ir, request, state_ids=(*exact, exact[0]))
+    with pytest.raises(ValueError, match="identificatore"):
+        orchestrate_didactic_run(ir, request, state_ids=(*exact, "ir_non-valido"))
+
+
+def test_state_id_non_consumati_non_cambiano_la_run_deterministica():
+    ir, request = _input(MULTI_PARALLELO, "R1", "voltage")
+    consumed = _states(3, start=800)
+    first_supply = (*consumed, *_states(2, start=900))
+    second_supply = (*consumed, *_states(2, start=1000))
+
+    first = orchestrate_didactic_run(ir, request, state_ids=first_supply)
+    second = orchestrate_didactic_run(ir, request, state_ids=second_supply)
+
+    assert isinstance(first, CertifiedDidacticRun)
+    assert first == second
+    assert first.state_ids == consumed
 
 
 def test_il_risultato_ispezionabile_non_accetta_state_id_riusati():
@@ -296,6 +409,13 @@ def test_il_risultato_ispezionabile_valida_final_ir_e_final_request():
         replace(run, final_request=run.original_request)
 
 
+def test_il_risultato_ispezionabile_rifiuta_un_passo_non_transform_execution():
+    run = _series_run()
+
+    with pytest.raises(TypeError, match="TransformExecution"):
+        replace(run, transform_executions=(object(),))
+
+
 @pytest.mark.parametrize(
     ("mutate", "match"),
     (
@@ -310,6 +430,73 @@ def test_il_risultato_ispezionabile_valida_il_legame_finale_p1k(mutate, match):
     mutate(run)
 
     with pytest.raises(ValueError, match=match):
+        CertifiedDidacticRun(
+            run.initial_ir,
+            run.original_request,
+            run.transform_executions,
+            run.final_ir,
+            run.final_request,
+            run.final_execution,
+        )
+
+
+def test_il_risultato_ispezionabile_rifiuta_una_certificazione_senza_nodale():
+    run = _zero_run()
+    object.__setattr__(run.final_execution, "execution", object())
+
+    with pytest.raises(ValueError, match="senza NodalExecution"):
+        CertifiedDidacticRun(
+            run.initial_ir,
+            run.original_request,
+            run.transform_executions,
+            run.final_ir,
+            run.final_request,
+            run.final_execution,
+        )
+
+
+def test_il_risultato_ispezionabile_rifiuta_un_replay_finale_non_nodale(monkeypatch):
+    run = _zero_run()
+    wrong_execution = _series_run().transform_executions[0]
+    monkeypatch.setattr(orchestrate, "execute_plan", lambda *_args, **_kwargs: wrong_execution)
+
+    with pytest.raises(ValueError, match="esecuzione nodale non riproducibile"):
+        CertifiedDidacticRun(
+            run.initial_ir,
+            run.original_request,
+            run.transform_executions,
+            run.final_ir,
+            run.final_request,
+            run.final_execution,
+        )
+
+
+def test_il_risultato_ispezionabile_rifiuta_una_ricertificazione_finale_rifiutata(monkeypatch):
+    run = _zero_run()
+    refusal = Refusal("path_disagreement", "R1", "component", "gate rifiutato")
+    monkeypatch.setattr(orchestrate, "certify_execution", lambda *_: refusal)
+
+    with pytest.raises(ValueError, match="certificazione finale rifiutata"):
+        CertifiedDidacticRun(
+            run.initial_ir,
+            run.original_request,
+            run.transform_executions,
+            run.final_ir,
+            run.final_request,
+            run.final_execution,
+        )
+
+
+def test_il_risultato_ispezionabile_rifiuta_una_ricertificazione_diversa(monkeypatch):
+    run = _zero_run()
+    other = orchestrate_didactic_run(
+        *_input("I1 0 a 3 ampere\nR1 a 0 5 ohm\n", "R1", "current"),
+        state_ids=_states(1, start=250),
+    )
+    assert isinstance(other, CertifiedDidacticRun)
+    monkeypatch.setattr(orchestrate, "certify_execution", lambda *_: other.final_execution)
+
+    with pytest.raises(ValueError, match="certificazione finale non corrisponde"):
         CertifiedDidacticRun(
             run.initial_ir,
             run.original_request,
@@ -398,6 +585,59 @@ def test_guardie_lineage_rifiutano_i_campi_corotti(path, value, match):
             execution, run.initial_ir, run.original_request, 0)
 
 
+def test_guardia_continuita_rifiuta_un_oggetto_che_non_e_una_transform_execution():
+    run = _series_run()
+
+    with pytest.raises(TypeError, match="TransformExecution"):
+        orchestrate._validate_transform_continuity(
+            object(), run.initial_ir, run.original_request, 0)
+
+
+@pytest.mark.parametrize(
+    ("mutate", "match"),
+    (
+        (lambda step: object.__setattr__(step, "plan", object()), "piano non DidacticPlan"),
+        (lambda step: object.__setattr__(step.plan, "actions", ()), "un solo passo"),
+        (lambda step: object.__setattr__(step, "results", ()), "risultato trasformativo"),
+        (lambda step: object.__setattr__(step.observation, "target", "R3"), "observation.target"),
+    ),
+)
+def test_guardia_continuita_rifiuta_i_campi_strutturali_corotti(mutate, match):
+    run = _series_run()
+    step = run.transform_executions[0]
+    mutate(step)
+
+    with pytest.raises((TypeError, ValueError), match=match):
+        orchestrate._validate_transform_continuity(
+            step, run.initial_ir, run.original_request, 0)
+
+
+def test_guardia_continuita_rifiuta_un_replay_trasformativo_non_riproducibile(monkeypatch):
+    run = _series_run()
+    wrong_execution = _zero_run().final_execution.execution
+    monkeypatch.setattr(orchestrate, "execute_plan", lambda *_args, **_kwargs: wrong_execution)
+
+    with pytest.raises(ValueError, match="risultato non riproducibile"):
+        orchestrate._validate_transform_continuity(
+            run.transform_executions[0], run.initial_ir, run.original_request, 0)
+
+
+def test_replay_del_planner_rifiuta_piano_non_didactic_e_esito_sconosciuto(monkeypatch):
+    run = _zero_run()
+
+    with pytest.raises(TypeError, match="invece di DidacticPlan"):
+        orchestrate._require_canonical_plan(
+            run.initial_ir, run.original_request, object(), phase="test")
+    monkeypatch.setattr(orchestrate, "pianifica", lambda *_: SimpleNamespace())
+    with pytest.raises(RuntimeError, match="esito sconosciuto"):
+        orchestrate._require_canonical_plan(
+            run.initial_ir,
+            run.original_request,
+            run.final_execution.execution.plan,
+            phase="test",
+        )
+
+
 def test_guardia_rifiuta_successore_mancante_e_identity_che_cambia_request():
     run = _series_run()
     execution = run.transform_executions[0]
@@ -417,6 +657,150 @@ def test_guardia_rifiuta_successore_mancante_e_identity_che_cambia_request():
         orchestrate._validate_transform_continuity(step, ir, request, 0)
 
 
+@pytest.mark.parametrize(
+    ("corrupt", "match"),
+    (
+        (
+            lambda step: object.__setattr__(step.observation_effect, "kind", "blocked"),
+            "effetto osservativo",
+        ),
+        (
+            lambda step: object.__setattr__(step.observation_effect, "target_after", "R3"),
+            "effetto osservativo",
+        ),
+        (
+            lambda step: object.__setattr__(step.request_lineage, "effect", "identity"),
+            "lineage della Request",
+        ),
+        (
+            lambda step: object.__setattr__(step.request_lineage, "operation", "parallelo"),
+            "lineage della Request",
+        ),
+        (
+            lambda step: object.__setattr__(
+                step.results[0].equation, "subject", "risultato_corrotto"),
+            "risultato certificato",
+        ),
+    ),
+)
+def test_run_riapplica_le_autorita_p1j_contro_tampering_della_trace(corrupt, match):
+    run = _series_run()
+    step = run.transform_executions[0]
+    corrupt(step)
+
+    with pytest.raises(ValueError, match=match):
+        CertifiedDidacticRun(
+            run.initial_ir,
+            run.original_request,
+            run.transform_executions,
+            run.final_ir,
+            run.final_request,
+            run.final_execution,
+        )
+
+
+def test_run_rifiuta_risultato_trasformativo_sostituito_con_un_altro_passaggio():
+    series = _series_run()
+    parallel_ir, parallel_request = _input(PARALLELO, "R1", "voltage")
+    parallel = orchestrate_didactic_run(
+        parallel_ir, parallel_request, state_ids=_states(2, start=700))
+    assert isinstance(parallel, CertifiedDidacticRun)
+    object.__setattr__(
+        series.transform_executions[0],
+        "results",
+        parallel.transform_executions[0].results,
+    )
+
+    with pytest.raises(ValueError, match="operazione|risultato certificato"):
+        CertifiedDidacticRun(
+            series.initial_ir,
+            series.original_request,
+            series.transform_executions,
+            series.final_ir,
+            series.final_request,
+            series.final_execution,
+        )
+
+
+def test_trace_composta_rifiuta_se_il_planner_ora_rifiuta_lo_stato(monkeypatch):
+    run = _series_run()
+    refusal = Refusal("unsolvable", run.original_request.id, "request", "planner rifiuta")
+    monkeypatch.setattr(orchestrate, "pianifica", lambda *_: refusal)
+
+    with pytest.raises(ValueError, match="planner ha rifiutato"):
+        CertifiedDidacticRun(
+            run.initial_ir,
+            run.original_request,
+            run.transform_executions,
+            run.final_ir,
+            run.final_request,
+            run.final_execution,
+        )
+
+
+def test_trace_composta_rifiuta_trasformazioni_nell_ordine_sbagliato():
+    ir, request = _input(MULTI_SERIE, "R1", "current")
+    run = orchestrate_didactic_run(ir, request, state_ids=_states(3))
+    assert isinstance(run, CertifiedDidacticRun)
+    assert len(run.transform_executions) == 2
+
+    with pytest.raises(ValueError, match="piano pianificato|before non coincide"):
+        CertifiedDidacticRun(
+            run.initial_ir,
+            run.original_request,
+            tuple(reversed(run.transform_executions)),
+            run.final_ir,
+            run.final_request,
+            run.final_execution,
+        )
+
+
+def test_trace_composta_rifiuta_un_passaggio_duplicato_o_omesso():
+    ir, request = _input(MULTI_SERIE, "R1", "current")
+    run = orchestrate_didactic_run(ir, request, state_ids=_states(3))
+    assert isinstance(run, CertifiedDidacticRun)
+    first, second = run.transform_executions
+
+    with pytest.raises(ValueError, match="piano pianificato|before non coincide"):
+        CertifiedDidacticRun(
+            run.initial_ir,
+            run.original_request,
+            (first, first, second),
+            run.final_ir,
+            run.final_request,
+            run.final_execution,
+        )
+    with pytest.raises(ValueError, match="final_ir"):
+        CertifiedDidacticRun(
+            run.initial_ir,
+            run.original_request,
+            (first,),
+            run.final_ir,
+            run.final_request,
+            run.final_execution,
+        )
+
+
+def test_trace_composta_rifiuta_finale_di_altro_circuito_anche_con_lineage_corretta():
+    ir_a, request_a = _input(SERIE, "R1", "current")
+    ir_b, request_b = _input(
+        SERIE.replace("I1 0 b 1 ampere", "I1 0 b 2 ampere"), "R1", "current")
+    run_a = orchestrate_didactic_run(ir_a, request_a, state_ids=_states(2))
+    run_b = orchestrate_didactic_run(ir_b, request_b, state_ids=_states(2, start=300))
+    assert isinstance(run_a, CertifiedDidacticRun)
+    assert isinstance(run_b, CertifiedDidacticRun)
+
+    with pytest.raises(ValueError, match="certificazione finale"):
+        CertifiedDidacticRun(
+            run_a.initial_ir,
+            run_a.original_request,
+            run_a.transform_executions,
+            run_a.final_ir,
+            run_a.final_request,
+            run_b.final_execution,
+        )
+
+
 def test_binding_del_successore_rifiuta_un_omonimo_non_certificato():
     run = _series_run()
     step = run.transform_executions[0]
@@ -430,9 +814,71 @@ def test_binding_del_successore_rifiuta_un_omonimo_non_certificato():
         orchestrate._bind_successor_request(corrupt_after, step.successor_request)
 
 
+def test_retarget_mantiene_after_letterale_e_lega_il_successore_solo_nello_stato_operativo():
+    run = _series_run()
+    step = run.transform_executions[0]
+    assert step.successor_request is not None
+
+    assert step.after.requests == ()
+    operational_after = orchestrate._bind_successor_request(
+        step.after, step.successor_request)
+    assert operational_after is not step.after
+    assert operational_after.requests == (step.successor_request,)
+
+
+def test_identity_riusa_l_ir_after_quando_la_request_sopravvive():
+    ir, request = _input(SERIE, "V1", "voltage")
+    run = orchestrate_didactic_run(ir, request, state_ids=_states(2))
+    assert isinstance(run, CertifiedDidacticRun)
+    step = run.transform_executions[0]
+    assert step.successor_request is request
+
+    assert orchestrate._bind_successor_request(step.after, request) is step.after
+
+
+def test_rebinding_preserva_le_request_non_correlate():
+    ir, request = _input(SERIE, "R1", "current")
+    unrelated = Request("q2", "voltage", "V1")
+    ir = replace(ir, requests=(request, unrelated))
+    run = orchestrate_didactic_run(ir, request, state_ids=_states(2))
+    assert isinstance(run, CertifiedDidacticRun)
+    step = run.transform_executions[0]
+    assert step.successor_request is not None
+
+    assert step.after.requests == (unrelated,)
+    operational_after = orchestrate._bind_successor_request(
+        step.after, step.successor_request)
+    assert operational_after.requests == (unrelated, step.successor_request)
+
+
+def test_trasformazione_non_decrescente_e_rifiutata_prima_del_replan(monkeypatch):
+    ir, request = _input(SERIE, "R1", "current")
+    original_execute = orchestrate.execute_plan
+    original_plan = orchestrate.pianifica
+    planner_calls = 0
+
+    def count_plans(*args):
+        nonlocal planner_calls
+        planner_calls += 1
+        return original_plan(*args)
+
+    def non_decreasing(*args, **kwargs):
+        outcome = original_execute(*args, **kwargs)
+        if isinstance(outcome, TransformExecution):
+            object.__setattr__(outcome, "after", outcome.before)
+        return outcome
+
+    monkeypatch.setattr(orchestrate, "pianifica", count_plans)
+    monkeypatch.setattr(orchestrate, "execute_plan", non_decreasing)
+
+    with pytest.raises(ValueError, match="non riduce"):
+        orchestrate_didactic_run(ir, request, state_ids=_states(2))
+    assert planner_calls == 1
+
+
 def test_stessi_input_e_state_id_danno_una_run_strutturalmente_identica():
     ir, request = _input(MULTI_PARALLELO, "R1", "voltage")
-    states = _states(3)
+    states = _states(len(ir.components))
 
     assert orchestrate_didactic_run(ir, request, state_ids=states) == orchestrate_didactic_run(
         ir, request, state_ids=states)
@@ -443,29 +889,49 @@ def test_confini_architetturali_restano_intatti_e_senza_ricerca_o_cas():
     execute = (root / "src/kirchhoff/domain/didactic/execute.py").read_text()
     truthfulness = (root / "src/kirchhoff/domain/truthfulness.py").read_text()
     orchestration = Path(orchestrate.__file__).read_text()
+    engine = (root / "src/kirchhoff/domain/transform/engine.py").read_text()
     execute_tree = ast.parse(execute)
     truthfulness_tree = ast.parse(truthfulness)
+    orchestration_tree = ast.parse(orchestration)
+    engine_tree = ast.parse(engine)
 
-    imported = {
-        node.module
-        for node in ast.walk(execute_tree)
-        if isinstance(node, ast.ImportFrom) and node.module
-    }
-    assert not any("planner" in module for module in imported)
+    def imported_modules(tree):
+        modules = set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                modules.update(alias.name for alias in node.names)
+            if isinstance(node, ast.ImportFrom) and node.module:
+                modules.add(node.module)
+        return modules
+
+    execute_modules = imported_modules(execute_tree)
+    truthfulness_modules = imported_modules(truthfulness_tree)
+    orchestration_modules = imported_modules(orchestration_tree)
+    engine_modules = imported_modules(engine_tree)
+
+    assert not any("planner" in module for module in execute_modules)
+    assert not any("orchestrate" in module for module in execute_modules)
+    assert not any("truthfulness" in module for module in execute_modules)
+    assert not any(module.endswith("mna") or "tableau" in module for module in execute_modules)
     assert not any(
         isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
         and node.func.id == "pianifica"
         for node in ast.walk(execute_tree)
     )
-    assert not any(
-        isinstance(node, ast.ImportFrom) and node.module and "planner" in node.module
-        for node in ast.walk(truthfulness_tree)
-    )
+    assert not any("planner" in module for module in truthfulness_modules)
+    assert not any("orchestrate" in module for module in truthfulness_modules)
     assert not any(
         isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
         and node.func.id == "pianifica"
         for node in ast.walk(truthfulness_tree)
     )
+    assert not any(
+        forbidden in module
+        for forbidden in ("mna", "independent_dc", "tableau", "render", "pipeline")
+        for module in orchestration_modules
+    )
+    assert not any("planner" in module or "orchestrate" in module for module in engine_modules)
+    assert "Request" not in engine_modules
     assert all(term not in orchestration for term in (
         "StrategyScore(", "beam_search(", "graph_search(", "import lcapy", "from lcapy",
     ))
