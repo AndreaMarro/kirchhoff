@@ -16,6 +16,9 @@
   - target non toccato -> `identity`.
 - P1-K e' certificato e merged nel baseline
   `770e529fbd6d379b342b3d04ef126b20f1ea62e3`.
+
+## P1-L candidate
+
 - P1-L aggiunge l'orchestrazione deterministica di replan: il planner sceglie un
   piano al singolo stato, ogni trasformazione resta l'esecuzione di un solo piano
   fornito, e l'orchestratore ripianifica soltanto dopo il suo esito certificato.
@@ -28,8 +31,12 @@
   `StrategyScore`, ne' ricerca di strategie, CAS esterni o dipendenze runtime
   esterne.
 - CircuitIR object ↔ state-id registry resta debito residuo: P1-L riceve dal
-  chiamante una supply esplicita di identificatori `ir_` distinti, senza coniare o
-  registrare una falsa associazione oggetto↔identificatore.
+  chiamante una supply ordinata esplicita di identificatori `ir_` distinti, senza
+  coniare o registrare una falsa associazione oggetto↔identificatore. Solo il
+  prefisso consumato entra nella trace; il chiamante puo' fornire un limite
+  superiore strutturale.
+- P1-L resta candidate finche' la sua Pull Request non e' merged: il testo non
+  usa lo SHA del branch come prova di certificazione.
 
 ## Certificazione CI P1-J
 
