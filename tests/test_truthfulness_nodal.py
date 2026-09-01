@@ -39,7 +39,7 @@ def test_happy(target, quantity):
 def test_tampering(monkeypatch):
     ir, request, outcome = fixture()
     assert truthfulness_gate(ir, request, replace(outcome, resolved=replace(outcome.resolved, value=Magnitude(F(3), "ampere")))).cause == "path_disagreement"
-    for changed in (replace(outcome, resolved=replace(outcome.resolved,target="I1")), replace(outcome, resolved=replace(outcome.resolved,quantity="voltage")), replace(outcome, resolved=replace(outcome.resolved,request_id="bad"))):
+    for changed in (replace(outcome, resolved=replace(outcome.resolved,target="I1")), replace(outcome, resolved=replace(outcome.resolved,request_id="bad"))):
         assert truthfulness_gate(ir, request, changed).cause == "identity_violation"
     assert truthfulness_gate(replace(ir, requests=()), request, outcome).cause == "identity_violation"
     assert truthfulness_gate(replace(ir, requests=(request, Request("q1","voltage","I1"))), request, outcome).cause == "identity_violation"
@@ -75,3 +75,32 @@ def test_unsupported():
     ir,request,outcome = fixture()
     assert truthfulness_gate(replace(ir,domain="dc_resistive"),request,outcome).cause == "claim_unsupported"
     assert truthfulness_gate(ir,Request("q1","time_constant","R1"),outcome).cause == "claim_unsupported"
+
+
+def test_remaining_gate_paths(monkeypatch):
+    from kirchhoff.domain.exact import SingularSystemError
+    from kirchhoff.domain.independent_dc import TableauSingularError
+    from kirchhoff.domain.truthfulness import Claim
+    ir, request, outcome = fixture()
+    object.__setattr__(outcome.resolved, "quantity", "voltage")
+    assert truthfulness_gate(ir, request, outcome).cause == "identity_violation"
+    ir, request, outcome = fixture()
+    object.__setattr__(outcome.plan, "request_id", "other")
+    assert truthfulness_gate(ir, request, outcome).cause == "identity_violation"
+    ir, request, outcome = fixture()
+    monkeypatch.setattr(gate.mna, "solve_dc", lambda _ir: (_ for _ in ()).throw(SingularSystemError("x")))
+    assert truthfulness_gate(ir, request, outcome).cause == "path_disagreement"
+    monkeypatch.undo()
+    monkeypatch.setattr(gate, "solve_dc_tableau", lambda _ir: (_ for _ in ()).throw(TableauSingularError("x")))
+    assert truthfulness_gate(ir, request, outcome).cause == "path_disagreement"
+    assert gate._oracle_value({}, request).cause == "path_disagreement"
+    assert gate._oracle_value({"R1": {"current": 2}}, request).cause == "path_disagreement"
+    claim = truthfulness_gate(ir, request, outcome)
+    assert not isinstance(claim, Refusal)
+    with pytest.raises(TypeError): CertifiedNodalExecution(object(), claim)
+    with pytest.raises(TypeError): CertifiedNodalExecution(outcome, object())
+    object.__setattr__(claim, "claim_type", "other")
+    with pytest.raises(ValueError): CertifiedNodalExecution(outcome, claim)
+    object.__setattr__(claim, "claim_type", "resolved_quantity")
+    object.__setattr__(claim, "state_id", "ir_other")
+    with pytest.raises(ValueError): CertifiedNodalExecution(outcome, claim)

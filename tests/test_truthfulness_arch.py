@@ -7,7 +7,12 @@ EXECUTE=ROOT/"src/kirchhoff/domain/didactic/execute.py"
 def test_truthfulness_domain_only():
     text=TRUTH.read_text()
     tree=ast.parse(text)
-    imports=[n.module or a.name for n in ast.walk(tree) for a in (n.names if isinstance(n,ast.Import) else [n]) if isinstance(n,(ast.Import,ast.ImportFrom))]
+    imports=[]
+    for node in ast.walk(tree):
+        if isinstance(node,ast.Import):
+            imports.extend(alias.name for alias in node.names)
+        elif isinstance(node,ast.ImportFrom):
+            imports.append(node.module)
     assert not any(x and ("pipeline" in x or "render" in x or "adapter" in x) for x in imports)
     assert "pianifica(" not in text
 
