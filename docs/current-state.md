@@ -2,20 +2,27 @@
 
 ## Certificato
 
-- P0 fino a P1-I sono certificati sul baseline
+- P0 fino a P1-I sono certificati sul baseline storico
   `231c95355336bc983ec14ca5422baaf88f936244`.
-- La CI del baseline e' verde nella run GitHub Actions 33437415864.
+- P1-J e' certificato come candidato allo SHA
+  `3d83fbc81bae03c11258de0b63d5b505e8b86208`.
+- P1-J implementa `ObservationContract`, `ObservationEffect`,
+  `RequestLineageStep`, la funzione autorevole `observation_effect` e la
+  funzione autorevole `validate_observation_lineage`.
+- La preservazione semantica supportata e':
+  - `series` + `current` -> `retarget`;
+  - `series` + `voltage` -> `blocked`;
+  - `parallel` + `voltage` -> `retarget`;
+  - `parallel` + `current` -> `blocked`;
+  - target non toccato -> `identity`.
+- Non sono previsti replan automatici, CAS esterni o dipendenze runtime esterne.
 
-## Candidato P1-J
+## Certificazione CI P1-J
 
-Il ramo `work/p1-j-gpt` introduce il contratto di osservazione della Request per
-le trasformazioni certificate `serie` e `parallelo`: `identity`, `retarget` e
-`blocked`, con lineage verificabile. Il motore delle trasformazioni resta
-strutturale; non sono stati aggiunti replan automatici, CAS o dipendenze runtime.
-
-P1-J non e' dichiarato certificato finche' i gate locali e la CI GitHub sullo SHA
-finale non sono verdi. Il ramo canonico
-`work/student-vertical-slice-0.1-phase1` non viene avanzato da questo checkpoint.
+- Push GitHub Actions `33508516707` e Pull Request GitHub Actions `33508521991`
+  verdi.
+- Risultato certificato: 1401 passed, 2 skipped, copertura globale 99.34%,
+  copertura domain 100%, reference-set 60 / 0 e boundaries CI verdi.
 
 ## Futuro
 
