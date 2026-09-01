@@ -185,8 +185,6 @@ def certify_execution(ir: IR, request: Request, execution: DidacticExecution) ->
 def execute_certified_plan(ir: IR, request: Request, plan: DidacticPlan, *, proof_node: str) -> CertifiedNodalExecution | Refusal:
     """Replay di un piano ricevuto e gate: non pianifica."""
     execution = execute_plan(ir, request, plan, proof_node=proof_node)
-    if isinstance(execution, Refusal):
-        return execution
     return certify_execution(ir, request, execution)
 
 

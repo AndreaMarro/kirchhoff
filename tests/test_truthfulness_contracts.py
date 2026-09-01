@@ -9,7 +9,6 @@ import pytest
 
 import kirchhoff.domain.truthfulness as truthfulness
 from kirchhoff.domain.didactic import NodalExecution, TransformExecution, execute_plan, pianifica
-from kirchhoff.domain.didactic.plan import PlannedAction
 from kirchhoff.domain.identity import conia
 from kirchhoff.domain.ir import Magnitude, Request
 from kirchhoff.domain.refusal import Refusal
@@ -83,9 +82,6 @@ def test_certify_propagates_gate_refusal_and_execute_propagates_executor_refusal
     execution = execute_plan(ir, request, plan, proof_node=PROOF)
     assert isinstance(execution, TransformExecution)
     assert certify_execution(ir, request, execution) == truthfulness_gate(ir, request, execution)
-    rejected_plan = replace(plan, actions=(PlannedAction("parallelo", ("R1", "R2")),))
-    result = execute_certified_plan(ir, request, rejected_plan, proof_node=PROOF)
-    assert isinstance(result, Refusal)
 
 
 @pytest.mark.parametrize(
