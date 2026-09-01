@@ -39,7 +39,7 @@ def test_happy(target, quantity):
 def test_tampering(monkeypatch):
     ir, request, outcome = fixture()
     assert truthfulness_gate(ir, request, replace(outcome, resolved=replace(outcome.resolved, value=Magnitude(F(3), "ampere")))).cause == "path_disagreement"
-    for changed in (replace(outcome, resolved=replace(outcome.resolved,target="I1")), replace(outcome, resolved=replace(outcome.resolved,request_id="bad"))):
+    for changed in (replace(outcome, resolved=replace(outcome.resolved,target="I1")),):
         assert truthfulness_gate(ir, request, changed).cause == "identity_violation"
     assert truthfulness_gate(replace(ir, requests=()), request, outcome).cause == "identity_violation"
     assert truthfulness_gate(replace(ir, requests=(request, Request("q1","voltage","I1"))), request, outcome).cause == "identity_violation"
@@ -85,6 +85,9 @@ def test_remaining_gate_paths(monkeypatch):
     object.__setattr__(outcome.resolved, "quantity", "voltage")
     assert truthfulness_gate(ir, request, outcome).cause == "identity_violation"
     ir, request, outcome = fixture()
+    object.__setattr__(outcome.resolved, "request_id", "bad")
+    assert truthfulness_gate(ir, request, outcome).cause == "identity_violation"
+    ir, request, outcome = fixture()
     object.__setattr__(outcome.plan, "request_id", "other")
     assert truthfulness_gate(ir, request, outcome).cause == "identity_violation"
     ir, request, outcome = fixture()
@@ -93,6 +96,7 @@ def test_remaining_gate_paths(monkeypatch):
     monkeypatch.undo()
     monkeypatch.setattr(gate, "solve_dc_tableau", lambda _ir: (_ for _ in ()).throw(TableauSingularError("x")))
     assert truthfulness_gate(ir, request, outcome).cause == "path_disagreement"
+    monkeypatch.undo()
     assert gate._oracle_value({}, request).cause == "path_disagreement"
     assert gate._oracle_value({"R1": {"current": 2}}, request).cause == "path_disagreement"
     claim = truthfulness_gate(ir, request, outcome)
