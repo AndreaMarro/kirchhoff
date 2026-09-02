@@ -35,7 +35,7 @@ packages = ["src/kirchhoff"]
 # 100% su file che non ha mai visto (verificato il 24/08/2026: era fermo all'11 agosto).
 addopts = "-q --cov=kirchhoff --cov-report=term-missing --cov-report=json --cov-fail-under=95"
 testpaths = ["tests"]
-pythonpath = ["src"]
+pythonpath = ["src", "."]
 
 [tool.coverage.report]
 # Righe non raggiungibili da un test, escluse deliberatamente e per nome.
