@@ -1,0 +1,1 @@
+"""Fixture riproducibili del laboratorio."""
