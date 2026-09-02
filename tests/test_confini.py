@@ -9,6 +9,7 @@ Questi test fanno girare il controllo dentro la suite: un'infrazione fa fallire 
 test, che è ciò che "blocca la fusione" significa in un progetto senza pipeline.
 """
 
+import ast
 import importlib.util
 import sys
 from pathlib import Path
@@ -18,6 +19,16 @@ import pytest
 RADICE = Path(__file__).resolve().parent.parent
 SORGENTE = RADICE / "src" / "kirchhoff"
 DIRECTORY_SPINE = ("domain", "ports", "adapters", "pipeline", "api", "render", "eval")
+LAB_IMPORTS = frozenset({
+    "hypothesis",
+    "mutmut",
+    "networkx",
+    "lcapy",
+    "sympy",
+    "schemdraw",
+    "spqrtree",
+    "crosshair",
+})
 
 
 def _carica_controllo():
@@ -43,6 +54,25 @@ def test_le_sette_directory_dello_spine_sono_pacchetti():
 def test_il_dominio_reale_e_pulito():
     """Il gate, sull'albero vero. Se un giorno fallisce, ha ragione lui."""
     assert confini.violazioni(SORGENTE) == []
+
+
+def test_il_dominio_non_importa_strumenti_del_laboratorio():
+    """P1-M0: gli oracoli esterni restano fuori dalla semantica proprietaria."""
+    trovati: list[tuple[Path, str]] = []
+    for percorso in (SORGENTE / "domain").rglob("*.py"):
+        albero = ast.parse(percorso.read_text(encoding="utf-8"), filename=str(percorso))
+        for nodo in ast.walk(albero):
+            if isinstance(nodo, ast.Import):
+                moduli = (alias.name for alias in nodo.names)
+            elif isinstance(nodo, ast.ImportFrom) and nodo.module is not None:
+                moduli = (nodo.module,)
+            else:
+                continue
+            for modulo in moduli:
+                if modulo.split(".", 1)[0].lower() in LAB_IMPORTS:
+                    trovati.append((percorso.relative_to(SORGENTE), modulo))
+
+    assert trovati == []
 
 
 def test_import_relativo_verso_ports_rilevato(tmp_path: Path):

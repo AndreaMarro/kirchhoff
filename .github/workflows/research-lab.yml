@@ -1,0 +1,48 @@
+name: research-lab
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "lab/**"
+      - "tests/test_lab_*.py"
+      - "tests/strategies.py"
+      - "pyproject.toml"
+      - "uv.lock"
+  push:
+    paths:
+      - "lab/**"
+      - "tests/test_lab_*.py"
+      - "tests/strategies.py"
+      - "pyproject.toml"
+      - "uv.lock"
+
+jobs:
+  external-oracles:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install ngspice
+        run: sudo apt-get update && sudo apt-get install --yes ngspice
+      - name: Install pinned research environment
+        run: pip install -e ".[dev,research]"
+      - name: Run laboratory contracts and differential corpus
+        run: pytest -o addopts= -q tests/test_lab_*.py
+      - name: Confirm production remains outside laboratory imports
+        run: python scripts/check_boundaries.py
+
+  mutation-baseline:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned mutation environment
+        run: pip install -e ".[dev,research]"
+      - name: Run checkpoint mutation baseline
+        run: mutmut run --max-children 1
