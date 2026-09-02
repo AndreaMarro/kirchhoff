@@ -48,6 +48,8 @@ from .observation import (
 )
 from .plan import DidacticPlan, PlanReason, PlannedAction
 from .planner import pianifica
+from .features import CircuitFeatures, extract_circuit_features
+from .candidates import StrategyCandidate, enumerate_strategy_candidates
 from .request import ResolvedQuantity, resolve_request
 from .solve import (
     DerivationSolution,
@@ -61,6 +63,7 @@ __all__ = [
     "AnalyticalStep",
     "AnalyticalStepKind",
     "CertifiedDidacticRun",
+    "CircuitFeatures",
     "DerivationState",
     "DerivationSolution",
     "DidacticExecution",
@@ -82,11 +85,14 @@ __all__ = [
     "ResolvedQuantity",
     "RequestLineageStep",
     "SimpleSupernode",
+    "StrategyCandidate",
     "SolvedVariable",
     "applica_passo",
     "apply_observation_effect",
     "build_linear_system",
+    "enumerate_strategy_candidates",
     "execute_plan",
+    "extract_circuit_features",
     "il_grafo_resta_fermo",
     "nodo_della_prima_kcl",
     "nodi_dei_supernodi_semplici",
