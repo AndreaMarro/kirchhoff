@@ -1,0 +1,12 @@
+[cosmic-ray]
+module-path = "src/kirchhoff/domain/didactic/orchestrate.py"
+timeout = 45.0
+excluded-modules = []
+# The wrapper creates a fresh PYC prefix per mutation without requiring a shell.
+test-command = "python lab/mutation/run_pytest_no_cache.py --module src/kirchhoff/domain/didactic/orchestrate.py --import-name kirchhoff.domain.didactic.orchestrate tests/test_didactic_orchestrate.py tests/test_didactic_execute_transform.py tests/test_hypothesis_didactic.py tests/test_hypothesis_stateful.py"
+
+[cosmic-ray.distributor]
+name = "local"
+
+[cosmic-ray.filters.operators-filter]
+exclude-operators = ["core/ReplaceBinaryOperator_BitOr_.*"]
