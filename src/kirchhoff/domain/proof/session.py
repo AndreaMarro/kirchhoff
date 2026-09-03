@@ -229,7 +229,7 @@ PassoDiProva = Union[TransformProofStep, AnalyticalProofStep]
 class ProofSession:
     """Una run certificata, pubblicata come proiezione congelata e tipizzata.
 
-    Schema v0.1: prima tutti i passi topologici, poi quelli analitici, e ogni
+    Schema v0.2: prima tutti i passi topologici, poi quelli analitici, e ogni
     passo analitico e' ancorato allo stato operativo finale (l'esecuzione
     nodale corre sempre sullo stato terminale). Un interleaving arbitrario
     richiedera' una nuova versione di schema, non un flag.

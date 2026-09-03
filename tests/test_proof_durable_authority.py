@@ -29,7 +29,7 @@ from __future__ import annotations
 
 import copy
 import inspect
-from dataclasses import replace
+from dataclasses import dataclass, replace
 from fractions import Fraction
 
 import pytest
@@ -328,27 +328,39 @@ def test_i_sessione_backend_senza_chiusura_visuale():
 
 
 def test_j_confine_prodotto_rifiuto_resta_rifiuto():
-    def confine(netlist: str):
+    # H2.75: il confine e' produzione (`run_proof_session`), non piu'
+    # l'imitazione locale che viveva qui (rimossa: doppia autorita').
+    from datetime import datetime, timezone
+
+    from kirchhoff.pipeline.proof_run import (
+        ProofSessionClosure,
+        run_proof_session,
+    )
+
+    @dataclass(frozen=True)
+    class Orologio:
+        def now(self) -> datetime:
+            return datetime(2026, 9, 3, 19, 0, 0, tzinfo=timezone.utc)
+
+    def confine(netlist: str, primo: int = 0):
         ir = leggi(netlist)
         richiesta = next(iter(ir.requests))
-        esito_run = orchestrate_didactic_run(
-            ir, richiesta,
-            state_ids=tuple(_stato(i) for i in range(6)))
-        if isinstance(esito_run, Refusal):
-            return esito_run
-        assert isinstance(esito_run, CertifiedDidacticRun)
-        registro = componi_registro(
-            esito_run, refs_evidenza=(StateRef(_stato(9)),))
-        return compose_proof_session(
-            esito_run, registro, session_instant_ms=_istante(0),
-            session_entropy=_entropia(0), document_profile=DOCUMENT_PROFILE,
-            source_sha=SHA_FIXTURE, detail="confine di prodotto")
+        coda = [bytes((primo + i + 101,)) * 10 for i in range(20)]
+
+        def entropia() -> bytes:
+            return coda.pop(0)
+
+        return run_proof_session(
+            ir, richiesta, clock=Orologio(), entropy=entropia,
+            document_profile=DOCUMENT_PROFILE, source_sha=SHA_FIXTURE,
+            detail="confine di prodotto")
 
     rifiuto = confine(FUORI_CAPABILITY)
     assert type(rifiuto) is Refusal
-    assert not isinstance(rifiuto, (Failure, ProofSession))
+    assert not isinstance(rifiuto, (Failure, ProofSessionClosure))
     verde = confine(D1)
-    assert isinstance(verde, ProofSession)
+    assert isinstance(verde, ProofSessionClosure)
+    assert verde.session.publication_status == "CLOSED"
 
 
 def test_j_refusal_all_ingresso_del_compositore_e_corruzione():
