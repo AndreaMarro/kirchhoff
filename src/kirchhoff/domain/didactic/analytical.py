@@ -225,6 +225,12 @@ def _scegli_riferimento(ir: IR, prima: DerivationState) -> tuple[AnalyticalStep,
 
 
 def _definisci_incognite(ir: IR, prima: DerivationState) -> tuple[AnalyticalStep, DerivationState]:
+    """Dichiara le tensioni nodali: incognite piu' noti da generatore verso massa.
+
+    Uno stato terminale senza incognite dichiara comunque i noti: e' una
+    derivazione valida a zero equazioni, non un rifiuto. Rifiuta solo quando
+    non c'e' nulla da dichiarare oltre il riferimento.
+    """
     if prima.reference_node is None:
         raise ValueError(
             f"{prima.identifier}: non si definiscono incognite prima del riferimento")
@@ -242,10 +248,10 @@ def _definisci_incognite(ir: IR, prima: DerivationState) -> tuple[AnalyticalStep
         else:
             variabili.append(NodalVariable(nome_tensione(nodo), nodo, "unknown"))
         focused.append(nodo)
-    if not any(v.role == "unknown" for v in variabili):
+    if not focused:
         raise ValueError(
-            "nessuna tensione nodale incognita: tutti i nodi sono riferimento "
-            "o fissati da un generatore verso massa")
+            f"{prima.identifier}: nessun nodo oltre il riferimento, "
+            "niente da dichiarare")
     dopo = replace(
         prima,
         identifier=_prossimo_id(prima),

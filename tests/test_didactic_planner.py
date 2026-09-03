@@ -135,15 +135,21 @@ def test_planner_nodale_su_ponte_e_azioni():
     assert kcl.operands == ("a",)
 
 
-def test_azioni_nodali_senza_incognite_non_definiscono():
+def test_azioni_nodali_senza_incognite_dichiarano_i_noti():
+    # Stato terminale: zero incognite non e' irrisolvibile. Il piano nodale
+    # dichiara i noti e prosegue senza KCL.
     massa = _ir(("0", "a"), (
         Component.of("V1", "voltage_source_dc", ("a", "0"), F(12), "V1"),
         Component.of("R1", "resistor", ("a", "0"), F(4), "R1"),
     ))
     kinds = [a.kind for a in _azioni_nodali(massa)]
-    assert kinds[0] == "choose_reference"
-    assert "define_nodal_unknowns" not in kinds
-    assert "write_kcl" not in kinds
+    assert kinds == ["choose_reference", "define_nodal_unknowns"]
+
+
+def test_azioni_nodali_solo_riferimento():
+    solo_massa = IR("1.0.0", "dc", "netlist", ("0",), (), ())
+    kinds = [a.kind for a in _azioni_nodali(solo_massa)]
+    assert kinds == ["choose_reference"]
 
 
 def test_planner_rifiuta_quando_niente_e_eseguibile():

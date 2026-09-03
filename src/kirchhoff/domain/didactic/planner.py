@@ -28,14 +28,14 @@ def _nomi_supportati_senza_corpo() -> tuple[str, ...]:
 
 def _azioni_nodali(ir: IR) -> tuple[PlannedAction, ...]:
     from .analytical import (
-        _generatori_verso_riferimento,
         nodi_kcl_ordinarie,
         supernodi_semplici,
     )
 
     azioni = [PlannedAction("choose_reference", ())]
-    fissi = _generatori_verso_riferimento(ir)
-    if any(n != REFERENCE_NODE and n not in fissi for n in ir.nodes):
+    if any(n != REFERENCE_NODE for n in ir.nodes):
+        # Dichiara anche i noti da generatore verso massa: uno stato
+        # terminale senza incognite conserva comunque le tensioni note.
         azioni.append(PlannedAction("define_nodal_unknowns", ()))
     for nodo in nodi_kcl_ordinarie(ir):
         azioni.append(PlannedAction("write_kcl", (nodo,)))

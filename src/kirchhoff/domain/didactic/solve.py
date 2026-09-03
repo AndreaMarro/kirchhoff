@@ -170,6 +170,8 @@ def build_linear_system(state: DerivationState) -> ExactLinearSystem:
 
 def solve_derivation(state: DerivationState) -> DerivationSolution:
     """Risolve la derivazione. Non rilegge il circuito."""
+    if not any(v.role == "unknown" for v in state.variables):
+        return _solve_known_only(state)
     sistema = build_linear_system(state)
     a = [list(riga) for riga in sistema.matrix]
     b = list(sistema.rhs)
@@ -188,7 +190,8 @@ def solve_derivation(state: DerivationState) -> DerivationSolution:
     return DerivationSolution(state.identifier, valori)
 
 
-def _chiusura_matematica(state: DerivationState) -> dict[VariableRef, NodalVariable]:
+def _dichiarazioni_chiuse(state: DerivationState) -> dict[VariableRef, NodalVariable]:
+    """Riferimento e noti validati, termini dichiarati. Senza vincoli di conteggio."""
     if state.reference_node is None:
         raise ValueError(f"{state.identifier}: riferimento assente")
     try:
@@ -208,16 +211,11 @@ def _chiusura_matematica(state: DerivationState) -> dict[VariableRef, NodalVaria
             f"{riferimento.known_value}, serve 0")
 
     dichiarazioni = {variabile.ref(): variabile for variabile in state.variables}
-    n_unknown = 0
     for variabile in state.variables:
-        if variabile.role == "unknown":
-            n_unknown += 1
-        elif variabile.known_value is None:
+        if variabile.role != "unknown" and variabile.known_value is None:
             raise ValueError(
                 f"{state.identifier}: {variabile.ref()} ruolo {variabile.role} "
                 "senza known_value")
-    if n_unknown == 0:
-        raise ValueError(f"{state.identifier}: nessuna incognita")
 
     for equazione in state.equations:
         for termine in equazione.terms:
@@ -226,4 +224,40 @@ def _chiusura_matematica(state: DerivationState) -> dict[VariableRef, NodalVaria
                     f"{state.identifier}: l'equazione {equazione.kind}@"
                     f"{equazione.focus} introduce {termine.variable} "
                     "non dichiarato")
+    return dichiarazioni
+
+
+def _solve_known_only(state: DerivationState) -> DerivationSolution:
+    """Ambiente dei soli noti per una derivazione terminale senza incognite.
+
+    Non e' un secondo MNA ne' un solver numerico: copia i noti validati e
+    verifica che ogni equazione presente sia tautologica sui noti, rifiutando
+    quelle contraddittorie. Non costruisce mai un ExactLinearSystem vuoto.
+    """
+    if any(v.role == "unknown" for v in state.variables):
+        raise ValueError(f"{state.identifier}: incognite presenti, serve il sistema")
+    dichiarazioni = _dichiarazioni_chiuse(state)
+    for i, equazione in enumerate(state.equations):
+        residuo = equazione.rhs
+        for termine in equazione.terms:
+            residuo -= termine.coefficient * dichiarazioni[termine.variable].known_value
+        if residuo != 0:
+            raise ValueError(
+                f"{state.identifier}: riga contraddittoria sui noti "
+                f"(equazione {i}, {equazione.kind}@{equazione.focus})")
+    valori = tuple(
+        SolvedVariable(v.ref(), v.known_value)
+        for v in sorted(
+            (v for v in state.variables if v.role != "unknown"),
+            key=lambda v: v.ref(),
+        )
+    )
+    return DerivationSolution(state.identifier, valori)
+
+
+def _chiusura_matematica(state: DerivationState) -> dict[VariableRef, NodalVariable]:
+    dichiarazioni = _dichiarazioni_chiuse(state)
+    n_unknown = sum(1 for variabile in state.variables if variabile.role == "unknown")
+    if n_unknown == 0:
+        raise ValueError(f"{state.identifier}: nessuna incognita")
     return dichiarazioni

@@ -231,14 +231,21 @@ def test_passi_analitici_precondizioni_e_successo():
         applica_passo("mesh_analysis", ir, d2, operands=())
 
 
-def test_define_senza_incognite_e_write_kcl_senza_fuoco():
+def test_define_senza_incognite_dichiara_i_noti_e_write_kcl_senza_fuoco():
+    # Stato terminale: zero incognite non e' irrisolvibile. Il passo dichiara
+    # i noti da generatore verso massa e la derivazione prosegue a zero equazioni.
     massa = _ir(("0", "a"), (
         Component.of("V1", "voltage_source_dc", ("a", "0"), F(12), "V1"),
         Component.of("R1", "resistor", ("a", "0"), F(4), "R1"),
     ))
     _, d1 = applica_passo("choose_reference", massa, stato_iniziale(NODO), operands=())
-    with pytest.raises(ValueError, match="nessuna tensione nodale incognita"):
-        applica_passo("define_nodal_unknowns", massa, d1, operands=())
+    passo, d2 = applica_passo("define_nodal_unknowns", massa, d1, operands=())
+    assert passo.kind == "define_nodal_unknowns"
+    assert passo.focused_entities == ("a",)
+    ruoli = {v.node: (v.role, v.known_value) for v in d2.variables}
+    assert ruoli["0"] == ("reference", F(0))
+    assert ruoli["a"] == ("known_from_source", F(12))
+    assert not any(v.role == "unknown" for v in d2.variables)
 
     flottante = _ir(("0", "a", "b"), (
         Component.of("V1", "voltage_source_dc", ("a", "b"), F(5), "V1"),

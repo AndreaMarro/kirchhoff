@@ -104,7 +104,12 @@ def _nodi_incogniti(ir: IR) -> tuple[str, ...]:
 
 
 def _copertura_nodale(ir: IR) -> bool:
-    """Partizione: U = O ∪ S e ogni floating appartiene a un supernodo."""
+    """Partizione: U = O ∪ S e ogni floating appartiene a un supernodo.
+
+    La copertura vuota e' copertura: quando ogni nodo non di riferimento e'
+    fissato da un generatore verso massa non servono equazioni e la
+    derivazione prosegue con i soli noti (stato terminale, non irrisolvibile).
+    """
     flottanti = {c.id for c in _sorgenti_tensione_flottanti(ir)}
     supernodi = supernodi_semplici(ir)
     if flottanti != {sn.source_id for sn in supernodi}:
@@ -119,7 +124,7 @@ def _copertura_nodale(ir: IR) -> bool:
     S = set(nodi_dei_supernodi_semplici(ir))
     if U != O | S:
         return False
-    return bool(U)
+    return True
 
 
 def nodale_disponibile(ir: IR, quantity: str) -> bool:
