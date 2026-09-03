@@ -1,70 +1,98 @@
 # Kirchhoff
 
-Risolutore di circuiti verificato. Il valore non è la risposta: è che la risposta ha superato
-cinque controlli indipendenti prima di essere mostrata.
+Risolutore di circuiti **verificato**: ogni risposta supera cinque controlli indipendenti prima di essere mostrata (accordo A/B, KCL, KVL, bilancio ΣVI/Tellegen, sanità).
 
-Il piano completo è in `docs/00-fonte-piano-kirchhoff.md` (decisioni **D1–D12** in testa, sono il
-contratto). Gli artefatti BMAD stanno in `_bmad-output/`.
+```bash
+uv pip install -e .
+kirchhoff examples/series/netlist.txt --svg /tmp/series.svg
+# 3 bipoli · solver dc · verificato da legge dei nodi e legge delle maglie e bilancio di potenza e sanità fisica e accordo fra percorsi indipendenti
+```
 
-## Stato
+## Stato attuale (empirico, non roadmap)
 
-Fase *plan* completa. **Epic 1 chiusa** (apparato di misura), verdetto
-`accepted-with-open-items` — vedi `_bmad-output/implementation-artifacts/epic-1-retro-2026-08-13.md`.
-Epic 2 in corso: il motore verificato da riga di comando.
+P1-L certificato a `98f73f`; P1-M0 localmente consolidato (4-config HIGH 0, domain 100, boundaries green) in branch `work/p1-m0-research-gpt` — non ancora mergiato. `main` è indietro.
 
-| Storia | Stato |
-|---|---|
-| 1.1 Insieme di riferimento a risposta nota | `done` — quattro classi di dominio verificate: `dc_resistive`, `transient`, `ac_sinusoidal`, `three_phase`. Resta aperta la metà fotografica (CGHD), che dipende da una decisione umana |
-| 1.2 Script di valutazione | `done` — metriche riproducibili, matrice degli errori chiusa |
-| 2.1 Struttura con confini verificati | `done` — controllo dei confini sull'albero sintattico, configurazione validata all'avvio |
+| Capability | Stato | Evidenza | Entry point | Test |
+|---|---|---|---|---|
+| DC resistive sorgenti indipendenti | **CERTIFIED** | `1640 passed`, `verify HIGH 0` | `kirchhoff examples/series/netlist.txt` | `tests/test_verify.py`, `test_il_prodotto_funziona.py` |
+| DC sorgenti controllate VCVS/VCCS | **CERTIFIED** | 60 casi VCVS/VCCS, A/B 0 mismatch | `E1 C 0 A 0 2` in netlist | `tests/test_controlled_sources.py:455` |
+| Trasformazioni didattiche serie/parallelo | **CERTIFIED** | `CertifiedDidacticRun`, `VisualStep` | `src/kirchhoff/domain/didactic/orchestrate.py` | `tests/test_didactic_orchestrate.py` |
+| Nodo diretto (fallback) | **CERTIFIED** | `NodalExecution` | `pipeline/resolve.py:resolve` | `tests/test_truthfulness_nodal.py` |
+| SVG deterministico (maglia singola) | **CERTIFIED** | `layout_a_maglia` | `--svg` | `tests/test_il_prodotto_funziona.py:36` |
+| PDF | **OPTIONAL** | capability esterna `KIRCHHOFF_CHROMIUM` | `--pdf` | `test_il_pdf_assente_lo_DICE` |
+| AC sinusoidale / trifase / transient | **IMPLEMENTED, non VERIFIED per marketing** | `Cyc12` in `Q(ζ12)` passa challenge SymPy effimera (`scripts/research/cyc12_challenge.py` PASS) ma claim `VERIFIED` bloccato fino a oracolo esterno stabile | `src/kirchhoff/domain/exact.py` | `tests/test_controlled_sources.py` + `eval` 36 dev |
+| Photo/OCR, autolayout generale | **UNSUPPORTED** | — | — | — |
+
+## Quick start (60s)
+
+```bash
+uv pip install -e .
+kirchhoff examples/series/netlist.txt --svg /tmp/series.svg   # maglia singola → SVG deterministico
+kirchhoff examples/parallel/netlist.txt                       # non-maglia → solve ok, svg non scritto (limite dichiarato)
+kirchhoff examples/ladder/netlist.txt --svg /tmp/ladder.svg
+kirchhoff examples/bridge/netlist.txt                         # ponte → solve ok, layout manuale richiesto per visual
+uv run --with pytest python -m pytest tests -q                # 1640 passed, domain 100, boundaries green
+```
+
+5 circuiti curati in `examples/`: `series` (corrente), `parallel` (tensione), `ladder` (multi-step), `bridge` (non riducibile), `nodal` (diretto). Ogni netlist è una riga per bipolo (`R1 b a 100 ohm`).
 
 ## Uso
 
 ```bash
-uv run kirchhoff-eval build --n 60 --out reference-set
-uv run kirchhoff-eval report --root reference-set --split dev
-uv run --with pytest python -m pytest tests -q
+kirchhoff <netlist> [--svg out.svg] [--pdf out.pdf]
+kirchhoff-eval build --n 60 --out /tmp/ref && kirchhoff-eval report --root /tmp/ref --split dev
 ```
 
-La parte trattenuta dell'insieme non è leggibile dal flusso di sviluppo: serve `--allow-holdout`,
-e usarla durante lo sviluppo invalida ogni misura successiva.
+Holdout non leggibile senza `KIRCHHOFF_ALLOW_HOLDOUT=1` o `--allow-holdout` (invalida misura se usato in dev).
 
-## I gate
-
-Tre controlli che falliscono da soli, senza che qualcuno debba ricordarsene:
+## Gate
 
 ```bash
-uv run python scripts/check_domain_coverage.py   # domain/ al 100%, righe e rami
-uv run python scripts/check_boundaries.py        # domain/ non importa fuori da sé
-uv run --with pytest --with pytest-cov python -m pytest   # copertura globale >= 95%
+uv run python scripts/check_domain_coverage.py   # domain/ al 100%
+uv run python scripts/check_boundaries.py        # domain/ non importa fuori da sé (AST)
+uv run --with pytest --with pytest-cov python -m pytest   # globale >=95%
 ```
 
-Il controllo dei confini legge l'albero sintattico, non il testo: `import kirchhoff.adapters as a`
-e `from kirchhoff import pipeline` sono viste come `from ..adapters import x`, e un percorso
-sbagliato solleva invece di dichiarare tutto pulito.
+## PDF — capability esterna, non core
 
-La configurazione (`src/kirchhoff/config.py`) valida all'avvio e **impedisce di partire** se
-qualcosa non torna. Tre vincoli del piano vivono lì come condizioni di avvio invece che come prosa:
-almeno 3 passi di estrazione (D4, AD-12), immagini cancellate entro 72 ore (FR-30), dati in Unione
-Europea (NFR-14). Le soglie stanno sul tipo `Settings`, non nel lettore: costruirlo a mano non le
-aggira.
+Core è **SVG-only**. PDF è opzionale e richiede Chromium:
 
-## Come è verificato l'oracolo
+```bash
+KIRCHHOFF_CHROMIUM=/percorso/chrome kirchhoff examples/series/netlist.txt --pdf /tmp/out.pdf
+# oppure
+npx playwright install chromium-headless-shell
+kirchhoff examples/series/netlist.txt --pdf /tmp/out.pdf
+```
 
-Un oracolo che si autocertifica non è un oracolo. Per ogni classe, chi genera un caso e chi lo
-verifica partono da estremi opposti e devono incontrarsi **esattamente**:
+Senza capability: `exit 70` con `pdf NON scritto: nessun chromium trovato…` (cross-platform: macOS `~/Library/Caches/ms-playwright`, Linux `~/.cache/ms-playwright`, Windows `%LOCALAPPDATA%/ms-playwright`, + `PATH`).
 
-| Classe | Costruzione | Verifica indipendente |
+## Verifica oracolo
+
+Chi genera e chi verifica non condividono implementazione:
+
+| Classe | Costruzione | Verifica |
 |---|---|---|
-| `dc_resistive` | albero serie/parallelo, tensioni propagate sulle foglie | analisi nodale sull'IR appiattito, che dell'albero non sa nulla |
-| `ac_sinusoidal` | stesso albero, ma con impedenze complesse | analisi nodale complessa |
-| `three_phase` | circuito monofase equivalente più rotazione di 120° | analisi nodale sull'intera rete, che della simmetria non sa nulla |
-| `transient` | si scelgono le radici caratteristiche, si derivano i componenti | la matrice MNA a sorgenti spente deve essere singolare in quelle radici |
+| `dc_resistive` | albero serie/parallelo → tensioni foglie | MNA sull'IR appiattito |
+| `ac_sinusoidal` | impedenze `Cyc12` | MNA fasoriale |
+| `three_phase` | monofase + rotazione 120° | MNA intera rete |
+| `transient` | radici → componenti | MNA singolare in radici |
 
-Tutta l'aritmetica è esatta: `Fraction`, e per fasori e trifase il campo ciclotomico `Q(ζ₁₂)`, che
-contiene insieme `j` e `√3`. Un float non entra: né in un valore di componente, né nel campo — e il
-tentativo è un errore, non un arrotondamento. Quindi la somma delle tre correnti di fase è **zero**,
-non "circa zero", e un residuo diverso da zero è sempre un bug.
+Aritmetica esatta `Fraction` + `Q(ζ12)` (`src/kirchhoff/domain/exact.py:17-101`, `ζ^12=1`, `√3^2=3`). Challenge indipendente: `uv run --with sympy python scripts/research/cyc12_challenge.py` → **PASS** (14 identità, `det` e `solve_linear` vs SymPy).
+
+## Limitazioni note
+
+- Autolayout solo maglia singola (`layout_a_maglia` grado 2). Circuiti non-maglia risolvono ma non disegnano (serve `LayoutIR` manuale).
+- AC/trifase/transient `IMPLEMENTED` ma marketing `VERIFIED` bloccato fino a oracolo esterno pesante (SymPy challenge è solo sanity, non proof).
+- Dipendenze: core `dependencies=[]`, PDF è `KIRCHHOFF_CHROMIUM` esterno, research (`sympy`, `lcapy`, `ngspice`, `schemdraw`) solo `pip install -e ".[research]"`.
+
+## Sviluppo
+
+```bash
+uv run python scripts/check_boundaries.py
+uv run python scripts/check_domain_coverage.py
+uv run --with pytest --with pytest-cov python -m pytest
+uv run --with sympy python scripts/research/cyc12_challenge.py
+```
 
 ## Attribuzioni
 
