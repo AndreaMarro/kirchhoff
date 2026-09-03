@@ -21,10 +21,14 @@ sessione che non si pubblica non e' una sessione quasi pronta.
 
 from __future__ import annotations
 
+from kirchhoff.domain.didactic.kinds import PLAN_SCHEMA_VERSION, PROFILE
 from kirchhoff.domain.didactic.orchestrate import CertifiedDidacticRun
 from kirchhoff.domain.proof.session import (
+    SCHEMA_VERSION,
     AnalyticalProofStep,
     ProofSession,
+    SessionProvenance,
+    SessionVersions,
     TransformProofStep,
 )
 from kirchhoff.pipeline.failure import Failure
@@ -142,3 +146,74 @@ def validate_publication(
             "il Claim della sessione non e' l'artefatto autorevole della run: "
             "un Claim strutturalmente valido non prova che il gate abbia girato")
     return sessione
+
+
+def compose_proof_session(
+    run: CertifiedDidacticRun,
+    registro: CircuitStateRegistry,
+    *,
+    session_id: str,
+    document_profile: str,
+    source_sha: str,
+    detail: str,
+) -> ProofSession | Failure:
+    """Dalla run certificata alla sessione pubblicabile: proiezione soltanto.
+
+    Ogni oggetto certificato passa per riferimento, mai ricalcolato: le
+    operazioni, gli effetti, le lineage e il Claim sono gli stessi oggetti
+    della run (il validatore ne prova l'identita' con `is`). Gli unici valori
+    nuovi sono l'involucro di sessione e i pin dichiarati dal chiamante
+    (`document_profile`, `source_sha`, `detail`, `session_id` coniato fuori).
+
+    Chiamate vietate qui dentro (vedi anche il test bianco
+    `test_compositore_non_ricalcola_semantica`): pianificare, eseguire,
+    trasformare, certificare, risolvere, renderizzare, depositare. Se per
+    proiettare servisse un fatto semantico che la run non contiene, manca un
+    artefatto a monte: aggiungerlo li', non ricalcolarlo qui.
+
+    Un `Refusal` (o qualunque non-run) in ingresso e' corruzione del chiamante
+    e diventa `Failure`: un rifiuto utente resta rifiuto, non si traveste da
+    sessione. Solo `TypeError`/`ValueError` del costruttore puro sono mappati,
+    con la causa conservata: nessun'altra chiamata qui puo' sollevare.
+    """
+    if not isinstance(run, CertifiedDidacticRun):
+        return Failure(
+            "compose",
+            f"composizione di {type(run).__name__} invece di "
+            "CertifiedDidacticRun: un Refusal a monte resta Refusal")
+    if not isinstance(registro, CircuitStateRegistry):
+        return Failure(
+            "compose",
+            f"composizione con {type(registro).__name__} invece di "
+            "CircuitStateRegistry")
+    nodale = run.final_execution.execution
+    passi = (
+        *(TransformProofStep(
+            i, esecuzione.proof_node, run.state_ids[i + 1],
+            esecuzione.plan.actions[0].kind,
+            esecuzione.observation_effect, esecuzione.request_lineage)
+            for i, esecuzione in enumerate(run.transform_executions)),
+        *(AnalyticalProofStep(
+            len(run.transform_executions) + j, run.state_ids[-1],
+            passo.kind, passo.derivation_before, passo.derivation_after)
+            for j, passo in enumerate(nodale.steps)),
+    )
+    try:
+        sessione = ProofSession(
+            session_id=session_id,
+            schema_version=SCHEMA_VERSION,
+            versions=SessionVersions(
+                PLAN_SCHEMA_VERSION, PROFILE, document_profile),
+            provenance=SessionProvenance(COMPOSER_ID, source_sha, detail),
+            original_request=run.original_request,
+            initial_state_ref=run.state_ids[0],
+            state_refs=tuple(run.state_ids),
+            steps=passi,
+            final_derivation_id=nodale.derivation.identifier,
+            final_request=run.final_request,
+            final_state_ref=run.state_ids[-1],
+            final_claim=run.final_execution.claim,
+        )
+    except (TypeError, ValueError) as exc:
+        return Failure("compose", f"input di composizione non valido: {exc}")
+    return validate_publication(sessione, run, registro)

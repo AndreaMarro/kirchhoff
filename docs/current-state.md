@@ -77,9 +77,14 @@ Stato verificato il 2026-09-04 (locale == remoto prima di ogni gate):
   `lay_` nel percorso didattico; traccia visuale H5).
 - CoV: session.py 100% linee/rami; proof_session.py 100% linee/rami;
   globale >= 95%; domain 100%; boundaries PASS.
-- Non ancora chiusi: `compose_proof_session` (H2), serializzazione (H3),
-  corpus D1-D8 (H4), product-proof CI, mutation mirata, review indipendente.
-  PR #8 resta DRAFT; PR #7 resta research, non toccata.
+- H2 chiuso: `pipeline/proof_session.compose_proof_session` proietta run +
+  registro in sessione pubblicata (stessi oggetti certificati, niente
+  ricalcolo; E2E D1 con 3/80 A e Claim autorevole; ponte a zero
+  trasformazioni composto). Rotture -> `Failure`; `Refusal` a monte resta
+  `Refusal`.
+- Non ancora chiusi: serializzazione canonica (H3), corpus D1-D8 (H4, solo D1
+  e ponte esercitati finora), product-proof CI, mutation mirata, review
+  indipendente. PR #8 resta DRAFT; PR #7 resta research, non toccata.
 
 ## P1-K
 
