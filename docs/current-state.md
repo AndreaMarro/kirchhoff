@@ -89,6 +89,16 @@ Stato corrente (O0, vedi decisione `2026-09-03-proofsession-backend-closure.md`)
   (repo PUBLIC non privato, sette prefissi); D2-D8; wire canonico; manifest.
 - PR #8 resta DRAFT, nessun merge; review indipendente NOT SATISFIED;
   CodeRabbit skipped su draft.
+- H2.75 (branch `work/proof-demo-application-boundary`, stacked su O0):
+  `pipeline/proof_run.run_proof_session` e' l'unica via applicativa
+  (IR, Request) -> `ProofSessionClosure` (sessione CLOSED + registro
+  trattenuto): Refusal propagato identico, registro canonico via
+  `componi_registro`, sessione via compositore (che valida live, una sola
+  volta). Nome `publish` rifiutato: AD-5 lo riserva al gate finale.
+  Orologio iniettato (ClockPort), entropia chiamabile iniettata (niente
+  EntropyPort), supply state-id dimostrata (componenti+1), evidenze
+  possedute dal confine. D1 3/80 A, ponte ok. `GLOBAL_PRODUCT_ENTRYPOINT_
+  RECONCILIATION = OPEN` (`resolve` resta l'ingresso dichiarato).
 
 ## P1-K (STORICO)
 
