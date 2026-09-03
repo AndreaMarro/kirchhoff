@@ -52,9 +52,12 @@ EXAMPLES = {
     "ladder": ("V1 d 0 12 volt\nR1 d c 10 ohm\nR2 c b 20 ohm\nR3 b 0 30 ohm\n", "voltage", "R1"),
     "bridge": ("V1 p 0 12 volt\nR1 p a 10 ohm\nR2 p b 20 ohm\nR3 a 0 30 ohm\nR4 b 0 40 ohm\nRg a b 50 ohm\n", "voltage", "Rg"),
     "nodal": ("I1 0 a 2 ampere\nR1 a 0 5 ohm\n", "voltage", "R1"),
+    "series_current": ("V1 d 0 12 volt\nR1 d c 10 ohm\nR2 c b 20 ohm\nR3 b 0 30 ohm\n", "voltage", "R3"),
+    "parallel_current": ("V1 b 0 12 volt\nR1 b a 100 ohm\nR2 b a 300 ohm\nR3 a 0 330 ohm\nI1 0 a 1 ampere\n", "current", "R1"),
+    "floating": ("V1 a 0 10 volt\nR1 a b 10 ohm\nR2 b 0 10 ohm\nV2 c 0 5 volt\nR3 c b 10 ohm\n", "voltage", "R2"),
 }
 
-@pytest.mark.parametrize("name", ["series", "parallel", "ladder", "bridge", "nodal"])
+@pytest.mark.parametrize("name", ["series", "parallel", "ladder", "bridge", "nodal", "series_current", "parallel_current", "floating"])
 def test_curated_example_session(name):
     net, qty, tgt = EXAMPLES[name]
     ir0 = leggi(net)
