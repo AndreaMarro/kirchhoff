@@ -75,6 +75,8 @@ FORME: dict[ComponentType, Forma] = {
     "resistor": Forma("resistore", Fraction(12), Fraction(8)),
     "voltage_source_dc": Forma("generatore di tensione continua",
                                Fraction(12), Fraction(12)),
+    "current_source_dc": Forma("generatore di corrente continua",
+                               Fraction(12), Fraction(12)),
 }
 
 

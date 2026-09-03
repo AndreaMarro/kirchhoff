@@ -79,7 +79,7 @@ def build_session(
                 pass
 
     steps: list[SessionStep] = []
-    # Layout corrente: inizia con layout fornito per stato iniziale
+    # Layout corrente: inizia con layout fornito per stato iniziale, altrimenti genera
     current_layout = None
     if layouts and run.state_ids[0] in layouts:
         current_layout = layouts[run.state_ids[0]]
@@ -87,13 +87,37 @@ def build_session(
             layout_store.deposita(current_layout)
         except ValueError:
             pass
+    else:
+        # genera layout curato minimal per stato iniziale (solo V/R, per demo)
+        from kirchhoff.render.layout import Placement
+        from kirchhoff.domain.transform import EntityRef as ER
+        try:
+            nodes = initial_ir.nodes
+            comps = initial_ir.components
+            pls = []
+            for n in nodes:
+                pls.append(Placement(ER("node", n), Fraction(nodes.index(n)*200), Fraction(0)))
+            for idx_c, c in enumerate(comps):
+                from kirchhoff.render.serialize.geometry import FORME
+                if c.type not in FORME:
+                    continue
+                a,b = c.terminals
+                x = (nodes.index(a)*200 + nodes.index(b)*200)//2 if a in nodes and b in nodes else idx_c*100
+                # I1 (current) su y diverso per evitare transito su R
+                y = Fraction(160 if c.type == "current_source_dc" else 80 + (idx_c % 2)*40)
+                pls.append(Placement(ER("component", c.id), Fraction(x), y))
+            if pls:
+                current_layout = LayoutIR.nuovo(tuple(pls), istante=1_755_000_000_000, casualita=bytes(range(10)))
+                layout_store.deposita(current_layout)
+        except Exception:
+            pass
     for idx, exec_ in enumerate(run.transform_executions):
         before_ir = exec_.before
         before_id = run.state_ids[idx]
         after_id = exec_.proof_node
         before_layout = current_layout
         if before_layout is None:
-            continue
+            return Refusal("topology", before_id, "component", f"layout mancante per stato {before_id}: impossibile comporre VisualStep")
 
         # Componi VisualStep per questa azione
         action = exec_.plan.actions[0]
@@ -108,10 +132,8 @@ def build_session(
             casualita=bytes([(idx*10 + j) % 256 for j in range(10)]),
         )
         if isinstance(visual, Refusal):
-            # trasformazione letterale ma visual fallito → artifact senza visual per questo step
-            continue
+            return Refusal("topology", before_id, "component", f"VisualStep fallito per {action.kind} {','.join(action.operands)}: {visual.diagnosis}")
         assert isinstance(visual, VisualStep)
-        # Aggiorna layout corrente per il prossimo passo (continuità)
         current_layout = layout_store.risolvi(visual.dopo)
         steps.append(
             SessionStep(
@@ -133,6 +155,9 @@ def build_session(
             )
         )
 
+    # Validazione visual slice: se il planner ha prodotto trasformazioni, devono avere VisualStep
+    if len(run.transform_executions) != len(steps):
+        return Refusal("topology", run.state_ids[0], "component", f"visual composition incompleta: attesi {len(run.transform_executions)} VisualStep, ottenuti {len(steps)}")
     final = run.final_execution
     val = final.execution.resolved.value.amount  # type: ignore
     unit = final.execution.resolved.value.unit  # type: ignore
