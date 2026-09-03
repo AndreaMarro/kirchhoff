@@ -23,7 +23,7 @@ jobs:
           # Toolchain pinnata e verificata (tag upstream 0.11.8): senza pin
           # setup-uv risolve "latest" via rete a ogni run (fragile e non
           # riproducibile; osservato fetch failed su manifest versioni).
-          uv-version: "0.11.8"
+          version: "0.11.8"
       - name: Sync frozen environment
         run: uv sync --frozen --extra dev
       - name: Build reference-set
