@@ -30,7 +30,7 @@ import re
 from dataclasses import dataclass
 from typing import Literal, Union
 
-from ..didactic.kinds import ANALYTICAL_KINDS
+from ..didactic.kinds import ANALYTICAL_KINDS, PLAN_SCHEMA_VERSION, PROFILE
 from ..didactic.observation import ObservationEffect, RequestLineageStep
 from ..identity import verifica
 from ..ir import Request
@@ -41,54 +41,65 @@ from ..truthfulness import Claim
 #: una versione e' una migrazione con regole e review, non un'etichetta.
 SCHEMA_VERSION = "proof-session.v0.1"
 
+#: Il genere dell'occurrence di sessione (D-H1.5-1). Nominato una volta: il
+#: vocabolario chiuso sta in `domain/identity`.
+_GENERE_SESSIONE = "sess"
+
 PublicationStatus = Literal["VERIFIED"]
 STATI_DI_PUBBLICAZIONE: frozenset[str] = frozenset({"VERIFIED"})
 
-_SEMVER = re.compile(r"^\d+\.\d+\.\d+$")
+_SHA = re.compile(r"^[0-9a-f]{40}$")
 
 
 @dataclass(frozen=True, slots=True)
 class SessionVersions:
-    """Le versioni pinnate che rendono la sessione riproducibile (spec 6.1)."""
+    """I pin semantici della sessione: solo autorita', mai numeri inventati.
 
-    core: str
-    planner: str
-    catalog: str
-    layout: str
-    renderer: str
+    D-H1.5-2: nessuna release autorevole esiste a runtime per core,
+    implementazione del planner, catalogo, layout o renderer, quindi lo schema
+    non li nomina. `planner_schema_version` e `curriculum_profile` si
+    confrontano per uguaglianza con l'autorita' (`didactic/kinds`), non per
+    forma. `document_profile` e' una dichiarazione del chiamante: verificata
+    non vuota, onesta proprio perche' non finge un'autorita' che non c'e'.
+    """
+
+    planner_schema_version: str
     curriculum_profile: str
     document_profile: str
 
     def __post_init__(self) -> None:
-        for nome, valore in (
-            ("core", self.core),
-            ("planner", self.planner),
-            ("catalog", self.catalog),
-            ("layout", self.layout),
-            ("renderer", self.renderer),
-        ):
-            if not isinstance(valore, str) or not _SEMVER.fullmatch(valore):
-                raise ValueError(
-                    f"versione {nome} {valore!r}: serve una versione semantica "
-                    "MAGGIORE.MINORE.CORREZIONE")
-        for nome, valore in (
-            ("curriculum_profile", self.curriculum_profile),
-            ("document_profile", self.document_profile),
-        ):
-            if not isinstance(valore, str) or not valore.strip():
-                raise ValueError(f"profilo {nome} vuoto o non testuale")
+        if self.planner_schema_version != PLAN_SCHEMA_VERSION:
+            raise ValueError(
+                f"planner_schema_version {self.planner_schema_version!r}: "
+                f"l'autorita' e' {PLAN_SCHEMA_VERSION!r}")
+        if self.curriculum_profile != PROFILE:
+            raise ValueError(
+                f"curriculum_profile {self.curriculum_profile!r}: "
+                f"l'autorita' e' {PROFILE!r}")
+        if not isinstance(self.document_profile, str) or not self.document_profile.strip():
+            raise ValueError("document_profile vuoto o non testuale: dichiararlo, non inventarlo")
 
 
 @dataclass(frozen=True, slots=True)
 class SessionProvenance:
-    """Chi ha prodotto la sessione, e con quale dettaglio. Entrambi espliciti."""
+    """Provenienza strutturata, leggibile da una macchina (D-H1.5-3).
+
+    `detail` resta per la diagnostica umana ma non e' mai l'unica provenienza:
+    chi, da quale sorgente e sotto quale schema/profilo si leggono senza
+    interpretare prosa.
+    """
 
     producer: str
+    source_sha: str
     detail: str
 
     def __post_init__(self) -> None:
         if not isinstance(self.producer, str) or not self.producer.strip():
             raise ValueError("provenienza senza produttore esplicito")
+        if not isinstance(self.source_sha, str) or not _SHA.fullmatch(self.source_sha):
+            raise ValueError(
+                f"source_sha {self.source_sha!r}: serve lo SHA-40 esadecimale "
+                "del checkout che ha prodotto la sessione")
         if not isinstance(self.detail, str) or not self.detail.strip():
             raise ValueError("provenienza senza dettaglio esplicito")
 
@@ -200,7 +211,13 @@ PassoDiProva = Union[TransformProofStep, AnalyticalProofStep]
 
 @dataclass(frozen=True, slots=True)
 class ProofSession:
-    """Una run certificata, pubblicata come proiezione congelata e tipizzata."""
+    """Una run certificata, pubblicata come proiezione congelata e tipizzata.
+
+    Schema v0.1: prima tutti i passi topologici, poi quelli analitici, e ogni
+    passo analitico e' ancorato allo stato operativo finale (l'esecuzione
+    nodale corre sempre sullo stato terminale). Un interleaving arbitrario
+    richiedera' una nuova versione di schema, non un flag.
+    """
 
     session_id: str
     schema_version: str
@@ -217,11 +234,8 @@ class ProofSession:
     publication_status: PublicationStatus = "VERIFIED"
 
     def __post_init__(self) -> None:
-        if not isinstance(self.session_id, str):
-            raise TypeError(
-                f"session_id {type(self.session_id).__name__} invece di str")
-        if not self.session_id.strip():
-            raise ValueError("sessione senza identificatore di occurrence")
+        object.__setattr__(
+            self, "session_id", verifica(self.session_id, _GENERE_SESSIONE))
         if self.schema_version != SCHEMA_VERSION:
             raise ValueError(
                 f"schema {self.schema_version!r}: questo modello legge e scrive "
@@ -281,10 +295,16 @@ class ProofSession:
                     "posizioni consecutive da zero")
         trasformazioni: list[TransformProofStep] = []
         analitici: list[AnalyticalProofStep] = []
+        vista_analitica = False
         for passo in self.steps:
             if isinstance(passo, TransformProofStep):
+                if vista_analitica:
+                    raise ValueError(
+                        f"passo topologico {passo.index} dopo un passo analitico: "
+                        "lo schema v0.1 ordina prima le trasformazioni, poi l'analitica")
                 trasformazioni.append(passo)
             else:
+                vista_analitica = True
                 analitici.append(passo)
         if len(trasformazioni) != len(self.state_refs) - 1:
             raise ValueError(
@@ -340,6 +360,10 @@ class ProofSession:
                 raise ValueError(
                     f"passo analitico {passo.index} su {passo.state_ref}, che non e' "
                     "uno stato operativo della sessione")
+            if passo.state_ref != self.final_state_ref:
+                raise ValueError(
+                    f"passo analitico {passo.index} su {passo.state_ref}: lo schema "
+                    "v0.1 ancora ogni passo analitico allo stato operativo finale")
         if analitici[-1].derivation_after != self.final_derivation_id:
             raise ValueError(
                 f"derivazione finale {self.final_derivation_id!r} contro ultimo passo "

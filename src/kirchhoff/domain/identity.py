@@ -5,12 +5,18 @@
 `LayoutPatch`, che senza identita' non sono citabili da evidenza, replay ed eval).
 Mai interi auto-incrementali su entita' esposte.»*
 
+Dalla Proof Demo 0.1 (decisione D-H1.5-1) anche `sess_` per l'occurrence della
+`ProofSession` pubblicata: `sol_` resta il `Published` scritto da `solve` dello
+spine v1 e riusarlo per la sessione solo perche' esiste sarebbe abusare di un
+genere esistente. Chi conia `sess_` e' il compositore applicativo, con istante
+ed entropia iniettati come ogni altro conio.
+
 CV6 conta quella riga fra le tre cose che rendono VCER incalcolabile: *«i due
 operandi non hanno entita' ne' identificatore»*. Questo modulo e' la meta'
 «identificatore»; la ritenzione vive in `render/layout` e la relazione in
 `domain/proof`.
 
-## Una fonte sola per i sei prefissi
+## Una fonte sola per i sette prefissi
 
 I generi sono **derivati** da `IdentityKind` con `get_args`, come `refusal.CAUSES` da
 `Cause` e `transform.PRIMITIVES` da `StructuralPrimitive`. Non c'e' un secondo
@@ -52,9 +58,10 @@ from typing import Literal, get_args
 
 #: I generi di entita' esposta che hanno un prefisso. Chiuso: aggiungerne uno e'
 #: una modifica delle `Consistency Conventions` dello spine, non di questo modulo.
-IdentityKind = Literal["ir", "sol", "var", "evt", "lay", "patch"]
+#: `sess_` (D-H1.5-1) nomina l'occurrence di una `ProofSession` pubblicata.
+IdentityKind = Literal["ir", "sol", "var", "evt", "lay", "patch", "sess"]
 
-#: Derivato, non riscritto. Vedi il docstring: una fonte sola per i sei prefissi.
+#: Derivato, non riscritto. Vedi il docstring: una fonte sola per i sette prefissi.
 GENERI: frozenset[str] = frozenset(get_args(IdentityKind))
 
 #: Crockford base32 — senza `I`, `L`, `O` e `U`, cosi' che un identificatore letto

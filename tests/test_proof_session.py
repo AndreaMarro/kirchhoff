@@ -1,8 +1,9 @@
-"""Contratto della `ProofSession` canonica (H1): modello tipizzato, per riferimento.
+"""Contratto della `ProofSession` canonica (H1 + H1.5): modello tipizzato.
 
-Ogni guardia del modello ha un test che l'ha vista sollevare. Le fixture
-valide sono proiettate da una `CertifiedDidacticRun` D1 reale, mai scritte a
-mano per intero: se il dominio cambia forma, qui diventa rosso il verde.
+H1.5: versioni solo autorevoli, provenance strutturata con SHA, session_id di
+genere `sess_`, ordinamento v0.1 (trasformazioni poi analitica sul finale).
+Ogni guardia ha un test che l'ha vista sollevare. Le fixture valide sono
+proiettate da una `CertifiedDidacticRun` D1 reale.
 """
 
 from __future__ import annotations
@@ -11,6 +12,7 @@ from dataclasses import FrozenInstanceError, replace
 
 import pytest
 
+from kirchhoff.domain.didactic.kinds import PLAN_SCHEMA_VERSION, PROFILE
 from kirchhoff.domain.didactic.observation import ObservationEffect, RequestLineageStep
 from kirchhoff.domain.didactic.orchestrate import CertifiedDidacticRun
 from kirchhoff.domain.didactic.orchestrate import orchestrate_didactic_run
@@ -25,6 +27,7 @@ from kirchhoff.domain.proof.session import (
     TransformProofStep,
 )
 from kirchhoff.domain.truthfulness import VERIFIER_ID, VERIFIER_VERSION, Claim
+from kirchhoff.pipeline.proof_session import COMPOSER_ID
 from kirchhoff.pipeline.netlist import leggi
 
 D1 = """\
@@ -34,21 +37,24 @@ R2 a 0 220 ohm
 ? current R1
 """
 
+SHA_FIXTURE = "0123456789abcdef0123456789abcdef01234567"
+
 
 def _stato(n: int) -> str:
     """Un `ir_` vero, deterministico: stessa entropia, stesso identificatore."""
     return conia("ir", 1700000000000 + n, bytes((n + 1,)) * 10)
 
 
+def _sessid(n: int) -> str:
+    return conia("sess", 1700000000000 + n, bytes((n + 101,)) * 10)
+
+
 def _versioni() -> SessionVersions:
-    return SessionVersions(
-        "0.1.0", "0.2.0", "1.0.0", "0.1.0", "0.1.0",
-        "student-dc-v0.1", "student-pdf.v0.1")
+    return SessionVersions(PLAN_SCHEMA_VERSION, PROFILE, "student-pdf.v0.1")
 
 
 def _provenienza() -> SessionProvenance:
-    return SessionProvenance(
-        "kirchhoff.pipeline.compose_proof_session", "base main@de6bb6c, run D1")
+    return SessionProvenance(COMPOSER_ID, SHA_FIXTURE, "run D1, fixture H1")
 
 
 def _run_d1() -> CertifiedDidacticRun:
@@ -76,7 +82,7 @@ def _kwargs_d1() -> dict:
             trasformazione.observation_effect, trasformazione.request_lineage),
         *analitici)
     return {
-        "session_id": "sessione-d1-prova-001",
+        "session_id": _sessid(0),
         "schema_version": SCHEMA_VERSION,
         "versions": _versioni(),
         "provenance": _provenienza(),
@@ -96,7 +102,7 @@ def _kwargs_ponte() -> dict:
     rif = _stato(7)
     domanda = Request("q9", "voltage", "R1")
     return {
-        "session_id": "sessione-ponte-prova-001",
+        "session_id": _sessid(7),
         "schema_version": SCHEMA_VERSION,
         "versions": _versioni(),
         "provenance": _provenienza(),
@@ -113,55 +119,95 @@ def _kwargs_ponte() -> dict:
     }
 
 
-# --- versioni e provenienza -------------------------------------------------
+# --- versioni: solo autorita' -------------------------------------------------
 
 
-def test_versioni_valide():
-    assert _versioni().curriculum_profile == "student-dc-v0.1"
+def test_versioni_autorevoli_valide():
+    versioni = _versioni()
+    assert versioni.planner_schema_version == PLAN_SCHEMA_VERSION
+    assert versioni.curriculum_profile == PROFILE
 
 
-def test_versione_non_semver_rifiutata():
-    with pytest.raises(ValueError):
-        replace(_versioni(), core="1.0")
+def test_planner_schema_non_autorevole_rifiutato():
+    with pytest.raises(ValueError, match="planner"):
+        replace(_versioni(), planner_schema_version="didactic-plan.v9.9")
 
 
-def test_versione_non_stringa_rifiutata():
-    with pytest.raises(ValueError):
-        replace(_versioni(), planner=7)
+def test_profilo_non_autorevole_rifiutato():
+    with pytest.raises(ValueError, match="curriculum"):
+        replace(_versioni(), curriculum_profile="universita-reale-v1")
 
 
-def test_profilo_vuoto_rifiutato():
-    with pytest.raises(ValueError):
-        replace(_versioni(), curriculum_profile="   ")
+def test_document_profile_vuoto_rifiutato():
+    with pytest.raises(ValueError, match="document"):
+        replace(_versioni(), document_profile="   ")
 
 
-def test_profilo_non_stringa_rifiutato():
-    with pytest.raises(ValueError):
+def test_document_profile_non_stringa_rifiutato():
+    with pytest.raises(ValueError, match="document"):
         replace(_versioni(), document_profile=None)
 
 
+# --- provenienza strutturata ---------------------------------------------------
+
+
 def test_provenienza_valida():
-    assert _provenienza().producer.startswith("kirchhoff.")
+    provenienza = _provenienza()
+    assert provenienza.producer == COMPOSER_ID
+    assert len(provenienza.source_sha) == 40
 
 
 def test_produttore_vuoto_rifiutato():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="produttore"):
         replace(_provenienza(), producer="")
 
 
 def test_produttore_non_stringa_rifiutato():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="produttore"):
         replace(_provenienza(), producer=123)
 
 
+def test_sha_malformato_rifiutato():
+    with pytest.raises(ValueError, match="sha"):
+        replace(_provenienza(), source_sha="non-uno-sha")
+
+
+def test_sha_non_stringa_rifiutato():
+    with pytest.raises(ValueError, match="sha"):
+        replace(_provenienza(), source_sha=None)
+
+
 def test_dettaglio_vuoto_rifiutato():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="dettaglio"):
         replace(_provenienza(), detail="  ")
 
 
 def test_dettaglio_non_stringa_rifiutato():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="dettaglio"):
         replace(_provenienza(), detail=None)
+
+
+# --- identita' di sessione --------------------------------------------------------
+
+
+def test_session_id_sess_valido():
+    sessione = ProofSession(**_kwargs_d1())
+    assert sessione.session_id.startswith("sess_")
+
+
+def test_session_id_narrativo_rifiutato():
+    with pytest.raises(ValueError, match="sess"):
+        ProofSession(**{**_kwargs_d1(), "session_id": "sessione-d1-prova-001"})
+
+
+def test_session_id_di_genere_sbagliato_rifiutato():
+    with pytest.raises(ValueError, match="sess"):
+        ProofSession(**{**_kwargs_d1(), "session_id": _stato(0)})
+
+
+def test_session_id_non_stringa_rifiutato():
+    with pytest.raises(TypeError, match="invece di str"):
+        ProofSession(**{**_kwargs_d1(), "session_id": 7})
 
 
 # --- passo topologico --------------------------------------------------------
@@ -307,6 +353,10 @@ def test_sessione_d1_valida():
     assert sessione.publication_status == "VERIFIED"
     assert sessione.final_derivation_id == "D2"
     assert sessione.final_claim.evidence_ids == ("D1", "D2")
+    topologici = [p for p in sessione.steps if isinstance(p, TransformProofStep)]
+    analitici = [p for p in sessione.steps if isinstance(p, AnalyticalProofStep)]
+    assert [p.index for p in topologici] == [0]
+    assert all(p.state_ref == sessione.final_state_ref for p in analitici)
 
 
 def test_sessione_ponte_senza_trasformazioni_valida():
@@ -328,20 +378,30 @@ def test_liste_come_ingressi_vengono_congelate():
 def test_sessione_congelata():
     sessione = ProofSession(**_kwargs_d1())
     with pytest.raises(FrozenInstanceError):
-        sessione.session_id = "altra"  # type: ignore[misc]
+        sessione.session_id = "sess_altra"  # type: ignore[misc]
+
+
+# --- ordinamento v0.1 -------------------------------------------------------------
+
+
+def test_trasformazione_dopo_analitica_rifiutata():
+    kwargs = _kwargs_d1()
+    disordinati = (kwargs["steps"][1], kwargs["steps"][2], kwargs["steps"][0])
+    rinumerati = tuple(replace(p, index=i) for i, p in enumerate(disordinati))
+    with pytest.raises(ValueError, match="dopo un passo analitico"):
+        ProofSession(**{**kwargs, "steps": rinumerati})
+
+
+def test_analitico_sullo_stato_vecchio_rifiutato():
+    kwargs = _kwargs_d1()
+    passi = (kwargs["steps"][0],
+             replace(kwargs["steps"][1], state_ref=kwargs["state_refs"][0]),
+             kwargs["steps"][2])
+    with pytest.raises(ValueError, match="finale"):
+        ProofSession(**{**kwargs, "steps": passi})
 
 
 # --- sessione rossa: busta ------------------------------------------------------
-
-
-def test_session_id_non_str_rifiutato():
-    with pytest.raises(TypeError):
-        ProofSession(**{**_kwargs_d1(), "session_id": 7})
-
-
-def test_session_id_vuoto_rifiutato():
-    with pytest.raises(ValueError):
-        ProofSession(**{**_kwargs_d1(), "session_id": "   "})
 
 
 def test_schema_sconosciuto_rifiutato():
@@ -351,7 +411,7 @@ def test_schema_sconosciuto_rifiutato():
 
 def test_versions_non_sessionversions_rifiutate():
     with pytest.raises(TypeError):
-        ProofSession(**{**_kwargs_d1(), "versions": {"core": "0.1.0"}})
+        ProofSession(**{**_kwargs_d1(), "versions": {"planner": "x"}})
 
 
 def test_provenance_non_sessionprovenance_rifiutata():
