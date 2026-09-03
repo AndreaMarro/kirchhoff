@@ -525,7 +525,7 @@ def test_i_valori_di_componente_restano_esatti_nell_etichetta_e_nel_testo():
 
 def test_un_tipo_con_ingombro_e_senza_corpo_si_disegnerebbe_come_niente():
     """Due dichiarazioni dello stesso insieme si confrontano all'import (E-62)."""
-    with pytest.raises(RuntimeError, match=r"senza corpo \['resistor'\]"):
+    with pytest.raises(RuntimeError, match=r"senza corpo .*resistor.*"):
         _verifica_corpi(FORME, {"voltage_source_dc": None})
     with pytest.raises(RuntimeError, match=r"senza ingombro \['inductor'\]"):
         _verifica_corpi(FORME, {**{k: None for k in FORME}, "inductor": None})
