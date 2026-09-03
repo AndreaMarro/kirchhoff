@@ -10,6 +10,7 @@ from lab.fixtures.cases import case_for_seed
 
 from kirchhoff.domain.didactic.features import extract_circuit_features
 from kirchhoff.domain.ir import Request
+from kirchhoff.domain.refusal import Refusal
 from kirchhoff.pipeline.netlist import leggi
 
 
@@ -47,3 +48,23 @@ def test_features_rifiuta_tipi_non_ir_e_conta_sorgente_inversa_verso_massa():
         extract_circuit_features(object(), request)  # type: ignore[arg-type]
     with pytest.raises(TypeError, match="invece di Request"):
         extract_circuit_features(ir, object())  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize(
+    ("netlist", "component_id"),
+    (
+        ("V1 a 0 7 volt\nC1 a b 2 farad\nR1 b 0 3 ohm\n", "C1"),
+        ("V1 a 0 7 volt\nL1 a b 2 henry\nR1 b 0 3 ohm\n", "L1"),
+    ),
+)
+def test_features_fuori_subset_non_scambiano_componenti_reattivi_per_sorgenti(
+    netlist, component_id,
+):
+    request = Request("q_reattivo", "voltage", component_id)
+    ir = replace(leggi(netlist), requests=(request,))
+
+    result = extract_circuit_features(ir, request)
+
+    assert isinstance(result, Refusal)
+    assert result.subject == component_id
+    assert "fuori dal subset" in result.diagnosis

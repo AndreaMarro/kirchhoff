@@ -8,7 +8,8 @@
 
 **Tech Stack:** Python 3.12, uv, pytest/pytest-cov, Hypothesis; research-only NetworkX, Lcapy, Schemdraw, direct `ngspice` subprocess and mutmut.
 
-**Spec:** `/Users/andreamarro/.codex/attachments/d0c8aae0-96c6-4935-ac20-161f12759667/pasted-text.txt`
+**Spec:** owner-provided P1-M0 research-lab brief (local attachment intentionally
+not linked: its absolute workstation path is not repository-portable).
 
 ## Global Constraints
 

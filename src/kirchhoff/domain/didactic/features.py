@@ -6,9 +6,19 @@ from collections import deque
 from dataclasses import dataclass
 
 from ..ir import IR, REFERENCE_NODE, Request
+from ..refusal import Refusal
 from .analytical import nodi_kcl_ordinarie, supernodi_semplici
 from .capabilities import riduzioni_che_contribuiscono, riduzioni_eseguibili
 from .observation import ObservationContract
+from .strategy_scope import strategy_scope_refusal
+
+
+# Il confine P1-M0 rifiuta esplicitamente AC e sorgenti controllate, quindi questa
+# classificazione resta volutamente piu' stretta di ``ComponentType``: un elemento
+# reattivo non diventa mai una sorgente per esclusione dal gruppo dei resistori.
+_DC_SOURCE_COMPONENT_TYPES: frozenset[str] = frozenset({
+    "voltage_source_dc", "current_source_dc",
+})
 
 
 @dataclass(frozen=True, slots=True)
@@ -60,12 +70,15 @@ def _nodal_unknown_count(ir: IR) -> int:
     return sum(node_id != REFERENCE_NODE and node_id not in fixed for node_id in ir.nodes)
 
 
-def extract_circuit_features(ir: IR, request: Request) -> CircuitFeatures:
-    """Estrae definizioni Kirchhoff-native; nessuna dipendenza da `lab/`."""
+def extract_circuit_features(ir: IR, request: Request) -> CircuitFeatures | Refusal:
+    """Estrae fatti P1-M0 DC oppure rifiuta esplicitamente lo scope estraneo."""
     if not isinstance(ir, IR):
         raise TypeError(f"ir {type(ir).__name__} invece di IR")
     if not isinstance(request, Request):
         raise TypeError(f"request {type(request).__name__} invece di Request")
+    refusal = strategy_scope_refusal(ir, request)
+    if refusal is not None:
+        return refusal
     regions = _connected_regions(ir)
     executable = riduzioni_eseguibili(ir)
     admissible = riduzioni_che_contribuiscono(
@@ -73,7 +86,10 @@ def extract_circuit_features(ir: IR, request: Request) -> CircuitFeatures:
     return CircuitFeatures(
         component_count=len(ir.components),
         resistor_count=sum(component.type == "resistor" for component in ir.components),
-        source_count=sum(component.type != "resistor" for component in ir.components),
+        source_count=sum(
+            component.type in _DC_SOURCE_COMPONENT_TYPES
+            for component in ir.components
+        ),
         node_count=len(ir.nodes),
         connected_regions=regions,
         cycle_rank=len(ir.components) - len(ir.nodes) + regions,

@@ -5,8 +5,13 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from fractions import Fraction
 
-from kirchhoff.domain.ir import IR, Request
+from kirchhoff.domain.ir import Component, IR, Request
+from kirchhoff.domain.didactic.planner import pianifica
+from kirchhoff.domain.refusal import Refusal
+from kirchhoff.eval.generator import generate_case
 from kirchhoff.pipeline.netlist import leggi
+
+from .topology import topology_fingerprint
 
 
 @dataclass(frozen=True, slots=True)
@@ -72,3 +77,62 @@ def generated_cases(number: int = 200) -> tuple[LabCase, ...]:
     if number < 1:
         raise ValueError("number deve essere positivo")
     return tuple(case_for_seed(seed) for seed in range(number))
+
+
+def _family_from_sequence(sequence: tuple[str, ...], depth: int) -> str:
+    reductions = sequence[:sequence.index("legge_di_ohm")]
+    kinds = set(reductions)
+    if kinds == {"serie"}:
+        shape = "pure-series"
+    elif kinds == {"parallelo"}:
+        shape = "pure-parallel"
+    elif kinds == {"serie", "parallelo"}:
+        shape = "nested-series-parallel"
+    else:
+        shape = "single-resistor"
+    return f"{shape}-depth-{depth}"
+
+
+def topology_diverse_cases(number: int = 200) -> tuple[LabCase, ...]:
+    """Adatta il generatore SP esistente a casi didattici DC diversificati."""
+    if number < 1:
+        raise ValueError("number deve essere positivo")
+    selected: list[LabCase] = []
+    fingerprints: set[str] = set()
+    seed = 0
+    # Ogni seed/depth e' deterministico. Si privilegia una nuova impronta; il bound
+    # evita che una grammatica povera trasformi una richiesta finita in un loop.
+    while len(selected) < number and seed < number * 40:
+        # Profondita' 1..3: abbastanza varia per la grammatica SP, ma ogni caso
+        # resta entro il bound dei controlli certificati del core.
+        depth = 1 + seed % 3
+        generated, _expected, sequence = generate_case(seed, depth=depth)
+        request = Request(f"q_topology_{seed:04d}", "voltage", generated.requests[0].target)
+        tail_resistance = Fraction(10 + seed % 19)
+        ir = replace(
+            generated,
+            domain="dc",
+            nodes=tuple(sorted((*generated.nodes, "x"))),
+            components=(*generated.components,
+                        Component.of("R_tail", "resistor", ("A", "x"), tail_resistance, "R_tail"),
+                        Component.of("I_tail", "current_source_dc", ("0", "x"), Fraction(1), "I_tail")),
+            requests=(request,),
+        )
+        if isinstance(pianifica(ir, request), Refusal):
+            seed += 1
+            continue
+        fingerprint = topology_fingerprint(ir, request)
+        if fingerprint not in fingerprints:
+            fingerprints.add(fingerprint)
+            selected.append(LabCase(
+                10_000 + seed,
+                f"topology-{seed:04d}-depth-{depth}",
+                _family_from_sequence(sequence, depth),
+                ir,
+                request,
+            ))
+        seed += 1
+    if len(selected) != number:
+        raise ValueError(
+            f"grammatica SP: {len(selected)} topologie distinte entro il bound richiesto {number}")
+    return tuple(selected)

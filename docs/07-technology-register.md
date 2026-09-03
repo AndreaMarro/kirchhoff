@@ -8,7 +8,8 @@ recommendations concern a research lab, never Kirchhoff runtime authority.
 | Technology | Primary source | Role | License / confidence | Activity and maintenance risk | Runtime? / lab? | Recommendation |
 |---|---|---|---|---|---|---|
 | Hypothesis 6.167.0 | [upstream](https://github.com/HypothesisWorks/hypothesis) | property and stateful testing | MPL-2.0 / high | actively released; rapid API cadence / low | no / yes | ADOPT_NOW |
-| mutmut 3.4.0 | [upstream](https://github.com/boxed/mutmut) | targeted Python mutation tests | BSD-3-Clause / high | maintained / medium run-time cost | no / yes | ADOPT_NOW |
+| Cosmic Ray 8.7.0 | [official docs](https://cosmic-ray.readthedocs.io/en/latest/) | primary targeted Python mutation runner | MIT / high | current release; persistent SQLite sessions / medium run-time cost | no / yes | ADOPT_NOW |
+| mutmut 3.4.0 | [upstream](https://github.com/boxed/mutmut) | historical secondary mutation diagnostic | BSD-3-Clause / high | runner segfaults observed in this checkpoint / high | no / optional | HOLD / SECONDARY DIAGNOSTIC |
 | CrossHair | [docs](https://crosshair.readthedocs.io/en/stable/get_started.html) | contract counterexample spike | Apache-2.0 / high | bounded Python-contract scope / medium | no / spike | HOLD |
 | Atheris | [upstream](https://github.com/google/atheris) | coverage-guided parser fuzzing | Apache-2.0 / high | Google-maintained, CPython-version-sensitive / medium | no / future lab | HOLD |
 | Lcapy 1.26 | [docs](https://lcapy.readthedocs.io/en/stable/) | symbolic DC differential oracle | GPL-3.0 / high | mature symbolic package; import warnings observed / medium | no / yes | ADOPT_NOW |
@@ -32,12 +33,13 @@ recommendations concern a research lab, never Kirchhoff runtime authority.
 | Excalidraw | [upstream](https://github.com/excalidraw/excalidraw) | whiteboard UX candidate | MIT / high | active / medium integration cost | no / conceptual only | TRIAL |
 | tldraw | [upstream](https://github.com/tldraw/tldraw) | whiteboard UX candidate | license-key/production terms / high | active but commercial integration constraint / high | no / no | HOLD |
 | AITEE | [dataset](https://github.com/CKnievel/aitee-dataset) | circuit-image perception evaluation | Apache-2.0 / high | 831 labelled images / low | no / future evaluation | HOLD |
-| CircuitReason-1K | [paper](https://arxiv.org/abs/2608.09374) | multimodal circuit reasoning methodology | code/data license not verified / high | very recent / high | no / reading only | HOLD — NO CODE COPYING |
+| CircuitReason-1K | [paper](https://arxiv.org/abs/2608.09374) | multimodal circuit reasoning methodology | code/data license not verified / low | very recent / high | no / reading only | HOLD — NO CODE COPYING |
 | CircuitPile / CircuitHub | public project references | circuit data | commercial-training terms not verified / low | provenance unresolved / high | no / no | REJECT pending license |
 | Razavi-bench | [upstream](https://github.com/Arcadia-1/razavi-bench) | analog reasoning benchmark | code Apache-2.0; content research/non-commercial / high | active research asset / medium | no / local methodology only | HOLD |
 | CircuitsU | [service](https://www.circuitsu.com/Home) | competitive baseline | site content CC BY 4.0; product terms not assessed / medium | public service / medium | no / research only | ADOPT_NOW (audit) |
 
-The high-value retained stack is therefore Hypothesis, mutmut, NetworkX,
-Lcapy, ngspice and Schemdraw, all confined to development or `lab/`.  GPL and
+The high-value retained stack is therefore Hypothesis, Cosmic Ray, NetworkX,
+Lcapy, ngspice and Schemdraw, all confined to development or `lab/`. Mutmut is
+retained only as historical/secondary evidence. GPL and
 unknown-license packages are not copied, linked into production, or allowed to
 decide a Kirchhoff result.

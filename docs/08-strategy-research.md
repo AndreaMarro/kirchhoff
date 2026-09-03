@@ -7,23 +7,28 @@ an immutable comparison baseline.
 
 ## Questions and measurements
 
-The corpus records 200 generated supported DC circuits and 30 named,
-hand-designed probes.  Each row carries provenance, IR/request, executable
-transforms, P1-J observation effect, pure features, current plan, P1-L trace,
-final certification, and an ambiguity flag.  No holdout data is read.
+The corpus records 200 topology-diverse generated supported DC circuits and 30
+named deliberate probes. Each row carries provenance, topology fingerprint,
+IR/request, executable transforms, P1-J observation effect, pure features,
+current plan, P1-L trace, final certification, and an ambiguity flag. No
+holdout data is read.
 
 `peripheral_work` is measured conservatively: a chosen transform is peripheral
-only when it neither touches the requested component, nor decreases its
-structural target distance, nor reduces the final nodal unknown/equation count.
-The report keeps the three facts separately, so a pedagogically useful
-identity-preserving simplification is not silently labelled a defect.
+only when it does not touch the requested component and does not reduce the
+current nodal-unknown or analytical-equation count. The report keeps the facts
+separately, so a pedagogically useful identity-preserving simplification is not
+silently labelled a defect.
 
-Four offline deterministic policies consume the same candidate tuple:
+Five offline deterministic policies consume the same candidate tuple:
 
-1. current: first observation-contributing executable transform;
-2. target-first: target relevance before canonical order;
-3. complexity: greatest predicted equation/unknown reduction before canonical order;
-4. lexicographic: admissibility, target relevance, complexity, structural
+1. current: exactly reproduces `pianifica` via explicit plan/action identity;
+2. direct-nodal: chooses executable nodal analysis, otherwise a deterministic
+   admissible transform; it is an extreme baseline, not a recommendation;
+3. target-first: target relevance and current analytical facts, without a
+   transform-before-nodal discriminator;
+4. complexity: resulting equation/unknown/component facts before a deterministic
+   tie-break;
+5. lexicographic: admissibility, target relevance, complexity, structural
    simplification, canonical tie-break.
 
 They are lab functions only.  Neither the policy result nor any external graph
@@ -35,7 +40,8 @@ Only two pure, immutable descriptions may cross into the domain:
 
 - `CircuitFeatures`, computed with Kirchhoff-native topology and capabilities;
 - `StrategyCandidate`, enumerating only currently executable certified
-  transformations plus currently executable nodal analysis.
+  transformations plus currently executable nodal analysis, independently of
+  whichever candidate the frozen planner currently chooses.
 
 They expose facts; they do not rank, select, execute, create claims, or alter
 request lineage.  The AST boundary test rejects imports of research packages
@@ -50,5 +56,8 @@ pedagogical preference.  A weighted `StrategyScore` has no frozen oracle or
 owner-selected weights and is therefore not justified by P1-M0 alone.
 
 The remaining research reports contain raw counts, all differential triage,
-and negative results.  An unsupported external result is recorded as such; it
-is not discarded or converted into a Kirchhoff failure.
+and negative results. An unsupported external result is recorded as such; it is
+not discarded or converted into a Kirchhoff failure. The P1-M0 feature/candidate
+contract fails closed for non-DC, non-voltage/current, malformed Request and
+non-didactic component inputs; it does not silently advertise AC/transient
+strategy choices.

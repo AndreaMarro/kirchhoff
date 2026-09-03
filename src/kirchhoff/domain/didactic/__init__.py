@@ -47,6 +47,7 @@ from .observation import (
     validate_observation_lineage,
 )
 from .plan import DidacticPlan, PlanReason, PlannedAction
+from .nodal_plan import build_nodal_actions
 from .planner import pianifica
 from .features import CircuitFeatures, extract_circuit_features
 from .candidates import StrategyCandidate, enumerate_strategy_candidates
@@ -90,6 +91,7 @@ __all__ = [
     "applica_passo",
     "apply_observation_effect",
     "build_linear_system",
+    "build_nodal_actions",
     "enumerate_strategy_candidates",
     "execute_plan",
     "extract_circuit_features",

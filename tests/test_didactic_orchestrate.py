@@ -300,9 +300,9 @@ def test_blocked_selezionato_dal_planner_e_violazione_interna(monkeypatch):
 @pytest.mark.parametrize(
     ("field", "replacement", "match"),
     (
-        ("successor_request", lambda out: Request("q_altro", out.successor_request.quantity, out.successor_request.target), "successor_request.id"),
+        ("successor_request", lambda out: Request("q0", out.successor_request.quantity, out.successor_request.target), "successor_request.id"),
         ("successor_request", lambda out: Request(out.successor_request.id, "voltage", out.successor_request.target), "successor_request.quantity"),
-        ("successor_request", lambda out: Request(out.successor_request.id, out.successor_request.quantity, "R3"), "successor_request.target"),
+        ("successor_request", lambda out: Request(out.successor_request.id, out.successor_request.quantity, "A"), "successor_request.target"),
         ("before", lambda out: out.after, "before non coincide"),
         ("after", lambda out: out.before, "non riduce"),
     ),
@@ -419,10 +419,10 @@ def test_il_risultato_ispezionabile_rifiuta_un_passo_non_transform_execution():
 @pytest.mark.parametrize(
     ("mutate", "match"),
     (
-        (lambda run: object.__setattr__(run.final_execution.execution.plan, "request_id", "q_altro"), "piano nodale"),
-        (lambda run: object.__setattr__(run.final_execution.execution.resolved, "request_id", "q_altro"), "quantita' risolta"),
-        (lambda run: object.__setattr__(run.final_execution.execution.resolved, "target", "I1"), "final_request.target"),
-        (lambda run: object.__setattr__(run.final_execution.execution.resolved, "quantity", "voltage"), "final_request.quantity"),
+        (lambda run: object.__setattr__(run.final_execution.execution.plan, "request_id", "q0"), "piano nodale"),
+        (lambda run: object.__setattr__(run.final_execution.execution.resolved, "request_id", "q0"), "quantita' risolta"),
+        (lambda run: object.__setattr__(run.final_execution.execution.resolved, "target", "z_target"), "final_request.target"),
+        (lambda run: object.__setattr__(run.final_execution.execution.resolved, "quantity", "amperes"), "final_request.quantity"),
     ),
 )
 def test_il_risultato_ispezionabile_valida_il_legame_finale_p1k(mutate, match):
@@ -566,11 +566,11 @@ def test_refusal_dell_esecutore_nodale_si_propaga(monkeypatch):
 @pytest.mark.parametrize(
     ("path", "value", "match"),
     (
-        ("observation.request_id", "q_altro", "observation.request_id"),
-        ("observation.quantity", "voltage", "observation.quantity"),
-        ("lineage.request_id", "q_altro", "lineage.request_id"),
-        ("lineage.quantity", "voltage", "lineage.quantity"),
-        ("lineage.target_before", "R3", "lineage.target_before"),
+        ("observation.request_id", "q0", "observation.request_id"),
+        ("observation.quantity", "amperes", "observation.quantity"),
+        ("lineage.request_id", "q0", "lineage.request_id"),
+        ("lineage.quantity", "amperes", "lineage.quantity"),
+        ("lineage.target_before", "A", "lineage.target_before"),
     ),
 )
 def test_guardie_lineage_rifiutano_i_campi_corotti(path, value, match):
@@ -583,6 +583,228 @@ def test_guardie_lineage_rifiutano_i_campi_corotti(path, value, match):
     with pytest.raises(ValueError, match=match):
         orchestrate._validate_transform_continuity(
             execution, run.initial_ir, run.original_request, 0)
+
+
+def test_guardia_successore_rifiuta_una_quantita_lessicograficamente_minore():
+    """Falsifica `!= -> >` senza costruire una Request non valida pubblicamente."""
+    run = _series_run()
+    execution = run.transform_executions[0]
+    assert execution.successor_request is not None
+    object.__setattr__(execution.successor_request, "quantity", "amperes")
+
+    with pytest.raises(ValueError, match="successor_request.quantity"):
+        orchestrate._validate_transform_continuity(
+            execution, run.initial_ir, run.original_request, 0)
+
+
+@pytest.mark.parametrize(
+    ("path", "value", "match"),
+    (
+        ("observation.request_id", "z", "observation.request_id"),
+        ("observation.target", "z", "observation.target"),
+        ("observation.quantity", "z", "observation.quantity"),
+        ("lineage.request_id", "z", "lineage.request_id"),
+        ("lineage.quantity", "z", "lineage.quantity"),
+        ("lineage.target_before", "z", "lineage.target_before"),
+        ("successor.id", "z", "successor_request.id"),
+        ("successor.target", "z", "successor_request.target"),
+    ),
+)
+def test_guardie_continuita_rifiutano_un_valore_lessicograficamente_maggiore(
+    monkeypatch, path, value, match,
+):
+    """Distingue `!=` da `<` senza affidarsi alle guardie successive."""
+    run = _series_run()
+    execution = run.transform_executions[0]
+    owner, field = path.split(".")
+    if owner == "observation":
+        subject = execution.observation
+    elif owner == "lineage":
+        subject = execution.request_lineage
+    else:
+        assert execution.successor_request is not None
+        subject = execution.successor_request
+    object.__setattr__(subject, field, value)
+    monkeypatch.setattr(orchestrate, "validate_observation_lineage", lambda *_: None)
+    monkeypatch.setattr(orchestrate, "execute_plan", lambda *_args, **_kwargs: execution)
+
+    with pytest.raises(ValueError, match=match):
+        orchestrate._validate_transform_continuity(
+            execution, run.initial_ir, run.original_request, 0)
+
+
+@pytest.mark.parametrize(
+    ("path", "value", "match"),
+    (
+        ("plan.request_id", "z", "piano nodale finale"),
+        ("resolved.request_id", "z", "quantita' risolta"),
+        ("resolved.target", "A", "Claim P1-K finale.*target"),
+        ("resolved.quantity", "z", "Claim P1-K finale.*quantity"),
+    ),
+)
+def test_run_rifiuta_campi_finali_non_uguali_anche_nella_direzione_opposta(
+    path, value, match,
+):
+    """Distingue i confronti finali `!=` dalle varianti `<` e `>`."""
+    run = _zero_run()
+    owner, field = path.split(".")
+    subject = run.final_execution.execution.plan if owner == "plan" else run.final_execution.execution.resolved
+    object.__setattr__(subject, field, value)
+
+    with pytest.raises(ValueError, match=match):
+        CertifiedDidacticRun(
+            run.initial_ir,
+            run.original_request,
+            run.transform_executions,
+            run.final_ir,
+            run.final_request,
+            run.final_execution,
+        )
+
+
+def test_binding_del_successore_richiede_uguaglianza_di_valore_non_identita():
+    """L'IR deserializzato puo' ricreare Request e stringhe uguali ma non identiche."""
+    run = _series_run()
+    successor = run.transform_executions[0].successor_request
+    assert successor is not None
+    copied = Request(
+        "".join((successor.id[:1], successor.id[1:])),
+        "".join((successor.quantity[:1], successor.quantity[1:])),
+        "".join((successor.target[:1], successor.target[1:])),
+    )
+    assert copied == successor and copied is not successor
+    assert copied.id == successor.id and copied.id is not successor.id
+    after = replace(run.transform_executions[0].after, requests=(copied,))
+
+    assert orchestrate._bind_successor_request(after, successor) is after
+
+
+def test_identity_accetta_un_successore_uguale_ma_non_identico():
+    """Distingue `!=` da `is not` per la Request identity P1-J."""
+    ir, request = _input(SERIE, "V1", "voltage")
+    run = orchestrate_didactic_run(ir, request, state_ids=_states(2))
+    assert isinstance(run, CertifiedDidacticRun)
+    step = run.transform_executions[0]
+    copied = Request(
+        "".join((request.id[:1], request.id[1:])),
+        "".join((request.quantity[:1], request.quantity[1:])),
+        "".join((request.target[:1], request.target[1:])),
+    )
+    assert copied == request and copied is not request
+    object.__setattr__(step, "successor_request", copied)
+
+    orchestrate._validate_transform_continuity(step, ir, request, 0)
+
+
+@pytest.mark.parametrize(
+    "path",
+    (
+        "observation.request_id",
+        "observation.target",
+        "observation.quantity",
+        "lineage.request_id",
+        "lineage.quantity",
+        "lineage.target_before",
+        "successor.id",
+        "successor.quantity",
+        "successor.target",
+    ),
+)
+def test_guardie_continuita_accettano_uguali_non_identici(path):
+    """Le guardie confrontano valore, non l'identita' dell'oggetto deserializzato."""
+    run = _series_run()
+    execution = run.transform_executions[0]
+    owner, field = path.split(".")
+    if owner == "observation":
+        subject = execution.observation
+    elif owner == "lineage":
+        subject = execution.request_lineage
+    else:
+        assert execution.successor_request is not None
+        subject = execution.successor_request
+    original = getattr(subject, field)
+    dynamic = "".join((original[:1], original[1:]))
+    assert dynamic == original and dynamic is not original
+    object.__setattr__(subject, field, dynamic)
+
+    orchestrate._validate_transform_continuity(
+        execution, run.initial_ir, run.original_request, 0)
+
+
+def test_request_binding_accetta_una_request_uguale_ma_non_identica_e_un_related_id_minore():
+    ir, request = _input(SERIE, "R1", "current")
+    equal_request = Request("".join(("q", "1")), "".join(("cur", "rent")), "R1")
+    assert equal_request == request and equal_request is not request
+    orchestrate._assert_request_bound(ir, equal_request)
+
+    lower = Request("q0", "voltage", "V1")
+    with_lower = replace(ir, requests=(request, lower))
+    orchestrate._assert_request_bound(with_lower, request)
+
+    run = _series_run()
+    step = run.transform_executions[0]
+    assert step.successor_request is not None
+    assert orchestrate._bind_successor_request(
+        replace(step.after, requests=(lower,)), step.successor_request).requests[-1] == step.successor_request
+
+
+def test_run_accetta_final_request_uguale_ma_non_identica():
+    run = _series_run()
+    same = Request(
+        "".join((run.final_request.id[:1], run.final_request.id[1:])),
+        "".join((run.final_request.quantity[:1], run.final_request.quantity[1:])),
+        "".join((run.final_request.target[:1], run.final_request.target[1:])),
+    )
+    assert same == run.final_request and same is not run.final_request
+
+    assert replace(run, final_request=same).final_request == same
+
+
+@pytest.mark.parametrize("field", ("request_id", "quantity"))
+def test_legame_nodale_finale_accetta_attributi_uguali_non_identici(field):
+    run = _zero_run()
+    execution = run.final_execution.execution
+    subject = execution.plan if field == "request_id" else execution.resolved
+    original = getattr(subject, field)
+    dynamic = "".join((original[:1], original[1:]))
+    assert dynamic == original and dynamic is not original
+    object.__setattr__(subject, field, dynamic)
+
+    assert CertifiedDidacticRun(
+        run.initial_ir,
+        run.original_request,
+        run.transform_executions,
+        run.final_ir,
+        run.final_request,
+        run.final_execution,
+    ).final_execution == run.final_execution
+
+
+def test_guardie_effect_kind_confrontano_contenuto_non_identita(monkeypatch):
+    run = _series_run()
+    step = run.transform_executions[0]
+    dynamic_blocked = "".join(("blo", "cked"))
+    blocked = step.observation_effect.__class__(dynamic_blocked, None, "sentinella")  # type: ignore[arg-type]
+    object.__setattr__(step, "observation_effect", blocked)
+    monkeypatch.setattr(orchestrate, "observation_effect", lambda *_: blocked)
+
+    with pytest.raises(RuntimeError, match="blocked"):
+        orchestrate._validate_transform_continuity(
+            step, run.initial_ir, run.original_request, 0)
+    monkeypatch.undo()
+
+    ir, request = _input(SERIE, "V1", "voltage")
+    identity = orchestrate_didactic_run(ir, request, state_ids=_states(2))
+    assert isinstance(identity, CertifiedDidacticRun)
+    identity_step = identity.transform_executions[0]
+    dynamic_identity = "".join(("iden", "tity"))
+    object.__setattr__(identity_step.observation_effect, "kind", dynamic_identity)
+    successor = Request(request.id, request.quantity, "A")
+    object.__setattr__(identity_step, "successor_request", successor)
+    object.__setattr__(identity_step.request_lineage, "target_after", successor.target)
+
+    with pytest.raises(ValueError, match="identity"):
+        orchestrate._validate_transform_continuity(identity_step, ir, request, 0)
 
 
 def test_guardia_continuita_rifiuta_un_oggetto_che_non_e_una_transform_execution():
@@ -599,7 +821,7 @@ def test_guardia_continuita_rifiuta_un_oggetto_che_non_e_una_transform_execution
         (lambda step: object.__setattr__(step, "plan", object()), "piano non DidacticPlan"),
         (lambda step: object.__setattr__(step.plan, "actions", ()), "un solo passo"),
         (lambda step: object.__setattr__(step, "results", ()), "risultato trasformativo"),
-        (lambda step: object.__setattr__(step.observation, "target", "R3"), "observation.target"),
+        (lambda step: object.__setattr__(step.observation, "target", "A"), "observation.target"),
     ),
 )
 def test_guardia_continuita_rifiuta_i_campi_strutturali_corotti(mutate, match):

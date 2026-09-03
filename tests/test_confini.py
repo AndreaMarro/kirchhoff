@@ -22,6 +22,7 @@ DIRECTORY_SPINE = ("domain", "ports", "adapters", "pipeline", "api", "render", "
 LAB_IMPORTS = frozenset({
     "hypothesis",
     "mutmut",
+    "cosmic_ray",
     "networkx",
     "lcapy",
     "sympy",
