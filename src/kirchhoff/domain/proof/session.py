@@ -32,14 +32,20 @@ from typing import Literal, Union
 
 from ..didactic.kinds import ANALYTICAL_KINDS, PLAN_SCHEMA_VERSION, PROFILE
 from ..didactic.observation import ObservationEffect, RequestLineageStep
+from ..didactic.request import ResolvedQuantity
 from ..identity import verifica
 from ..ir import Request
 from ..transform.catalog import CATALOG
-from ..truthfulness import Claim
+from ..truthfulness import VERIFIER_ID, VERIFIER_VERSION, Claim
 
 #: L'unica versione di schema che questo modello legge e scrive. Aggiungere
 #: una versione e' una migrazione con regole e review, non un'etichetta.
 SCHEMA_VERSION = "proof-session.v0.1"
+
+#: L'unico profilo documento che la pubblicazione v0.1 riconosce (D-H2.5-3).
+#: Chiuso come ogni pin semantico: un profilo arbitrario fallisce, non si
+#: dichiara. Un secondo profilo richiede una nuova versione di schema.
+DOCUMENT_PROFILE = "student-pdf.v0.1"
 
 #: Il genere dell'occurrence di sessione (D-H1.5-1). Nominato una volta: il
 #: vocabolario chiuso sta in `domain/identity`.
@@ -59,8 +65,9 @@ class SessionVersions:
     implementazione del planner, catalogo, layout o renderer, quindi lo schema
     non li nomina. `planner_schema_version` e `curriculum_profile` si
     confrontano per uguaglianza con l'autorita' (`didactic/kinds`), non per
-    forma. `document_profile` e' una dichiarazione del chiamante: verificata
-    non vuota, onesta proprio perche' non finge un'autorita' che non c'e'.
+    forma. D-H2.5-3: `document_profile` e' un token chiuso (`DOCUMENT_PROFILE`,
+    autorita' di questo modulo come `SCHEMA_VERSION`): un profilo arbitrario
+    fallisce perche' il documento prodotto dipende dal profilo.
     """
 
     planner_schema_version: str
@@ -76,17 +83,25 @@ class SessionVersions:
             raise ValueError(
                 f"curriculum_profile {self.curriculum_profile!r}: "
                 f"l'autorita' e' {PROFILE!r}")
-        if not isinstance(self.document_profile, str) or not self.document_profile.strip():
-            raise ValueError("document_profile vuoto o non testuale: dichiararlo, non inventarlo")
+        if self.document_profile != DOCUMENT_PROFILE:
+            raise ValueError(
+                f"document_profile {self.document_profile!r}: "
+                f"l'autorita' e' {DOCUMENT_PROFILE!r}")
 
 
 @dataclass(frozen=True, slots=True)
 class SessionProvenance:
-    """Provenienza strutturata, leggibile da una macchina (D-H1.5-3).
+    """Provenienza strutturata, leggibile da una macchina (D-H1.5-3, D-H2.5-4).
 
     `detail` resta per la diagnostica umana ma non e' mai l'unica provenienza:
     chi, da quale sorgente e sotto quale schema/profilo si leggono senza
     interpretare prosa.
+
+    D-H2.5-4: `source_sha` e' la revisione produttrice *dichiarata* dal
+    chiamante (forma SHA-40 esadecimale), non una revisione di checkout
+    verificata: il dominio puro non tocca Git e una regex non e' un'autorita'.
+    Legare questo campo ai metadati reali di build spetta alla radice di
+    composizione, non al modello.
     """
 
     producer: str
@@ -99,7 +114,7 @@ class SessionProvenance:
         if not isinstance(self.source_sha, str) or not _SHA.fullmatch(self.source_sha):
             raise ValueError(
                 f"source_sha {self.source_sha!r}: serve lo SHA-40 esadecimale "
-                "del checkout che ha prodotto la sessione")
+                "dichiarato dal produttore della sessione")
         if not isinstance(self.detail, str) or not self.detail.strip():
             raise ValueError("provenienza senza dettaglio esplicito")
 
@@ -217,6 +232,18 @@ class ProofSession:
     passo analitico e' ancorato allo stato operativo finale (l'esecuzione
     nodale corre sempre sullo stato terminale). Un interleaving arbitrario
     richiedera' una nuova versione di schema, non un flag.
+
+    D-H2.5-2: la sessione porta la soluzione finale per valore
+    (`final_solution: ResolvedQuantity`, certificato congelato come il Claim),
+    cosi' la risposta esatta e' raggiungibile senza la run viva. Il Claim resta
+    l'artefatto di verifica (chi/come ha certificato), la soluzione e'
+    l'artefatto di risposta (quanto vale): non sono la stessa cosa.
+
+    D-H2.5-7: `publication_status == VERIFIED` in v0.1 significa chiusura di
+    pubblicazione di backend (integrita' referenziale + Claim elettrico
+    autorevole). Non e' il badge prodotto owner-locked, che richiede anche la
+    chiusura visuale (K-0/AD-5, H5): lo schema non porta ProofGraph, layout o
+    view, quindi non puo' pretenderla.
     """
 
     session_id: str
@@ -230,6 +257,7 @@ class ProofSession:
     final_derivation_id: str
     final_request: Request
     final_state_ref: str
+    final_solution: ResolvedQuantity
     final_claim: Claim
     publication_status: PublicationStatus = "VERIFIED"
 
@@ -371,6 +399,32 @@ class ProofSession:
         if not isinstance(self.final_claim, Claim):
             raise TypeError(
                 f"final_claim {type(self.final_claim).__name__} invece di Claim")
+        if self.final_claim.verifier_id != VERIFIER_ID:
+            raise ValueError(
+                f"Claim con verifier_id {self.final_claim.verifier_id!r}: "
+                f"l'autorita' e' {VERIFIER_ID!r}")
+        if self.final_claim.verifier_version != VERIFIER_VERSION:
+            raise ValueError(
+                f"Claim con verifier_version {self.final_claim.verifier_version!r}: "
+                f"l'autorita' e' {VERIFIER_VERSION!r}")
+        if not isinstance(self.final_solution, ResolvedQuantity):
+            raise TypeError(
+                f"final_solution {type(self.final_solution).__name__} "
+                "invece di ResolvedQuantity")
+        if self.final_solution.derivation_id != self.final_derivation_id:
+            raise ValueError(
+                f"soluzione con derivation_id {self.final_solution.derivation_id!r} "
+                f"contro derivazione finale {self.final_derivation_id!r}")
+        if (self.final_solution.request_id != self.final_request.id
+                or self.final_solution.target != self.final_request.target
+                or self.final_solution.quantity != self.final_request.quantity):
+            raise ValueError(
+                f"soluzione su {(self.final_solution.request_id, self.final_solution.target, self.final_solution.quantity)}, "
+                f"la final_request e' {(self.final_request.id, self.final_request.target, self.final_request.quantity)}")
+        if self.final_solution.derivation_id not in self.final_claim.evidence_ids:
+            raise ValueError(
+                f"soluzione con derivation_id {self.final_solution.derivation_id!r} "
+                f"fuori dalle evidenze del Claim {self.final_claim.evidence_ids}")
         if self.final_claim.state_id != self.final_state_ref:
             raise ValueError(
                 f"Claim ancorato a {self.final_claim.state_id!r}, lo stato finale e' "
@@ -396,6 +450,7 @@ __all__ = [
     "ProofSession",
     "PublicationStatus",
     "SCHEMA_VERSION",
+    "DOCUMENT_PROFILE",
     "STATI_DI_PUBBLICAZIONE",
     "SessionProvenance",
     "SessionVersions",

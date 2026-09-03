@@ -107,6 +107,7 @@ def _kwargs(run: CertifiedDidacticRun, sid: str) -> dict:
         "final_derivation_id": nodale.derivation.identifier,
         "final_request": run.final_request,
         "final_state_ref": run.state_ids[-1],
+        "final_solution": nodale.resolved,
         "final_claim": run.final_execution.claim,
     }
 
@@ -200,7 +201,10 @@ def test_r4_final_ref_pendente_fallisce():
 
 
 def test_conteggio_stati_contro_run_fallisce():
-    from kirchhoff.domain.ir import Request
+    from fractions import Fraction
+
+    from kirchhoff.domain.didactic.request import ResolvedQuantity
+    from kirchhoff.domain.ir import Magnitude, Request
     from kirchhoff.domain.truthfulness import Claim
 
     run = _run_d1()
@@ -212,6 +216,9 @@ def test_conteggio_stati_contro_run_fallisce():
         original_request=domanda, initial_state_ref=rif, state_refs=(rif,),
         steps=(AnalyticalProofStep(0, rif, "write_kcl", "D0", "D1"),),
         final_derivation_id="D1", final_request=domanda, final_state_ref=rif,
+        final_solution=ResolvedQuantity(
+            "D1", "q9", "R1", "voltage", ("a", "b"),
+            Magnitude(Fraction(1), "volt")),
         final_claim=Claim(
             "resolved_quantity", rif, ("q9", "R1"), ("D1",),
             VERIFIER_ID, VERIFIER_VERSION))
@@ -232,10 +239,12 @@ def test_domanda_originale_di_un_altro_mondo_fallisce():
     pretesa_q7 = Claim(
         "resolved_quantity", sessione.final_state_ref, ("q7", "R1R2eq"),
         sessione.final_claim.evidence_ids, VERIFIER_ID, VERIFIER_VERSION)
+    soluzione_q7 = replace(sessione.final_solution, request_id="q7")
     altra_domanda = replace(
         sessione,
         original_request=domanda_q7, final_request=finale_q7,
-        steps=(passo_q7, *sessione.steps[1:]), final_claim=pretesa_q7)
+        steps=(passo_q7, *sessione.steps[1:]), final_claim=pretesa_q7,
+        final_solution=soluzione_q7)
     esito = validate_publication(altra_domanda, run, registro)
     assert isinstance(esito, Failure)
     assert "domanda originale della sessione non coincide con la run" in esito.messaggio
@@ -294,10 +303,13 @@ def test_r7_derivazione_inesistente_non_pubblica():
         sessione.steps[0],
         replace(sessione.steps[1], derivation_after="D9"),
     )
+    base = _kwargs(run, sessione.session_id)
     manomessa = ProofSession(**{
-        **_kwargs(run, sessione.session_id),
+        **base,
         "steps": passi,
         "final_derivation_id": "D9",
+        "final_solution": replace(
+            base["final_solution"], derivation_id="D9"),
         "final_claim": Claim(
             "resolved_quantity", sessione.final_state_ref,
             (sessione.final_request.id, sessione.final_request.target),

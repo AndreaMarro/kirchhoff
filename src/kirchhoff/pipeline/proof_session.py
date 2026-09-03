@@ -1,21 +1,29 @@
-"""Validatore di pubblicazione: dalla sessione all'evidenza autorevole (H1.5).
+"""Validatore di pubblicazione: dalla sessione all'evidenza autorevole (H1.5, H2.5).
 
-`validate_publication(sessione, run, registro)` prova che una `ProofSession`
-ben formata risolve ogni riferimento obbligatorio fino agli artefatti
-autoritativi vivi — la `CertifiedDidacticRun` e il `CircuitStateRegistry` —
-senza ricalcolare nulla:
+Due validatori, due confini di fiducia:
+
+- `validate_publication(sessione, run, registro)` e' il gate di composizione:
+  lega la sessione alla run viva. Su effetto, lineage e Claim pretende gli
+  *stessi oggetti* certificati (`is`): e' un sanity check in-process contro la
+  contraffazione al momento della composizione, non un'identita' durevole.
+- `validate_persisted_publication(sessione, registro)` e' il gate durevole:
+  dopo serialize -> exit -> deserialize non esiste piu' alcun `is`, quindi
+  valida per uguaglianza (`==`) e risoluzione dei ref nel registro, senza la
+  run viva. La soluzione finale e il Claim autorevole viaggiano per valore
+  nella sessione; gli stati circuitali si risolvono nel registro.
+
+Confine onesto (D-H2.5): il durevole prova coerenza della chiusura
+(sessione + registro), non corrispondenza a una run dimenticata. Dopo la
+persistenza la fiducia sta nella catena di integrita' (H3: hash e manifest),
+non nella RAM del processo che ha composto.
 
 - non pianifica, non esegue, non trasforma, non certifica, non renderizza;
-- non ricostruisce semantica: confronta identita' (`is`) dove la sessione
-  proietta per riferimento (precedente: i campi di `Justification` in
-  `render/step/schema.py` si confrontano con `is`, non con `==`) e uguaglianza
-  (`==`) dove cita valori;
 - ogni rottura diventa `Failure("publication", ...)`, mai `Refusal`: un legame
   corrotto e' un difetto applicativo, non un circuito fuori capability (AD-13);
 - nessuna `except` ampia: solo `KeyError` dei registri, con la causa
   conservata nel messaggio.
 
-Il compositore H2 restituira' direttamente l'esito di questa funzione: una
+Il compositore H2 restituisce direttamente l'esito del validatore live: una
 sessione che non si pubblica non e' una sessione quasi pronta.
 """
 
@@ -23,6 +31,7 @@ from __future__ import annotations
 
 from kirchhoff.domain.didactic.kinds import PLAN_SCHEMA_VERSION, PROFILE
 from kirchhoff.domain.didactic.orchestrate import CertifiedDidacticRun
+from kirchhoff.domain.identity import conia
 from kirchhoff.domain.proof.session import (
     SCHEMA_VERSION,
     AnalyticalProofStep,
@@ -140,6 +149,11 @@ def validate_publication(
     # Niente controllo separato su final_derivation_id: il modello lo inchioda
     # all'ultimo passo analitico, qui confrontato con l'esecuzione autorevole.
     # Guardia irraggiungibile (E-65).
+    if sessione.final_solution != nodale.resolved:
+        return Failure(
+            _DOVE,
+            "la soluzione finale della sessione non e' la quantita' risolta "
+            "dall'esecuzione nodale autorevole")
     if sessione.final_claim is not run.final_execution.claim:
         return Failure(
             _DOVE,
@@ -148,22 +162,71 @@ def validate_publication(
     return sessione
 
 
+def validate_persisted_publication(
+    sessione: ProofSession,
+    registro: CircuitStateRegistry,
+) -> ProofSession | Failure:
+    """La sessione persistita risolve ogni ref senza la run viva e senza `is`.
+
+    D-H2.5: dopo la persistenza gli oggetti certificati originali non esistono
+    piu'; la validazione confronta valori (`==`), non identita'. Prova che la
+    chiusura (sessione + registro) e' autosufficiente: ogni state ref si
+    risolve, il produttore e' il compositore autorevole, la soluzione finale e
+    il Claim viaggiano nella sessione sotto i pin del modello. La coerenza
+    interna (soluzione <-> final_request <-> Claim <-> derivazioni <->
+    pin del verificatore) e' garantita dal costruttore del modello a ogni
+    costruzione, quindi ricontrollarla qui sarebbe una guardia
+    irraggiungibile (E-65): qui non si ricontrolla.
+    """
+    if not isinstance(sessione, ProofSession):
+        return Failure(
+            _DOVE,
+            f"pubblicazione di {type(sessione).__name__} invece di ProofSession")
+    if not isinstance(registro, CircuitStateRegistry):
+        return Failure(
+            _DOVE,
+            f"pubblicazione con {type(registro).__name__} invece di CircuitStateRegistry")
+    if sessione.provenance.producer != COMPOSER_ID:
+        return Failure(
+            _DOVE,
+            f"produttore {sessione.provenance.producer!r} diverso dal "
+            f"compositore autorevole {COMPOSER_ID}")
+    for ref in sessione.state_refs:
+        try:
+            registro.resolve(StateRef(ref))
+        except KeyError as exc:
+            return Failure(
+                _DOVE, f"state ref {ref} senza legame nel registro: {exc}")
+    return sessione
+
+
 def compose_proof_session(
     run: CertifiedDidacticRun,
     registro: CircuitStateRegistry,
     *,
-    session_id: str,
+    session_instant_ms: int,
+    session_entropy: bytes,
     document_profile: str,
     source_sha: str,
     detail: str,
 ) -> ProofSession | Failure:
     """Dalla run certificata alla sessione pubblicabile: proiezione soltanto.
 
+    D-H2.5-5: il compositore e' l'unico writer che conia `sess_`
+    (ownership singola): `session_instant_ms` e `session_entropy` entrano iniettati
+    (AD-17, stessa disciplina di `ClockPort`) e l'identificatore nasce qui
+    dentro con `conia`. Il chiamante non fornisce mai un id gia' coniato:
+    a parita' di ingressi il conio e' riproducibile, a entropia fresca
+    l'occurrence e' nuova. La freschezza dell'entropia resta dovere del
+    chiamante (radice di composizione), come per ogni altro conio.
+
     Ogni oggetto certificato passa per riferimento, mai ricalcolato: le
-    operazioni, gli effetti, le lineage e il Claim sono gli stessi oggetti
-    della run (il validatore ne prova l'identita' con `is`). Gli unici valori
-    nuovi sono l'involucro di sessione e i pin dichiarati dal chiamante
-    (`document_profile`, `source_sha`, `detail`, `session_id` coniato fuori).
+    operazioni, gli effetti, le lineage, la soluzione risolta e il Claim sono
+    gli stessi oggetti della run (il validatore live ne prova l'identita' con
+    `is`, tranne la soluzione che lega per valore `==` come il percorso
+    durevole). Gli unici valori nuovi sono l'involucro di sessione,
+    l'identificatore coniato qui e i pin dichiarati dal chiamante
+    (`document_profile`, `source_sha`, `detail`).
 
     Chiamate vietate qui dentro (vedi anche il test bianco
     `test_compositore_non_ricalcola_semantica`): pianificare, eseguire,
@@ -172,20 +235,28 @@ def compose_proof_session(
     artefatto a monte: aggiungerlo li', non ricalcolarlo qui.
 
     Un `Refusal` (o qualunque non-run) in ingresso e' corruzione del chiamante
-    e diventa `Failure`: un rifiuto utente resta rifiuto, non si traveste da
-    sessione. Solo `TypeError`/`ValueError` del costruttore puro sono mappati,
-    con la causa conservata: nessun'altra chiamata qui puo' sollevare.
+    e diventa `Failure`: il compositore stretto non propaga Refusal, lo
+    respinge. La propagazione "un rifiuto utente resta rifiuto" vive al
+    confine di prodotto sopra di qui (orchestrare -> se Refusal restituirlo
+    senza mai chiamare il compositore). Solo `TypeError`/`ValueError` del
+    conio e del costruttore puro sono mappati, con la causa conservata:
+    nessun'altra chiamata qui puo' sollevare.
     """
     if not isinstance(run, CertifiedDidacticRun):
         return Failure(
             "compose",
             f"composizione di {type(run).__name__} invece di "
-            "CertifiedDidacticRun: un Refusal a monte resta Refusal")
+            "CertifiedDidacticRun: un Refusal a monte non si compone")
     if not isinstance(registro, CircuitStateRegistry):
         return Failure(
             "compose",
             f"composizione con {type(registro).__name__} invece di "
             "CircuitStateRegistry")
+    try:
+        session_id = conia("sess", session_instant_ms, session_entropy)
+    except (TypeError, ValueError) as exc:
+        return Failure(
+            "compose", f"identificatore di sessione non coniabile: {exc}")
     nodale = run.final_execution.execution
     passi = (
         *(TransformProofStep(
@@ -212,6 +283,7 @@ def compose_proof_session(
             final_derivation_id=nodale.derivation.identifier,
             final_request=run.final_request,
             final_state_ref=run.state_ids[-1],
+            final_solution=nodale.resolved,
             final_claim=run.final_execution.claim,
         )
     except (TypeError, ValueError) as exc:

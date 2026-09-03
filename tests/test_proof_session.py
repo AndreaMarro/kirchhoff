@@ -93,12 +93,18 @@ def _kwargs_d1() -> dict:
         "final_derivation_id": nodale.derivation.identifier,
         "final_request": run.final_request,
         "final_state_ref": run.state_ids[-1],
+        "final_solution": nodale.resolved,
         "final_claim": run.final_execution.claim,
     }
 
 
 def _kwargs_ponte() -> dict:
     """Sessione a zero trasformazioni (forma D7): un solo stato, solo analitica."""
+    from fractions import Fraction
+
+    from kirchhoff.domain.didactic.request import ResolvedQuantity
+    from kirchhoff.domain.ir import Magnitude
+
     rif = _stato(7)
     domanda = Request("q9", "voltage", "R1")
     return {
@@ -113,6 +119,9 @@ def _kwargs_ponte() -> dict:
         "final_derivation_id": "D1",
         "final_request": domanda,
         "final_state_ref": rif,
+        "final_solution": ResolvedQuantity(
+            "D1", "q9", "R1", "voltage", ("a", "b"),
+            Magnitude(Fraction(1), "volt")),
         "final_claim": Claim(
             "resolved_quantity", rif, ("q9", "R1"), ("D1",),
             VERIFIER_ID, VERIFIER_VERSION),
@@ -624,6 +633,17 @@ def test_evidenze_non_coincidenti_rifiutate():
         ProofSession(**{
             **kwargs,
             "final_claim": replace(kwargs["final_claim"], evidence_ids=("D1",))})
+
+
+def test_evidenze_riordinate_rifiutate():
+    # La soluzione (D2) e' fra le evidenze ma la tupla non coincide con la
+    # catena di derivazione: l'ordine delle evidenze e' vincolante, non decorativo.
+    kwargs = _kwargs_d1()
+    with pytest.raises(ValueError, match="evidenze"):
+        ProofSession(**{
+            **kwargs,
+            "final_claim": replace(
+                kwargs["final_claim"], evidence_ids=("D2", "D1"))})
 
 
 def test_publication_status_sconosciuto_rifiutato():

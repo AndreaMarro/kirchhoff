@@ -4,6 +4,9 @@ Il compositore proietta run certificata + registro autorevole in sessione e
 la pubblica tramite il validatore H1.5. Non pianifica, non esegue, non
 trasforma, non certifica, non renderizza: la prova e' anche bianca
 (`test_compositore_non_ricalcola_semantica`).
+
+H2.5: il compositore e' l'unico writer che conia `sess_` da istante ed
+entropia iniettati; il chiamante non fornisce mai un id gia' coniato.
 """
 
 from __future__ import annotations
@@ -55,8 +58,12 @@ def _stato(n: int) -> str:
     return conia("ir", 1700000000000 + n, bytes((n + 1,)) * 10)
 
 
-def _sessid(n: int) -> str:
-    return conia("sess", 1700000000000 + n, bytes((n + 101,)) * 10)
+def _istante(n: int) -> int:
+    return 1700000000000 + n
+
+
+def _entropia(n: int) -> bytes:
+    return bytes((n + 101,)) * 10
 
 
 def _run(netlist: str, offset: int = 0):
@@ -73,10 +80,11 @@ def _run_d1() -> CertifiedDidacticRun:
     return esito
 
 
-def _componi(run, sid: str):
+def _componi(run, n: int = 0):
     registro = componi_registro(run, refs_evidenza=(StateRef(_stato(9)),))
     return compose_proof_session(
-        run, registro, session_id=sid, document_profile="student-pdf.v0.1",
+        run, registro, session_instant_ms=_istante(n),
+        session_entropy=_entropia(n), document_profile="student-pdf.v0.1",
         source_sha=SHA_FIXTURE, detail="fixture H2"), registro
 
 
@@ -85,15 +93,17 @@ def _componi(run, sid: str):
 
 def test_d1_composta_e_pubblicata():
     run = _run_d1()
-    esito, _ = _componi(run, _sessid(0))
+    esito, _ = _componi(run, 0)
     assert isinstance(esito, ProofSession)
     assert esito.publication_status == "VERIFIED"
     assert esito.final_claim is run.final_execution.claim
+    assert esito.final_solution is run.final_execution.execution.resolved
+    assert esito.session_id == conia("sess", _istante(0), _entropia(0))
 
 
 def test_d1_e2e_riferimenti_risolti():
     run = _run_d1()
-    esito, registro = _componi(run, _sessid(0))
+    esito, registro = _componi(run, 0)
     assert isinstance(esito, ProofSession)
     assert registro.resolve(StateRef(esito.initial_state_ref)) == run.initial_ir
     assert registro.resolve(StateRef(esito.final_state_ref)) == run.final_ir
@@ -116,7 +126,7 @@ def test_d1_e2e_riferimenti_risolti():
 
 def test_d1_evidenza_after_letterale_conservata():
     run = _run_d1()
-    esito, registro = _componi(run, _sessid(0))
+    esito, registro = _componi(run, 0)
     assert isinstance(esito, ProofSession)
     esecuzione = run.transform_executions[0]
     assert registro.ref_for(esecuzione.after) is not None
@@ -127,7 +137,7 @@ def test_ponte_senza_trasformazioni_composto():
     esito_run = _run(PONTE)
     assert isinstance(esito_run, CertifiedDidacticRun)
     assert esito_run.transform_executions == ()
-    esito, registro = _componi(esito_run, _sessid(5))
+    esito, registro = _componi(esito_run, 5)
     assert isinstance(esito, ProofSession)
     assert len(esito.state_refs) == 1
     assert registro.resolve(StateRef(esito.final_state_ref)) == esito_run.final_ir
@@ -148,12 +158,17 @@ def test_compositore_non_ricalcola_semantica():
 # --- matrice Failure (punto 29) ------------------------------------------------------------------
 
 
-def test_rifiuto_a_monte_resta_rifiuto_e_non_diventa_sessione():
+def test_refusal_all_ingresso_e_corruzione_del_chiamante():
+    # Il compositore stretto non propaga Refusal: lo respinge come Failure.
+    # La propagazione "rifiuto resta rifiuto" vive al confine di prodotto
+    # (orchestrare -> se Refusal restituirlo senza comporre), provata in
+    # test_proof_durable_authority.py::test_j_confine_prodotto_rifiuto_resta_rifiuto.
     esito_run = _run(FUORI_CAPABILITY)
     assert isinstance(esito_run, Refusal)
     registro = componi_registro(_run_d1(), refs_evidenza=(StateRef(_stato(9)),))
     esito = compose_proof_session(
-        esito_run, registro, session_id=_sessid(0),
+        esito_run, registro, session_instant_ms=_istante(0),
+        session_entropy=_entropia(0),
         document_profile="student-pdf.v0.1", source_sha=SHA_FIXTURE,
         detail="refusal in ingresso")
     assert type(esito) is Failure
@@ -164,7 +179,8 @@ def test_run_di_tipo_sbagliato_fallisce():
     run = _run_d1()
     registro = componi_registro(run, refs_evidenza=(StateRef(_stato(9)),))
     esito = compose_proof_session(
-        "non-una-run", registro, session_id=_sessid(0),
+        "non-una-run", registro, session_instant_ms=_istante(0),
+        session_entropy=_entropia(0),
         document_profile="student-pdf.v0.1", source_sha=SHA_FIXTURE,
         detail="run sbagliata")
     assert type(esito) is Failure
@@ -172,7 +188,8 @@ def test_run_di_tipo_sbagliato_fallisce():
 
 def test_registro_di_tipo_sbagliato_fallisce():
     esito = compose_proof_session(
-        _run_d1(), "non-un-registro", session_id=_sessid(0),
+        _run_d1(), "non-un-registro", session_instant_ms=_istante(0),
+        session_entropy=_entropia(0),
         document_profile="student-pdf.v0.1", source_sha=SHA_FIXTURE,
         detail="registro sbagliato")
     assert type(esito) is Failure
@@ -182,7 +199,8 @@ def test_registro_vuoto_fallisce():
     from kirchhoff.pipeline.state_registry import CircuitStateRegistry
 
     esito = compose_proof_session(
-        _run_d1(), CircuitStateRegistry(), session_id=_sessid(0),
+        _run_d1(), CircuitStateRegistry(), session_instant_ms=_istante(0),
+        session_entropy=_entropia(0),
         document_profile="student-pdf.v0.1", source_sha=SHA_FIXTURE,
         detail="registro vuoto")
     assert isinstance(esito, Failure)
@@ -201,7 +219,8 @@ def test_registro_senza_evidenza_fallisce():
         for sid, stato in zip(run.state_ids,
                               (run.initial_ir, run.final_ir), strict=True)))
     esito = compose_proof_session(
-        run, senza_evidenza, session_id=_sessid(0),
+        run, senza_evidenza, session_instant_ms=_istante(0),
+        session_entropy=_entropia(0),
         document_profile="student-pdf.v0.1", source_sha=SHA_FIXTURE,
         detail="senza evidenza")
     assert isinstance(esito, Failure)
@@ -225,7 +244,8 @@ def test_registro_con_valori_diversi_fallisce():
         *evidenze,
     ))
     esito = compose_proof_session(
-        run, registrone, session_id=_sessid(0),
+        run, registrone, session_instant_ms=_istante(0),
+        session_entropy=_entropia(0),
         document_profile="student-pdf.v0.1", source_sha=SHA_FIXTURE,
         detail="valori diversi")
     assert isinstance(esito, Failure)
@@ -239,19 +259,30 @@ def test_registro_di_un_altra_run_fallisce():
     registro_altra = componi_registro(
         altra, refs_evidenza=(StateRef(_stato(29)),))
     esito = compose_proof_session(
-        run, registro_altra, session_id=_sessid(0),
+        run, registro_altra, session_instant_ms=_istante(0),
+        session_entropy=_entropia(0),
         document_profile="student-pdf.v0.1", source_sha=SHA_FIXTURE,
         detail="registro altrui")
     assert isinstance(esito, Failure)
 
 
-def test_session_id_malformato_fallisce():
+def test_conio_sessione_malformato_fallisce():
+    # H2.5: l'id non si inietta piu', si conia dentro. Istante/entropia
+    # malformati diventano Failure di composizione, mai eccezione.
     run = _run_d1()
     registro = componi_registro(run, refs_evidenza=(StateRef(_stato(9)),))
     esito = compose_proof_session(
-        run, registro, session_id="non-un-sess",
+        run, registro, session_instant_ms=-1,
+        session_entropy=_entropia(0),
         document_profile="student-pdf.v0.1", source_sha=SHA_FIXTURE,
-        detail="id malformato")
+        detail="istante malformato")
+    assert type(esito) is Failure
+    assert not isinstance(esito, (Refusal, ProofSession))
+    esito = compose_proof_session(
+        run, registro, session_instant_ms=_istante(0),
+        session_entropy=b"corta",
+        document_profile="student-pdf.v0.1", source_sha=SHA_FIXTURE,
+        detail="entropia malformata")
     assert type(esito) is Failure
     assert not isinstance(esito, (Refusal, ProofSession))
 
@@ -260,7 +291,8 @@ def test_document_profile_vuoto_fallisce():
     run = _run_d1()
     registro = componi_registro(run, refs_evidenza=(StateRef(_stato(9)),))
     esito = compose_proof_session(
-        run, registro, session_id=_sessid(0),
+        run, registro, session_instant_ms=_istante(0),
+        session_entropy=_entropia(0),
         document_profile="  ", source_sha=SHA_FIXTURE, detail="profilo vuoto")
     assert isinstance(esito, Failure)
 
@@ -269,7 +301,8 @@ def test_source_sha_malformato_fallisce():
     run = _run_d1()
     registro = componi_registro(run, refs_evidenza=(StateRef(_stato(9)),))
     esito = compose_proof_session(
-        run, registro, session_id=_sessid(0),
+        run, registro, session_instant_ms=_istante(0),
+        session_entropy=_entropia(0),
         document_profile="student-pdf.v0.1", source_sha="zzz",
         detail="sha malformato")
     assert isinstance(esito, Failure)
@@ -279,7 +312,8 @@ def test_detail_vuoto_fallisce():
     run = _run_d1()
     registro = componi_registro(run, refs_evidenza=(StateRef(_stato(9)),))
     esito = compose_proof_session(
-        run, registro, session_id=_sessid(0),
+        run, registro, session_instant_ms=_istante(0),
+        session_entropy=_entropia(0),
         document_profile="student-pdf.v0.1", source_sha=SHA_FIXTURE,
         detail="   ")
     assert isinstance(esito, Failure)
@@ -287,6 +321,6 @@ def test_detail_vuoto_fallisce():
 
 def test_produttore_della_sessione_composta_e_il_compositore():
     run = _run_d1()
-    esito, _ = _componi(run, _sessid(0))
+    esito, _ = _componi(run, 0)
     assert isinstance(esito, ProofSession)
     assert esito.provenance.producer == COMPOSER_ID
