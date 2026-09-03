@@ -1,0 +1,17 @@
+[
+  {"id":"voltage-positive","netlist":"V1 p 0 5 volt\nR1 p 0 10 ohm\n","target":"R1","quantity":"voltage","expected":"5"},
+  {"id":"voltage-reversed","netlist":"V1 0 p 5 volt\nR1 p 0 10 ohm\n","target":"R1","quantity":"voltage","expected":"-5"},
+  {"id":"current-positive","netlist":"I1 0 a 2 ampere\nR1 a 0 5 ohm\n","target":"I1","quantity":"current","expected":"2"},
+  {"id":"current-reversed","netlist":"I1 a 0 2 ampere\nR1 a 0 5 ohm\n","target":"I1","quantity":"current","expected":"2"},
+  {"id":"passive-current","netlist":"V1 p 0 12 volt\nR1 p 0 4 ohm\n","target":"R1","quantity":"current","expected":"3"},
+  {"id":"passive-voltage","netlist":"V1 p 0 12 volt\nR1 p 0 4 ohm\n","target":"R1","quantity":"voltage","expected":"12"},
+  {"id":"ground-lower","netlist":"V1 p 0 7 volt\nR1 p 0 3 ohm\n","target":"R1","quantity":"voltage","expected":"7"},
+  {"id":"ground-upper","netlist":"V1 0 p 7 volt\nR1 p 0 3 ohm\n","target":"R1","quantity":"voltage","expected":"-7"},
+  {"id":"floating-source","netlist":"V1 s 0 9 volt\nV2 a b 2 volt\nR1 s a 3 ohm\nR2 b 0 4 ohm\nR3 a 0 5 ohm\n","target":"R1","quantity":"voltage","expected":"213/47"},
+  {"id":"simple-supernode","netlist":"I1 0 a 1 ampere\nV1 a b 3 volt\nR1 a 0 2 ohm\nR2 b 0 4 ohm\n","target":"R1","quantity":"current","expected":"7/6"},
+  {"id":"zero-current","netlist":"V1 p 0 5 volt\nI1 0 a 0 ampere\nR1 p a 7/3 ohm\nR2 a 0 11/2 ohm\n","target":"R1","quantity":"current","expected":"30/47"},
+  {"id":"rational-resistance","netlist":"I1 0 a 3/5 ampere\nR1 a 0 7/3 ohm\n","target":"R1","quantity":"voltage","expected":"7/5"},
+  {"id":"high-low-ratio","netlist":"I1 0 a 1 ampere\nR1 a 0 1/1000 ohm\nR2 a 0 1000 ohm\n","target":"R1","quantity":"current","expected":"1000000/1000001"},
+  {"id":"parallel-path","netlist":"V1 s 0 10 volt\nR1 s a 2 ohm\nR2 s a 3 ohm\nR3 a 0 5 ohm\n","target":"R1","quantity":"voltage","expected":"60/31"},
+  {"id":"multiple-sources","netlist":"V1 s 0 10 volt\nI1 0 a 1/2 ampere\nI2 a 0 1/3 ampere\nR1 s a 4 ohm\nR2 a 0 6 ohm\n","target":"R1","quantity":"voltage","expected":"18/5"}
+]

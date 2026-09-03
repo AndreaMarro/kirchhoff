@@ -1,0 +1,1 @@
+"""Adapter esterni non autorevoli."""

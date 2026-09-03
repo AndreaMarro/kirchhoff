@@ -17,9 +17,10 @@
 - P1-K e' certificato e merged nel baseline
   `770e529fbd6d379b342b3d04ef126b20f1ea62e3`.
 
-## P1-L candidate
+## P1-L certified and merged
 
-- P1-L aggiunge l'orchestrazione deterministica di replan: il planner sceglie un
+- P1-L e' merged nel baseline certificato
+  `98f73f1184f34f50e030372efaa2b7d91e678cce`. Aggiunge l'orchestrazione deterministica di replan: il planner sceglie un
   piano al singolo stato, ogni trasformazione resta l'esecuzione di un solo piano
   fornito, e l'orchestratore ripianifica soltanto dopo il suo esito certificato.
 - La lineage autorevole della Request resta P1-J: id e quantity non cambiano, e
@@ -35,8 +36,15 @@
   coniare o registrare una falsa associazione oggetto↔identificatore. Solo il
   prefisso consumato entra nella trace; il chiamante puo' fornire un limite
   superiore strutturale.
-- P1-L resta candidate finche' la sua Pull Request non e' merged: il testo non
-  usa lo SHA del branch come prova di certificazione.
+- La prova di certificazione P1-L resta CI/storia Git, non lo SHA di un branch
+  candidato. P1-M0 puo' soltanto misurarne il comportamento e non lo modifica.
+
+## P1-M0 candidate
+
+- P1-M0 e' un laboratorio di ricerca in branch: esterni, grafi e renderer possono
+  contestare o misurare, ma non possono emettere Claim, VERIFIED o lineage.
+- Espone solo `CircuitFeatures` e `StrategyCandidate` puri e descrittivi; non
+  introduce `StrategyScore`, ranking di produzione o dipendenze runtime.
 
 ## Certificazione CI P1-J
 

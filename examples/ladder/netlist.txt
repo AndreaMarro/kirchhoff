@@ -1,0 +1,5 @@
+V1 d 0 12 volt
+R1 d c 10 ohm
+R2 c b 20 ohm
+R3 b 0 30 ohm
+? voltage R1

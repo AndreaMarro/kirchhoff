@@ -1,0 +1,48 @@
+name: research-lab
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "lab/**"
+      - "src/kirchhoff/domain/**"
+      - "scripts/check_boundaries.py"
+      - "tests/test_lab_*.py"
+      - "tests/strategies.py"
+      - "pyproject.toml"
+      - "uv.lock"
+  push:
+    paths:
+      - "lab/**"
+      - "src/kirchhoff/domain/**"
+      - "scripts/check_boundaries.py"
+      - "tests/test_lab_*.py"
+      - "tests/strategies.py"
+      - "pyproject.toml"
+      - "uv.lock"
+
+jobs:
+  external-oracles-and-renderer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install ngspice
+        run: sudo apt-get update && sudo apt-get install --yes ngspice
+      - name: Install pinned research environment
+        run: pip install -e ".[dev,research]"
+      - name: Run laboratory contracts, strategy, graph, renderer and differential corpus
+        run: pytest -o addopts= -q tests/test_lab_*.py
+      - name: Generate renderer comparison artifacts
+        run: python -c "from pathlib import Path; from lab.rendering.benchmark import run_renderer_benchmark; run_renderer_benchmark(Path('lab/rendering/artifacts'))"
+      - name: Archive renderer comparison artifacts
+        run: cd lab/rendering/artifacts && zip -r ../renderer-benchmark-artifacts.zip .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: renderer-benchmark-artifacts
+          path: lab/rendering/renderer-benchmark-artifacts.zip
+          if-no-files-found: error
+      - name: Confirm production remains outside laboratory imports
+        run: python scripts/check_boundaries.py

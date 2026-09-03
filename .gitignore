@@ -7,6 +7,11 @@ reference-set/
 .pytest_cache/
 .coverage
 coverage.json
+*.sqlite
+*.baseline.sqlite
+lab/rendering/artifacts/*.svg
+lab/rendering/artifacts/*.zip
+lab/mutation/artifacts/
 .DS_Store
 # database degli strumenti di agente, non sorgenti del progetto
 *.rvf

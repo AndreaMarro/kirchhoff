@@ -23,23 +23,46 @@ def _decimale(f: Fraction, cifre: int = 4) -> str:
 
 
 def _chromium() -> pathlib.Path | None:
-    base = pathlib.Path.home() / "Library/Caches/ms-playwright"
-    if not base.is_dir():
-        return None
-    for d in sorted(base.glob("chromium_headless_shell-*"), reverse=True):
-        for p in d.rglob("chrome-headless-shell"):
+    import os
+    import shutil
+    # 1. capability esplicita via env var
+    env = os.environ.get("KIRCHHOFF_CHROMIUM")
+    if env:
+        p = pathlib.Path(env)
+        if p.is_file():
             return p
+    # 2. PATH (chromium, google-chrome, chromium-browser)
+    for name in ("chromium", "chromium-browser", "google-chrome", "chrome-headless-shell"):
+        found = shutil.which(name)
+        if found:
+            return pathlib.Path(found)
+    # 3. playwright cache cross-platform
+    candidates = [
+        pathlib.Path.home() / "Library/Caches/ms-playwright",  # macOS
+        pathlib.Path.home() / ".cache/ms-playwright",  # Linux
+        pathlib.Path.home() / "AppData/Local/ms-playwright",  # Windows
+    ]
+    for base in candidates:
+        if not base.is_dir():
+            continue
+        for d in sorted(base.glob("chromium*"), reverse=True):
+            for p in d.rglob("chrome-headless-shell"):
+                if p.is_file():
+                    return p
+            for p in d.rglob("chrome"):
+                if p.is_file():
+                    return p
     return None
 
 
 def in_pdf(svg: str, dove: pathlib.Path) -> None:
-    """Stampa l'SVG in PDF con un browser già installato."""
+    """Stampa l'SVG in PDF con un browser già installato (capability esterna)."""
     chrome = _chromium()
     if chrome is None:
         raise RuntimeError(
-            "nessun chromium sul disco per stampare il PDF. Installalo con "
-            "`npx playwright install chromium-headless-shell`, oppure chiedi il "
-            "solo SVG: è il formato sorgente, il PDF ne è una copia.")
+            "nessun chromium trovato per il PDF. Imposta KIRCHHOFF_CHROMIUM=/percorso/chrome "
+            "oppure installa con `npx playwright install chromium-headless-shell`. "
+            "Il core resta SVG-only: il PDF è capability opzionale.")
     html = dove.with_suffix(".stampa.html")
     html.write_text(
         f'<!doctype html><style>@page{{margin:12mm}}'

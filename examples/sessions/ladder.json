@@ -1,0 +1,55 @@
+{
+  "session_id": "ir_078TJJH09G000G40R40M30E209",
+  "original_request": {
+    "id": "q1",
+    "quantity": "voltage",
+    "target": "R1"
+  },
+  "initial_state": "ir_078TJJH09G000G40R40M30E209",
+  "steps": [
+    {
+      "index": 0,
+      "technique": "serie",
+      "before": "ir_078TJJH09G000G40R40M30E209",
+      "after": "ir_078TJJH09G000G40R40M30E209",
+      "action": "serie R2,R3",
+      "equation": "R2R3eq = R2 + R3",
+      "why_legal": {
+        "terminali": [
+          "0",
+          "c"
+        ],
+        "precondizioni": [
+          "l'operazione nomina esattamente due componenti",
+          "i due componenti nominati esistono nel circuito",
+          "i due componenti sono entrambi resistori",
+          "i due componenti condividono esattamente un nodo",
+          "il nodo condiviso non e' il nodo di riferimento",
+          "al nodo condiviso non tocca un terzo componente",
+          "il circuito di partenza supera la validazione elettrica"
+        ],
+        "certificato": "serie"
+      },
+      "observation": {
+        "effect": "identity",
+        "derived_from": []
+      },
+      "lineage": {
+        "before": "R1",
+        "after": "R1",
+        "effect": "identity"
+      }
+    }
+  ],
+  "final": {
+    "state": "ir_078TJJH18R1M70Y40H289H858P",
+    "request": {
+      "id": "q1",
+      "quantity": "voltage",
+      "target": "R1"
+    },
+    "value": "2/1",
+    "unit": "volt",
+    "claim": "VERIFIED"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "session_id": "ir_078TJJH0NZ000G40R40M30E209",
+  "original_request": {
+    "id": "q1",
+    "quantity": "current",
+    "target": "R1"
+  },
+  "initial_state": "ir_078TJJH0NZ000G40R40M30E209",
+  "steps": [],
+  "final": {
+    "state": "ir_078TJJH0NZ000G40R40M30E209",
+    "request": {
+      "id": "q1",
+      "quantity": "current",
+      "target": "R1"
+    },
+    "value": "-53/90",
+    "unit": "ampere",
+    "claim": "VERIFIED"
+  }
+}

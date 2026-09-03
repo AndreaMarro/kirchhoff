@@ -479,6 +479,7 @@ def _corpo_generatore(s: Simbolo) -> list[str]:
 _CORPI: dict[str, Callable[[Simbolo], list[str]]] = {
     "resistor": _corpo_resistore,
     "voltage_source_dc": _corpo_generatore,
+    "current_source_dc": _corpo_generatore,
 }
 
 

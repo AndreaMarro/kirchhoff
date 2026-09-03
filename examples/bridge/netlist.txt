@@ -1,0 +1,7 @@
+V1 p 0 12 volt
+R1 p a 10 ohm
+R2 p b 20 ohm
+R3 a 0 30 ohm
+R4 b 0 40 ohm
+Rg a b 50 ohm
+? voltage Rg

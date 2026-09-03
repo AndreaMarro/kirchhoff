@@ -1,0 +1,6 @@
+V1 a 0 10 volt
+R1 a b 10 ohm
+R2 b 0 10 ohm
+V2 c 0 5 volt
+R3 c b 10 ohm
+? voltage R2

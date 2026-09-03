@@ -1,0 +1,26 @@
+name: mutation
+
+on:
+  workflow_dispatch:
+
+jobs:
+  cosmic-ray-checkpoint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned mutation environment
+        run: pip install -e ".[dev,research]"
+      - name: Execute Cosmic Ray semantic checkpoint
+        run: python lab/mutation/run_checkpoint.py --output lab/mutation/artifacts
+      - name: Preserve runner configuration with the session evidence
+        if: always()
+        run: cp lab/mutation/configs/*.toml lab/mutation/artifacts/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cosmic-ray-p1-m0
+          path: lab/mutation/artifacts/
+          if-no-files-found: error

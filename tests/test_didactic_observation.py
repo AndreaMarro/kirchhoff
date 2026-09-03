@@ -174,6 +174,86 @@ def test_piu_componenti_creati_fallisce_chiuso():
     assert effect.target_after is None
 
 
+def test_zero_componenti_creati_fallisce_chiuso():
+    """Il retarget richiede esattamente uno, non zero o uno."""
+    request = Request("q1", "current", "R1")
+    before, after, result = _outcome(PARTITORE, "serie", request)
+    object.__setattr__(result.layout_patch, "create", ())
+
+    effect = observation_effect(
+        before, after, result, "serie", ObservationContract.from_request(request))
+
+    assert effect.kind == "blocked"
+    assert effect.target_after is None
+
+
+def test_effetti_e_operazioni_uguali_non_dipendono_dall_identita_della_stringa():
+    """Le guardie semantiche confrontano contenuto, anche per input deserializzato."""
+    dynamic_blocked = "".join(("blo", "cked"))
+    dynamic_identity = "".join(("iden", "tity"))
+    dynamic_retarget = "".join(("re", "target"))
+    dynamic_series = "".join(("ser", "ie"))
+    dynamic_parallel = "".join(("par", "allelo"))
+    dynamic_current = "".join(("cur", "rent"))
+    dynamic_voltage = "".join(("volt", "age"))
+    literal_blocked, literal_identity, literal_series = "blocked", "identity", "serie"
+    assert dynamic_blocked == literal_blocked and dynamic_blocked is not literal_blocked
+    assert dynamic_identity == literal_identity and dynamic_identity is not literal_identity
+    assert dynamic_series == literal_series and dynamic_series is not literal_series
+    with pytest.raises(ValueError, match="target_after"):
+        ObservationEffect(dynamic_blocked, "R12eq", "x")  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="target_after"):
+        ObservationEffect(dynamic_identity, None, "x")  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="senza target_after"):
+        RequestLineageStep("q1", "current", "R1", None, "serie", dynamic_identity)  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="lineage blocked"):
+        RequestLineageStep("q1", "current", "R1", "R12eq", "serie", dynamic_blocked)  # type: ignore[arg-type]
+    assert RequestLineageStep(
+        "q1", "current", "R1", None, "serie", dynamic_blocked,  # type: ignore[arg-type]
+    ).effect == "blocked"
+
+    request = Request("q1", dynamic_current, "R1")  # type: ignore[arg-type]
+    before, after, result = _outcome(PARTITORE, "serie", request)
+    effect = observation_effect(
+        before, after, result, dynamic_series, ObservationContract.from_request(request))
+    assert effect.kind == "retarget"
+
+    parallel_request = Request("q2", dynamic_voltage, "R1")  # type: ignore[arg-type]
+    before_parallel, after_parallel, parallel_result = _outcome(
+        PARALLELO, "parallelo", parallel_request)
+    assert observation_effect(
+        before_parallel,
+        after_parallel,
+        parallel_result,
+        dynamic_parallel,
+        ObservationContract.from_request(parallel_request),
+    ).kind == "retarget"
+
+    identity_target = "".join(("V", "1"))
+    identity_request = Request("q3", "voltage", "V1")
+    identity_successor, _identity_lineage = apply_observation_effect(
+        identity_request,
+        ObservationEffect(dynamic_identity, identity_target, "identita' dinamica"),  # type: ignore[arg-type]
+        operation="serie",
+    )
+    assert identity_successor is identity_request
+    retarget_successor, _retarget_lineage = apply_observation_effect(
+        request,
+        ObservationEffect(dynamic_retarget, "R12eq", "retarget dinamico"),  # type: ignore[arg-type]
+        operation="serie",
+    )
+    assert retarget_successor == Request("q1", "current", "R12eq")
+    with pytest.raises(ValueError, match="diversa dal risultato"):
+        observation_effect(
+            before, after, result, "zz_operazione", ObservationContract.from_request(request))
+    with pytest.raises(ValueError, match="identity"):
+        apply_observation_effect(
+            identity_request,
+            ObservationEffect(dynamic_identity, "z_target", "target scorretto"),  # type: ignore[arg-type]
+            operation="serie",
+        )
+
+
 def test_authorita_fallisce_chiusa_su_input_o_provenienza_corotti():
     request = Request("q1", "current", "R1")
     before, after, result = _outcome(PARTITORE, "serie", request)

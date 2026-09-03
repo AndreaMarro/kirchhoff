@@ -108,3 +108,7 @@ def test_remaining_gate_paths(monkeypatch):
     object.__setattr__(claim, "claim_type", "resolved_quantity")
     object.__setattr__(claim, "state_id", "ir_other")
     with pytest.raises(ValueError): CertifiedNodalExecution(outcome, claim)
+    object.__setattr__(claim, "state_id", outcome.proof_node)
+    object.__setattr__(claim, "status", "FAILED")
+    with pytest.raises(ValueError, match="VERIFIED"):
+        CertifiedNodalExecution(outcome, claim)
