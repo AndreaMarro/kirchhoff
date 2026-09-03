@@ -25,6 +25,7 @@ Cause = Literal[
     "topology", "units", "unsolvable",
     "path_disagreement", "residual", "sanity",
     "identity_violation", "preserve_nonmaximal", "empty_boundary",
+    "claim_unsupported",
 ]
 
 SubjectKind = Literal["node", "component", "request", "operation"]
