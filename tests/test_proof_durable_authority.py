@@ -418,7 +418,10 @@ def test_k_ponte_zero_trasformazioni_valida_sul_durevole():
     assert validate_persisted_publication(copia, registro) is copia
 
 
-# --- validatore durevole: fallimenti chiusi -------------------------------------------def test_durevole_tipi_sbagliati_falliscono_chiusi():
+# --- validatore durevole: fallimenti chiusi -------------------------------------------
+
+
+def test_durevole_tipi_sbagliati_falliscono_chiusi():
     sessione, _, registro = _componi(_run_d1())
     assert type(validate_persisted_publication(
         "non-una-sessione", registro)) is Failure
