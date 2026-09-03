@@ -127,3 +127,50 @@ def test_refusal_first_class():
     result = build_session(ir, req, state_ids=state_ids, layouts=None)
     assert isinstance(result, Refusal)
     assert result.cause in ("unsolvable", "topology", "units")
+
+def test_layout_auto_generato_quando_non_fornito():
+    # Branch else: genera layout minimal quando layouts is None
+    ir0 = leggi("V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\n")
+    req = Request("q1", "voltage", "R2")
+    ir = replace(ir0, requests=(req,))
+    state_ids = _states(2, seed=999)
+    result = build_session(ir, req, state_ids=state_ids, layouts=None)
+    # con auto-layout deve comunque risolvere (0 step, ma DidacticSession)
+    assert isinstance(result, DidacticSession)
+    assert result.claim.status == "VERIFIED"
+
+def test_visual_fallito_ritorna_refusal(monkeypatch):
+    # Branch visual is Refusal -> return Refusal
+    ir0 = leggi("V1 d 0 12 volt\nR1 d c 10 ohm\nR2 c b 20 ohm\nR3 b 0 30 ohm\n")
+    req = Request("q1", "voltage", "R1")
+    ir = replace(ir0, requests=(req,))
+    state_ids = _states(4, seed=777)
+    lay = _layout_for(ir)
+    layouts = {state_ids[0]: lay}
+    import kirchhoff.pipeline.didactic_session as ds
+    orig_componi = ds.componi
+    def fake_componi(*a, **k):
+        from kirchhoff.domain.refusal import Refusal
+        return Refusal("topology", "x", "component", "fake visual fail")
+    monkeypatch.setattr(ds, "componi", fake_componi)
+    result = build_session(ir, req, state_ids=state_ids, layouts=layouts)
+    assert isinstance(result, Refusal)
+    assert "VisualStep fallito" in result.diagnosis
+
+def test_composizione_incompleta_ritorna_refusal(monkeypatch):
+    # Branch len(transforms)!=len(steps) -> Refusal (simulato con 1 transform ma visual fallito)
+    ir0 = leggi("V1 d 0 12 volt\nR1 d c 10 ohm\nR2 c b 20 ohm\nR3 b 0 30 ohm\n")
+    req = Request("q1", "voltage", "R1")
+    ir = replace(ir0, requests=(req,))
+    state_ids = _states(4, seed=888)
+    lay = _layout_for(ir)
+    layouts = {state_ids[0]: lay}
+    import kirchhoff.pipeline.didactic_session as ds
+    # Forza visual fallito per l'unico transform -> steps 0 vs transforms 1 -> incomplete
+    def fake_componi(*a, **k):
+        from kirchhoff.domain.refusal import Refusal
+        return Refusal("topology", "x", "component", "forced incomplete")
+    monkeypatch.setattr(ds, "componi", fake_componi)
+    result = build_session(ir, req, state_ids=state_ids, layouts=layouts)
+    assert isinstance(result, Refusal)
+    assert "VisualStep fallito" in result.diagnosis or "incompleta" in result.diagnosis

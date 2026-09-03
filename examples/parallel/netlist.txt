@@ -1,4 +1,6 @@
 V1 b 0 12 volt
-R1 b 0 100 ohm
-R2 b 0 300 ohm
+R1 b a 100 ohm
+R2 b a 300 ohm
+R3 a 0 330 ohm
+I1 0 a 1 ampere
 ? voltage R1
