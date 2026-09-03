@@ -372,6 +372,10 @@ def test_l_nessuna_ricomputazione():
     assert sorgente.count("orchestrate_didactic_run(") == 1
     assert sorgente.count("componi_registro(") == 1
     assert sorgente.count("compose_proof_session(") == 1
+    # sess_ resta coniato solo dal compositore; niente renderer qui dentro.
+    assert 'conia("sess"' not in sorgente
+    assert "from kirchhoff.render" not in sorgente
+    assert "import render" not in sorgente
 
 
 def test_l_validatore_durevole_mai_usato_live(monkeypatch):
