@@ -1,4 +1,4 @@
-V1 a 0 12 volt
-R1 a 0 100 ohm
-R2 a 0 220 ohm
+V1 b 0 12 volt
+R1 b 0 100 ohm
+R2 b 0 300 ohm
 ? voltage R1

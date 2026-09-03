@@ -1,0 +1,21 @@
+{
+  "session_id": "ir_078TJJH0TH000G40R40M30E209",
+  "original_request": {
+    "id": "q1",
+    "quantity": "voltage",
+    "target": "R2"
+  },
+  "initial_state": "ir_078TJJH0TH000G40R40M30E209",
+  "steps": [],
+  "final": {
+    "state": "ir_078TJJH0TH000G40R40M30E209",
+    "request": {
+      "id": "q1",
+      "quantity": "voltage",
+      "target": "R2"
+    },
+    "value": "33/4",
+    "unit": "volt",
+    "claim": "VERIFIED"
+  }
+}
