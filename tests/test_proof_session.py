@@ -359,7 +359,7 @@ def test_sessione_d1_valida():
     assert len(sessione.state_refs) == 2
     assert len(sessione.steps) == 3
     assert sessione.final_claim.status == "VERIFIED"
-    assert sessione.publication_status == "VERIFIED"
+    assert sessione.publication_status == "CLOSED"
     assert sessione.final_derivation_id == "D2"
     assert sessione.final_claim.evidence_ids == ("D1", "D2")
     topologici = [p for p in sessione.steps if isinstance(p, TransformProofStep)]

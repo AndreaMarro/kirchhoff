@@ -95,7 +95,7 @@ def test_d1_composta_e_pubblicata():
     run = _run_d1()
     esito, _ = _componi(run, 0)
     assert isinstance(esito, ProofSession)
-    assert esito.publication_status == "VERIFIED"
+    assert esito.publication_status == "CLOSED"
     assert esito.final_claim is run.final_execution.claim
     assert esito.final_solution is run.final_execution.execution.resolved
     assert esito.session_id == conia("sess", _istante(0), _entropia(0))
