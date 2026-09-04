@@ -58,23 +58,85 @@ Una PR può essere dichiarata `AI_REVIEW_GATE_PASSED` solo se TUTTI i requisiti 
 Ogni gate deve registrare almeno:
 
 ```text
-BASE_SHA=
-CANDIDATE_SHA=
-CI_RUN=
-CI_STATUS=
-REVIEWER_1_TOOL_MODEL=
-REVIEWER_1_VERDICT=
-REVIEWER_1_SHA=
-REVIEWER_2_TOOL_MODEL=
-REVIEWER_2_VERDICT=
-REVIEWER_2_SHA=
-FAULT_INJECTION=
-P0_OPEN=
-P1_OPEN=
-P2_ACCEPTED=
-THREADS_OPEN=
-FINAL_GATE=AI_REVIEW_GATE_PASSED|AI_REVIEW_GATE_FAILED
+AI_REVIEW_GATE_RECEIPT
+
+BASE_SHA=<sha>
+CANDIDATE_SHA=<sha>
+CI_STATUS=<SUCCESS|FAILURE>
+CI_RUN=<url-or-id>
+
+REVIEWER_1_TOOL_MODEL=<...>
+REVIEWER_1_DATE=<YYYY-MM-DD>
+REVIEWER_1_BASE_SHA=<sha>
+REVIEWER_1_CANDIDATE_SHA=<sha>
+REVIEWER_1_VERDICT=<APPROVE|REQUEST_CHANGES>
+REVIEWER_1_P0=<none|finding(s)>
+REVIEWER_1_P1=<none|finding(s)>
+REVIEWER_1_P2=<none|finding(s)>
+REVIEWER_1_P2_DISPOSITION=<NOT_APPLICABLE|FIXED_IN_CANDIDATE|ACCEPTED|DEFERRED|BLOCK>
+REVIEWER_1_P2_DESTINATION=<N/A|H3|H5|R1|R2|R3|PR...|issue...|decision record...>
+REVIEWER_1_P3=<none|finding(s)>
+REVIEWER_1_P3_DISPOSITION=<NOT_APPLICABLE|FIXED_IN_CANDIDATE|ACCEPTED|DEFERRED|BLOCK>
+REVIEWER_1_P3_DESTINATION=<N/A|H3|H5|R1|R2|R3|PR...|issue...|decision record...>
+REVIEWER_1_ADVERSARIAL_EVIDENCE=<...>
+REVIEWER_1_RESIDUAL_RISKS=<...>
+
+REVIEWER_2_TOOL_MODEL=<...>
+REVIEWER_2_DATE=<YYYY-MM-DD>
+REVIEWER_2_BASE_SHA=<sha>
+REVIEWER_2_CANDIDATE_SHA=<sha>
+REVIEWER_2_VERDICT=<APPROVE|REQUEST_CHANGES>
+REVIEWER_2_P0=<none|finding(s)>
+REVIEWER_2_P1=<none|finding(s)>
+REVIEWER_2_P2=<none|finding(s)>
+REVIEWER_2_P2_DISPOSITION=<NOT_APPLICABLE|FIXED_IN_CANDIDATE|ACCEPTED|DEFERRED|BLOCK>
+REVIEWER_2_P2_DESTINATION=<N/A|H3|H5|R1|R2|R3|PR...|issue...|decision record...>
+REVIEWER_2_P3=<none|finding(s)>
+REVIEWER_2_P3_DISPOSITION=<NOT_APPLICABLE|FIXED_IN_CANDIDATE|ACCEPTED|DEFERRED|BLOCK>
+REVIEWER_2_P3_DESTINATION=<N/A|H3|H5|R1|R2|R3|PR...|issue...|decision record...>
+REVIEWER_2_ADVERSARIAL_EVIDENCE=<...>
+REVIEWER_2_RESIDUAL_RISKS=<...>
+
+OPEN_P0=0
+OPEN_P1=0
+OPEN_BLOCKER_THREADS=0
+
+FINAL_GATE=<AI_REVIEW_GATE_PASSED|AI_REVIEW_GATE_FAILED>
 ```
+
+Vocabolario obbligatorio, distinto per ogni reviewer:
+
+- **classification** = quanto è grave il finding: `P0`, `P1`, `P2`, `P3`.
+  Ogni reviewer deve classificare esplicitamente P0, P1, P2 e P3
+  (valorizzare con `none` quando assenti, mai omettere la voce).
+- **disposition** = cosa si è deciso di farne:
+  `BLOCK`, `FIXED_IN_CANDIDATE`, `ACCEPTED`, `DEFERRED`, `NOT_APPLICABLE`.
+  Ogni P2 e ogni P3 non-`none` deve avere una disposition esplicita;
+  quando P2/P3 è `none`, la disposition è `NOT_APPLICABLE`.
+- **destination** = dove viene chiuso il finding differito
+  (es. `H3`, `H5`, `R1`, `R2`, `R3`, `PR #10`, `PR #11`,
+  `issue <id>`, `decision record <path>`).
+  È obbligatoria quando la disposition è `DEFERRED`;
+  quando la disposition non è `DEFERRED`, la destination è `N/A`.
+
+Regole di completezza (normative):
+
+- A deferred P2/P3 finding without an explicit destination is an incomplete
+  receipt and cannot contribute to AI_REVIEW_GATE_PASSED.
+- Missing mandatory receipt metadata => gate remains NOT_SATISFIED.
+  In particolare, un receipt senza reviewer date per ciascun reviewer,
+  senza classificazione esplicita di P2/P3, o senza disposition/destination
+  esplicite di P2/P3, non può supportare `AI_REVIEW_GATE_PASSED`.
+
+Chiarimento non-blocker (nessun indebolimento di P0/P1):
+
+- Un P2 correttamente classificato con disposition `FIXED_IN_CANDIDATE`,
+  `ACCEPTED`, oppure `DEFERRED` con destination esplicita, è compatibile
+  con `AI_REVIEW_GATE_PASSED` quando P0/P1 aperti sono zero e tutti gli
+  altri requisiti del gate sono soddisfatti.
+- Un finding P0/P1 non può essere sbloccato con `DEFERRED` ai fini del gate:
+  resta blocker fino a `FIXED_IN_CANDIDATE` (o riclassificazione motivata
+  con tie-breaker secondo §6 dei requisiti).
 
 ## Politica specifica per Codex
 
