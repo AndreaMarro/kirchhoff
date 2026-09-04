@@ -166,17 +166,19 @@ def validate_persisted_publication(
     sessione: ProofSession,
     registro: CircuitStateRegistry,
 ) -> ProofSession | Failure:
-    """La sessione persistita risolve ogni ref senza la run viva e senza `is`.
+    """Valida la chiusura strutturale e referenziale senza la run viva.
 
     D-H2.5: dopo la persistenza gli oggetti certificati originali non esistono
-    piu'; la validazione confronta valori (`==`), non identita'. Prova che la
-    chiusura (sessione + registro) e' autosufficiente: ogni state ref si
-    risolve, il produttore e' il compositore autorevole, la soluzione finale e
-    il Claim viaggiano nella sessione sotto i pin del modello. La coerenza
-    interna (soluzione <-> final_request <-> Claim <-> derivazioni <->
-    pin del verificatore) e' garantita dal costruttore del modello a ogni
-    costruzione, quindi ricontrollarla qui sarebbe una guardia
-    irraggiungibile (E-65): qui non si ricontrolla.
+    piu'; questo gate opera sui valori e sulla risoluzione dei riferimenti,
+    non sull'identita' degli oggetti. Verifica che ogni state ref si risolva
+    e che la sessione dichiari il compositore autorevole come produttore. Le
+    invarianti interne della `ProofSession` restano responsabilita' del
+    costruttore del modello a ogni costruzione e non vengono duplicate qui.
+
+    Questo validator NON attesta l'integrita' del payload persistito ne'
+    l'autenticita' storica della run. In particolare, da solo non puo'
+    rilevare una manomissione isolata di `final_solution.amount`.
+    L'integrita' dei byte canonici appartiene al gate H3.
     """
     if not isinstance(sessione, ProofSession):
         return Failure(
