@@ -19,6 +19,11 @@ jobs:
       # Ambiente bloccato da uv.lock (decisione O0): riproducibilita'
       # contro `pip install -e .[dev]` che risolve le versioni newest.
       - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          # Toolchain pinnata e verificata (tag upstream 0.11.8): senza pin
+          # setup-uv risolve "latest" via rete a ogni run (fragile e non
+          # riproducibile; osservato fetch failed su manifest versioni).
+          version: "0.11.8"
       - name: Sync frozen environment
         run: uv sync --frozen --extra dev
       - name: Build reference-set
