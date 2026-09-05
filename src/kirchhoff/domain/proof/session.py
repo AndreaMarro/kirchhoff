@@ -43,7 +43,7 @@ from ..truthfulness import VERIFIER_ID, VERIFIER_VERSION, Claim
 #: v0.2 (O0): la chiusura di backend non si chiama piu' VERIFIED.
 SCHEMA_VERSION = "proof-session.v0.2"
 
-#: L'unico profilo documento che la pubblicazione v0.1 riconosce (D-H2.5-3).
+#: L'unico profilo documento che lo schema/pubblicazione v0.2 riconosce (D-H2.5-3).
 #: Chiuso come ogni pin semantico: un profilo arbitrario fallisce, non si
 #: dichiara. Un secondo profilo richiede una nuova versione di schema.
 DOCUMENT_PROFILE = "student-pdf.v0.1"
@@ -229,7 +229,7 @@ PassoDiProva = Union[TransformProofStep, AnalyticalProofStep]
 class ProofSession:
     """Una run certificata, pubblicata come proiezione congelata e tipizzata.
 
-    Schema v0.1: prima tutti i passi topologici, poi quelli analitici, e ogni
+    Schema v0.2: prima tutti i passi topologici, poi quelli analitici, e ogni
     passo analitico e' ancorato allo stato operativo finale (l'esecuzione
     nodale corre sempre sullo stato terminale). Un interleaving arbitrario
     richiedera' una nuova versione di schema, non un flag.
@@ -331,7 +331,7 @@ class ProofSession:
                 if vista_analitica:
                     raise ValueError(
                         f"passo topologico {passo.index} dopo un passo analitico: "
-                        "lo schema v0.1 ordina prima le trasformazioni, poi l'analitica")
+                        "lo schema v0.2 ordina prima le trasformazioni, poi l'analitica")
                 trasformazioni.append(passo)
             else:
                 vista_analitica = True
@@ -393,7 +393,7 @@ class ProofSession:
             if passo.state_ref != self.final_state_ref:
                 raise ValueError(
                     f"passo analitico {passo.index} su {passo.state_ref}: lo schema "
-                    "v0.1 ancora ogni passo analitico allo stato operativo finale")
+                    "v0.2 ancora ogni passo analitico allo stato operativo finale")
         if analitici[-1].derivation_after != self.final_derivation_id:
             raise ValueError(
                 f"derivazione finale {self.final_derivation_id!r} contro ultimo passo "

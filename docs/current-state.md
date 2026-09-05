@@ -57,12 +57,14 @@
 - Adapter di percezione con validazione e conferma utente.
 - Percorsi di prodotto AC e transitori.
 
-## Proof Demo 0.1 (branch `work/proof-demo-0.1`, PR #8 DRAFT + O0 governance)
+## Proof Demo / O0 governance
 
-Stato corrente (O0, vedi decisione `2026-09-03-proofsession-backend-closure.md`):
+Stato corrente post-merge (O0, vedi decisione
+`2026-09-03-proofsession-backend-closure.md`):
 
-- Base: `main@de6bb6c` (merge PR #9 P1-L). Backend congelato `aff2409`
-  (H2.5); convergenza O0 su `work/proof-demo-o0-governance` (questo stato).
+- H2.5 / PR #8 e' merged in `main` tramite merge commit
+  `26bc00b0ca2ae2d04a53bc0cab6ece87deb03663`. O0 / PR #10 e' il gate
+  corrente su `work/proof-demo-o0-governance`.
 - `CertifiedDidacticRun` resta l'autorita' didattica; `ProofSession`
   (`domain/proof/session.py`, schema `proof-session.v0.2`) e' la proiezione
   prodotto per riferimento: niente `Any`/dict, niente solve downstream.
@@ -83,12 +85,13 @@ Stato corrente (O0, vedi decisione `2026-09-03-proofsession-backend-closure.md`)
 - Discrepanza metriche chiusa: locale 1732 vs remoto 1730+2 skip = due skip
   condizionali d'ambiente (path plugin BMAD, chromium solo-macOS), nessuna
   differenza di sorgente (decisione O0 §3).
-- Aperti registrati: verita' semantica visuale singola (`componi` riesegue
-  `transform`, H5); application service mancante; `__post_init__` da
-  scomporre (45 stmt); fixture triplicate; contesto AGENTS gestito stale
-  (repo PUBLIC non privato, sette prefissi); D2-D8; wire canonico; manifest.
-- PR #8 resta DRAFT, nessun merge; review indipendente NOT SATISFIED;
-  CodeRabbit skipped su draft.
+- Aperti registrati: integrita' H3; verita' semantica visuale singola
+  (`componi` riesegue `transform`, H5); `__post_init__` da scomporre (45
+  stmt); fixture triplicate; contesto AGENTS gestito stale (repo PUBLIC non
+  privato, sette prefissi); D2-D8; wire canonico; manifest.
+- H2.75 / PR #11 (`work/proof-demo-application-boundary`) e' stacked sopra
+  O0 e resta DRAFT. `Product Verified` resta riservato ai gate prodotto
+  successivi, inclusa la chiusura visuale H5.
 
 ## P1-K (STORICO)
 
