@@ -1,5 +1,19 @@
 # Decision record — ProofSession: occurrence identity vs contenuto semantico
 
+> **Nota di supersessione parziale — O0**
+>
+> Questo record conserva la decisione su determinismo/identità nel suo contesto
+> storico pre-O0. Eventuali riferimenti seguenti al vecchio schema ProofSession
+> o alla terminologia di sessione `VERIFIED` sono storici, non autorità corrente.
+> Solo la nomenclatura di schema/status di sessione è superata in parte; il resto
+> (occurrence identity, semantic content identity, replay identity) rimane storia
+> decisionale valida.
+>
+> Autorità corrente per nomenclatura/schema:
+> `2026-09-03-proofsession-backend-closure.md`. La chiusura backend corrente è
+> `proof-session.v0.2` + `ProofSession.publication_status = CLOSED`; la verifica
+> elettrica resta `Claim.status = VERIFIED`.
+
 Data: 2026-09-04. Sessione H0, branch `work/proof-demo-0.1`, base `main@de6bb6c`.
 
 ## Tensione
