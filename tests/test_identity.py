@@ -29,10 +29,19 @@ ENTROPIA = bytes(range(10))
 
 # --- il vocabolario ----------------------------------------------------------
 
-def test_i_generi_sono_i_sei_delle_convenzioni():
+def test_i_generi_sono_i_sette_delle_convenzioni():
     """`Consistency Conventions`: `ir_`, `sol_`, `var_`, `evt_`, e dalla v2.1
-    `lay_` e `patch_`."""
-    assert GENERI == {"ir", "sol", "var", "evt", "lay", "patch"}
+    `lay_` e `patch_`; dalla Proof Demo 0.1 (D-H1.5-1) `sess_` per l'occurrence
+    della `ProofSession` pubblicata. Estensione deliberata, non deriva."""
+    assert GENERI == {"ir", "sol", "var", "evt", "lay", "patch", "sess"}
+
+
+def test_sess_conia_e_verifica_un_ulid_di_occurrence():
+    valore = conia("sess", 1_700_000_000_000, ENTROPIA)
+    assert valore.startswith("sess_")
+    assert verifica(valore, "sess") == valore
+    with pytest.raises(ValueError, match="sess"):
+        verifica(valore, "ir")
 
 
 def test_i_generi_sono_derivati_dal_literal_e_non_riscritti():
