@@ -91,7 +91,7 @@ def main(argv: list[str] | None = None) -> int:
     for c in sorted(circuito.components, key=lambda c: c.id):
         v = esito.soluzione.get(c.id, {})
         tensione, corrente = v.get("voltage"), v.get("current")
-        if tensione is None or not isinstance(tensione, Fraction):
+        if not isinstance(tensione, Fraction) or not isinstance(corrente, Fraction):
             continue
         print(f"  {c.id:<{largo}}  V = {str(tensione):>10}  = {_decimale(tensione):>9} V"
               f"   I = {str(corrente):>10}  = {_decimale(corrente):>9} A")

@@ -6,7 +6,7 @@ from kirchhoff.domain.didactic import NodalExecution, TransformExecution, execut
 from kirchhoff.domain.identity import conia
 from kirchhoff.domain.ir import Component, IR, Magnitude, Request
 from kirchhoff.domain.refusal import Refusal
-from kirchhoff.domain.truthfulness import CertifiedNodalExecution, certify_execution, execute_certified_plan, truthfulness_gate
+from kirchhoff.domain.truthfulness import CertifiedNodalExecution, Claim, certify_execution, execute_certified_plan, truthfulness_gate
 from kirchhoff.pipeline.netlist import leggi
 
 F = Fraction
@@ -73,7 +73,10 @@ def test_unsupported():
     assert isinstance(transformed,TransformExecution)
     assert truthfulness_gate(ir,request,transformed).cause == "claim_unsupported"
     ir,request,outcome = fixture()
-    assert truthfulness_gate(replace(ir,domain="dc_resistive"),request,outcome).cause == "claim_unsupported"
+    resistiva = truthfulness_gate(replace(ir,domain="dc_resistive"),request,outcome)
+    assert isinstance(resistiva, Claim) and resistiva.status == "VERIFIED"
+    transiente = truthfulness_gate(replace(ir,domain="transient"),request,outcome)
+    assert transiente.cause == "claim_unsupported"
     assert truthfulness_gate(ir,Request("q1","time_constant","R1"),outcome).cause == "claim_unsupported"
 
 

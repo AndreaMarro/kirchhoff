@@ -39,12 +39,11 @@ def test_domain_banana_con_circuiti_dc_non_e_solved():
         "1.0.0", "banana", "generated", ("0", "A"),
         (Component.of("E1", "voltage_source_dc", ("A", "0"), F(10), "E_1"),
          Component.of("R1", "resistor", ("A", "0"), F(10), "R_1")),
-        ())
+        (Request("q1", "voltage", "R1"),))
     esito = resolve(ir)
     assert not isinstance(esito, Solved)
     assert isinstance(esito, Refusal)
-    assert esito.subject == "banana"
-    assert esito.subject_kind == "operation"
+    assert esito.cause == "unsolvable"
 
 
 def test_dc_request_voltage_e_solved():
@@ -67,10 +66,11 @@ def test_dc_request_time_constant_e_refusal():
     assert "time_constant" in esito.diagnosis
 
 
-def test_phasor_request_supportata_e_solved():
+def test_phasor_request_e_rifiuto_sul_percorso_certificato():
     esito = resolve(_ac((Request("q1", "voltage", "R1"),)))
-    assert isinstance(esito, Solved)
-    assert esito.solver == "phasor"
+    assert isinstance(esito, Refusal)
+    assert esito.cause == "unsolvable"
+    assert not isinstance(esito, Solved)
 
 
 def test_quantity_non_supportata_e_refusal():
@@ -85,31 +85,20 @@ def test_solver_senza_la_quantity_richiesta_non_e_solved(monkeypatch):
     esito = resolve(_dc((Request("q1", "current", "R1"),)))
     assert not isinstance(esito, Solved)
     assert isinstance(esito, Refusal)
-    assert esito.subject == "q1"
+    assert esito.cause == "path_disagreement"
 
 
-def test_ac_non_attesta_bilancio_di_potenza():
-    esito = resolve(_ac())
-    assert isinstance(esito, Solved)
-    assert "bilancio di potenza" not in esito.verifiche
-    assert "identità di Tellegen" in esito.verifiche
-
-
-def test_dc_attesta_bilancio_di_potenza():
-    esito = resolve(_dc())
-    assert isinstance(esito, Solved)
-    assert "bilancio di potenza" in esito.verifiche
-
-
-def test_tellegen_falso_in_ac_nomina_tellegen_non_la_potenza(monkeypatch):
-    import kirchhoff.domain.verify as ver
-    monkeypatch.setattr(ver, "kcl_residuals", lambda ir, sol: {})
-    monkeypatch.setattr(ver, "kvl_residuals", lambda ir, sol: {})
-    monkeypatch.setattr(ver, "power_balance", lambda ir, sol: F(1))
-    esito = resolve(_ac())
+def test_ac_rifiuta_senza_attestazioni():
+    esito = resolve(_ac((Request("q1", "voltage", "R1"),)))
     assert isinstance(esito, Refusal)
-    assert "Tellegen" in esito.diagnosis
-    assert "bilancio di potenza" not in esito.diagnosis
+    assert esito.cause == "unsolvable"
+
+
+def test_dc_attesta_claim_e_sessione():
+    from kirchhoff.pipeline.resolve import VERIFICHE
+    esito = resolve(_dc((Request("q1", "voltage", "R1"),)))
+    assert isinstance(esito, Solved)
+    assert esito.verifiche == VERIFICHE
 
 
 def test_singolarita_tipizzata_e_refusal(monkeypatch):
@@ -117,16 +106,16 @@ def test_singolarita_tipizzata_e_refusal(monkeypatch):
     monkeypatch.setattr(
         mna, "solve_dc",
         lambda ir: (_ for _ in ()).throw(SingularSystemError("sistema singolare alla colonna 0")))
-    esito = resolve(leggi(PARTITORE))
+    esito = resolve(leggi(PARTITORE + '? voltage R2\n'))
     assert isinstance(esito, Refusal)
 
 
 def test_valueerror_generico_solver_e_failure(monkeypatch):
     import kirchhoff.domain.mna as mna
     monkeypatch.setattr(mna, "solve_dc", lambda ir: (_ for _ in ()).throw(ValueError("indice fuori scala")))
-    esito = resolve(leggi(PARTITORE))
+    esito = resolve(leggi(PARTITORE + '? voltage R2\n'))
     assert isinstance(esito, Failure)
-    assert esito.dove == "solver"
+    assert esito.dove == "orchestrate"
 
 
 def test_valueerror_con_testo_singolare_non_e_refusal(monkeypatch):
@@ -135,23 +124,23 @@ def test_valueerror_con_testo_singolare_non_e_refusal(monkeypatch):
     monkeypatch.setattr(
         mna, "solve_dc",
         lambda ir: (_ for _ in ()).throw(ValueError("sistema singolare alla colonna 0")))
-    esito = resolve(leggi(PARTITORE))
+    esito = resolve(leggi(PARTITORE + '? voltage R2\n'))
     assert isinstance(esito, Failure)
-    assert esito.dove == "solver"
+    assert esito.dove == "orchestrate"
 
 
 def test_keyerror_solver_e_failure(monkeypatch):
     import kirchhoff.domain.mna as mna
     monkeypatch.setattr(mna, "solve_dc", lambda ir: (_ for _ in ()).throw(KeyError("nodo")))
-    esito = resolve(leggi(PARTITORE))
+    esito = resolve(leggi(PARTITORE + '? voltage R2\n'))
     assert isinstance(esito, Failure)
-    assert esito.dove == "solver"
+    assert esito.dove == "resolve"
 
 
 def test_zerodivisionerror_inatteso_e_failure(monkeypatch):
     import kirchhoff.domain.mna as mna
     monkeypatch.setattr(mna, "solve_dc", lambda ir: (_ for _ in ()).throw(ZeroDivisionError("x")))
-    esito = resolve(leggi(PARTITORE))
+    esito = resolve(leggi(PARTITORE + '? voltage R2\n'))
     assert isinstance(esito, Failure)
     assert "ZeroDivisionError" in esito.messaggio
 
@@ -193,22 +182,19 @@ def test_solve_linear_solleva_singular_system_error():
         solve_linear([[F(1), F(2)], [F(2), F(4)]], [F(1), F(2)])
 
 
-def test_ac_valido_e_solved_non_failure():
+def test_ac_valido_e_rifiuto_non_failure():
     esito = resolve(_ac())
-    assert isinstance(esito, Solved)
+    assert isinstance(esito, Refusal)
     assert not isinstance(esito, Failure)
-    assert esito.solver == "phasor"
 
 
-def test_ac_solved_puo_avere_svg_assente():
+def test_ac_rifiutato_prima_del_disegno():
     esito = resolve(_ac())
-    assert isinstance(esito, Solved)
-    assert esito.svg is None
-    assert not renderer_supports(_ac())
+    assert isinstance(esito, Refusal)
 
 
 def test_dc_con_tipi_supportati_produce_svg():
-    esito = resolve(_dc())
+    esito = resolve(_dc((Request("q1", "voltage", "R1"),)))
     assert isinstance(esito, Solved)
     assert esito.svg is not None and esito.svg.startswith("<svg")
     assert renderer_supports(_dc())
@@ -216,7 +202,8 @@ def test_dc_con_tipi_supportati_produce_svg():
 
 def test_multimaglia_senza_autolayout_resta_solved_numerico():
     esito = resolve(leggi(
-        "V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\nR3 a 0 330 ohm\n"))
+        "V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\nR3 a 0 330 ohm\n"
+        "? current R1\n"))
     assert isinstance(esito, Solved)
     assert esito.svg is None
     assert esito.layout is None
@@ -229,6 +216,6 @@ def test_render_rotto_su_circuito_supportato_e_failure_anche_se_il_messaggio_sem
         spine, "render",
         lambda ir, lay: (_ for _ in ()).throw(
             ValueError("E1: nessun simbolo per un voltage_source_dc")))
-    esito = resolve(_dc())
+    esito = resolve(_dc((Request("q1", "voltage", "R1"),)))
     assert isinstance(esito, Failure)
     assert esito.dove == "render"
