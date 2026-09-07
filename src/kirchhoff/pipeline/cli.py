@@ -14,12 +14,8 @@ from fractions import Fraction
 from kirchhoff.domain.refusal import Refusal
 from kirchhoff.pipeline.failure import Failure
 from kirchhoff.pipeline.netlist import leggi
+from kirchhoff.pipeline.presentation import decimale as _decimale
 from kirchhoff.pipeline.resolve import Solved, resolve
-
-
-def _decimale(f: Fraction, cifre: int = 4) -> str:
-    """Il valore leggibile ACCANTO a quello esatto, mai al suo posto."""
-    return f"{float(f):.{cifre}g}"
 
 
 def _chromium() -> pathlib.Path | None:
