@@ -113,6 +113,17 @@ def test_gli_esiti_incoerenti_non_si_costruiscono():
             schema_version=SCHEMA_VERSION, session_id="x", outcome="closed",
             question=None, answer=None, truth=None, states=(), steps=(),
             verification=None, provenance=None, refusal=None, failure=None)
+    with pytest.raises(ValueError):
+        StudentSessionView(
+            schema_version="altro", session_id="x", outcome="failure",
+            question=None, answer=None, truth=None, states=(), steps=(),
+            verification=None, provenance=None, refusal=None,
+            failure=None)
+    with pytest.raises(ValueError):
+        StudentSessionView(
+            schema_version=SCHEMA_VERSION, session_id="x", outcome="refusal",
+            question=None, answer=None, truth=None, states=(), steps=(),
+            verification=None, provenance=None, refusal=None, failure=None)
 
 
 def test_la_proiezione_non_importa_solutori():
@@ -155,3 +166,81 @@ def test_la_proiezione_non_importa_solutori():
 def test_il_decimale_non_sostituisce_mai_l_esatto():
     assert decimale(Fraction(1, 3)) == "0.3333"
     assert decimale(Fraction(3, 80)) == "0.0375"
+
+
+def _chiusura_con_run(netlist):
+    import itertools
+    from datetime import datetime, timezone
+    from kirchhoff.domain.proof.session import DOCUMENT_PROFILE
+    from kirchhoff.pipeline.proof_run import run_proof_session_con_run
+
+    class Fermo:
+        def now(self):
+            return datetime(2026, 9, 7, 12, tzinfo=timezone.utc)
+
+    conto = itertools.count(7)
+
+    def entropia():
+        return bytes(((next(conto) + j) % 256 for j in range(10)))
+
+    ir = leggi(netlist)
+    richiesta = next(iter(ir.requests))
+    esito = run_proof_session_con_run(
+        ir, richiesta, clock=Fermo(), entropy=entropia,
+        document_profile=DOCUMENT_PROFILE, source_sha="0" * 40, detail="prova")
+    assert not isinstance(esito, (Failure, Refusal))
+    return esito
+
+
+def test_disposizione_incoerente_e_failure_di_render():
+    from kirchhoff.pipeline.failure import Failure
+    from kirchhoff.pipeline.presentation import project_closed_session
+    from kirchhoff.pipeline.risolvi import layout_a_maglia
+    chiusura_b, run_b = _chiusura_con_run(
+        "V1 c 0 12 volt\nR1 c a 10 ohm\nR2 c b 20 ohm\nR3 a 0 30 ohm\n"
+        "R4 b 0 40 ohm\nRg a b 50 ohm\n? current R4\n")
+    esito = project_closed_session(
+        chiusura_b.session, chiusura_b.registry, run_b,
+        layout_iniziale=layout_a_maglia(leggi(
+            "V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\n? current R1\n")),
+        istante=1, casualita=bytes(range(10)))
+    assert isinstance(esito, Failure)
+    assert esito.dove == "render"
+
+
+def test_sessione_scambiata_con_altra_run_e_failure_di_proiezione():
+    from kirchhoff.pipeline.failure import Failure
+    from kirchhoff.pipeline.presentation import project_closed_session
+    from kirchhoff.pipeline.risolvi import layout_a_maglia
+    chiusura_a, run_a = _chiusura_con_run(
+        "V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\n? current R1\n")
+    chiusura_b, _ = _chiusura_con_run(
+        "V1 c 0 12 volt\nR1 c a 10 ohm\nR2 c b 20 ohm\nR3 a 0 30 ohm\n"
+        "R4 b 0 40 ohm\nRg a b 50 ohm\n? current R4\n")
+    esito = project_closed_session(
+        chiusura_b.session, chiusura_b.registry, run_a,
+        layout_iniziale=layout_a_maglia(leggi(
+            "V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\n? current R1\n")),
+        istante=1, casualita=bytes(range(10)))
+    assert isinstance(esito, Failure)
+    assert esito.dove == "projection"
+
+
+def test_difetto_del_render_nella_proiezione_e_failure(monkeypatch):
+    import kirchhoff.pipeline.presentation as proiezione
+    from kirchhoff.pipeline.failure import Failure
+    from kirchhoff.pipeline.risolvi import layout_a_maglia
+    chiusura, run = _chiusura_con_run(
+        "V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\n? current R1\n")
+
+    def rotto(*a, **k):
+        raise ValueError("pennello rotto")
+
+    monkeypatch.setattr(proiezione, "render", rotto)
+    esito = proiezione.project_closed_session(
+        chiusura.session, chiusura.registry, run,
+        layout_iniziale=layout_a_maglia(leggi(
+            "V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\n? current R1\n")),
+        istante=1, casualita=bytes(range(10)))
+    assert isinstance(esito, Failure)
+    assert esito.dove == "render"

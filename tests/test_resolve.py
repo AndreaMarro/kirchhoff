@@ -218,3 +218,38 @@ def test_risolvi_e_lo_stesso_ingresso():
     from kirchhoff.pipeline.resolve import risolvi
     a, b = resolve(leggi(PARTITORE)), risolvi(leggi(PARTITORE))
     assert type(a) is type(b) and a.soluzione == b.soluzione
+
+
+def test_ingresso_non_ir_e_failure_nominato():
+    esito = resolve("non un circuito")  # type: ignore[arg-type]
+    assert isinstance(esito, Failure)
+    assert esito.dove == "resolve"
+
+
+def test_ir_senza_componenti_ne_domande_e_rifiuto():
+    ir = IR("1.0.0", "dc", "generated", ("0",), (), ())
+    esito = resolve(ir)
+    assert isinstance(esito, Refusal)
+    assert esito.cause == "unsolvable"
+    assert esito.subject_kind == "operation"
+
+
+def test_source_sha_da_ambiente_quando_dichiarato(monkeypatch):
+    involucro = importlib.import_module("kirchhoff.pipeline.resolve")
+    monkeypatch.setenv("KIRCHHOFF_SOURCE_SHA", "e" * 40)
+    assert involucro._source_sha(None) == "e" * 40
+    assert involucro._source_sha("f" * 40) == "f" * 40
+
+
+def test_source_sha_senza_git_e_failure(monkeypatch):
+    import subprocess
+    involucro = importlib.import_module("kirchhoff.pipeline.resolve")
+
+    def boom(*a, **k):
+        raise OSError("niente git qui")
+
+    monkeypatch.delenv("KIRCHHOFF_SOURCE_SHA", raising=False)
+    monkeypatch.setattr(subprocess, "run", boom)
+    esito = resolve(leggi(PARTITORE), source_sha=None)
+    assert isinstance(esito, Failure)
+    assert esito.dove == "resolve"

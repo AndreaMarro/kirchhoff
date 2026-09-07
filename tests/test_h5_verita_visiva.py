@@ -158,3 +158,14 @@ def test_h5_il_render_non_nomina_transform():
                 nodo.module.endswith("domain.transform"):
             importati = {alias.name for alias in nodo.names}
             assert "transform" not in importati, "transform importato in render"
+
+
+def test_h5_7_proiezione_senza_evidenza_e_failure():
+    """Chi proietta senza esecuzione certificata riceve un guasto nominato."""
+    from kirchhoff.pipeline.failure import Failure
+    esito = componi(
+        object(), layout=layout_a_maglia(leggi(NETLIST)),
+        layouts=LayoutStore(), patches=PatchStore(),
+        istante=ISTANTE + 1_000, casualita=ENTROPIA)
+    assert isinstance(esito, Failure)
+    assert esito.dove == "render"
