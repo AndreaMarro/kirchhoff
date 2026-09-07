@@ -134,7 +134,7 @@ def test_keyerror_solver_e_failure(monkeypatch):
     monkeypatch.setattr(mna, "solve_dc", lambda ir: (_ for _ in ()).throw(KeyError("nodo")))
     esito = resolve(leggi(PARTITORE + '? voltage R2\n'))
     assert isinstance(esito, Failure)
-    assert esito.dove == "resolve"
+    assert esito.dove == "orchestrate"
 
 
 def test_zerodivisionerror_inatteso_e_failure(monkeypatch):

@@ -123,3 +123,47 @@ Stato corrente post-merge (O0, vedi decisione
 - No external CAS or new runtime dependency.
 - Certification evidence is recorded in GitHub Actions / git history,
   rather than embedding a self-invalidating branch SHA here.
+
+## VISIBLE_PROOF_WORKBENCH_0_1 (2026-09-07, stack su H2.75)
+
+Stack `work/visible-proof-workbench-0.1-muse13` sopra PR #11 (`fc4a094`).
+PR #10 fusa in `main` (`f6178d2`, merge commit, gate AI_REVIEW_GATE_PASSED
+a SHA esatto); PR #11 riallineata su nuova `main` (rebase --onto da
+`128e2f6`, push --force-with-lease, base -> `main`, CI verde, CodeRabbit
+completed + 2 rilievi disposti sul PR senza toccarne lo SHA).
+
+- R3 CONVERGENCE: `run_proof_session` e' l'unica radice; `resolve` e'
+  involucro che delega ogni domanda e proietta `Solved`
+  (solver `didactic`, verifiche Claim-VERIFIED/sessione-CLOSED).
+  Ambito prodotto: solo continua certificabile (decisione owner:
+  fasori/controllate/transitori -> Refusal onesto; solutori di dominio
+  ed eval intatti). `DC_DOMAINS = {dc, dc_resistive}` in `domain/ir`.
+  Misura: `tests/test_r3_convergence.py` (proprieta' unica AST + delega
+  per identita'). `GLOBAL_PRODUCT_ENTRYPOINT_RECONCILIATION = CHIUSA`.
+- H5 VISUAL SINGLE TRUTH: `render/` non chiama piu' `transform()` (0
+  chiamate produttive). `componi(esecuzione, ...)` proietta after,
+  risultato ed equazione certificati (testati con `is`); difetto di
+  proiezione -> `Failure("render")`, mai un Claim. Chiude la voce 8 di
+  deferred-work (catena senza riesecuzione). Misura:
+  `tests/test_h5_verita_visiva.py` (H5-1..H5-6 scritti rossi prima).
+- PRESENTAZIONE: `StudentSessionView` (student-session.v0.1) + proiettore
+  (`pipeline/presentation.py`, niente solutori per AST) + generatore
+  deterministico (`scripts/generate_workbench.py`, 3 esercizi veri + 1
+  rifiuto, drift byte-identico testato). `run_proof_session_con_run`
+  espone la run alla proiezione (stessa implementazione, chiusura H2.75
+  intatta). Confine allargato: domain/ e render/ mai verso il frontend.
+- SUPERFICIE: Kirchhoff Proof Workbench (React 19 + TS strict + Vite;
+  runtime react/react-dom; JS 67 KB gzip, CSS 16 KB). Apertura pulita,
+  viewport di confronto unita (<2px misurati), entita' cliccabili e da
+  tastiera, rifiuto «Non certificata» distinto dal guasto, esatto
+  primario, temi dark/light, 390px senza overflow, 32 E2E verdi.
+  Quaderno visuale: `docs/visual-qa-ledger-0.1.md` (15 voci).
+- Autorita' D4: RISOLTA a valle (SVG sorgente unica, ratifica owner in
+  BMAD; il file vault resta storico e non si riscrive). Debiti visuali
+  storici governati qui: equazione in apertura -> apertura pulita a
+  livello presentazione; salti viewBox -> viewport unita a runtime
+  (byte certificati intatti); overlay invariato.
+- Resta draft: PR #11 (gate AI: CodeRabbit disposto, Codex senza
+  verdetto in formato gate — adjudication al merge, owner).
+- Resta differito: H3 integrita', R1 post_init, R2 identita', autolayout
+  generale, ingestione foto, Catalogo/trasformazioni nuove.

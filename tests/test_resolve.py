@@ -150,7 +150,7 @@ def test_keyerror_del_solver_e_failure(monkeypatch):
     monkeypatch.setattr(mna, "solve_dc", lambda ir: (_ for _ in ()).throw(KeyError("nodo fantasma")))
     esito = resolve(leggi(PARTITORE))
     assert isinstance(esito, Failure)
-    assert esito.dove == "resolve"
+    assert esito.dove == "orchestrate"
     assert "KeyError" in esito.messaggio
 
 

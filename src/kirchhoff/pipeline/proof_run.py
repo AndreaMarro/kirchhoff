@@ -244,7 +244,7 @@ def _componi_chiusura(
     except _ErroreEntropia as exc:
         return Failure("entropy", str(exc))
     except Exception as exc:
-        return Failure("orchestrate", f"orchestrazione impossibile: {exc}")
+        return Failure("orchestrate", f"orchestrazione impossibile: {exc!r}")
     if isinstance(run, Refusal):
         return run
     if not isinstance(run, CertifiedDidacticRun):
@@ -261,7 +261,7 @@ def _componi_chiusura(
     except _ErroreEntropia as exc:
         return Failure("entropy", str(exc))
     except Exception as exc:
-        return Failure("registry", f"registro non componibile: {exc}")
+        return Failure("registry", f"registro non componibile: {exc!r}")
     if not isinstance(registro, CircuitStateRegistry):
         return Failure(
             "registry",
