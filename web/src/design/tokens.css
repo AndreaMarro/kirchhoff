@@ -1,0 +1,141 @@
+/* Design tokens — l'unica sorgente di colore, spazio, tipo e moto.
+   Nessun colore grezzo nei componenti: solo var(--kf-*). */
+
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* superfici */
+  --kf-surface-base: #0f1013;
+  --kf-surface-raised: #17181d;
+  --kf-surface-overlay: #1e2027;
+  --kf-surface-tint-verified: #12241c;
+  --kf-surface-tint-refusal: #261e10;
+  --kf-surface-tint-fault: #2a1410;
+  --kf-surface-tint-provenance: #141b31;
+
+  /* inchiostri */
+  --kf-ink-primary: #f2f3f5;
+  --kf-ink-secondary: #b6bac3;
+  --kf-ink-muted: #848a96;
+  --kf-ink-on-accent: #0b0d10;
+
+  /* semantici: il colore porta significato, mai decorazione */
+  --kf-verified: #54d19a;
+  --kf-verified-strong: #1e6a4a;
+  --kf-suspended: #d9a441;
+  --kf-suspended-strong: #7a5a1e;
+  --kf-fault: #c65a3f;
+  --kf-fault-strong: #a6412a;
+  --kf-provenance: #8fa2ff;
+  --kf-provenance-strong: #2f51be;
+
+  /* linee e profondita' */
+  --kf-border-subtle: #26282f;
+  --kf-border-strong: #3a3d47;
+  --kf-border-focus: #8fa2ff;
+  --kf-shadow-raised: 0 1px 2px rgb(0 0 0 / 0.4), 0 4px 16px rgb(0 0 0 / 0.35);
+
+  /* circuito: inchiostro su base + evidenza mirata */
+  --kf-circuit-ink: #e8eaf0;
+  --kf-circuit-dim: #6d7280;
+  --kf-circuit-highlight: #8fa2ff;
+  --kf-circuit-changed: #54d19a;
+
+  /* forma */
+  --kf-radius-sm: 4px;
+  --kf-radius-md: 8px;
+  --kf-radius-lg: 12px;
+  --kf-radius-pill: 999px;
+
+  /* spazio: scala 4px */
+  --kf-space-1: 4px;
+  --kf-space-2: 8px;
+  --kf-space-3: 12px;
+  --kf-space-4: 16px;
+  --kf-space-5: 20px;
+  --kf-space-6: 24px;
+  --kf-space-8: 32px;
+  --kf-space-10: 40px;
+
+  /* tipo */
+  --kf-font-display: "Inter Tight", Inter, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", system-ui, sans-serif;
+  --kf-font-body: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    system-ui, sans-serif;
+  --kf-font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo,
+    Consolas, monospace;
+  --kf-type-display: 28px;
+  --kf-type-title: 20px;
+  --kf-type-head: 16px;
+  --kf-type-body: 14px;
+  --kf-type-small: 12px;
+  --kf-type-micro: 11px;
+  --kf-weight-regular: 400;
+  --kf-weight-medium: 500;
+  --kf-weight-semibold: 600;
+  --kf-weight-bold: 700;
+  --kf-line-tight: 1.2;
+  --kf-line-body: 1.5;
+
+  /* moto: spiega la semantica, mai celebrazione */
+  --kf-motion-instant: 90ms;
+  --kf-motion-quick: 140ms;
+  --kf-motion-considered: 220ms;
+  --kf-motion-ease: cubic-bezier(0.2, 0, 0, 1);
+
+  /* anello di fuoco e livelli */
+  --kf-focus-ring: 0 0 0 2px var(--kf-surface-base), 0 0 0 4px var(--kf-border-focus);
+  --kf-z-stage: 1;
+  --kf-z-overlay: 10;
+  --kf-z-sheet: 20;
+
+  /* prova: larghezze di partenza, non dogma */
+  --kf-rail-width: 224px;
+  --kf-inspector-width: 344px;
+  --kf-touch-min: 44px;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+
+  --kf-surface-base: #f7f7f5;
+  --kf-surface-raised: #ffffff;
+  --kf-surface-overlay: #ffffff;
+  --kf-surface-tint-verified: #e2f3e9;
+  --kf-surface-tint-refusal: #f7ecd4;
+  --kf-surface-tint-fault: #f7ddd4;
+  --kf-surface-tint-provenance: #e2e7fb;
+
+  --kf-ink-primary: #14161a;
+  --kf-ink-secondary: #3f444e;
+  --kf-ink-muted: #6d7280;
+  --kf-ink-on-accent: #ffffff;
+
+  --kf-verified: #1e6a4a;
+  --kf-verified-strong: #54d19a;
+  --kf-suspended: #8a6414;
+  --kf-suspended-strong: #d9a441;
+  --kf-fault: #a6412a;
+  --kf-fault-strong: #c65a3f;
+  --kf-provenance: #2f51be;
+  --kf-provenance-strong: #8fa2ff;
+
+  --kf-border-subtle: #e2e3e8;
+  --kf-border-strong: #c9ccd4;
+  --kf-border-focus: #2f51be;
+  --kf-shadow-raised: 0 1px 2px rgb(20 22 26 / 0.08), 0 4px 16px rgb(20 22 26 / 0.1);
+
+  --kf-circuit-ink: #1c1f26;
+  --kf-circuit-dim: #8a8f9c;
+  --kf-circuit-highlight: #2f51be;
+  --kf-circuit-changed: #1e6a4a;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --kf-motion-instant: 0ms;
+    --kf-motion-quick: 0ms;
+    --kf-motion-considered: 0ms;
+  }
+}
