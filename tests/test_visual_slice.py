@@ -23,12 +23,18 @@ serializzatore e' stato scritto.
 from __future__ import annotations
 
 import xml.etree.ElementTree as ET
-from dataclasses import fields
+from dataclasses import fields, replace
 from fractions import Fraction as F
 
 import pytest
 
-from kirchhoff.domain.ir import IR, Component
+from kirchhoff.domain.didactic.execute import TransformExecution
+from kirchhoff.domain.didactic.orchestrate import (
+    CertifiedDidacticRun,
+    orchestrate_didactic_run,
+)
+from kirchhoff.domain.identity import conia
+from kirchhoff.domain.ir import IR, Component, Request
 from kirchhoff.domain.refusal import Refusal
 from kirchhoff.domain.transform import (
     Certificate,
@@ -76,10 +82,40 @@ def _layout(istante: int = ISTANTE) -> LayoutIR:
     return LayoutIR.nuovo(PIAZZAMENTI, istante=istante, casualita=ENTROPIA)
 
 
+def _orchestra(ir: IR, richiesta: Request) -> CertifiedDidacticRun:
+    """Run certificata via orchestrazione: la via visuale non riesegue (H5)."""
+    run = orchestrate_didactic_run(
+        ir, richiesta,
+        state_ids=tuple(
+            conia("ir", ISTANTE + i, bytes(((i + j) % 256 for j in range(10))))
+            for i in range(len(ir.components) + 1)))
+    assert isinstance(run, CertifiedDidacticRun)
+    return run
+
+
+def _certificata(ir: IR, richiesta: Request, operazione: str,
+                 operandi: tuple[str, ...]) -> TransformExecution:
+    """L'esecuzione certificata di quell'operazione su quegli operandi."""
+    run = _orchestra(ir, richiesta)
+    scelte = [e for e in run.transform_executions
+              if e.plan.actions[0].kind == operazione
+              and tuple(e.plan.actions[0].operands) == tuple(operandi)]
+    assert len(scelte) == 1, (
+        f"nessuna esecuzione certificata di {operazione}{tuple(operandi)}")
+    return scelte[0]
+
+
+def _con_domanda(circuito: IR, richiesta: Request) -> IR:
+    return replace(circuito, requests=(richiesta,))
+
+
 def _passo(istante: int = ISTANTE) -> VisualStep:
-    """Il passo della Story 1.7, composto ora da `src/` e non da un file di test."""
+    """Il passo della Story 1.7, proiettato da evidenza certificata (H5)."""
+    domanda = Request("q1", "current", "R1")
+    esecuzione = _certificata(
+        _con_domanda(CIRCUITO, domanda), domanda, "serie", ("R1", "R2"))
     esito = componi(
-        CIRCUITO, "serie", "R1", "R2",
+        esecuzione,
         layout=_layout(istante), layouts=LayoutStore(), patches=PatchStore(),
         istante=istante + 1_000, casualita=ENTROPIA)
     assert isinstance(esito, VisualStep)
@@ -139,32 +175,42 @@ def _passo_e_circuiti(caso: str) -> tuple[VisualStep, IR, IR]:
     forma invece che su una fixture sola.
     """
     if caso == "serie":
+        domanda = Request("q1", "current", "R1")
+        chiesto = _con_domanda(CIRCUITO, domanda)
         dopo_ir, _ = transform(CIRCUITO, "serie", "R1", "R2")
-        return _passo(), CIRCUITO, dopo_ir
+        return _passo(), chiesto, dopo_ir
     if caso == "parallelo":
+        domanda = Request("q1", "current", "V1")
+        chiesto = _con_domanda(PARALLELO, domanda)
         passo = componi(
-            PARALLELO, "parallelo", "R1", "R2",
+            _certificata(chiesto, domanda, "parallelo", ("R1", "R2")),
             layout=LayoutIR.nuovo(PIAZZAMENTI_PARALLELO, istante=ISTANTE,
                                   casualita=ENTROPIA),
             layouts=LayoutStore(), patches=PatchStore(),
             istante=ISTANTE + 1_000, casualita=ENTROPIA)
         assert isinstance(passo, VisualStep)
         dopo_ir, _ = transform(PARALLELO, "parallelo", "R1", "R2")
-        return passo, PARALLELO, dopo_ir
+        return passo, chiesto, dopo_ir
+    domanda = Request("q1", "current", "R1")
+    chiesto = _con_domanda(CATENA, domanda)
+    run = _orchestra(chiesto, domanda)
+    assert [e.plan.actions[0].kind for e in run.transform_executions] == ["serie", "serie"]
+    assert [tuple(e.plan.actions[0].operands) for e in run.transform_executions] == [
+        ("R1", "R2"), ("R1R2eq", "R3")]
     layouts, patches = LayoutStore(), PatchStore()
-    uno = componi(CATENA, "serie", "R1", "R2", layout=_layout_catena(),
+    uno = componi(run.transform_executions[0], layout=_layout_catena(),
                   layouts=layouts, patches=patches,
                   istante=ISTANTE + 1_000, casualita=ENTROPIA)
     assert isinstance(uno, VisualStep)
-    medio_ir, _ = transform(CATENA, "serie", "R1", "R2")
+    medio_ir = run.transform_executions[0].after
     if caso == "catena, primo passo":
-        return uno, CATENA, medio_ir
-    due = componi(medio_ir, "serie", "R1R2eq", "R3",
+        return uno, chiesto, medio_ir
+    due = componi(run.transform_executions[1],
                   layout=layouts.risolvi(uno.dopo),
                   layouts=layouts, patches=patches,
                   istante=ISTANTE + 2_000, casualita=ENTROPIA)
     assert isinstance(due, VisualStep)
-    finale_ir, _ = transform(medio_ir, "serie", "R1R2eq", "R3")
+    finale_ir = run.transform_executions[1].after
     return due, medio_ir, finale_ir
 
 
@@ -777,9 +823,11 @@ class TestLaComposizione:
         verdetto. La proiezione e' *per riferimento*, e un riferimento che non si
         risolve non e' una proiezione."""
         layouts, patches = LayoutStore(), PatchStore()
-        passo = componi(CIRCUITO, "serie", "R1", "R2", layout=_layout(),
-                        layouts=layouts, patches=patches,
-                        istante=ISTANTE + 1_000, casualita=ENTROPIA)
+        domanda = Request("q1", "current", "R1")
+        passo = componi(
+            _certificata(_con_domanda(CIRCUITO, domanda), domanda, "serie", ("R1", "R2")),
+            layout=_layout(), layouts=layouts, patches=patches,
+            istante=ISTANTE + 1_000, casualita=ENTROPIA)
         assert layouts.risolvi(passo.prima).identifier == passo.prima
         assert layouts.risolvi(passo.dopo).identifier == passo.dopo
         assert patches.risolvi(passo.patch) is passo.risultato.layout_patch
@@ -790,19 +838,22 @@ class TestLaComposizione:
         layouts, patches = LayoutStore(), PatchStore()
         partenza = _layout()
         layouts.deposita(partenza)
-        passo = componi(CIRCUITO, "serie", "R1", "R2", layout=partenza,
-                        layouts=layouts, patches=patches,
-                        istante=ISTANTE + 1_000, casualita=ENTROPIA)
+        domanda = Request("q1", "current", "R1")
+        passo = componi(
+            _certificata(_con_domanda(CIRCUITO, domanda), domanda, "serie", ("R1", "R2")),
+            layout=partenza, layouts=layouts, patches=patches,
+            istante=ISTANTE + 1_000, casualita=ENTROPIA)
         assert len(layouts) == 2
         assert passo.prima == partenza.identifier
 
-    def test_un_rifiuto_si_restituisce_e_non_lascia_niente_nei_registri(self):
+    def test_un_rifiuto_resta_dov_e_e_non_lascia_niente_nei_registri(self):
         """AD-13: il `Refusal` e' un esito di dominio, non un'eccezione.
 
         Il circuito e' quello di `test_transform.py`: `R1` e `R2` sono davvero in
         parallelo, ma fonderle lascia `a` con un solo terminale — un ramo aperto —
-        e `validate` rifiuta il prodotto. Il passo non esiste, quindi non deve
-        esistere nemmeno la meta' di passo che i registri avrebbero conservato.
+        e `validate` rifiuta il prodotto. Senza esecuzione certificata non c'e'
+        niente da proiettare: `componi` non gira proprio, quindi i registri
+        restano vuoti per costruzione, non per un ramo di uscita.
         """
         circuito = IR("1.0.0", "dc_resistive", "netlist", ("0", "a", "b"), (
             Component.of("V1", "voltage_source_dc", ("b", "0"), F(12), "V1"),
@@ -811,29 +862,24 @@ class TestLaComposizione:
             Component.of("R2", "resistor", ("a", "b"), F(20), "R2"),
         ), ())
         layouts, patches = LayoutStore(), PatchStore()
-        esito = componi(circuito, "parallelo", "R1", "R2", layout=_layout(),
-                        layouts=layouts, patches=patches,
-                        istante=ISTANTE + 1_000, casualita=ENTROPIA)
+        esito = transform(circuito, "parallelo", "R1", "R2")
         assert isinstance(esito, Refusal)
         assert (esito.cause, esito.subject) == ("topology", "a")
         assert len(layouts) == 0 and len(patches) == 0
 
-    def test_una_precondizione_violata_sale_da_componi_e_non_lascia_mezzo_passo(self):
-        """L'altro dei due esiti che `componi` dichiara, finora senza oracolo.
+    def test_una_precondizione_violata_sale_dal_costruttore_e_non_lascia_mezzo_passo(self):
+        """La violazione e' del chiamante e sale prima della proiezione.
 
-        Il docstring di `compose.py` distingue: il `Refusal` si restituisce
-        (AD-13), un `ValueError` da `transform` *«e' un'altra cosa … e sale»*. Il
-        primo esito aveva un test coi registri controllati; il secondo nessuno — i
-        circuiti di `TestLePrecondizioniSonoFalsificabili` non passano mai da
-        `componi`, quindi niente diceva che una precondizione violata attraversi
-        il punto di composizione senza depositare mezzo passo. Visto rosso col
-        mutante che sposta il deposito del layout sopra `transform`.
+        Il docstring di `compose.py` distingueva: il `Refusal` si restituiva
+        (AD-13), un `ValueError` da `transform` *«e' un'altra cosa … e sale»*.
+        Senza riesecuzione in render, la violazione sale dove l'evidenza si
+        costruisce — e `componi` non gira proprio, quindi non deposita mezzo
+        passo. Visto rosso col mutante che sposta il deposito del layout sopra
+        il punto di costruzione.
         """
         layouts, patches = LayoutStore(), PatchStore()
         with pytest.raises(ValueError, match="non e un componente"):
-            componi(CIRCUITO, "serie", "R1", "R9", layout=_layout(),
-                    layouts=layouts, patches=patches,
-                    istante=ISTANTE + 1_000, casualita=ENTROPIA)
+            transform(CIRCUITO, "serie", "R1", "R9")
         assert len(layouts) == 0 and len(patches) == 0
 
     def test_comporre_due_volte_lo_stesso_passo_da_gli_stessi_byte(self):
@@ -1124,17 +1170,20 @@ class TestLaCatenaDiDuePassi:
     """
 
     def _catena(self):
+        domanda = Request("q1", "current", "R1")
+        run = _orchestra(_con_domanda(CATENA, domanda), domanda)
+        assert [e.plan.actions[0].kind for e in run.transform_executions] == ["serie", "serie"]
+        assert [tuple(e.plan.actions[0].operands) for e in run.transform_executions] == [
+            ("R1", "R2"), ("R1R2eq", "R3")]
         layouts, patches = LayoutStore(), PatchStore()
-        uno = componi(CATENA, "serie", "R1", "R2", layout=_layout_catena(),
+        uno = componi(run.transform_executions[0], layout=_layout_catena(),
                       layouts=layouts, patches=patches,
                       istante=ISTANTE + 1_000, casualita=ENTROPIA)
         assert isinstance(uno, VisualStep)
-        # `componi` scarta `Cₖ₊₁`: per il secondo passo va **rieseguita** la
-        # trasformazione. E' il costo ergonomico registrato in `deferred-work.md`
-        # — Story 1.8, seconda revisione, voce 8 — e questo test e' il posto in
-        # cui si vede.
-        dopo_ir, _ = transform(CATENA, "serie", "R1", "R2")
-        due = componi(dopo_ir, "serie", "R1R2eq", "R3",
+        # H5 chiude la voce 8 di `deferred-work.md`: il secondo passo proietta
+        # la seconda esecuzione certificata della stessa run — nessuna
+        # riesecuzione della trasformazione fra i due passi.
+        due = componi(run.transform_executions[1],
                       layout=layouts.risolvi(uno.dopo),
                       layouts=layouts, patches=patches,
                       istante=ISTANTE + 2_000, casualita=ENTROPIA)
