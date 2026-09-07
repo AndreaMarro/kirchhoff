@@ -181,11 +181,11 @@ def test_quantity_fuori_vocabolario_non_nasce():
 
 def test_ci_esiste_e_invoca_i_test_reali():
     testo = Path(".github/workflows/test.yml").read_text(encoding="utf-8")
-    assert "pytest" in testo
+    assert "python -m pytest" in testo
     assert "check_domain_coverage.py" in testo
     assert "3.12" in testo
     assert "kirchhoff-eval build" in testo
-    assert testo.index("kirchhoff-eval build") < testo.index("run: pytest")
+    assert testo.index("kirchhoff-eval build") < testo.index("python -m pytest")
 
 
 def test_solve_linear_solleva_singular_system_error():

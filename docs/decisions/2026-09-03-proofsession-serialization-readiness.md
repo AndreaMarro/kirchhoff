@@ -1,5 +1,18 @@
 # H2.5 — Durable authority + serialization readiness (correct-course)
 
+> **Nota di supersessione parziale — O0**
+>
+> Questo decision record è evidenza storica dello stato H2.5 precedente a O0.
+> I riferimenti seguenti a `proof-session.v0.1` o a un publication status di
+> sessione `VERIFIED` descrivono quello stato storico e non sono il contratto
+> backend corrente. Solo la nomenclatura di schema/status di sessione è
+> superata in parte; il resto rimane storia decisionale valida.
+>
+> Autorità corrente: `2026-09-03-proofsession-backend-closure.md`. Il contratto
+> corrente è `proof-session.v0.2`, con `ProofSession.publication_status = CLOSED`;
+> il `Claim.status = VERIFIED` elettrico resta invariato. Product Verified resta
+> riservato ai gate prodotto successivi.
+
 Data: 2026-09-03. Branch `work/proof-demo-0.1`, base `main@de6bb6c`.
 Gate: H2.5 CHIUDE la leggibilita' durevole; H3 (serializer canonico) inizia
 solo dopo chiusura remota di questo gate.

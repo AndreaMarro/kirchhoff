@@ -57,47 +57,41 @@
 - Adapter di percezione con validazione e conferma utente.
 - Percorsi di prodotto AC e transitori.
 
-## Proof Demo 0.1 (branch `work/proof-demo-0.1`, PR #8 DRAFT)
+## Proof Demo / O0 governance
 
-Stato verificato il 2026-09-03 (locale == remoto prima di ogni gate):
+Stato corrente post-merge (O0, vedi decisione
+`2026-09-03-proofsession-backend-closure.md`):
 
-- Base: `main@de6bb6c` (merge PR #9 P1-L). Il branch e' allineato a `main`
-  (`behind = 0` dopo merge `--no-ff`).
+- H2.5 / PR #8 e' merged in `main` tramite merge commit
+  `26bc00b0ca2ae2d04a53bc0cab6ece87deb03663`. O0 / PR #10 e' il gate
+  corrente su `work/proof-demo-o0-governance`.
 - `CertifiedDidacticRun` resta l'autorita' didattica; `ProofSession`
-  (`domain/proof/session.py`, schema `proof-session.v0.1`) e' la proiezione
+  (`domain/proof/session.py`, schema `proof-session.v0.2`) e' la proiezione
   prodotto per riferimento: niente `Any`/dict, niente solve downstream.
-- Session identity: genere `sess_` (estensione Consistency-Conventions,
-  D-H1.5-1, ratificata in sede H2.5 D-H2.5-6 con emendamento in loco della
-  riga Identificatori dello spine). Versioni solo autorevoli
-  (`planner_schema_version`, `curriculum_profile`, `document_profile` chiuso
-  `student-pdf.v0.1`); provenance strutturata (`producer`, `source_sha`
-  dichiarato, `detail`).
-- Pubblicazione: `pipeline/proof_session.validate_publication` lega ogni ref
-  alla run autorevole viva (stati via registry, effect/lineage/Claim per
-  identita' `is` come sanity check di composizione, soluzione per valore
-  `==`, derivazioni per uguaglianza). Forged-but-equal non pubblica al live.
-  Rotture -> `Failure`, mai `Refusal`.
-- H2.5 durevole: `validate_persisted_publication` valida senza run viva e
-  senza `is` (uguaglianze + risoluzione ref); la sessione porta
-  `final_solution: ResolvedQuantity` per valore (D1: 3/80 A raggiungibile
-  senza run); il compositore e' l'unico writer che conia `sess_` da
-  istante/entropia iniettati.
-- VERIFIED v0.1 = chiusura di pubblicazione di backend, non il badge prodotto
-  (K-0/AD-5 richiedono anche la chiusura visuale, H5). Lo schema non porta
-  ProofGraph/layout/view e non li pretende (decisione H2.5 D-H2.5-7).
-- Schema v0.1: prima le trasformazioni, poi l'analitica ancorata allo stato
-  finale. ProofGraph/layout/view: differiti con contratto esplicito (niente
-  `lay_` nel percorso didattico; traccia visuale H5).
+- Chiusura backend `CLOSED` (ex `VERIFIED` v0.1): Claim resta `VERIFIED`
+  elettrico, Product Verified riservato (K-0/AD-5, H5). Tre nomi distinti.
+- Session identity: genere `sess_` (writer unico il compositore).
+  Versioni solo autorevoli (`planner_schema_version`, `curriculum_profile`,
+  `document_profile` chiuso `student-pdf.v0.1`); provenance strutturata
+  (`producer`, `source_sha` dichiarato, `detail`).
+- Pubblicazione: live lega ogni ref alla run viva (`is` come sanity check di
+  composizione, soluzione per valore); durevole valida senza run e senza
+  `is`. D1: 3/80 A raggiungibile senza run. Rotture -> `Failure`;
+  `Refusal` a monte non si compone (propagazione al confine di prodotto).
+- Schema v0.2: prima le trasformazioni, poi l'analitica ancorata allo stato
+  finale. ProofGraph/layout/view: differiti con contratto esplicito (H5).
 - CoV: session.py 100% linee/rami; proof_session.py 100% linee/rami;
   globale >= 95%; domain 100%; boundaries PASS.
-- H2 chiuso: `pipeline/proof_session.compose_proof_session` proietta run +
-  registro in sessione pubblicata (stessi oggetti certificati, niente
-  ricalcolo; E2E D1 con 3/80 A e Claim autorevole; ponte a zero
-  trasformazioni composto). Rotture -> `Failure`; `Refusal` a monte non si
-  compone (la propagazione Refusal vive al confine di prodotto).
-- Non ancora chiusi: serializzazione canonica (H3), corpus D1-D8 (H4, solo D1
-  e ponte esercitati finora), product-proof CI, mutation mirata, review
-  indipendente. PR #8 resta DRAFT; PR #7 resta research, non toccata.
+- Discrepanza metriche chiusa: locale 1732 vs remoto 1730+2 skip = due skip
+  condizionali d'ambiente (path plugin BMAD, chromium solo-macOS), nessuna
+  differenza di sorgente (decisione O0 §3).
+- Aperti registrati: integrita' H3; verita' semantica visuale singola
+  (`componi` riesegue `transform`, H5); `__post_init__` da scomporre (45
+  stmt); fixture triplicate; contesto AGENTS gestito stale (repo PUBLIC non
+  privato, sette prefissi); D2-D8; wire canonico; manifest.
+- H2.75 / PR #11 (`work/proof-demo-application-boundary`) e' stacked sopra
+  O0 e resta DRAFT. `Product Verified` resta riservato ai gate prodotto
+  successivi, inclusa la chiusura visuale H5.
 
 ## P1-K (STORICO)
 

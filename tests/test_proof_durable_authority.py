@@ -18,7 +18,7 @@ Questi test definiscono il contratto durevole PRIMA dell'implementazione:
 - F: lo SHA di provenienza e' metadato dichiarato, non revisione verificata;
 - G: il profilo documento e' un token chiuso, non una stringa qualsiasi;
 - H: il compositore e' l'unico writer che conia `sess_`;
-- I: VERIFIED di backend non pretende la chiusura visuale (K-0/AD-5, H5);
+- I: CLOSED di backend non pretende la chiusura visuale (K-0/AD-5, H5);
 - J: al confine di prodotto un Refusal resta Refusal;
 - K: la ricostruzione fresca (zero identita' originali) valida sul durevole.
 
@@ -306,16 +306,18 @@ def test_h_istante_entropia_malformati_falliscono():
         assert type(esito) is Failure, entropia
 
 
-# --- I: VERIFIED di backend non pretende la chiusura visuale --------------------------
+# --- I: la chiusura di backend non pretende la chiusura visuale --------------------------
 
 
 def test_i_sessione_backend_senza_chiusura_visuale():
     # K-0/AD-5: il badge prodotto richiede anche il round-trip visuale (H5).
-    # Lo schema v0.1 non porta ProofGraph/layout/view: il suo VERIFIED e'
-    # chiusura di pubblicazione di backend (integrita' referenziale +
-    # Claim elettrico), non il badge prodotto. Il test inchioda il confine.
+    # Lo schema non porta ProofGraph/layout/view: il suo CLOSED e' chiusura
+    # di pubblicazione di backend (integrita' referenziale + Claim elettrico),
+    # non il badge prodotto. Il test inchioda il confine (O0: il token
+    # VERIFIED non compare piu' a livello sessione).
     sessione, _, registro = _componi(_run_d1())
-    assert sessione.publication_status == "VERIFIED"
+    assert sessione.publication_status == "CLOSED"
+    assert sessione.final_claim.status == "VERIFIED"
     assert validate_persisted_publication(sessione, registro) is sessione
     for campo in ("proof_graph_ref", "layout_ref", "view_ref",
                   "didactic_plan_ref", "content_hash"):
@@ -450,3 +452,86 @@ def test_durevole_ref_pendente_fallisce():
     esito = validate_persisted_publication(sessione, dimezzato)
     assert isinstance(esito, Failure)
     assert "senza legame" in esito.messaggio
+
+
+# --- O0: la chiusura di backend non si chiama VERIFIED -------------------------------
+#
+# Claim VERIFIED (elettrico, gate P1-K) != chiusura di pubblicazione backend
+# (CLOSED) != Product Verified owner-locked (riservato, H5). Schema v0.2.
+
+
+def test_o0_backend_verified_non_piu_valido():
+    import kirchhoff.domain.proof.session as modello
+
+    assert modello.SCHEMA_VERSION == "proof-session.v0.2"
+    sessione, _, _ = _componi(_run_d1())
+    assert sessione.schema_version == "proof-session.v0.2"
+    assert sessione.publication_status == "CLOSED"
+    with pytest.raises(ValueError, match="CLOSED"):
+        replace(sessione, publication_status="VERIFIED")
+
+
+def test_o0_schema_v01_rifiutato_come_input_corrente():
+    from kirchhoff.domain.proof.session import ProofSession
+
+    sessione, _, _ = _componi(_run_d1())
+    with pytest.raises(ValueError, match="v0.2"):
+        replace(sessione, schema_version="proof-session.v0.1")
+
+
+def test_o0_claim_resta_verified():
+    sessione, _, _ = _componi(_run_d1())
+    assert sessione.final_claim.status == "VERIFIED"
+    assert sessione.publication_status == "CLOSED"
+    assert sessione.publication_status != sessione.final_claim.status
+
+
+def test_o0_compositore_emette_chiusura():
+    run = _run_d1()
+    registro = componi_registro(run, refs_evidenza=(StateRef(_stato(9)),))
+    esito = compose_proof_session(
+        run, registro, session_instant_ms=_istante(0),
+        session_entropy=_entropia(0), document_profile=DOCUMENT_PROFILE,
+        source_sha=SHA_FIXTURE, detail="chiusura O0")
+    assert isinstance(esito, ProofSession)
+    assert esito.publication_status == "CLOSED"
+
+
+def test_o0_d1_resta_3_80_con_claim_verified_e_chiusura():
+    sessione, _, registro = _componi(_run_d1())
+    assert validate_persisted_publication(sessione, registro) is sessione
+    assert sessione.final_solution.value.amount == Fraction(3, 80)
+    assert sessione.final_solution.value.unit == "ampere"
+    assert sessione.final_claim.status == "VERIFIED"
+    assert sessione.publication_status == "CLOSED"
+
+
+def test_o0_ponte_chiuso_senza_trasformazioni():
+    from kirchhoff.pipeline.proof_session import validate_publication
+
+    esito_run = _run(PONTE)
+    assert isinstance(esito_run, CertifiedDidacticRun)
+    registro = componi_registro(esito_run)
+    esito = compose_proof_session(
+        esito_run, registro, session_instant_ms=_istante(5),
+        session_entropy=_entropia(5), document_profile=DOCUMENT_PROFILE,
+        source_sha=SHA_FIXTURE, detail="ponte O0")
+    assert isinstance(esito, ProofSession)
+    assert esito.publication_status == "CLOSED"
+    assert validate_publication(esito, esito_run, registro) is esito
+    assert validate_persisted_publication(
+        copy.deepcopy(esito), registro) == esito
+
+
+def test_o0_tassonomia_invariata_dalla_migrazione():
+    esito_run = _run(FUORI_CAPABILITY)
+    assert type(esito_run) is Refusal
+    run = _run_d1()
+    registro = componi_registro(run, refs_evidenza=(StateRef(_stato(9)),))
+    corrotto = compose_proof_session(
+        esito_run, registro, session_instant_ms=_istante(0),
+        session_entropy=_entropia(0), document_profile=DOCUMENT_PROFILE,
+        source_sha=SHA_FIXTURE, detail="tassonomia O0")
+    assert type(corrotto) is Failure
+    assert not isinstance(corrotto, Refusal)
+    assert not isinstance(esito_run, Failure)
