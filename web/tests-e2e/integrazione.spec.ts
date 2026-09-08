@@ -30,7 +30,7 @@ async function incornicia(
 ): Promise<void> {
   const base = test.info().project.use.baseURL ?? "http://localhost:4173";
   await page.setContent(ospite(base, hash, larghezza, altezza));
-  await expect(page.frameLocator("iframe.kf-ospite").locator(".kf-chip")).toHaveCount(4, {
+  await expect(page.frameLocator("iframe.kf-ospite").locator(".kf-chip")).toHaveCount(11, {
     timeout: 10_000,
   });
 }
@@ -126,7 +126,7 @@ test("incorniciato stessa origine: copia-link consegna il deep link", async ({
     ospite("", "#exercise=partitore-d1&step=0&frame=after", 1100, 700),
   );
   const banco = page.frameLocator("iframe.kf-ospite");
-  await expect(banco.locator(".kf-chip")).toHaveCount(4, { timeout: 10_000 });
+  await expect(banco.locator(".kf-chip")).toHaveCount(11, { timeout: 10_000 });
   await banco.getByRole("button", { name: "Copia il link a questo passo" }).click();
   await expect(banco.getByRole("button", { name: "Copia il link a questo passo" })).toContainText(
     "Copiato",

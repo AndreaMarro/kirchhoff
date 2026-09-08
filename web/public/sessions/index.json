@@ -41,5 +41,78 @@
       "diagnosis": "q1: nessuna tecnica eseguibile raggiunge voltage su R1. Riduzioni certificate utili: nessuna. Analisi nodale disponibile: no. Nomi supportati senza corpo: partitore_di_tensione."
     },
     "titolo": "Fuori ambito: il condensatore in continua non si certifica"
+  },
+  {
+    "domanda": {
+      "quantity": "voltage",
+      "target": "R2"
+    },
+    "id": "partitore-tensione",
+    "outcome": "closed",
+    "risposta_esatta": "5 volt",
+    "titolo": "Partitore — la tensione d'uscita (5 V)"
+  },
+  {
+    "domanda": {
+      "quantity": "voltage",
+      "target": "R1"
+    },
+    "id": "due-rami-parallelo",
+    "outcome": "closed",
+    "risposta_esatta": "12 volt",
+    "titolo": "Due rami in parallelo — stessa tensione (12 V)"
+  },
+  {
+    "domanda": {
+      "quantity": "current",
+      "target": "R1"
+    },
+    "id": "serie-parallelo-misto",
+    "outcome": "closed",
+    "risposta_esatta": "3/55 ampere",
+    "titolo": "Serie + parallelo — due riduzioni (3/55 A)"
+  },
+  {
+    "domanda": {
+      "quantity": "current",
+      "target": "R1"
+    },
+    "id": "scala-tre-riduzioni",
+    "outcome": "closed",
+    "risposta_esatta": "2/3 ampere",
+    "titolo": "Scala con parallelo — tre riduzioni in fila (2/3 A)"
+  },
+  {
+    "domanda": {
+      "quantity": "current",
+      "target": "R1"
+    },
+    "id": "ramo-derivato",
+    "outcome": "closed",
+    "risposta_esatta": "3/50 ampere",
+    "titolo": "Ramo derivato — la corrente si divide (3/50 A)"
+  },
+  {
+    "domanda": {
+      "quantity": "voltage",
+      "target": "R1"
+    },
+    "id": "generatore-flottante",
+    "outcome": "closed",
+    "risposta_esatta": "5/2 volt",
+    "titolo": "Generatore flottante — via nodale (5/2 V)"
+  },
+  {
+    "domanda": {
+      "quantity": "time_constant",
+      "target": "R1"
+    },
+    "id": "rifiuto-domanda",
+    "outcome": "refusal",
+    "rifiuto": {
+      "cause": "unsolvable",
+      "diagnosis": "q1: nessuna tecnica eseguibile raggiunge time_constant su R1. Riduzioni certificate utili: nessuna. Analisi nodale disponibile: no. Nomi supportati senza corpo: partitore_di_tensione."
+    },
+    "titolo": "Fuori ambito: domanda non DC (costante di tempo)"
   }
 ]

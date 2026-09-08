@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/", { waitUntil: "networkidle" });
-  await expect(page.locator(".kf-chip")).toHaveCount(4, { timeout: 10_000 });
+  await expect(page.locator(".kf-chip")).toHaveCount(11, { timeout: 10_000 });
 });
 
 test("niente scroll orizzontale e flusso a una mano", async ({ page }) => {

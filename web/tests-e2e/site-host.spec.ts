@@ -61,7 +61,7 @@ async function apriOspite(page: Page, hash: string): Promise<FrameLocator> {
   await expect(page.locator(".site-main h1")).toContainText("davanti ai tuoi occhi");
   await expect(page.locator("#kf-frame")).toBeVisible();
   const banco = page.frameLocator("#kf-frame");
-  await expect(banco.locator(".kf-chip")).toHaveCount(4, { timeout: 15_000 });
+  await expect(banco.locator(".kf-chip")).toHaveCount(11, { timeout: 15_000 });
   return banco;
 }
 
@@ -145,7 +145,7 @@ test("ospite desktop: invito schermo intero e pagina dedicata puntano al passo",
   const riquadro = await page.locator("#kf-fullscreen").boundingBox();
   expect(riquadro?.height ?? 0).toBeGreaterThanOrEqual(44);
   await page.locator("#kf-fullscreen").click();
-  await expect(banco.locator(".kf-chip")).toHaveCount(4);
+  await expect(banco.locator(".kf-chip")).toHaveCount(11);
   await expect(banco.locator(".kf-answer-exact")).toContainText("6/325");
 });
 

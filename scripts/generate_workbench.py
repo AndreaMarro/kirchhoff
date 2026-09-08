@@ -87,6 +87,54 @@ PIAZZAMENTI_SCALA = (
     Placement(_comp("R3"), F(400), F(120)),
 )
 
+PIAZZAMENTI_PARALLELO = (
+    Placement(_nodo("a"), F(200), F(0)),
+    Placement(_nodo("0"), F(200), F(240)),
+    Placement(_comp("V1"), F(0), F(120)),
+    Placement(_comp("R1"), F(200), F(120)),
+    Placement(_comp("R2"), F(400), F(120)),
+)
+
+PIAZZAMENTI_MISTO = (
+    Placement(_nodo("t"), F(0), F(0)),
+    Placement(_nodo("a"), F(400), F(0)),
+    Placement(_nodo("0"), F(200), F(240)),
+    Placement(_comp("V1"), F(0), F(120)),
+    Placement(_comp("R1"), F(200), F(0)),
+    Placement(_comp("R2"), F(300), F(120)),
+    Placement(_comp("R3"), F(400), F(120)),
+)
+
+PIAZZAMENTI_SCALA_PARALLELO = (
+    Placement(_nodo("t"), F(0), F(0)),
+    Placement(_nodo("a"), F(200), F(0)),
+    Placement(_nodo("b"), F(400), F(0)),
+    Placement(_nodo("0"), F(200), F(240)),
+    Placement(_comp("V1"), F(0), F(120)),
+    Placement(_comp("R1"), F(100), F(0)),
+    Placement(_comp("R2"), F(300), F(-80)),
+    Placement(_comp("R3"), F(300), F(80)),
+    Placement(_comp("R4"), F(400), F(120)),
+)
+
+PIAZZAMENTI_RAMO = (
+    Placement(_nodo("a"), F(0), F(0)),
+    Placement(_nodo("b"), F(400), F(0)),
+    Placement(_nodo("0"), F(200), F(240)),
+    Placement(_comp("V1"), F(0), F(120)),
+    Placement(_comp("R1"), F(200), F(0)),
+    Placement(_comp("R2"), F(400), F(120)),
+    Placement(_comp("R3"), F(100), F(150)),
+)
+
+PIAZZAMENTI_FLOTTANTE = (
+    Placement(_nodo("a"), F(0), F(0)),
+    Placement(_nodo("b"), F(400), F(0)),
+    Placement(_nodo("0"), F(200), F(240)),
+    Placement(_comp("V1"), F(200), F(0)),
+    Placement(_comp("R1"), F(0), F(120)),
+    Placement(_comp("R2"), F(400), F(120)),
+)
 PIAZZAMENTI_PONTE = (
     Placement(_nodo("0"), F(200), F(20)),
     Placement(_nodo("a"), F(20), F(220)),
@@ -131,6 +179,58 @@ ESERCIZI: tuple[Esercizio, ...] = (
         ("q1", "voltage", "R1"),
         "nessuna",
     ),
+    Esercizio(
+        "partitore-tensione",
+        "Partitore — la tensione d'uscita (5 V)",
+        "V1 b 0 10 volt\nR1 b a 100 ohm\nR2 a 0 100 ohm\n? voltage R2\n",
+        ("q1", "voltage", "R2"),
+        "maglia",
+    ),
+    Esercizio(
+        "due-rami-parallelo",
+        "Due rami in parallelo — stessa tensione (12 V)",
+        "V1 a 0 12 volt\nR1 a 0 200 ohm\nR2 a 0 300 ohm\n? voltage R1\n",
+        ("q1", "voltage", "R1"),
+        "parallelo",
+    ),
+    Esercizio(
+        "serie-parallelo-misto",
+        "Serie + parallelo — due riduzioni (3/55 A)",
+        "V1 t 0 12 volt\nR1 t a 100 ohm\nR2 a 0 200 ohm\nR3 a 0 300 ohm\n"
+        "? current R1\n",
+        ("q1", "current", "R1"),
+        "misto",
+    ),
+    Esercizio(
+        "scala-tre-riduzioni",
+        "Scala con parallelo — tre riduzioni in fila (2/3 A)",
+        "V1 t 0 20 volt\nR1 t a 10 ohm\nR2 a b 20 ohm\nR3 a b 20 ohm\n"
+        "R4 b 0 10 ohm\n? current R1\n",
+        ("q1", "current", "R1"),
+        "scala-parallelo",
+    ),
+    Esercizio(
+        "ramo-derivato",
+        "Ramo derivato — la corrente si divide (3/50 A)",
+        "V1 a 0 12 volt\nR1 a b 100 ohm\nR2 b 0 100 ohm\nR3 a 0 100 ohm\n"
+        "? current R1\n",
+        ("q1", "current", "R1"),
+        "ramo",
+    ),
+    Esercizio(
+        "generatore-flottante",
+        "Generatore flottante — via nodale (5/2 V)",
+        "V1 a b 10 volt\nR1 a 0 100 ohm\nR2 b 0 300 ohm\n? voltage R1\n",
+        ("q1", "voltage", "R1"),
+        "flottante",
+    ),
+    Esercizio(
+        "rifiuto-domanda",
+        "Fuori ambito: domanda non DC (costante di tempo)",
+        "V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\n? time_constant R1\n",
+        ("q1", "time_constant", "R1"),
+        "nessuna",
+    ),
 )
 
 
@@ -150,6 +250,16 @@ def _disposizione(nome: str, ir, istante: int, casualita: bytes) -> LayoutIR:
         return LayoutIR.nuovo(PIAZZAMENTI_SCALA, istante=istante, casualita=casualita)
     if nome == "ponte":
         return LayoutIR.nuovo(PIAZZAMENTI_PONTE, istante=istante, casualita=casualita)
+    if nome == "parallelo":
+        return LayoutIR.nuovo(PIAZZAMENTI_PARALLELO, istante=istante, casualita=casualita)
+    if nome == "misto":
+        return LayoutIR.nuovo(PIAZZAMENTI_MISTO, istante=istante, casualita=casualita)
+    if nome == "scala-parallelo":
+        return LayoutIR.nuovo(PIAZZAMENTI_SCALA_PARALLELO, istante=istante, casualita=casualita)
+    if nome == "ramo":
+        return LayoutIR.nuovo(PIAZZAMENTI_RAMO, istante=istante, casualita=casualita)
+    if nome == "flottante":
+        return LayoutIR.nuovo(PIAZZAMENTI_FLOTTANTE, istante=istante, casualita=casualita)
     raise ValueError(f"disposizione {nome!r} sconosciuta")
 
 
