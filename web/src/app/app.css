@@ -671,6 +671,31 @@ button {
   color: var(--kf-fault);
 }
 
+/* --- carico fallito: trasporto, non dominio. Neutro di proposito:
+   non e' un rifiuto onesto né un guasto certificato dal backend. --- */
+
+.kf-notice-load {
+  background: var(--kf-surface-raised);
+  border-color: var(--kf-border-strong);
+}
+
+.kf-notice-load h2 {
+  color: var(--kf-ink-primary);
+}
+
+.kf-notice .kf-retry {
+  margin-top: var(--kf-space-4);
+  min-height: var(--kf-touch-min);
+  min-width: var(--kf-touch-min);
+  padding: 0 var(--kf-space-4);
+  border-radius: var(--kf-radius-pill);
+  border: 1px solid var(--kf-border-strong);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
 .kf-notice p {
   margin: var(--kf-space-2) 0;
 }

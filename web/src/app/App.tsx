@@ -11,6 +11,9 @@ export function App(): React.JSX.Element {
   const [index, setIndex] = useState<ExerciseIndexEntry[] | null>(null);
   const [session, setSession] = useState<StudentSessionView | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Contatore di tentativi: "Riprova" ripete il carico senza cambiare
+  // esercizio e senza ricaricare la pagina.
+  const [tentativo, setTentativo] = useState(0);
   const [entity, setEntity] = useState<StageEntity | null>(null);
   const [theme, toggleTheme] = useTheme();
   const ids = (index ?? []).map((e) => e.id);
@@ -26,7 +29,7 @@ export function App(): React.JSX.Element {
 
   useEffect(() => {
     loadIndex().then(setIndex).catch((e: unknown) => setError(String(e)));
-  }, []);
+  }, [tentativo]);
 
   useEffect(() => {
     if (index === null) return;
@@ -38,12 +41,17 @@ export function App(): React.JSX.Element {
     }
     setSession(null);
     setEntity(null);
+    // La richiesta corrente possiede caricamento, successo ed errore:
+    // partire azzera l'errore stantio, riuscire lo azzera comunque.
     // Solo l'ultima richiesta puo' insediare la sessione: un cambio rapido
     // di esercizio non deve farsi sovrascrivere dalla risposta piu' lenta.
+    setError(null);
     let viva = true;
     loadSession(target).then(
       (s) => {
-        if (viva) setSession(s);
+        if (!viva) return;
+        setError(null);
+        setSession(s);
       },
       (e: unknown) => {
         if (viva) setError(String(e));
@@ -52,7 +60,7 @@ export function App(): React.JSX.Element {
     return () => {
       viva = false;
     };
-  }, [index, selection.exercise, setSelection]);
+  }, [index, selection.exercise, setSelection, tentativo]);
 
   const stepCount = session?.steps.length ?? 0;
   const step = session && (selection.step < -1 || selection.step >= stepCount) ? -1 : selection.step;
@@ -114,9 +122,25 @@ export function App(): React.JSX.Element {
       ) : null}
       <main className="kf-main">
         {error ? (
-          <div className="kf-notice kf-notice-failure" role="alert">
-            <h2>Guasto</h2>
-            <p className="kf-mono">{error}</p>
+          // Guasto di trasporto, non di dominio: la sessione non e' mai
+          // arrivata, quindi non esiste rifiuto né risposta da mostrare.
+          <div className="kf-notice kf-notice-load" role="alert">
+            <h2>Impossibile caricare la sessione</h2>
+            <p>
+              La sessione certificata non ha raggiunto il banco. Non e' un rifiuto
+              del motore e nessuna risposta viene inventata al suo posto.
+            </p>
+            <details className="kf-tech">
+              <summary>Dettaglio tecnico</summary>
+              <div className="kf-diagnosis">{error}</div>
+            </details>
+            <button
+              type="button"
+              className="kf-retry"
+              onClick={() => setTentativo((t) => t + 1)}
+            >
+              Riprova
+            </button>
           </div>
         ) : session ? (
           <Workbench
