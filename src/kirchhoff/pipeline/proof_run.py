@@ -15,9 +15,11 @@ Mappa dei guasti (AD-13): Refusal = esito onesto di dominio, propagato
 identico e mai costruito qui; Failure = difetto applicativo o ingresso
 corrotto, nominato per stadio (`clock`, `entropy`, `orchestrate`, `registry`,
 `boundary`; `compose` passa l'originale del compositore). Le guardie ampie
-sono tre e documentate: fornitore di entropia e orologio sono ingressi
-non fidati del chiamante, e gli stadi orchestrate/registry/compose non
-lasciano mai attraversare un'eccezione imprevista senza causa conservata.
+sono deliberate e limitate ai confini con ingressi/collaboratori non fidati:
+orologio, entropia, calcolo iniziale, orchestratore, registro, compositore e
+costruzione della closure non lasciano attraversare eccezioni inattese senza
+una `Failure` attribuita allo stadio corretto. Anche i ritorni dei
+collaboratori sono verificati prima di attraversare lo stadio successivo.
 Un `Refusal` non e' un'eccezione e non attraversa mai un `except`: si
 restituisce, quindi nessuna guardia ampia puo' catturarlo per sbaglio.
 """
