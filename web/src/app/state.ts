@@ -52,13 +52,23 @@ function sameSelection(a: Selection, b: Selection): boolean {
 
 export function useTheme(): ["dark" | "light", () => void] {
   const [theme, setTheme] = useState<"dark" | "light">(() => {
-    const saved = window.localStorage.getItem("kf-theme");
-    return saved === "light" || saved === "dark" ? saved : "dark";
+    try {
+      const saved = window.localStorage.getItem("kf-theme");
+      return saved === "light" || saved === "dark" ? saved : "dark";
+    } catch {
+      // Archiviazione negata (p.es. cornice esterna con cookie bloccati):
+      // il tema vive in memoria per la sessione, il banco resta in piedi.
+      return "dark";
+    }
   });
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
-    window.localStorage.setItem("kf-theme", theme);
+    try {
+      window.localStorage.setItem("kf-theme", theme);
+    } catch {
+      /* Come sopra: persistenza best-effort, mai fatale. */
+    }
   }, [theme]);
 
   const toggle = useCallback(() => {
