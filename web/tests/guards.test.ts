@@ -10,30 +10,49 @@ function load(id: string): unknown {
 }
 
 describe("guards sul confine", () => {
-  it("l'indice elenca quattro esercizi onesti", () => {
+  it("l'indice elenca undici esercizi onesti", () => {
     const index = parseIndex(JSON.parse(readFileSync(join(dir, "index.json"), "utf-8")));
     expect(index.map((e) => e.id)).toEqual([
       "partitore-d1",
       "scala-due-riduzioni",
       "ponte-nodale",
       "rifiuto-reattivo",
+      "partitore-tensione",
+      "due-rami-parallelo",
+      "serie-parallelo-misto",
+      "scala-tre-riduzioni",
+      "ramo-derivato",
+      "generatore-flottante",
+      "rifiuto-domanda",
     ]);
   });
 
   it("ogni vista chiusa passa le guardie e mostra l'esatto", () => {
-    for (const id of ["partitore-d1", "scala-due-riduzioni", "ponte-nodale"]) {
+    for (const id of [
+      "partitore-d1",
+      "scala-due-riduzioni",
+      "ponte-nodale",
+      "partitore-tensione",
+      "due-rami-parallelo",
+      "serie-parallelo-misto",
+      "scala-tre-riduzioni",
+      "ramo-derivato",
+      "generatore-flottante",
+    ]) {
       const vista = parseSession(load(id));
       expect(vista.outcome).toBe("closed");
-      expect(vista.answer?.exact).toMatch(/^\d+\/\d+$/);
+      expect(vista.answer?.exact).toMatch(/^\d+(\/\d+)?$/);
       expect(vista.truth.product_verified).toBe(false);
     }
   });
 
   it("il rifiuto non ha risposta e ha diagnosi", () => {
-    const vista = parseSession(load("rifiuto-reattivo"));
-    expect(vista.outcome).toBe("refusal");
-    expect(vista.answer).toBeNull();
-    expect(vista.refusal?.diagnosis.length).toBeGreaterThan(20);
+    for (const id of ["rifiuto-reattivo", "rifiuto-domanda"]) {
+      const vista = parseSession(load(id));
+      expect(vista.outcome).toBe("refusal");
+      expect(vista.answer).toBeNull();
+      expect(vista.refusal?.diagnosis.length).toBeGreaterThan(20);
+    }
   });
 
   it("uno schema sconosciuto non entra", () => {

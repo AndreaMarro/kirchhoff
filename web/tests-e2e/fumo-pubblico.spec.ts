@@ -28,7 +28,7 @@ test.afterEach(() => {
 
 test("pubblico: homepage e 3 successi + rifiuto", async ({ page }) => {
   await page.goto(PUB, { waitUntil: "networkidle" });
-  await expect(page.locator(".kf-chip")).toHaveCount(4, { timeout: 20_000 });
+  await expect(page.locator(".kf-chip")).toHaveCount(11, { timeout: 20_000 });
   const attesi: Array<[number, string]> = [
     [0, "3/80"],
     [1, "6/325"],
@@ -56,7 +56,7 @@ window.addEventListener("keydown", () => { window.__tasti += 1; });
 </script>
 </body></html>`);
   const banco = page.frameLocator("#kf");
-  await expect(banco.locator(".kf-chip")).toHaveCount(4, { timeout: 20_000 });
+  await expect(banco.locator(".kf-chip")).toHaveCount(11, { timeout: 20_000 });
   await expect(banco.locator(".kf-answer-exact")).toContainText("3/80");
   await banco.locator(".kf-stage-caption").click();
   await page.keyboard.press("ArrowRight");

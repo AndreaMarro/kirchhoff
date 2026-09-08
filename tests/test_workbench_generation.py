@@ -38,7 +38,12 @@ def _normalizza(vista: dict) -> dict:
 
 
 def test_le_viste_versionate_esistono():
-    attesi = {"partitore-d1", "scala-due-riduzioni", "ponte-nodale", "rifiuto-reattivo"}
+    attesi = {
+        "partitore-d1", "scala-due-riduzioni", "ponte-nodale", "rifiuto-reattivo",
+        "partitore-tensione", "due-rami-parallelo", "serie-parallelo-misto",
+        "scala-tre-riduzioni", "ramo-derivato", "generatore-flottante",
+        "rifiuto-domanda",
+    }
     trovati = {p.stem for p in SESSIONI.glob("*.json")} - {"index"}
     assert trovati == attesi
     indice = json.loads((SESSIONI / "index.json").read_text(encoding="utf-8"))

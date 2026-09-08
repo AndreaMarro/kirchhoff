@@ -38,8 +38,8 @@ test("il guasto si dichiara senza inventare risposte", async ({ page }) => {
     await route.fulfill({ json: SESSIONE_GUASTO });
   });
   await page.goto("/", { waitUntil: "networkidle" });
-  await expect(page.locator(".kf-chip")).toHaveCount(5, { timeout: 10_000 });
-  await page.locator(".kf-chip").nth(4).click();
+  await expect(page.locator(".kf-chip")).toHaveCount(12, { timeout: 10_000 });
+  await page.locator(".kf-chip").nth(11).click();
   await expect(page.locator(".kf-notice-failure h2")).toContainText("Guasto");
   await expect(page.locator('.kf-notice-failure[role="alert"]')).toHaveCount(1);
   await expect(page.locator(".kf-answer-exact")).toHaveCount(0);

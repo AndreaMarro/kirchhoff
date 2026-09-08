@@ -4,7 +4,7 @@ import { expect, test } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/#exercise=ponte-nodale&step=3&frame=before", { waitUntil: "networkidle" });
-  await expect(page.locator(".kf-chip")).toHaveCount(4, { timeout: 10_000 });
+  await expect(page.locator(".kf-chip")).toHaveCount(11, { timeout: 10_000 });
 });
 
 test("il rail non espone equazioni grezze", async ({ page }) => {

@@ -4,7 +4,7 @@ import { expect, test } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/", { waitUntil: "networkidle" });
-  await expect(page.locator(".kf-chip")).toHaveCount(4, { timeout: 10_000 });
+  await expect(page.locator(".kf-chip")).toHaveCount(11, { timeout: 10_000 });
 });
 
 test("scelta esercizio e navigazione della dimostrazione", async ({ page }) => {
@@ -131,7 +131,7 @@ test("archiviazione negata: il banco resta in piedi, tema in memoria", async ({ 
   // vero (stesso documento + solo hash non riesegue gli init script e
   // non rimonta React, e il test passerebbe a vuoto).
   await page.reload({ waitUntil: "networkidle" });
-  await expect(page.locator(".kf-chip")).toHaveCount(4);
+  await expect(page.locator(".kf-chip")).toHaveCount(11);
   await expect(page.locator(".kf-answer-exact")).toContainText("3/80");
   await page.getByRole("button", { name: "Cambia tema" }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
