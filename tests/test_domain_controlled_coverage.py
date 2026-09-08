@@ -29,8 +29,10 @@ def test_vccs_cp_a_massa_e_uscita_flottante():
         (),
     )
     esito = resolve(ir)
-    assert isinstance(esito, Solved)
-    assert esito.soluzione["G1"]["current"] == solve_dc(ir)["G1"]["current"]
+    assert isinstance(esito, Refusal)
+    assert esito.cause == "unsolvable"
+    from fractions import Fraction
+    assert isinstance(solve_dc(ir)["G1"]["current"], Fraction)
 
 
 def test_rifiuta_scarto_potenza_zero_e_niente():

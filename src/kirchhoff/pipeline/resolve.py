@@ -1,46 +1,57 @@
-"""L'unico ingresso ammesso al prodotto: validate → dispatch → solve → verify → publish."""
+"""Compatibilita' di prodotto: `resolve` proietta la radice canonica.
+
+La radice applicativa canonica e' `run_proof_session`
+(`kirchhoff.pipeline.proof_run`): unica via verso la chiusura di backend.
+Per ogni (IR, Request) orchestra esattamente una volta e certifica
+esattamente una volta. Questo modulo non pianifica, non risolve, non
+certifica, non trasforma, non disegna circuiti da semantica propria:
+per ogni domanda dell'IR delega alla radice e ne proietta le chiusure in
+`Solved`, la struttura di presentazione del CLI storico.
+
+Ambito onesto (R3): si pubblica solo cio' che il percorso certificato
+certifica. Fasori, sorgenti controllate, transitori e IR senza domande
+diventano `Refusal`, mai valori pubblicati da un secondo motore: un
+secondo motore non esiste piu'.
+
+Le risposte sono chiaveate sulla domanda ORIGINALE: quando la lineage P1-J
+retargetta (p.es. `current R1` -> `current R1R2eq`), la catena certifica
+che la grandezza finale risponde alla domanda iniziale, ed e' sotto la
+chiave iniziale che la risposta si legge. La chiave finale e' registrata
+accanto come fatto letteralmente certificato dalla sessione.
+"""
 
 from __future__ import annotations
 
 import dataclasses
-from typing import Callable
+import os
+import secrets
+import subprocess
+from datetime import datetime, timezone
+from pathlib import Path
 
-from kirchhoff.domain import mna
-from kirchhoff.domain.exact import SingularSystemError
-from kirchhoff.domain.independent_dc import TableauSingularError, solve_dc_tableau
 from kirchhoff.domain.ir import IR
+from kirchhoff.domain.proof.session import DOCUMENT_PROFILE
 from kirchhoff.domain.refusal import Refusal
 from kirchhoff.domain.validate import Validated, validate
-from kirchhoff.domain.verify import compare_exact_solution_paths, controlli_eseguiti, verify
 from kirchhoff.pipeline.failure import Failure
+from kirchhoff.pipeline.proof_run import ProofSessionClosure, run_proof_session
 from kirchhoff.render.layout import LayoutIR
 from kirchhoff.render.serialize import FORME, render
 
-DC_TYPES = frozenset({
-    "resistor",
-    "voltage_source_dc",
-    "current_source_dc",
-    "voltage_controlled_voltage_source",
-    "voltage_controlled_current_source",
-})
-PHASOR_TYPES = frozenset({
-    "resistor", "capacitor", "inductor", "voltage_source_ac",
-})
-REATTIVI = frozenset({"capacitor", "inductor"})
+#: Il solutore che `Solved.solver` dichiara: un solo percorso certificato.
+SOLVER = "didactic"
 
-SUPPORTED_DOMAINS = frozenset({
-    "dc", "dc_resistive", "ac_sinusoidal", "three_phase", "transient",
-})
-DC_DOMAINS = frozenset({"dc", "dc_resistive"})
-PHASOR_DOMAINS = frozenset({"ac_sinusoidal", "three_phase"})
+#: Attestazioni di presentazione: vocabolario distinto per statuti distinti.
+#: Il Claim elettrico e' VERIFIED, la sessione di backend e' CLOSED; il nome
+#: "Product Verified" resta riservato e non compare qui (H5).
+VERIFICHE = ("Claim elettrico: VERIFIED", "Sessione backend: CLOSED")
 
-QUANTITIES_BY_SOLVER: dict[str, frozenset[str]] = {
-    "dc": frozenset({"voltage", "current"}),
-    "phasor": frozenset({"voltage", "current"}),
-}
-
-ATTESTAZIONE_PERCORSI = "accordo fra percorsi indipendenti"
-GRANDEZZE_CONFRONTO = ("voltage", "current")
+#: Dettaglio di provenienza dichiarato da questo adattatore (il produttore
+#: resta il compositore autorevole, la revisione e' risolta qui sotto).
+_DETAIL = (
+    "resolve: proiezione Solved da chiusure certificate "
+    "della radice canonica run_proof_session"
+)
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
@@ -56,89 +67,55 @@ class Solved:
 Risolto = Solved
 
 
+class _OrologioSistema:
+    """Orologio di default dell'adattatore: la radice resta iniettabile."""
+
+    def now(self) -> datetime:
+        return datetime.now(timezone.utc)
+
+
 def renderer_supports(ir: IR) -> bool:
     """Il renderer dichiara i tipi che sa disegnare in `FORME`. Nient'altro."""
     return all(c.type in FORME for c in ir.components)
 
 
-def _tipi(ir: IR) -> frozenset[str]:
-    return frozenset(c.type for c in ir.components)
+def _source_sha(dichiarato: str | None) -> str | Failure:
+    """La revisione produttrice: dichiarata, d'ambiente o dal checkout.
+
+    Il dominio non tocca Git e una regex non e' un'autorita' (D-H2.5-4):
+    questo adattatore lega il campo ai metadati reali quando puo'
+    (override esplicito, poi `KIRCHHOFF_SOURCE_SHA`, poi `git rev-parse`
+    sul checkout che contiene questo file) e dichiara il limite quando
+    non puo'. La forma resta validata dal compositore a valle.
+    """
+    if dichiarato is not None:
+        return dichiarato
+    env = os.environ.get("KIRCHHOFF_SOURCE_SHA")
+    if env:
+        return env
+    try:
+        radice = Path(__file__).resolve().parents[3]
+        completato = subprocess.run(
+            ["git", "-C", str(radice), "rev-parse", "HEAD"],
+            check=True, capture_output=True, text=True, timeout=10)
+        return completato.stdout.strip()
+    except Exception as exc:
+        return Failure(
+            "resolve",
+            "revisione produttrice non determinabile: "
+            f"{exc!r} (passare source_sha=... o KIRCHHOFF_SOURCE_SHA)")
 
 
-def _primo(ir: IR, ammessi: frozenset[str]):
-    return next(c for c in ir.components if c.type not in ammessi)
-
-
-def _rifiuto_richieste(ir: IR, solver: str, soluzione: dict | None = None) -> Refusal | None:
-    ammesse = QUANTITIES_BY_SOLVER[solver]
-    for r in ir.requests:
-        if r.quantity not in ammesse:
-            return Refusal(
-                "unsolvable", r.id, "request",
-                f"la richiesta {r.id} chiede {r.quantity} di {r.target}: "
-                f"il percorso {solver} produce solo "
-                f"{', '.join(sorted(ammesse))}.")
-        if soluzione is None:
-            continue
-        valore = soluzione.get(r.target, {}).get(r.quantity)
-        if valore is None:
-            return Refusal(
-                "unsolvable", r.id, "request",
-                f"la richiesta {r.id} chiede {r.quantity} di {r.target} "
-                "ma il solutore non l'ha prodotta.")
-    return None
-
-
-def _dispatch(ir: IR) -> tuple[str, Callable[[IR], dict]] | Refusal:
-    tipi = _tipi(ir)
-    dominio = ir.domain
-
-    if dominio not in SUPPORTED_DOMAINS:
+def _rifiuto_senza_domande(circuito: IR) -> Refusal:
+    if circuito.components:
         return Refusal(
-            "unsolvable", dominio, "operation",
-            f"domain={dominio!r} non è fra i domini supportati "
-            f"({', '.join(sorted(SUPPORTED_DOMAINS))}): "
-            "non viene interpretato come continua.")
-
-    if dominio in PHASOR_DOMAINS:
-        if tipi - PHASOR_TYPES:
-            c = _primo(ir, PHASOR_TYPES)
-            return Refusal(
-                "unsolvable", c.id, "component",
-                f"{c.id} è un {c.type}: il percorso fasoriale non lo ammette.")
-        if ir.omega <= 0:
-            return Refusal(
-                "unsolvable", ir.components[0].id, "component",
-                "regime sinusoidale senza pulsazione positiva: il percorso "
-                "fasoriale non ha una frequenza a cui valutare le impedenze.")
-        return "phasor", mna.solve_phasor
-
-    if dominio == "transient":
-        c = next((x for x in ir.components if x.type in REATTIVI), ir.components[0])
-        return Refusal(
-            "unsolvable", c.id, "component",
-            "il transitorio ha un oracolo nel kernel, ma non è ancora sul "
-            "percorso di pubblicazione: non si certifica uno stato iniziale "
-            "senza dire quale rete sostituita è stata verificata.")
-
-    if dominio in DC_DOMAINS:
-        if tipi <= DC_TYPES:
-            return "dc", mna.solve_dc
-        c = _primo(ir, DC_TYPES)
-        if c.type in REATTIVI:
-            return Refusal(
-                "unsolvable", c.id, "component",
-                f"{c.id} è un {c.type}: il percorso in continua non lo ammette. "
-                "Non viene spento in silenzio (aperto o corto): sarebbe la "
-                "soluzione di un circuito diverso da quello dichiarato.")
-        return Refusal(
-            "unsolvable", c.id, "component",
-            f"{c.id} è un {c.type}: nessun percorso del prodotto lo risolve "
-            f"con domain={dominio!r}.")
-
+            "unsolvable", circuito.components[0].id, "component",
+            "l'IR non contiene domande: il percorso certificato risponde "
+            "a una domanda esplicita («? <grandezza> <componente>»), "
+            "non pubblica mappe di valori.")
     return Refusal(
-        "unsolvable", dominio, "operation",
-        f"domain={dominio!r} è nominato ma non ha un percorso di pubblicazione.")
+        "unsolvable", "circuito", "operation",
+        "l'IR non contiene domande ne' componenti: niente da certificare.")
 
 
 def _disegna(ir: IR, layout: LayoutIR | None) -> tuple[LayoutIR | None, str | None] | Failure:
@@ -163,28 +140,27 @@ def _disegna(ir: IR, layout: LayoutIR | None) -> tuple[LayoutIR | None, str | No
         return Failure("render", f"{type(e).__name__}: {e}")
 
 
-def resolve(circuito: IR, layout: LayoutIR | None = None) -> Solved | Refusal | Failure:
+def resolve(
+    circuito: IR,
+    layout: LayoutIR | None = None,
+    *,
+    source_sha: str | None = None,
+) -> Solved | Refusal | Failure:
+    """Compatibilita': delega ogni domanda alla radice canonica e proietta."""
     try:
-        return _esegui(circuito, layout)
+        return _esegui(circuito, layout, source_sha)
     except Exception as e:
         return Failure("resolve", f"{type(e).__name__}: {e}")
 
 
-def _oracolo_percorso_b(ir: IR, soluzione_a: dict) -> Refusal | Failure | None:
-    """Gate interno: A e B devono concordare esattamente. None se concordano."""
-    try:
-        soluzione_b = solve_dc_tableau(ir)
-    except TableauSingularError as e:
-        return Refusal(
-            "path_disagreement", ir.components[0].id, "component",
-            "percorso A ha una soluzione, percorso B dichiara sistema "
-            f"singolare: {e}")
-    except Exception as e:
-        return Failure("verify", f"{type(e).__name__}: {e}")
-    return compare_exact_solution_paths(soluzione_a, soluzione_b)
-
-
-def _esegui(circuito: IR, layout: LayoutIR | None) -> Solved | Refusal | Failure:
+def _esegui(
+    circuito: IR,
+    layout: LayoutIR | None,
+    source_sha: str | None,
+) -> Solved | Refusal | Failure:
+    if not isinstance(circuito, IR):
+        return Failure(
+            "resolve", f"ingresso {type(circuito).__name__} invece di IR")
     try:
         ingresso = validate(circuito)
     except Exception as e:
@@ -193,55 +169,47 @@ def _esegui(circuito: IR, layout: LayoutIR | None) -> Solved | Refusal | Failure
         return ingresso
     if not isinstance(ingresso, Validated):
         return Failure("validate", f"esito inatteso: {type(ingresso)!r}")
+    if not circuito.requests:
+        return _rifiuto_senza_domande(circuito)
 
-    try:
-        scelto = _dispatch(ingresso.ir)
-    except Exception as e:
-        return Failure("dispatch", f"{type(e).__name__}: {e}")
-    if isinstance(scelto, Refusal):
-        return scelto
-    nome, solutore = scelto
+    sha = _source_sha(source_sha)
+    if isinstance(sha, Failure):
+        return sha
 
-    rifiuto = _rifiuto_richieste(ingresso.ir, nome)
-    if rifiuto is not None:
-        return rifiuto
+    soluzione: dict = {}
+    for domanda in circuito.requests:
+        esito = run_proof_session(
+            circuito, domanda,
+            clock=_OrologioSistema(),
+            entropy=lambda: secrets.token_bytes(10),
+            document_profile=DOCUMENT_PROFILE,
+            source_sha=sha,
+            detail=_DETAIL)
+        if isinstance(esito, Refusal):
+            return esito
+        if isinstance(esito, Failure):
+            return esito
+        if not isinstance(esito, ProofSessionClosure):
+            return Failure(
+                "resolve", f"esito inatteso: {type(esito)!r}")
+        finale = esito.session.final_request
+        importo = esito.session.final_solution.value.amount
+        soluzione.setdefault(domanda.target, {})[domanda.quantity] = importo
+        if (finale.target, finale.quantity) != (domanda.target, domanda.quantity):
+            soluzione.setdefault(finale.target, {})[finale.quantity] = importo
 
-    try:
-        soluzione = solutore(ingresso.ir)
-    except SingularSystemError as e:
-        return Refusal(
-            "unsolvable", ingresso.ir.components[0].id, "component",
-            f"il sistema non è risolvibile: {e}")
-    except Exception as e:
-        return Failure("solver", f"{type(e).__name__}: {e}")
-
-    rifiuto = _rifiuto_richieste(ingresso.ir, nome, soluzione)
-    if rifiuto is not None:
-        return rifiuto
-
-    if nome == "dc":
-        esito_b = _oracolo_percorso_b(ingresso.ir, soluzione)
-        if esito_b is not None:
-            return esito_b
-
-    try:
-        rifiuto = verify(ingresso.ir, soluzione)
-        attestati = controlli_eseguiti(ingresso.ir, soluzione)
-    except Exception as e:
-        return Failure("verify", f"{type(e).__name__}: {e}")
-    if rifiuto is not None:
-        return rifiuto
-
-    if nome == "dc":
-        attestati = (*attestati, ATTESTAZIONE_PERCORSI)
-
-    disegno = _disegna(ingresso.ir, layout)
+    disegno = _disegna(circuito, layout)
     if isinstance(disegno, Failure):
         return disegno
     lay, svg = disegno
-    return Solved(circuito=ingresso.ir, soluzione=soluzione, verifiche=attestati,
-                  solver=nome, layout=lay, svg=svg)
+    return Solved(circuito=circuito, soluzione=soluzione, verifiche=VERIFICHE,
+                  solver=SOLVER, layout=lay, svg=svg)
 
 
-def risolvi(circuito: IR, layout: LayoutIR | None = None) -> Solved | Refusal | Failure:
-    return resolve(circuito, layout)
+def risolvi(
+    circuito: IR,
+    layout: LayoutIR | None = None,
+    *,
+    source_sha: str | None = None,
+) -> Solved | Refusal | Failure:
+    return resolve(circuito, layout, source_sha=source_sha)

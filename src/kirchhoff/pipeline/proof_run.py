@@ -184,6 +184,49 @@ def run_proof_session(
     input di occurrence, invocazione del compositore, ritenzione della
     chiusura. Non pianifica, non risolve, non certifica, non disegna.
     """
+    esito = _componi_chiusura(
+        initial_ir, original_request, clock=clock, entropy=entropy,
+        document_profile=document_profile, source_sha=source_sha, detail=detail)
+    if isinstance(esito, (Refusal, Failure)):
+        return esito
+    chiusura, _run = esito
+    return chiusura
+
+
+def run_proof_session_con_run(
+    initial_ir: IR,
+    original_request: Request,
+    *,
+    clock: ClockPort,
+    entropy: EntropySource,
+    document_profile: str,
+    source_sha: str,
+    detail: str,
+) -> tuple[ProofSessionClosure, CertifiedDidacticRun] | Refusal | Failure:
+    """Come `run_proof_session`, piu' la run certificata che l'ha prodotta.
+
+    Unica implementazione condivisa (`_componi_chiusura`): una chiamata
+    orchestra una volta sola, come la radice canonica. Il secondo elemento
+    serve solo al proiettore di presentazione, che visualizza le esecuzioni
+    certificate senza rieseguirle (H5): non e' una seconda via di
+    composizione e non altera la chiusura.
+    """
+    return _componi_chiusura(
+        initial_ir, original_request, clock=clock, entropy=entropy,
+        document_profile=document_profile, source_sha=source_sha, detail=detail)
+
+
+def _componi_chiusura(
+    initial_ir: IR,
+    original_request: Request,
+    *,
+    clock: ClockPort,
+    entropy: EntropySource,
+    document_profile: str,
+    source_sha: str,
+    detail: str,
+) -> tuple[ProofSessionClosure, CertifiedDidacticRun] | Refusal | Failure:
+    """L'unica implementazione della composizione: chorus, non due voci."""
     try:
         istante = _millisecondi(clock)
     except Exception as exc:
@@ -201,7 +244,7 @@ def run_proof_session(
     except _ErroreEntropia as exc:
         return Failure("entropy", str(exc))
     except Exception as exc:
-        return Failure("orchestrate", f"orchestrazione impossibile: {exc}")
+        return Failure("orchestrate", f"orchestrazione impossibile: {exc!r}")
     if isinstance(run, Refusal):
         return run
     if not isinstance(run, CertifiedDidacticRun):
@@ -218,7 +261,7 @@ def run_proof_session(
     except _ErroreEntropia as exc:
         return Failure("entropy", str(exc))
     except Exception as exc:
-        return Failure("registry", f"registro non componibile: {exc}")
+        return Failure("registry", f"registro non componibile: {exc!r}")
     if not isinstance(registro, CircuitStateRegistry):
         return Failure(
             "registry",
@@ -245,7 +288,8 @@ def run_proof_session(
             "ProofSession o Failure",
         )
     try:
-        return ProofSessionClosure(session=sessione, registry=registro)
+        chiusura = ProofSessionClosure(session=sessione, registry=registro)
     except Exception as exc:
         return Failure(
             "boundary", f"chiusura applicativa non costruibile: {exc!r}")
+    return chiusura, run

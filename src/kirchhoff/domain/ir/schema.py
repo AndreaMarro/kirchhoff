@@ -57,6 +57,13 @@ REFERENCE_NODE = "0"
 #: Le sorgenti da cui un IR può nascere. Chiusa.
 SOURCE_KINDS: tuple[str, ...] = ("netlist", "latex", "image", "generated")
 
+#: Etichette di dominio che il percorso didattico in continua riconosce.
+#: `dc_resistive` non e' un dominio piu' ampio di `dc`: e' una continua
+#: puramente resistiva, quindi un sottoinsieme di cio' che il percorso
+#: sa trattare (i tipi restano comunque filtrati a valle). Fasori,
+#: transitori e trifase restano esclusi.
+DC_DOMAINS: frozenset[str] = frozenset({"dc", "dc_resistive"})
+
 #: Unità SI imposta da ogni tipo di componente. Non è una convenzione di scrittura:
 #: è il vincolo che impedisce di scambiare una capacità per una resistenza.
 EXPECTED_UNIT: dict[str, str] = {

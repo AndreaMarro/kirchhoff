@@ -16,7 +16,7 @@ Le guardie di serie/parallelo non vivono qui: la sola fonte è
 
 from __future__ import annotations
 
-from ..ir import IR, REFERENCE_NODE
+from ..ir import DC_DOMAINS, IR, REFERENCE_NODE
 from ..refusal import Refusal
 from ..transform.applicability import (
     ExecutableTransform,
@@ -134,7 +134,7 @@ def nodale_disponibile(ir: IR, quantity: str) -> bool:
     semplice supportato. Ogni voltage_source_dc flottante deve coincidere
     con un supernodo supportato: niente floating ignorate.
     """
-    if ir.domain != "dc":
+    if ir.domain not in DC_DOMAINS:
         return False
     if quantity not in QUANTITA_NODALI:
         return False

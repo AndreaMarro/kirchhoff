@@ -1,0 +1,191 @@
+import { useCallback, useEffect, useState } from "react";
+import { loadIndex, loadSession } from "../session/source.ts";
+import type { ExerciseIndexEntry, StudentSessionView } from "../session/types.ts";
+import { ExercisePicker } from "../features/exercise-picker/ExercisePicker.tsx";
+import { Workbench } from "../features/proof-workbench/Workbench.tsx";
+import type { StageEntity } from "../components/CircuitStage.tsx";
+import { StatusPill } from "../components/StatusPill.tsx";
+import { useSelection, useTheme } from "./state.ts";
+
+export function App(): React.JSX.Element {
+  const [index, setIndex] = useState<ExerciseIndexEntry[] | null>(null);
+  const [session, setSession] = useState<StudentSessionView | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  // Contatore di tentativi: "Riprova" ripete il carico senza cambiare
+  // esercizio e senza ricaricare la pagina.
+  const [tentativo, setTentativo] = useState(0);
+  const [entity, setEntity] = useState<StageEntity | null>(null);
+  const [theme, toggleTheme] = useTheme();
+  const ids = (index ?? []).map((e) => e.id);
+  const [selection, setSelection] = useSelection(ids);
+
+  // La selezione appartiene al contesto (esercizio, passo): a ogni
+  // transizione si riparte senza entita' per non mostrare selezioni stantie.
+  // Vale per ogni percorso (rail, tastiera, pulsanti, hash/back-forward).
+  const contesto = `${selection.exercise}#${selection.step}`;
+  useEffect(() => {
+    setEntity(null);
+  }, [contesto]);
+
+  useEffect(() => {
+    loadIndex().then(setIndex).catch((e: unknown) => setError(String(e)));
+  }, [tentativo]);
+
+  useEffect(() => {
+    if (index === null) return;
+    const target = index.some((e) => e.id === selection.exercise) ? selection.exercise : index[0]?.id;
+    if (!target) return;
+    if (target !== selection.exercise) {
+      setSelection({ exercise: target, step: -1, frame: "before" });
+      return;
+    }
+    setSession(null);
+    setEntity(null);
+    // La richiesta corrente possiede caricamento, successo ed errore:
+    // partire azzera l'errore stantio, riuscire lo azzera comunque.
+    // Solo l'ultima richiesta puo' insediare la sessione: un cambio rapido
+    // di esercizio non deve farsi sovrascrivere dalla risposta piu' lenta.
+    setError(null);
+    let viva = true;
+    loadSession(target).then(
+      (s) => {
+        if (!viva) return;
+        setError(null);
+        setSession(s);
+      },
+      (e: unknown) => {
+        if (viva) setError(String(e));
+      },
+    );
+    return () => {
+      viva = false;
+    };
+  }, [index, selection.exercise, setSelection, tentativo]);
+
+  const stepCount = session?.steps.length ?? 0;
+  const step = session && (selection.step < -1 || selection.step >= stepCount) ? -1 : selection.step;
+
+  // Normalizza lo stato profondo su cio' che e' mostrato: passo valido e
+  // fotogramma disponibile. L'URL denota sempre la vista, non la richiesta.
+  useEffect(() => {
+    if (!session) return;
+    const max = session.steps.length - 1;
+    const passo = selection.step < -1 || selection.step > max ? -1 : selection.step;
+    const corrente = passo >= 0 ? session.steps[passo] : null;
+    const fotogramma = corrente?.before_svg && corrente.after_svg ? selection.frame : "before";
+    if (passo !== selection.step || fotogramma !== selection.frame) {
+      setSelection({ ...selection, step: passo, frame: fotogramma });
+    }
+  }, [session, selection, setSelection]);
+
+  const goStep = useCallback(
+    (delta: number) => {
+      const next = Math.min(stepCount - 1, Math.max(-1, step + delta));
+      setSelection({ ...selection, step: next });
+    },
+    [step, selection, setSelection, stepCount],
+  );
+
+  useEffect(() => {
+    const onKey = (ev: KeyboardEvent): void => {
+      if (ev.metaKey || ev.ctrlKey || ev.altKey) return;
+      if (ev.key === "ArrowRight") goStep(1);
+      else if (ev.key === "ArrowLeft") goStep(-1);
+      else if (ev.key === "b" || ev.key === "B") setSelection({ ...selection, frame: "before" });
+      else if (ev.key === "a" || ev.key === "A") setSelection({ ...selection, frame: "after" });
+      else return;
+      ev.preventDefault();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [goStep, selection, setSelection]);
+
+  return (
+    <>
+      <header className="kf-bar">
+        <div className="kf-brand">
+          Kirchhoff <span>Proof Workbench</span>
+        </div>
+        <div className="kf-bar-title">{session ? exerciseTitle(index, selection.exercise) : ""}</div>
+        {session ? <StatusPill outcome={session.outcome} /> : null}
+        <CopyLink />
+        <button type="button" className="kf-theme-toggle" onClick={toggleTheme} aria-label="Cambia tema">
+          {theme === "dark" ? "Tema chiaro" : "Tema scuro"}
+        </button>
+      </header>
+      {index ? (
+        <ExercisePicker
+          exercises={index}
+          current={selection.exercise}
+          onSelect={(id) => setSelection({ exercise: id, step: -1, frame: "before" })}
+        />
+      ) : null}
+      <main className="kf-main">
+        {error ? (
+          // Guasto di trasporto, non di dominio: la sessione non e' mai
+          // arrivata, quindi non esiste rifiuto né risposta da mostrare.
+          <div className="kf-notice kf-notice-load" role="alert">
+            <h2>Impossibile caricare la sessione</h2>
+            <p>
+              La sessione certificata non ha raggiunto il banco. Non e' un rifiuto
+              del motore e nessuna risposta viene inventata al suo posto.
+            </p>
+            <details className="kf-tech">
+              <summary>Dettaglio tecnico</summary>
+              <div className="kf-diagnosis">{error}</div>
+            </details>
+            <button
+              type="button"
+              className="kf-retry"
+              onClick={() => setTentativo((t) => t + 1)}
+            >
+              Riprova
+            </button>
+          </div>
+        ) : session ? (
+          <Workbench
+            session={session}
+            step={step}
+            frame={selection.frame}
+            entity={entity}
+            onStep={(s) => setSelection({ ...selection, step: s })}
+            onFrame={(f) => setSelection({ ...selection, frame: f })}
+            onEntity={setEntity}
+            onPrev={() => goStep(-1)}
+            onNext={() => goStep(1)}
+          />
+        ) : (
+          <div className="kf-center">Caricamento della sessione certificata…</div>
+        )}
+      </main>
+    </>
+  );
+}
+
+function exerciseTitle(index: ExerciseIndexEntry[] | null, id: string): string {
+  return index?.find((e) => e.id === id)?.titolo ?? "";
+}
+
+function CopyLink(): React.JSX.Element {
+  const [copiato, setCopiato] = useState(false);
+  return (
+    <button
+      type="button"
+      className="kf-theme-toggle"
+      aria-label="Copia il link a questo passo"
+      aria-live="polite"
+      onClick={() => {
+        const href = window.location.href;
+        const done = (): void => {
+          setCopiato(true);
+          window.setTimeout(() => setCopiato(false), 2000);
+        };
+        if (navigator.clipboard?.writeText) {
+          navigator.clipboard.writeText(href).then(done, () => undefined);
+        }
+      }}
+    >
+      {copiato ? "Copiato" : "Copia link"}
+    </button>
+  );
+}

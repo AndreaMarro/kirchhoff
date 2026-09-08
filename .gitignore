@@ -31,3 +31,10 @@ reference-set
 # Il modulo del cancello visuale: si reinstalla con `npm install`
 ops/vista/node_modules/
 ops/vista/package-lock.json
+
+# --- Proof Workbench (frontend) ------------------------------------------------
+web/node_modules/
+web/dist/
+web/test-results/
+web/playwright-report/
+ops/vista/node_modules/

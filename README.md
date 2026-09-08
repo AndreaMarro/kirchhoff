@@ -8,17 +8,46 @@ contratto). Gli artefatti BMAD stanno in `_bmad-output/`.
 
 ## Stato
 
-Fase *plan* completa. **Epic 1 chiusa** (apparato di misura), verdetto
-`accepted-with-open-items` — vedi `_bmad-output/implementation-artifacts/epic-1-retro-2026-08-13.md`.
-Epic 2 in corso: il motore verificato da riga di comando.
+**Kirchhoff Proof Workbench Beta 0.3** — release candidate: una radice applicativa canonica, una
+proiezione visuale certificata, una superficie studente navigabile nel browser.
 
-| Storia | Stato |
+![Il banco di dimostrazione: circuito, passi, risposta esatta](docs/img/workbench-desktop.png)
+
+| Cosa | Stato |
 |---|---|
-| 1.1 Insieme di riferimento a risposta nota | `done` — quattro classi di dominio verificate: `dc_resistive`, `transient`, `ac_sinusoidal`, `three_phase`. Resta aperta la metà fotografica (CGHD), che dipende da una decisione umana |
-| 1.2 Script di valutazione | `done` — metriche riproducibili, matrice degli errori chiusa |
-| 2.1 Struttura con confini verificati | `done` — controllo dei confini sull'albero sintattico, configurazione validata all'avvio |
+| Radice canonica (R3) | `run_proof_session`: ogni richiesta di prodotto passa di qui, una sola orchestrazione e una sola certificazione; `resolve` e' compatibilita' che delega |
+| Verita' visuale singola (H5) | `render/` non riesegue `transform()`: proietta `TransformExecution` certificata (0 chiamate produttive, testato) |
+| Contratto di presentazione | `StudentSessionView` (student-session.v0.1): esatto prima del decimale, Claim VERIFIED vs sessione CLOSED, mai Product Verified |
+| Superficie | React 19 + TS strict + Vite (solo react/react-dom a runtime): 3 esercizi veri + 1 rifiuto onesto, 40 casi E2E verdi (desktop + mobile) |
+| Backend storico | Epic 1 chiusa, P1-J/K/L integrati, H2.5/O0/H2.75 fusi in `main` |
 
-## Uso
+## Il banco in 2 comandi
+
+```bash
+cd web && npm install && npm run dev
+```
+
+poi apri l'URL stampato (le viste in `web/public/sessions/` sono gia'
+versionate; si rigenerano dal kernel con
+`uv run --no-sync python scripts/generate_workbench.py` e il drift test
+`tests/test_workbench_generation.py` ne prova la byte-identita').
+
+## Cosa e' verificato e cosa no
+
+- Verificato e pubblicato: continua DC con domande esplicite, via percorso
+  didattico certificato (Claim elettrico VERIFIED + sessione CLOSED).
+- Verificato a livello di dominio ma NON pubblicato dal prodotto: fasori,
+  sorgenti controllate, transitori (i solutori `mna`/tableau e l'eval
+  restano intatti; il prodotto risponde con un `Refusal` onesto).
+- Mai affermato: Product Verified (riservato a un gate futuro, H5 prodotto).
+- Non supportato nel disegno: autolayout generale (solo maglia singola
+  calcolata + disposizioni a mano riesaminate per scala e ponte).
+
+## Uso storico (CLI ed eval)
+
+Il CLI (`kirchhoff <netlist> [--svg ...] [--pdf ...]`) attraversa la stessa
+radice canonica del banco e ne proietta le chiusure; codici: 0 ok,
+3 RIFIUTATO, 65/66 netlist, 70 guasto.
 
 ```bash
 uv run kirchhoff-eval build --n 60 --out reference-set
@@ -35,9 +64,12 @@ Tre controlli che falliscono da soli, senza che qualcuno debba ricordarsene:
 
 ```bash
 uv run python scripts/check_domain_coverage.py   # domain/ al 100%, righe e rami
-uv run python scripts/check_boundaries.py        # domain/ non importa fuori da sé
+uv run python scripts/check_boundaries.py        # domain/ isolato; domain/ e render/ mai verso il frontend
 uv run --with pytest --with pytest-cov python -m pytest   # copertura globale >= 95%
 ```
+
+Il banco aggiunge i propri gate (`web/`: `npm run typecheck`, `npm run test`,
+`npm run build`, `npm run test:e2e` sulla build di produzione).
 
 Il controllo dei confini legge l'albero sintattico, non il testo: `import kirchhoff.adapters as a`
 e `from kirchhoff import pipeline` sono viste come `from ..adapters import x`, e un percorso

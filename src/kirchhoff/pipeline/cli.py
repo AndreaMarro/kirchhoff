@@ -14,12 +14,8 @@ from fractions import Fraction
 from kirchhoff.domain.refusal import Refusal
 from kirchhoff.pipeline.failure import Failure
 from kirchhoff.pipeline.netlist import leggi
+from kirchhoff.pipeline.presentation import decimale as _decimale
 from kirchhoff.pipeline.resolve import Solved, resolve
-
-
-def _decimale(f: Fraction, cifre: int = 4) -> str:
-    """Il valore leggibile ACCANTO a quello esatto, mai al suo posto."""
-    return f"{float(f):.{cifre}g}"
 
 
 def _chromium() -> pathlib.Path | None:
@@ -91,7 +87,7 @@ def main(argv: list[str] | None = None) -> int:
     for c in sorted(circuito.components, key=lambda c: c.id):
         v = esito.soluzione.get(c.id, {})
         tensione, corrente = v.get("voltage"), v.get("current")
-        if tensione is None or not isinstance(tensione, Fraction):
+        if not isinstance(tensione, Fraction) or not isinstance(corrente, Fraction):
             continue
         print(f"  {c.id:<{largo}}  V = {str(tensione):>10}  = {_decimale(tensione):>9} V"
               f"   I = {str(corrente):>10}  = {_decimale(corrente):>9} A")
