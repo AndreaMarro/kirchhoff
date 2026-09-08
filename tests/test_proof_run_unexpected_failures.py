@@ -85,6 +85,19 @@ def test_invalid_orchestrator_return_is_staged_failure(monkeypatch):
     assert not isinstance(outcome, Refusal)
 
 
+def test_invalid_registry_return_is_staged_failure(monkeypatch):
+    """Un ritorno invalido del registro resta Failure dello stadio registry."""
+    import kirchhoff.pipeline.proof_run as boundary
+
+    monkeypatch.setattr(boundary, "componi_registro", lambda *a, **k: None)
+    outcome = _run_d1()
+
+    assert type(outcome) is Failure
+    assert outcome.dove == "registry"
+    assert "NoneType" in outcome.messaggio
+    assert not isinstance(outcome, Refusal)
+
+
 def test_invalid_composer_return_is_staged_failure(monkeypatch):
     """Il compositore non puo' far trapelare un tipo inatteso dal boundary."""
     import kirchhoff.pipeline.proof_run as boundary
