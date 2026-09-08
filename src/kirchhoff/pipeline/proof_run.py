@@ -217,6 +217,12 @@ def run_proof_session(
         return Failure("entropy", str(exc))
     except Exception as exc:
         return Failure("registry", f"registro non componibile: {exc}")
+    if not isinstance(registro, CircuitStateRegistry):
+        return Failure(
+            "registry",
+            f"registro ha restituito {type(registro).__name__} invece di "
+            "CircuitStateRegistry",
+        )
     try:
         sessione = compose_proof_session(
             run, registro, session_instant_ms=istante,
