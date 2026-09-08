@@ -191,6 +191,16 @@ button {
   background: var(--kf-surface-tint-provenance);
 }
 
+/* --- guida d'ingresso in una riga (post-RC): dice i primi 15 secondi --- */
+
+.kf-entry-hint {
+  margin: 0;
+  padding: var(--kf-space-2) var(--kf-space-4) 0;
+  font-size: var(--kf-type-small);
+  color: var(--kf-ink-muted);
+  text-align: center;
+}
+
 /* --- composizione --- */
 
 .kf-main {

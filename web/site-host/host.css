@@ -1,0 +1,316 @@
+/* Guscio ospite dimostrativo: pagina del sito di ripetizioni che incornicia
+   il banco. Stili autonomi, nessuna dipendenza dal banco, nessuna logica
+   elettrica. Le altezze della cornice sono le minime sane misurate
+   (vedi README.md): desktop 720px, tablet 700px, mobile max(620px, 86dvh). */
+
+:root {
+  --host-ink: #1c2430;
+  --host-muted: #5b6675;
+  --host-line: #dfe4ea;
+  --host-bg: #f6f7f9;
+  --host-card: #ffffff;
+  --host-accent: #0b5fff;
+  --host-radius: 12px;
+  --host-max: 1200px;
+  --kf-frame-h-desktop: 720px;
+  --kf-frame-h-tablet: 700px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--host-ink);
+  background: var(--host-bg);
+}
+
+/* --- intestazione del sito (modello, non il sito reale) --- */
+
+.site-header {
+  background: var(--host-ink);
+  color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.site-header-inner {
+  max-width: var(--host-max);
+  margin: 0 auto;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.site-brand {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 18px;
+  white-space: nowrap;
+}
+
+.site-brand span {
+  font-weight: 400;
+  opacity: 0.75;
+  font-size: 15px;
+}
+
+.site-nav {
+  display: flex;
+  gap: 16px;
+  margin-left: auto;
+}
+
+.site-nav a {
+  color: #fff;
+  opacity: 0.8;
+  text-decoration: none;
+  font-size: 15px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.site-nav a[aria-current="page"] {
+  opacity: 1;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* --- corpo --- */
+
+.site-main {
+  max-width: var(--host-max);
+  margin: 0 auto;
+  padding: 24px 20px 64px;
+}
+
+.crumbs {
+  font-size: 14px;
+  color: var(--host-muted);
+  margin-bottom: 8px;
+}
+
+.crumbs a {
+  color: var(--host-accent);
+}
+
+.site-main h1 {
+  font-size: clamp(26px, 4vw, 38px);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  margin: 0 0 12px;
+  max-width: 22em;
+}
+
+.lede {
+  font-size: 19px;
+  max-width: 38em;
+  margin: 0 0 16px;
+}
+
+.how {
+  margin: 0 0 12px;
+  padding-left: 24px;
+  max-width: 40em;
+}
+
+.how li {
+  margin: 4px 0;
+}
+
+.scope {
+  font-size: 15px;
+  color: var(--host-muted);
+  max-width: 44em;
+  border-left: 3px solid var(--host-line);
+  padding-left: 12px;
+}
+
+.badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid var(--host-line);
+  border-radius: 999px;
+  padding: 1px 10px;
+  margin-left: 6px;
+  vertical-align: middle;
+  color: var(--host-muted);
+  background: var(--host-card);
+}
+
+/* --- area Kirchhoff --- */
+
+.kf-embed {
+  margin: 28px 0 8px;
+}
+
+.kf-embed-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.kf-embed-title {
+  font-weight: 600;
+}
+
+.kf-embed-fullscreen,
+.kf-embed-open {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 18px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.kf-embed-fullscreen {
+  border: 1px solid var(--host-accent);
+  background: var(--host-accent);
+  color: #fff;
+}
+
+.kf-embed-open {
+  border: 1px solid var(--host-line);
+  background: var(--host-card);
+  color: var(--host-ink);
+}
+
+.kf-embed-frame {
+  background: var(--host-card);
+  border: 1px solid var(--host-line);
+  border-radius: var(--host-radius);
+  overflow: hidden;
+}
+
+.kf-embed-frame:fullscreen {
+  border-radius: 0;
+  border: none;
+}
+
+.kf-embed-frame:fullscreen iframe {
+  height: 100dvh;
+}
+
+.kf-embed-frame iframe {
+  display: block;
+  width: 100%;
+  height: var(--kf-frame-h-desktop);
+  border: 0;
+}
+
+.kf-embed-note {
+  font-size: 14px;
+  color: var(--host-muted);
+  margin: 8px 2px 0;
+}
+
+/* --- faq --- */
+
+.faq {
+  margin-top: 32px;
+  max-width: 44em;
+}
+
+.faq h2 {
+  font-size: 22px;
+  margin: 0 0 8px;
+}
+
+.faq dl {
+  margin: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.faq dl > div {
+  background: var(--host-card);
+  border: 1px solid var(--host-line);
+  border-radius: var(--host-radius);
+  padding: 12px 16px;
+}
+
+.faq dt {
+  font-weight: 700;
+}
+
+.faq dd {
+  margin: 2px 0 0;
+  color: var(--host-muted);
+  font-size: 15px;
+}
+
+/* --- piede --- */
+
+.site-footer {
+  border-top: 1px solid var(--host-line);
+  background: var(--host-card);
+}
+
+.site-footer-inner {
+  max-width: var(--host-max);
+  margin: 0 auto;
+  padding: 16px 20px;
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 14px;
+  color: var(--host-muted);
+}
+
+/* --- reattivo: la cornice segue le minime sane misurate --- */
+
+@media (max-width: 820px) {
+  .kf-embed-frame iframe {
+    height: var(--kf-frame-h-tablet);
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: 16px;
+  }
+
+  .site-main {
+    padding: 16px 14px 48px;
+  }
+
+  .site-nav {
+    gap: 12px;
+  }
+
+  .kf-embed-frame iframe {
+    height: max(620px, 86dvh);
+  }
+
+  .kf-embed-fullscreen,
+  .kf-embed-open {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+}
