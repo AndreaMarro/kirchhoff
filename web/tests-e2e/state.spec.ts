@@ -81,3 +81,39 @@ test("pre-selezione dell'evidenza nell'altro fotogramma sopravvive", async ({ pa
   await expect(page.locator('.kf-entity-btn[aria-pressed="true"]')).toContainText("R1R2eq");
   expect(await page.locator(".kf-stage-frame .kf-selected").count()).toBeGreaterThan(0);
 });
+
+test("cronologia reale: indietro e avanti restano coerenti", async ({ page }) => {
+  // A → passo → Dopo → B → passo → indietro → indietro → avanti.
+  // A ogni tappa URL, chip, passo, fotogramma, circuito, risposta e
+  // selezione devono accordarsi; nessuno stato stantio riemerge.
+  await page.locator(".kf-rail-step").nth(1).click();
+  await page.getByRole("button", { name: "Dopo", exact: true }).click();
+  await page.getByRole("button", { name: "R1", exact: true }).click();
+  await expect(page).toHaveURL(/#exercise=partitore-d1&step=0&frame=after/);
+  await page.locator(".kf-chip").nth(1).click();
+  await page.locator(".kf-rail-step").nth(2).click();
+  await expect(page).toHaveURL(/#exercise=scala-due-riduzioni&step=1&frame=before/);
+  await expect(page.locator(".kf-stage-caption")).toContainText("prima");
+  await expect(page.locator(".kf-answer-exact")).toContainText("6/325");
+  await page.goBack();
+  await expect(page).toHaveURL(/#exercise=scala-due-riduzioni&step=-1&frame=before/);
+  await expect(page.locator('.kf-chip[aria-current="true"]')).toContainText("Scala");
+  await expect(page.locator('.kf-rail-step[aria-current="true"]')).toContainText("Apertura");
+  await expect(page.locator(".kf-stage-question code").first()).toContainText("corrente di R1");
+  await expect(page.locator(".kf-answer-exact")).toContainText("6/325");
+  await expect(page.locator('.kf-entity-btn[aria-pressed="true"]')).toHaveCount(0);
+  await page.goBack();
+  await expect(page).toHaveURL(/#exercise=partitore-d1&step=0&frame=after/);
+  await expect(page.locator('.kf-chip[aria-current="true"]')).toContainText("Partitore");
+  await expect(page.locator(".kf-stage-caption")).toContainText("dopo");
+  await expect(page.locator(".kf-answer-exact")).toContainText("3/80");
+  // La selezione R1 era interazione, non stato profondo: indietro non la resuscita.
+  await expect(page.locator('.kf-entity-btn[aria-pressed="true"]')).toHaveCount(0);
+  await expect(page.locator(".kf-inspector")).not.toContainText("Selezionata");
+  await page.goForward();
+  await expect(page).toHaveURL(/#exercise=scala-due-riduzioni&step=-1&frame=before/);
+  await expect(page.locator('.kf-chip[aria-current="true"]')).toContainText("Scala");
+  await expect(page.locator('.kf-rail-step[aria-current="true"]')).toContainText("Apertura");
+  await expect(page.locator(".kf-answer-exact")).toContainText("6/325");
+  await expect(page.locator('.kf-entity-btn[aria-pressed="true"]')).toHaveCount(0);
+});
