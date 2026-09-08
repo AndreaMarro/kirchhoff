@@ -66,3 +66,16 @@ def test_unexpected_orchestrator_exception_is_staged_failure(monkeypatch, exc):
     assert type(outcome) is Failure
     assert outcome.dove == "orchestrate"
     assert not isinstance(outcome, Refusal)
+
+
+def test_invalid_orchestrator_return_is_staged_failure(monkeypatch):
+    """Un ritorno invalido del collaboratore non deve attivare un assert leak."""
+    import kirchhoff.pipeline.proof_run as boundary
+
+    monkeypatch.setattr(boundary, "orchestrate_didactic_run", lambda *a, **k: None)
+    outcome = _run_d1()
+
+    assert type(outcome) is Failure
+    assert outcome.dove == "orchestrate"
+    assert "NoneType" in outcome.messaggio
+    assert not isinstance(outcome, Refusal)
