@@ -202,7 +202,12 @@ def run_proof_session(
         return Failure("orchestrate", f"orchestrazione impossibile: {exc}")
     if isinstance(run, Refusal):
         return run
-    assert isinstance(run, CertifiedDidacticRun)
+    if not isinstance(run, CertifiedDidacticRun):
+        return Failure(
+            "orchestrate",
+            f"orchestrazione ha restituito {type(run).__name__} invece di "
+            "CertifiedDidacticRun o Refusal",
+        )
     try:
         evidence = tuple(
             sorgente.nuovo_ref(istante)
