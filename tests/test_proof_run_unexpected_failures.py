@@ -35,11 +35,9 @@ def _entropy_source():
     return next_entropy
 
 
-def _run_d1():
-    ir = leggi(D1)
-    request = next(iter(ir.requests))
+def _call(initial_ir, request):
     return run_proof_session(
-        ir,
+        initial_ir,
         request,
         clock=OrologioFermo(),
         entropy=_entropy_source(),
@@ -47,6 +45,12 @@ def _run_d1():
         source_sha=SHA_FIXTURE,
         detail="regressione P2 H2.75",
     )
+
+
+def _run_d1():
+    ir = leggi(D1)
+    request = next(iter(ir.requests))
+    return _call(ir, request)
 
 
 @pytest.mark.parametrize(
@@ -107,4 +111,34 @@ def test_closure_construction_exception_is_staged_failure(monkeypatch):
     assert type(outcome) is Failure
     assert outcome.dove == "boundary"
     assert "chiusura corrotta" in outcome.messaggio
+    assert not isinstance(outcome, Refusal)
+
+
+def test_invalid_initial_ir_limit_failure_is_staged(monkeypatch):
+    """Anche un guasto inatteso nel calcolo del limite stati resta Failure."""
+    import kirchhoff.pipeline.proof_run as boundary
+
+    class BrokenComponents:
+        def __len__(self):
+            raise AssertionError("componenti illeggibili")
+
+    class BrokenIR:
+        components = BrokenComponents()
+
+    ir = leggi(D1)
+    request = next(iter(ir.requests))
+    called = False
+
+    def should_not_orchestrate(*args, **kwargs):
+        nonlocal called
+        called = True
+        raise AssertionError("orchestratore non doveva essere chiamato")
+
+    monkeypatch.setattr(boundary, "orchestrate_didactic_run", should_not_orchestrate)
+    outcome = _call(BrokenIR(), request)
+
+    assert type(outcome) is Failure
+    assert outcome.dove == "orchestrate"
+    assert "componenti illeggibili" in outcome.messaggio
+    assert called is False
     assert not isinstance(outcome, Refusal)
