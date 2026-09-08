@@ -72,7 +72,22 @@ test("il rifiuto e' deliberato e senza risposta", async ({ page }) => {
   await page.locator(".kf-chip").nth(3).click();
   await expect(page.locator(".kf-notice h2")).toContainText("Non certificata");
   await expect(page.locator(".kf-answer-exact")).toHaveCount(0);
+  await expect(page.locator(".kf-notice-refusal .kf-tech summary")).toContainText(
+    "Dettaglio tecnico",
+  );
+  await page.locator(".kf-notice-refusal .kf-tech summary").click();
   await expect(page.locator(".kf-diagnosis")).toContainText("nessuna tecnica eseguibile");
+});
+
+test("il link al passo si copia", async ({ page, context }) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.locator(".kf-rail-step").nth(1).click();
+  await page.getByRole("button", { name: "Copia il link a questo passo" }).click();
+  await expect(page.getByRole("button", { name: "Copia il link a questo passo" })).toContainText(
+    "Copiato",
+  );
+  const incollato = await page.evaluate(() => navigator.clipboard.readText());
+  expect(incollato).toMatch(/#exercise=partitore-d1&step=\d+&frame=(before|after)/);
 });
 
 test("l'esatto comanda, il decimale accompagna", async ({ page }) => {

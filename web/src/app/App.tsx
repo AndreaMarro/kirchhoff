@@ -66,6 +66,7 @@ export function App(): React.JSX.Element {
         </div>
         <div className="kf-bar-title">{session ? exerciseTitle(index, selection.exercise) : ""}</div>
         {session ? <StatusPill outcome={session.outcome} /> : null}
+        <CopyLink />
         <button type="button" className="kf-theme-toggle" onClick={toggleTheme} aria-label="Cambia tema">
           {theme === "dark" ? "Tema chiaro" : "Tema scuro"}
         </button>
@@ -105,4 +106,28 @@ export function App(): React.JSX.Element {
 
 function exerciseTitle(index: ExerciseIndexEntry[] | null, id: string): string {
   return index?.find((e) => e.id === id)?.titolo ?? "";
+}
+
+function CopyLink(): React.JSX.Element {
+  const [copiato, setCopiato] = useState(false);
+  return (
+    <button
+      type="button"
+      className="kf-theme-toggle"
+      aria-label="Copia il link a questo passo"
+      aria-live="polite"
+      onClick={() => {
+        const href = window.location.href;
+        const done = (): void => {
+          setCopiato(true);
+          window.setTimeout(() => setCopiato(false), 2000);
+        };
+        if (navigator.clipboard?.writeText) {
+          navigator.clipboard.writeText(href).then(done, () => undefined);
+        }
+      }}
+    >
+      {copiato ? "Copiato" : "Copia link"}
+    </button>
+  );
 }

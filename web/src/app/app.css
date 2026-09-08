@@ -682,6 +682,21 @@ button {
   border-radius: var(--kf-radius-md);
   padding: var(--kf-space-3);
   overflow-x: auto;
+  margin-top: var(--kf-space-2);
+}
+
+.kf-notice .kf-tech {
+  margin-top: var(--kf-space-3);
+}
+
+.kf-notice .kf-tech summary {
+  min-height: var(--kf-touch-min);
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-weight: var(--kf-weight-medium);
+  font-size: var(--kf-type-small);
+  color: var(--kf-ink-secondary);
 }
 
 [data-theme="light"] .kf-notice .kf-diagnosis {

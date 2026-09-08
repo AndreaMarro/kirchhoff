@@ -24,19 +24,22 @@ export function RefusalView({
         ) : null}
         .
       </p>
-      <div className="kf-diagnosis">{refusal.diagnosis}</div>
-      <dl className="kf-kv">
-        <dt>Controllo</dt>
-        <dd>
-          <code>{refusal.cause}</code>
-        </dd>
-        <dt>Soggetto</dt>
-        <dd>
-          <code>
-            {refusal.subject_kind}:{refusal.subject}
-          </code>
-        </dd>
-      </dl>
+      <details className="kf-tech">
+        <summary>Dettaglio tecnico</summary>
+        <div className="kf-diagnosis">{refusal.diagnosis}</div>
+        <dl className="kf-kv">
+          <dt>Controllo</dt>
+          <dd>
+            <code>{refusal.cause}</code>
+          </dd>
+          <dt>Soggetto</dt>
+          <dd>
+            <code>
+              {refusal.subject_kind}:{refusal.subject}
+            </code>
+          </dd>
+        </dl>
+      </details>
       <p>
         Non e' un errore tuo e non e' un guasto: e' il sistema che dice di non poter
         certificare. Nessun numero parziale viene inventato.
@@ -50,16 +53,19 @@ export function FailureView({ failure }: { failure: FailureView }): React.JSX.El
     <div className="kf-notice kf-notice-failure" role="alert">
       <h2>Guasto</h2>
       <p>Qualcosa nell'applicazione non ha funzionato. Non e' un rifiuto onesto: e' un difetto.</p>
-      <dl className="kf-kv">
-        <dt>Stadio</dt>
-        <dd>
-          <code>{failure.dove}</code>
-        </dd>
-        <dt>Dettaglio</dt>
-        <dd>
-          <code>{failure.messaggio}</code>
-        </dd>
-      </dl>
+      <details className="kf-tech">
+        <summary>Dettaglio tecnico</summary>
+        <dl className="kf-kv">
+          <dt>Stadio</dt>
+          <dd>
+            <code>{failure.dove}</code>
+          </dd>
+          <dt>Dettaglio</dt>
+          <dd>
+            <code>{failure.messaggio}</code>
+          </dd>
+        </dl>
+      </details>
     </div>
   );
 }
