@@ -1,4 +1,4 @@
-"""Regressioni H2.75: eccezioni inattese restano Failure tipizzati."""
+"""Regressioni H2.75: eccezioni e ritorni inattesi restano Failure tipizzati."""
 
 from datetime import datetime, timezone
 
@@ -78,4 +78,33 @@ def test_invalid_orchestrator_return_is_staged_failure(monkeypatch):
     assert type(outcome) is Failure
     assert outcome.dove == "orchestrate"
     assert "NoneType" in outcome.messaggio
+    assert not isinstance(outcome, Refusal)
+
+
+def test_invalid_composer_return_is_staged_failure(monkeypatch):
+    """Il compositore non puo' far trapelare un tipo inatteso dal boundary."""
+    import kirchhoff.pipeline.proof_run as boundary
+
+    monkeypatch.setattr(boundary, "compose_proof_session", lambda *a, **k: None)
+    outcome = _run_d1()
+
+    assert type(outcome) is Failure
+    assert outcome.dove == "boundary"
+    assert "NoneType" in outcome.messaggio
+    assert not isinstance(outcome, Refusal)
+
+
+def test_closure_construction_exception_is_staged_failure(monkeypatch):
+    """Anche un difetto inatteso nella costruzione della closure resta Failure."""
+    import kirchhoff.pipeline.proof_run as boundary
+
+    def broken_closure(*args, **kwargs):
+        raise AssertionError("chiusura corrotta")
+
+    monkeypatch.setattr(boundary, "ProofSessionClosure", broken_closure)
+    outcome = _run_d1()
+
+    assert type(outcome) is Failure
+    assert outcome.dove == "boundary"
+    assert "chiusura corrotta" in outcome.messaggio
     assert not isinstance(outcome, Refusal)
