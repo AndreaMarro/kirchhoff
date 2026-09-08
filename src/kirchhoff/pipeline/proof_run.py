@@ -15,9 +15,11 @@ Mappa dei guasti (AD-13): Refusal = esito onesto di dominio, propagato
 identico e mai costruito qui; Failure = difetto applicativo o ingresso
 corrotto, nominato per stadio (`clock`, `entropy`, `orchestrate`, `registry`,
 `boundary`; `compose` passa l'originale del compositore). Le guardie ampie
-sono solo due e documentate: fornitore di entropia e orologio sono ingressi
-non fidati del chiamante, e il confine esterno non lascia mai attraversare
-un'eccezione imprevista senza causa conservata.
+sono tre e documentate: fornitore di entropia e orologio sono ingressi
+non fidati del chiamante, e gli stadi orchestrate/registry/compose non
+lasciano mai attraversare un'eccezione imprevista senza causa conservata.
+Un `Refusal` non e' un'eccezione e non attraversa mai un `except`: si
+restituisce, quindi nessuna guardia ampia puo' catturarlo per sbaglio.
 """
 
 from __future__ import annotations
@@ -196,7 +198,7 @@ def run_proof_session(
             initial_ir, original_request, state_ids=state_ids)
     except _ErroreEntropia as exc:
         return Failure("entropy", str(exc))
-    except (TypeError, ValueError, RuntimeError) as exc:
+    except Exception as exc:
         return Failure("orchestrate", f"orchestrazione impossibile: {exc}")
     if isinstance(run, Refusal):
         return run
@@ -208,7 +210,7 @@ def run_proof_session(
         registro = componi_registro(run, refs_evidenza=evidence)
     except _ErroreEntropia as exc:
         return Failure("entropy", str(exc))
-    except (TypeError, ValueError, RuntimeError, AttributeError, KeyError) as exc:
+    except Exception as exc:
         return Failure("registry", f"registro non componibile: {exc}")
     try:
         sessione = compose_proof_session(
