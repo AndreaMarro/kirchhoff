@@ -1,0 +1,42 @@
+name: web
+
+# Gate web dedicato: typecheck, unit test, build di produzione, E2E Playwright.
+# Test-only CI: nessun segreto, nessuna scrittura, nessun deploy.
+# Esegue lo stato committato cosi' com'e': non rigenera i file di sessione.
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Installazione bloccata
+        run: npm ci
+        working-directory: web
+      - name: Controllo tipi
+        run: npm run typecheck
+        working-directory: web
+      - name: Unit test
+        run: npm run test
+        working-directory: web
+      - name: Build di produzione
+        run: npm run build
+        working-directory: web
+      # I progetti Playwright (desktop + mobile) usano solo Chromium:
+      # si installa solo il necessario, non tutti i motori.
+      - name: Browser Chromium per Playwright
+        run: npx playwright install --with-deps chromium
+        working-directory: web
+      - name: End-to-end
+        run: npm run test:e2e
+        working-directory: web
