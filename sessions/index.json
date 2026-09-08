@@ -1,0 +1,45 @@
+[
+  {
+    "domanda": {
+      "quantity": "current",
+      "target": "R1"
+    },
+    "id": "partitore-d1",
+    "outcome": "closed",
+    "risposta_esatta": "3/80 ampere",
+    "titolo": "Partitore: la corrente di serie (3/80 A)"
+  },
+  {
+    "domanda": {
+      "quantity": "current",
+      "target": "R1"
+    },
+    "id": "scala-due-riduzioni",
+    "outcome": "closed",
+    "risposta_esatta": "6/325 ampere",
+    "titolo": "Scala di tre resistori: due riduzioni in fila"
+  },
+  {
+    "domanda": {
+      "quantity": "current",
+      "target": "R4"
+    },
+    "id": "ponte-nodale",
+    "outcome": "closed",
+    "risposta_esatta": "87/425 ampere",
+    "titolo": "Ponte: via nodale diretta, senza riduzioni"
+  },
+  {
+    "domanda": {
+      "quantity": "voltage",
+      "target": "R1"
+    },
+    "id": "rifiuto-reattivo",
+    "outcome": "refusal",
+    "rifiuto": {
+      "cause": "unsolvable",
+      "diagnosis": "q1: nessuna tecnica eseguibile raggiunge voltage su R1. Riduzioni certificate utili: nessuna. Analisi nodale disponibile: no. Nomi supportati senza corpo: partitore_di_tensione."
+    },
+    "titolo": "Fuori ambito: il condensatore in continua non si certifica"
+  }
+]
