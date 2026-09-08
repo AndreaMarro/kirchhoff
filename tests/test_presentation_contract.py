@@ -9,12 +9,14 @@ from __future__ import annotations
 
 import ast
 import json
+from copy import deepcopy
 from fractions import Fraction
 from pathlib import Path
 
 import pytest
 
 from kirchhoff.domain.refusal import Refusal
+from kirchhoff.domain.transform import EntityRef
 from kirchhoff.pipeline.failure import Failure
 from kirchhoff.pipeline.netlist import leggi
 from kirchhoff.pipeline.presentation import (
@@ -26,6 +28,8 @@ from kirchhoff.pipeline.presentation import (
     project_refusal,
     to_json,
 )
+from kirchhoff.pipeline.risolvi import layout_a_maglia
+from kirchhoff.render.layout import LayoutIR, Placement
 
 RADICE = Path(__file__).resolve().parent.parent
 
@@ -39,6 +43,61 @@ CHIAVI_PASSO = frozenset({
     "before_svg", "equation", "equations", "evidence_refs", "index", "kind",
     "preserved",
 })
+
+D1_100 = """\
+V1 b 0 12 volt
+R1 b a 100 ohm
+R2 a 0 220 ohm
+? current R1
+"""
+
+D1_200 = """\
+V1 b 0 12 volt
+R1 b a 200 ohm
+R2 a 0 220 ohm
+? current R1
+"""
+
+PONTE_12 = """\
+V1 c 0 12 volt
+R1 c a 10 ohm
+R2 c b 20 ohm
+R3 a 0 30 ohm
+R4 b 0 40 ohm
+Rg a b 50 ohm
+? current R4
+"""
+
+PONTE_M12 = """\
+V1 c 0 -12 volt
+R1 c a 10 ohm
+R2 c b 20 ohm
+R3 a 0 30 ohm
+R4 b 0 40 ohm
+Rg a b 50 ohm
+? current R4
+"""
+
+PIAZZAMENTI_PONTE = (
+    Placement(EntityRef("node", "0"), Fraction(200), Fraction(20)),
+    Placement(EntityRef("node", "a"), Fraction(20), Fraction(220)),
+    Placement(EntityRef("node", "b"), Fraction(380), Fraction(220)),
+    Placement(EntityRef("node", "c"), Fraction(200), Fraction(160)),
+    Placement(EntityRef("component", "V1"), Fraction(200), Fraction(90)),
+    Placement(EntityRef("component", "R1"), Fraction(110), Fraction(190)),
+    Placement(EntityRef("component", "R2"), Fraction(290), Fraction(190)),
+    Placement(EntityRef("component", "R3"), Fraction(110), Fraction(120)),
+    Placement(EntityRef("component", "R4"), Fraction(290), Fraction(120)),
+    Placement(EntityRef("component", "Rg"), Fraction(200), Fraction(220)),
+)
+
+
+def _layout_ponte(istante: int = 2, casualita: bytes | None = None) -> LayoutIR:
+    return LayoutIR.nuovo(
+        PIAZZAMENTI_PONTE,
+        istante=istante,
+        casualita=casualita or bytes(range(10, 20)),
+    )
 
 
 def _chiusa():
@@ -195,14 +254,10 @@ def _chiusura_con_run(netlist):
 def test_disposizione_incoerente_e_failure_di_render():
     from kirchhoff.pipeline.failure import Failure
     from kirchhoff.pipeline.presentation import project_closed_session
-    from kirchhoff.pipeline.risolvi import layout_a_maglia
-    chiusura_b, run_b = _chiusura_con_run(
-        "V1 c 0 12 volt\nR1 c a 10 ohm\nR2 c b 20 ohm\nR3 a 0 30 ohm\n"
-        "R4 b 0 40 ohm\nRg a b 50 ohm\n? current R4\n")
+    chiusura_b, run_b = _chiusura_con_run(PONTE_12)
     esito = project_closed_session(
         chiusura_b.session, chiusura_b.registry, run_b,
-        layout_iniziale=layout_a_maglia(leggi(
-            "V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\n? current R1\n")),
+        layout_iniziale=layout_a_maglia(leggi(D1_100)),
         istante=1, casualita=bytes(range(10)))
     assert isinstance(esito, Failure)
     assert esito.dove == "render"
@@ -211,27 +266,20 @@ def test_disposizione_incoerente_e_failure_di_render():
 def test_sessione_scambiata_con_altra_run_e_failure_di_proiezione():
     from kirchhoff.pipeline.failure import Failure
     from kirchhoff.pipeline.presentation import project_closed_session
-    from kirchhoff.pipeline.risolvi import layout_a_maglia
-    chiusura_a, run_a = _chiusura_con_run(
-        "V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\n? current R1\n")
-    chiusura_b, _ = _chiusura_con_run(
-        "V1 c 0 12 volt\nR1 c a 10 ohm\nR2 c b 20 ohm\nR3 a 0 30 ohm\n"
-        "R4 b 0 40 ohm\nRg a b 50 ohm\n? current R4\n")
+    chiusura_a, run_a = _chiusura_con_run(D1_100)
+    chiusura_b, _ = _chiusura_con_run(PONTE_12)
     esito = project_closed_session(
         chiusura_b.session, chiusura_b.registry, run_a,
-        layout_iniziale=layout_a_maglia(leggi(
-            "V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\n? current R1\n")),
+        layout_iniziale=layout_a_maglia(leggi(D1_100)),
         istante=1, casualita=bytes(range(10)))
     assert isinstance(esito, Failure)
-    assert esito.dove == "projection"
+    assert esito.dove == "publication"
 
 
 def test_difetto_del_render_nella_proiezione_e_failure(monkeypatch):
     import kirchhoff.pipeline.presentation as proiezione
     from kirchhoff.pipeline.failure import Failure
-    from kirchhoff.pipeline.risolvi import layout_a_maglia
-    chiusura, run = _chiusura_con_run(
-        "V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\n? current R1\n")
+    chiusura, run = _chiusura_con_run(D1_100)
 
     def rotto(*a, **k):
         raise ValueError("pennello rotto")
@@ -239,8 +287,197 @@ def test_difetto_del_render_nella_proiezione_e_failure(monkeypatch):
     monkeypatch.setattr(proiezione, "render", rotto)
     esito = proiezione.project_closed_session(
         chiusura.session, chiusura.registry, run,
-        layout_iniziale=layout_a_maglia(leggi(
-            "V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\n? current R1\n")),
+        layout_iniziale=layout_a_maglia(leggi(D1_100)),
         istante=1, casualita=bytes(range(10)))
     assert isinstance(esito, Failure)
     assert esito.dove == "render"
+
+
+def test_matrice_mix_serie_rigettata_prima_del_render():
+    from kirchhoff.pipeline.presentation import project_closed_session
+    ch_a, run_a = _chiusura_con_run(D1_100)
+    ch_b, run_b = _chiusura_con_run(D1_200)
+
+    assert ch_a.session.state_refs == ch_b.session.state_refs
+    assert run_a.state_ids == run_b.state_ids
+    assert ch_a.session.final_solution != ch_b.session.final_solution
+    assert Fraction(ch_a.session.final_solution.value.amount) == Fraction(3, 80)
+    assert Fraction(ch_b.session.final_solution.value.amount) == Fraction(1, 35)
+
+    layout = layout_a_maglia(leggi(D1_100))
+    esito_ok = project_closed_session(
+        ch_a.session, ch_a.registry, run_a,
+        layout_iniziale=layout, istante=1, casualita=bytes(range(10)))
+    assert not isinstance(esito_ok, Failure)
+    assert esito_ok.outcome == "closed"
+    assert esito_ok.answer.exact == "3/80"
+
+    mix = [
+        ("A/B/A", ch_a.session, run_b, ch_a.registry),
+        ("A/A/B", ch_a.session, run_a, ch_b.registry),
+        ("A/B/B", ch_a.session, run_b, ch_b.registry),
+    ]
+    for etichetta, sessione, run, registro in mix:
+        esito = project_closed_session(
+            sessione, registro, run,
+            layout_iniziale=layout, istante=1, casualita=bytes(range(10)))
+        assert isinstance(esito, Failure), etichetta
+        assert esito.dove == "publication", etichetta
+
+
+def test_matrice_mix_ponte_rigettata_prima_del_render():
+    from kirchhoff.pipeline.presentation import project_closed_session
+    ch_a, run_a = _chiusura_con_run(PONTE_12)
+    ch_b, run_b = _chiusura_con_run(PONTE_M12)
+
+    assert ch_a.session.state_refs == ch_b.session.state_refs
+    assert run_a.state_ids == run_b.state_ids
+    assert ch_a.session.final_solution != ch_b.session.final_solution
+    assert Fraction(ch_a.session.final_solution.value.amount) == Fraction(87, 425)
+    assert Fraction(ch_b.session.final_solution.value.amount) == Fraction(-87, 425)
+
+    layout = _layout_ponte()
+    esito_ok = project_closed_session(
+        ch_a.session, ch_a.registry, run_a,
+        layout_iniziale=layout, istante=1, casualita=bytes(range(10)))
+    assert not isinstance(esito_ok, Failure)
+    assert esito_ok.outcome == "closed"
+    assert esito_ok.answer.exact == "87/425"
+
+    mix = [
+        ("A/B/A", ch_a.session, run_b, ch_a.registry),
+        ("A/A/B", ch_a.session, run_a, ch_b.registry),
+        ("A/B/B", ch_a.session, run_b, ch_b.registry),
+    ]
+    for etichetta, sessione, run, registro in mix:
+        esito = project_closed_session(
+            sessione, registro, run,
+            layout_iniziale=layout, istante=1, casualita=bytes(range(10)))
+        assert isinstance(esito, Failure), etichetta
+        assert esito.dove == "publication", etichetta
+
+
+def test_d1_proiettata_domanda_originale_retARGET_e_svg():
+    from kirchhoff.pipeline.presentation import project_closed_session
+    chiusura, run = _chiusura_con_run(D1_100)
+    layout = layout_a_maglia(leggi(D1_100))
+    esito = project_closed_session(
+        chiusura.session, chiusura.registry, run,
+        layout_iniziale=layout, istante=1, casualita=bytes(range(10)))
+    assert not isinstance(esito, Failure)
+    assert esito.outcome == "closed"
+    assert esito.question.target == "R1"
+    assert esito.answer.target == "R1"
+    assert esito.answer.exact == "3/80"
+    assert esito.answer.unit == "ampere"
+    assert len(esito.states) == 2
+    assert all("<svg" in s.svg for s in esito.states)
+    assert any(s.ref == chiusura.session.initial_state_ref for s in esito.states)
+    assert esito.steps[0].kind == "transform"
+    assert esito.steps[-1].kind == "analytical"
+
+
+def test_ponte_zero_trasformazioni_proiettato():
+    from kirchhoff.pipeline.presentation import project_closed_session
+    chiusura, run = _chiusura_con_run(PONTE_12)
+    assert run.transform_executions == ()
+    layout = _layout_ponte()
+    esito = project_closed_session(
+        chiusura.session, chiusura.registry, run,
+        layout_iniziale=layout, istante=1, casualita=bytes(range(10)))
+    assert not isinstance(esito, Failure)
+    assert esito.outcome == "closed"
+    assert esito.answer.exact == "87/425"
+    assert all(p.kind == "analytical" for p in esito.steps)
+
+
+def test_deepcopy_del_solo_registro_ammesso_live():
+    from kirchhoff.pipeline.presentation import project_closed_session
+    chiusura, run = _chiusura_con_run(D1_100)
+    registro_copia = deepcopy(chiusura.registry)
+    esito = project_closed_session(
+        chiusura.session, registro_copia, run,
+        layout_iniziale=layout_a_maglia(leggi(D1_100)),
+        istante=1, casualita=bytes(range(10)))
+    assert not isinstance(esito, Failure)
+    assert esito.outcome == "closed"
+
+
+def test_deepcopy_congiunto_ammesso_live():
+    from kirchhoff.pipeline.presentation import project_closed_session
+    chiusura, run = _chiusura_con_run(D1_100)
+    sessione_copia, run_copia, registro_copia = deepcopy(
+        (chiusura.session, run, chiusura.registry))
+    esito = project_closed_session(
+        sessione_copia, registro_copia, run_copia,
+        layout_iniziale=layout_a_maglia(leggi(D1_100)),
+        istante=1, casualita=bytes(range(10)))
+    assert not isinstance(esito, Failure)
+    assert esito.outcome == "closed"
+
+
+def test_deepcopy_della_sola_sessione_rifiutata_live():
+    from kirchhoff.pipeline.presentation import project_closed_session
+    chiusura, run = _chiusura_con_run(D1_100)
+    sessione_copia = deepcopy(chiusura.session)
+    esito = project_closed_session(
+        sessione_copia, chiusura.registry, run,
+        layout_iniziale=layout_a_maglia(leggi(D1_100)),
+        istante=1, casualita=bytes(range(10)))
+    assert isinstance(esito, Failure)
+    assert esito.dove == "publication"
+
+
+def test_mix_serie_non_chiama_render(monkeypatch):
+    import kirchhoff.pipeline.presentation as proiezione
+    from kirchhoff.pipeline.failure import Failure
+    ch_a, run_a = _chiusura_con_run(D1_100)
+    _, run_b = _chiusura_con_run(D1_200)
+    layout = layout_a_maglia(leggi(D1_100))
+    chiamate: list[str] = []
+
+    def render_cattivo(*a, **k):
+        chiamate.append("render")
+        raise AssertionError("render chiamato su mix")
+
+    monkeypatch.setattr(proiezione, "render", render_cattivo)
+    esito = proiezione.project_closed_session(
+        ch_a.session, ch_a.registry, run_b,
+        layout_iniziale=layout, istante=1, casualita=bytes(range(10)))
+    assert isinstance(esito, Failure)
+    assert esito.dove == "publication"
+    assert chiamate == []
+
+
+def test_proiezione_valida_non_ricalcola_semantica(monkeypatch):
+    import kirchhoff.domain.didactic.execute as execute
+    import kirchhoff.domain.didactic.orchestrate as orchestrate
+    import kirchhoff.domain.didactic.planner as planner
+    import kirchhoff.domain.didactic.solve as solve
+    import kirchhoff.domain.independent_dc as independent_dc
+    import kirchhoff.domain.mna as mna
+    import kirchhoff.domain.transform.engine as transform_engine
+    import kirchhoff.domain.truthfulness as truthfulness
+    from kirchhoff.pipeline.presentation import project_closed_session
+    chiusura, run = _chiusura_con_run(D1_100)
+    layout = layout_a_maglia(leggi(D1_100))
+
+    def boom(*a, **k):
+        raise AssertionError("chiamata semantica durante la proiezione")
+
+    monkeypatch.setattr(planner, "pianifica", boom)
+    monkeypatch.setattr(execute, "execute_plan", boom)
+    monkeypatch.setattr(transform_engine, "transform", boom)
+    monkeypatch.setattr(solve, "solve_derivation", boom)
+    monkeypatch.setattr(mna, "solve_dc", boom)
+    monkeypatch.setattr(mna, "solve_phasor", boom)
+    monkeypatch.setattr(independent_dc, "solve_dc_tableau", boom)
+    monkeypatch.setattr(truthfulness, "truthfulness_gate", boom)
+    monkeypatch.setattr(truthfulness, "certify_execution", boom)
+    monkeypatch.setattr(orchestrate, "orchestrate_didactic_run", boom)
+
+    esito = project_closed_session(
+        chiusura.session, chiusura.registry, run,
+        layout_iniziale=layout, istante=1, casualita=bytes(range(10)))
+    assert not isinstance(esito, Failure)
+    assert esito.outcome == "closed"

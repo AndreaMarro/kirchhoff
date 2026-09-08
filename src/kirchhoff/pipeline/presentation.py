@@ -22,12 +22,12 @@ import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Literal
 
-from kirchhoff.domain.didactic.execute import TransformExecution
 from kirchhoff.domain.proof.session import (
     AnalyticalProofStep,
     TransformProofStep,
 )
 from kirchhoff.pipeline.failure import Failure
+from kirchhoff.pipeline.proof_session import validate_publication
 from kirchhoff.pipeline.state_registry import StateRef
 from kirchhoff.render.layout import LayoutStore, PatchStore
 from kirchhoff.render.serialize import render
@@ -281,10 +281,9 @@ def project_closed_session(
     ricalcolo. Il fotogramma d'apertura e' reso senza overlay: l'equazione
     del passo si mostra col passo, non prima (BEFORE, poi ACTION).
     """
-    try:
-        _verifica_coerenza(chiusura_sessione, run)
-    except Exception as e:
-        return Failure("projection", f"{type(e).__name__}: {e}")
+    esito = validate_publication(chiusura_sessione, run, registro)
+    if isinstance(esito, Failure):
+        return esito
     try:
         return _proietta(
             chiusura_sessione, registro, run,
@@ -292,28 +291,6 @@ def project_closed_session(
             casualita=casualita)
     except Exception as e:
         return Failure("render", f"{type(e).__name__}: {e}")
-
-
-def _verifica_coerenza(sessione: ProofSession, run: CertifiedDidacticRun) -> None:
-    passi_topologici = [p for p in sessione.steps if isinstance(p, TransformProofStep)]
-    passi_analitici = [p for p in sessione.steps if isinstance(p, AnalyticalProofStep)]
-    if len(passi_topologici) != len(run.transform_executions):
-        raise ValueError(
-            f"{len(passi_topologici)} passi topologici contro "
-            f"{len(run.transform_executions)} esecuzioni certificate")
-    nodale = run.final_execution.execution
-    if len(passi_analitici) != len(nodale.steps):
-        raise ValueError(
-            f"{len(passi_analitici)} passi analitici contro "
-            f"{len(nodale.steps)} atti nodali certificati")
-    for numero, (passo, esecuzione) in enumerate(
-            zip(passi_topologici, run.transform_executions)):
-        if not isinstance(esecuzione, TransformExecution):
-            raise ValueError(f"esecuzione {numero} non trasformativa")
-        if passo.operation != esecuzione.plan.actions[0].kind:
-            raise ValueError(
-                f"il passo {numero} dice {passo.operation!r} mentre la run ha "
-                "certificato altro: la sessione non coincide con la run")
 
 
 def _proietta(sessione, registro, run, *, layout_iniziale, istante, casualita):
