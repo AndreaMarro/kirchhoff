@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { CircuitStage } from "../../components/CircuitStage.tsx";
 import type { StageEntity } from "../../components/CircuitStage.tsx";
 import { EntityInspector } from "../../components/EntityInspector.tsx";
@@ -45,6 +46,23 @@ export function Workbench(s: WorkbenchProps): React.JSX.Element {
       ? `${kindLabel(current.action ?? current.kind)} — ${s.frame === "before" ? "prima" : "dopo"}`
       : "Apertura — il circuito prima dell'azione";
   const openingEntities = current === null ? stateEntities(svg) : [];
+  /* La selezione e' ancorata al fotogramma che la mostra: lasciando un
+     fotogramma dove l'entita' era visibile verso uno dove non esiste piu'
+     (p.es. R1 consumata dalla serie), la rivendicazione cade. Restano il
+     confronto sulla preservata (V1 resta selezionata) e la pre-selezione
+     dell'evidenza nell'altro fotogramma (R1R2eq scelta da Prima). Solo
+     presenza visiva proiettata, mai verita' elettrica. */
+  const fotogrammaPrecedente = useRef(s.frame);
+  useEffect(() => {
+    const lasciato = fotogrammaPrecedente.current;
+    fotogrammaPrecedente.current = s.frame;
+    if (lasciato === s.frame || !current || !s.entity) return;
+    const svgLasciato = lasciato === "before" ? current.before_svg : current.after_svg;
+    const svgEntrato = s.frame === "before" ? current.before_svg : current.after_svg;
+    if (contieneEntita(svgLasciato, s.entity) && !contieneEntita(svgEntrato, s.entity)) {
+      s.onEntity(null);
+    }
+  }, [s.frame, current, s.entity, s.onEntity]);
   return (
     <>
       <ProofRail steps={session.steps} selected={s.step} onSelect={s.onStep} />
@@ -111,6 +129,18 @@ export function Workbench(s: WorkbenchProps): React.JSX.Element {
 
 function stateSvg(session: StudentSessionView, ref: string): string {
   return session.states.find((st) => st.ref === ref)?.svg ?? "";
+}
+
+/** Presenza visiva dell'entita' nei byte proiettati del fotogramma.
+ *  Confronto esatto sull'attributo (con virgolette): R1 non deve
+ *  corrispondere a R1R2eq. Stato di presentazione, non elettrica. */
+function contieneEntita(svg: string | null | undefined, e: StageEntity): boolean {
+  if (!svg) return false;
+  if (e.kind === "node") return svg.includes(`data-node-id="${e.id}"`);
+  return (
+    svg.includes(`data-component-id="${e.id}"`) ||
+    svg.includes(`data-terminal-component="${e.id}"`)
+  );
 }
 
 /** Entita' dello stato d'apertura, lette come stringhe dai byte esposti.
