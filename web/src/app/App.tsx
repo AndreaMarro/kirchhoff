@@ -16,6 +16,14 @@ export function App(): React.JSX.Element {
   const ids = (index ?? []).map((e) => e.id);
   const [selection, setSelection] = useSelection(ids);
 
+  // La selezione appartiene al contesto (esercizio, passo): a ogni
+  // transizione si riparte senza entita' per non mostrare selezioni stantie.
+  // Vale per ogni percorso (rail, tastiera, pulsanti, hash/back-forward).
+  const contesto = `${selection.exercise}#${selection.step}`;
+  useEffect(() => {
+    setEntity(null);
+  }, [contesto]);
+
   useEffect(() => {
     loadIndex().then(setIndex).catch((e: unknown) => setError(String(e)));
   }, []);
@@ -30,11 +38,37 @@ export function App(): React.JSX.Element {
     }
     setSession(null);
     setEntity(null);
-    loadSession(target).then(setSession).catch((e: unknown) => setError(String(e)));
+    // Solo l'ultima richiesta puo' insediare la sessione: un cambio rapido
+    // di esercizio non deve farsi sovrascrivere dalla risposta piu' lenta.
+    let viva = true;
+    loadSession(target).then(
+      (s) => {
+        if (viva) setSession(s);
+      },
+      (e: unknown) => {
+        if (viva) setError(String(e));
+      },
+    );
+    return () => {
+      viva = false;
+    };
   }, [index, selection.exercise, setSelection]);
 
   const stepCount = session?.steps.length ?? 0;
   const step = session && (selection.step < -1 || selection.step >= stepCount) ? -1 : selection.step;
+
+  // Normalizza lo stato profondo su cio' che e' mostrato: passo valido e
+  // fotogramma disponibile. L'URL denota sempre la vista, non la richiesta.
+  useEffect(() => {
+    if (!session) return;
+    const max = session.steps.length - 1;
+    const passo = selection.step < -1 || selection.step > max ? -1 : selection.step;
+    const corrente = passo >= 0 ? session.steps[passo] : null;
+    const fotogramma = corrente?.before_svg && corrente.after_svg ? selection.frame : "before";
+    if (passo !== selection.step || fotogramma !== selection.frame) {
+      setSelection({ ...selection, step: passo, frame: fotogramma });
+    }
+  }, [session, selection, setSelection]);
 
   const goStep = useCallback(
     (delta: number) => {
