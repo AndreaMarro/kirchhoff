@@ -189,7 +189,7 @@ def run_proof_session(
     sorgente = _SorgenteEntropia(entropy)
     try:
         n_stati = _limite_stati(initial_ir)
-    except AttributeError as exc:
+    except Exception as exc:
         return Failure(
             "orchestrate", f"ingresso non valido per l'orchestrazione: {exc}")
     try:
