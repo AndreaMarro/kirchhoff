@@ -13,12 +13,16 @@ test("cambio rapido di esercizio non incrocia le sessioni", async ({ page }) => 
     await new Promise((r) => setTimeout(r, 600));
     await route.continue();
   });
+  // Sottoscrizione PRIMA dei clic: sotto carico l'attesa di ponte puo'
+  // superare i 600ms e la risposta tardiva di scala sarebbe gia' arrivata
+  // quando la si aspetta (falso rosso del gate, non del prodotto).
+  const scalaTardiva = page.waitForResponse("**/sessions/scala-due-riduzioni.json");
   await page.locator(".kf-chip").nth(1).click();
   await page.locator(".kf-chip").nth(2).click();
   await expect(page).toHaveURL(/#exercise=ponte-nodale/);
   await expect(page.locator(".kf-stage-question code").first()).toContainText("corrente di R4");
   // La risposta tardiva di scala arriva ORA: non deve sovrascrivere ponte.
-  await page.waitForResponse("**/sessions/scala-due-riduzioni.json");
+  await scalaTardiva;
   await expect(page).toHaveURL(/#exercise=ponte-nodale/);
   await expect(page.locator(".kf-stage-question code").first()).toContainText("corrente di R4");
   await expect(page.locator(".kf-answer-exact")).toContainText("87/425");

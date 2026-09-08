@@ -1,6 +1,7 @@
 # Contratto d'integrazione sito — Proof Workbench (beta 0.3)
 
-Verificato il 2026-09-08 su `work/beta-hardening-0.3-integration-muse13`.
+Verificato il 2026-09-08 su `work/beta-hardening-0.3-integration-muse13`
+(`babffd1`); identico nel RC `release/proof-workbench-beta-0.3-rc1`.
 Il banco non conosce GitHub Pages: parla solo URL relativi e hash.
 
 ## URL canonico

@@ -3,7 +3,7 @@
 ## Legenda
 
 - Le sezioni storiche restano per tracciabilita' e sono marcate STORICO.
-- Lo stato corrente sta in "Proof Demo 0.1"; in caso di contraddizione,
+- Lo stato corrente sta in "Proof Workbench Beta 0.3 RC"; in caso di contraddizione,
   la sezione corrente prevale sulle sezioni storiche.
 
 ## Certificato (STORICO)
@@ -167,3 +167,25 @@ completed + 2 rilievi disposti sul PR senza toccarne lo SHA).
   verdetto in formato gate — adjudication al merge, owner).
 - Resta differito: H3 integrita', R1 post_init, R2 identita', autolayout
   generale, ingestione foto, Catalogo/trasformazioni nuove.
+
+## PROOF_WORKBENCH_BETA_0_3_RC (2026-09-08, stato corrente)
+
+Candidato canonico unico su `release/proof-workbench-beta-0.3-rc1` contro
+`main` (supera PR #12/#13/#14, preservate come storia di sviluppo):
+
+- H2.75 / PR #11 e' MERGED in `main` (`2026-09-08`): la base dello stack e'
+  `main` a `42861a7`, non piu' un ramo intermedio.
+- PR #12 (Workbench 0.1, `8db2233`) e' SUPERATA: l'hardening 0.3 ha scoperto
+  un P1 che esisteva gia' in #12/#13 — `useTheme()` accedeva a
+  `localStorage` senza rete e con archiviazione negata (cornice esterna,
+  cookie bloccati, ITP) il banco restava bianco. Il fix (best-effort con
+  fallback in memoria, `web/src/app/state.ts`) e il pin di regressione
+  (`workbench.spec.ts`, "archiviazione negata") stanno nel RC.
+- PR #13 (hardening 0.2: CI web, rail analitico, guardia di gara,
+  normalizzazioni, Failure solo-test) e PR #14 (hardening 0.3: recupero
+  trasporto, verita' d'entita' per fotogramma, storia browser, harness e
+  documentazione d'integrazione) sono interamente contenuti nel RC.
+- Superficie misurata sul RC: 40 casi E2E (desktop + mobile, nessuno
+  skip), unit/typecheck/build via `web.yml` su push e PR.
+- Beta pubblica: resta un candidato indietro durante la revisione
+  indipendente (sequenza: revisione RC -> merge -> deploy da `main`).

@@ -114,6 +114,30 @@ test("il tema commuta e persiste", async ({ page }) => {
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
 });
 
+test("archiviazione negata: il banco resta in piedi, tema in memoria", async ({ page }) => {
+  // Regressione P1 (scoperta in hardening 0.3, assente in PR #12/#13):
+  // useTheme() senza rete cadeva in bianco quando localStorage solleva
+  // SecurityError (cornice esterna, cookie bloccati, ITP). Qui l'accesso
+  // e' negato a livello API e il banco deve restare in piedi col tema
+  // in memoria per la sessione: persistenza best-effort, mai fatale.
+  await page.addInitScript(() => {
+    const nega = (): never => {
+      throw new DOMException("Accesso negato", "SecurityError");
+    };
+    Storage.prototype.getItem = nega;
+    Storage.prototype.setItem = nega;
+  });
+  // Il beforeEach ha gia' caricato il documento: serve un ricaricamento
+  // vero (stesso documento + solo hash non riesegue gli init script e
+  // non rimonta React, e il test passerebbe a vuoto).
+  await page.reload({ waitUntil: "networkidle" });
+  await expect(page.locator(".kf-chip")).toHaveCount(4);
+  await expect(page.locator(".kf-answer-exact")).toContainText("3/80");
+  await page.getByRole("button", { name: "Cambia tema" }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  await expect(page.locator(".kf-answer-exact")).toContainText("3/80");
+});
+
 test("il fuoco da tastiera e' visibile", async ({ page }) => {
   await page.keyboard.press("Tab");
   const focused = page.locator(":focus");

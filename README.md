@@ -8,7 +8,7 @@ contratto). Gli artefatti BMAD stanno in `_bmad-output/`.
 
 ## Stato
 
-**Kirchhoff Proof Workbench 0.1** — una radice applicativa canonica, una
+**Kirchhoff Proof Workbench Beta 0.3** — release candidate: una radice applicativa canonica, una
 proiezione visuale certificata, una superficie studente navigabile nel browser.
 
 ![Il banco di dimostrazione: circuito, passi, risposta esatta](docs/img/workbench-desktop.png)
@@ -18,8 +18,8 @@ proiezione visuale certificata, una superficie studente navigabile nel browser.
 | Radice canonica (R3) | `run_proof_session`: ogni richiesta di prodotto passa di qui, una sola orchestrazione e una sola certificazione; `resolve` e' compatibilita' che delega |
 | Verita' visuale singola (H5) | `render/` non riesegue `transform()`: proietta `TransformExecution` certificata (0 chiamate produttive, testato) |
 | Contratto di presentazione | `StudentSessionView` (student-session.v0.1): esatto prima del decimale, Claim VERIFIED vs sessione CLOSED, mai Product Verified |
-| Superficie | React 19 + TS strict + Vite (solo react/react-dom a runtime): 3 esercizi veri + 1 rifiuto onesto, 32 E2E verdi |
-| Backend storico | Epic 1 chiusa, P1-J/K/L integrati, H2.5/O0 fusi; H2.75 in review (stack sotto questo lavoro) |
+| Superficie | React 19 + TS strict + Vite (solo react/react-dom a runtime): 3 esercizi veri + 1 rifiuto onesto, 40 casi E2E verdi (desktop + mobile) |
+| Backend storico | Epic 1 chiusa, P1-J/K/L integrati, H2.5/O0/H2.75 fusi in `main` |
 
 ## Il banco in 2 comandi
 
