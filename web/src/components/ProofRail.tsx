@@ -13,9 +13,12 @@ function label(step: StepView): string {
 }
 
 function sub(step: StepView): string | null {
-  if (step.kind === "transform") return step.equation;
-  const eq = step.equations[0];
-  return eq ?? null;
+  // Il rail e' navigazione, l'ispettore e' spiegazione: solo i passi di
+  // trasformazione portano un'equazione-risultato compatta nel rail.
+  // I passi analitici (KCL, vincoli, ...) mostrano numero + azione;
+  // l'equazione integrale resta nello StepInspector.
+  if (step.kind !== "transform") return null;
+  return step.equation;
 }
 
 export function ProofRail({ steps, selected, onSelect }: Props): React.JSX.Element {
