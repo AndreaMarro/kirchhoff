@@ -230,4 +230,14 @@ def run_proof_session(
             "boundary", f"guasto imprevisto al confine applicativo: {exc!r}")
     if isinstance(sessione, Failure):
         return sessione
-    return ProofSessionClosure(session=sessione, registry=registro)
+    if not isinstance(sessione, ProofSession):
+        return Failure(
+            "boundary",
+            f"compositore ha restituito {type(sessione).__name__} invece di "
+            "ProofSession o Failure",
+        )
+    try:
+        return ProofSessionClosure(session=sessione, registry=registro)
+    except Exception as exc:
+        return Failure(
+            "boundary", f"chiusura applicativa non costruibile: {exc!r}")
