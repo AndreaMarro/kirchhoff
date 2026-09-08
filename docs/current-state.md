@@ -91,7 +91,16 @@ Stato corrente post-merge (O0, vedi decisione
   privato, sette prefissi); D2-D8; wire canonico; manifest.
 - H2.75 / PR #11 (`work/proof-demo-application-boundary`) e' stacked sopra
   O0 e resta DRAFT. `Product Verified` resta riservato ai gate prodotto
-  successivi, inclusa la chiusura visuale H5.
+  successivi, inclusa la chiusura visuale H5. L'unica via applicativa e'
+  `pipeline/proof_run.run_proof_session`
+  (IR, Request) -> `ProofSessionClosure` (sessione CLOSED + registro
+  trattenuto): Refusal propagato identico, registro canonico via
+  `componi_registro`, sessione via compositore (che valida live, una sola
+  volta). Nome `publish` rifiutato: AD-5 lo riserva al gate finale.
+  Orologio iniettato (ClockPort), entropia chiamabile iniettata (niente
+  EntropyPort), supply state-id dimostrata (componenti+1), evidenze
+  possedute dal confine. D1 3/80 A, ponte ok. `GLOBAL_PRODUCT_ENTRYPOINT_
+  RECONCILIATION = OPEN` (`resolve` resta l'ingresso dichiarato).
 
 ## P1-K (STORICO)
 
