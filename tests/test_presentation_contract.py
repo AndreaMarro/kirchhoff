@@ -481,3 +481,336 @@ def test_proiezione_valida_non_ricalcola_semantica(monkeypatch):
         layout_iniziale=layout, istante=1, casualita=bytes(range(10)))
     assert not isinstance(esito, Failure)
     assert esito.outcome == "closed"
+
+
+SCALA_3R = """\
+V1 b 0 12 volt
+R1 b a 100 ohm
+R2 a c 220 ohm
+R3 c 0 330 ohm
+? current R1
+"""
+
+REATTIVO_C = """\
+V1 b 0 12 volt
+R1 b a 100 ohm
+C1 a 0 1/1000 farad
+? voltage R1
+"""
+
+PIAZZAMENTI_SCALA = (
+    Placement(EntityRef("node", "b"), Fraction(0), Fraction(0)),
+    Placement(EntityRef("node", "a"), Fraction(200), Fraction(0)),
+    Placement(EntityRef("node", "c"), Fraction(400), Fraction(0)),
+    Placement(EntityRef("node", "0"), Fraction(200), Fraction(240)),
+    Placement(EntityRef("component", "V1"), Fraction(0), Fraction(120)),
+    Placement(EntityRef("component", "R1"), Fraction(100), Fraction(0)),
+    Placement(EntityRef("component", "R2"), Fraction(300), Fraction(0)),
+    Placement(EntityRef("component", "R3"), Fraction(400), Fraction(120)),
+)
+
+
+def _layout_scala(istante: int = 3, casualita: bytes | None = None) -> LayoutIR:
+    return LayoutIR.nuovo(
+        PIAZZAMENTI_SCALA,
+        istante=istante,
+        casualita=casualita or bytes(range(20, 30)),
+    )
+
+
+def _vista_chiusa_legale():
+    from kirchhoff.pipeline.presentation import project_closed_session
+    chiusura, run = _chiusura_con_run(D1_100)
+    esito = project_closed_session(
+        chiusura.session, chiusura.registry, run,
+        layout_iniziale=layout_a_maglia(leggi(D1_100)),
+        istante=1, casualita=bytes(range(10)))
+    assert not isinstance(esito, Failure)
+    assert esito.outcome == "closed"
+    return esito
+
+
+def _ricostruisci(vista):
+    return StudentSessionView(
+        schema_version=vista.schema_version, session_id=vista.session_id,
+        outcome=vista.outcome, question=vista.question, answer=vista.answer,
+        truth=vista.truth, states=vista.states, steps=vista.steps,
+        verification=vista.verification, provenance=vista.provenance,
+        refusal=vista.refusal, failure=vista.failure)
+
+
+def test_p1a_product_verified_true_respinto():
+    import dataclasses
+    vista = _vista_chiusa_legale()
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            vista, truth=dataclasses.replace(
+                vista.truth, product_verified=True)))
+
+
+def test_p1a_chiusura_backend_verificata_respinta():
+    import dataclasses
+    vista = _vista_chiusa_legale()
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            vista, truth=dataclasses.replace(
+                vista.truth, backend_closure_status="VERIFIED")))
+
+
+def test_p1a_claim_contraddittorio_respinto():
+    import dataclasses
+    vista = _vista_chiusa_legale()
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            vista, verification=dataclasses.replace(
+                vista.verification, claim_status="UNVERIFIED")))
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            vista, verification=dataclasses.replace(
+                vista.verification, session_status="VERIFIED")))
+
+
+def test_p1a_domanda_assente_respinta():
+    import dataclasses
+    vista = _vista_chiusa_legale()
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(vista, question=None))
+
+
+def test_p1a_risposta_non_coerente_con_domanda_respinta():
+    import dataclasses
+    vista = _vista_chiusa_legale()
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            vista, answer=dataclasses.replace(vista.answer, target="R999")))
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            vista, answer=dataclasses.replace(
+                vista.answer, quantity="voltage")))
+
+
+def test_p1a_unita_incompatibile_respinta():
+    import dataclasses
+    vista = _vista_chiusa_legale()
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            vista, answer=dataclasses.replace(vista.answer, unit="volt")))
+
+
+@pytest.mark.parametrize("esatto", [
+    "1/0", "5/0", "1/00", "abc", "", " ", "3.14", "1e3", "1E-3",
+    "1/2/3", "3/", "/4", "tre/80", "3 /80", "3/ 80", "50%", "0x10",
+    "NaN", "Infinity",
+])
+def test_p1a_exact_illecito_respinto(esatto):
+    import dataclasses
+    vista = _vista_chiusa_legale()
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            vista, answer=dataclasses.replace(vista.answer, exact=esatto)))
+
+
+@pytest.mark.parametrize("esatto", [
+    "3/80", "0", "5", "-3/80", "-7", "10/4", " 3/80 ",
+])
+def test_p1a_exact_lecito_accettato(esatto):
+    import dataclasses
+    vista = _vista_chiusa_legale()
+    mutata = dataclasses.replace(
+        vista, answer=dataclasses.replace(vista.answer, exact=esatto))
+    assert _ricostruisci(mutata).answer.exact == esatto
+
+
+def test_p1a_stati_vuoti_duplicati_o_pendenti_respinti():
+    import dataclasses
+    vista = _vista_chiusa_legale()
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(vista, states=()))
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            vista, states=vista.states + (vista.states[0],)))
+    passo = dataclasses.replace(vista.steps[0], before_ref="ir_pendente")
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            vista, steps=(passo,) + vista.steps[1:]))
+
+
+def test_p1a_indici_illeciti_respinti():
+    import dataclasses
+    vista = _vista_chiusa_legale()
+    for indice in (True, False, 1.5, -1, float("inf"), float("nan"), "0"):
+        passo = dataclasses.replace(vista.steps[0], index=indice)
+        with pytest.raises(ValueError):
+            _ricostruisci(dataclasses.replace(
+                vista, steps=(passo,) + vista.steps[1:]))
+    duplicato = dataclasses.replace(vista.steps[1], index=vista.steps[0].index)
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            vista, steps=(vista.steps[0], duplicato) + vista.steps[2:]))
+    spostato = dataclasses.replace(vista.steps[-1], index=99)
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            vista, steps=vista.steps[:-1] + (spostato,)))
+
+
+def test_p1a_chiusa_con_rifiuto_o_guasto_respinta():
+    import dataclasses
+    vista = _vista_chiusa_legale()
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            vista, refusal=project_refusal(
+                Refusal("unsolvable", "q1", "request", "x"),
+                QuestionView("q1", "current", "R1"),
+                source_sha="0" * 40, detail="prova").refusal))
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            vista, failure=project_failure(
+                Failure("render", "x"), QuestionView("q1", "current", "R1"),
+                source_sha="0" * 40, detail="prova").failure))
+
+
+@pytest.mark.parametrize("outcome", ["refusal", "failure"])
+def test_p1a_esiti_negativi_con_attestazioni_positive_respinti(outcome):
+    import dataclasses
+    vista = _vista_chiusa_legale()
+    if outcome == "refusal":
+        negativa = project_refusal(
+            Refusal("unsolvable", "q1", "request", "nessuna tecnica"),
+            QuestionView("q1", "voltage", "R1"),
+            source_sha="0" * 40, detail="prova")
+    else:
+        negativa = project_failure(
+            Failure("render", "filo rotto"), QuestionView("q1", "current", "R1"),
+            source_sha="0" * 40, detail="prova")
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(negativa, verification=vista.verification))
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            negativa,
+            truth=dataclasses.replace(
+                negativa.truth, electrical_claim_status="VERIFIED")))
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            negativa, answer=vista.answer))
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            negativa, states=vista.states, steps=vista.steps))
+
+
+def test_p1a_passo_analitico_con_ref_diversi_respinto():
+    import dataclasses
+    vista = _vista_chiusa_legale()
+    analitici = [p for p in vista.steps if p.kind == "analytical"]
+    assert analitici
+    refs = [s.ref for s in vista.states]
+    altro = next(r for r in refs if r != analitici[0].before_ref)
+    mutato = dataclasses.replace(analitici[0], after_ref=altro)
+    passi = tuple(mutato if p == analitici[0] else p for p in vista.steps)
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(vista, steps=passi))
+
+
+def test_p1a_evidence_ids_vuote_respinte_con_controllo_lecito_adiacente():
+    import dataclasses
+    vista = _vista_chiusa_legale()
+    assert vista.verification.evidence_ids
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            vista, verification=dataclasses.replace(
+                vista.verification, evidence_ids=())))
+    assert _ricostruisci(vista).verification.evidence_ids
+
+
+def test_p1a_kind_passo_fuori_vocabolo_respinto():
+    import dataclasses
+    vista = _vista_chiusa_legale()
+    mutato = dataclasses.replace(vista.steps[0], kind="misterioso")
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            vista, steps=(mutato,) + vista.steps[1:]))
+
+
+def test_p1a_scala_due_riduzioni_proiettata():
+    from kirchhoff.pipeline.presentation import project_closed_session
+    chiusura, run = _chiusura_con_run(SCALA_3R)
+    esito = project_closed_session(
+        chiusura.session, chiusura.registry, run,
+        layout_iniziale=_layout_scala(), istante=1,
+        casualita=bytes(range(10)))
+    assert not isinstance(esito, Failure)
+    assert esito.outcome == "closed"
+    assert esito.answer.target == "R1" == esito.question.target
+    assert _ricostruisci(esito).outcome == "closed"
+
+
+def test_p1a_ponte_negativo_proiettato():
+    from kirchhoff.pipeline.presentation import project_closed_session
+    chiusura, run = _chiusura_con_run(PONTE_M12)
+    esito = project_closed_session(
+        chiusura.session, chiusura.registry, run,
+        layout_iniziale=_layout_ponte(), istante=1,
+        casualita=bytes(range(10)))
+    assert not isinstance(esito, Failure)
+    assert esito.answer.exact == "-87/425"
+    assert _ricostruisci(esito).outcome == "closed"
+
+
+def test_p1a_rifiuto_reattivo_legale():
+    import itertools
+    from datetime import datetime, timezone
+    from kirchhoff.domain.proof.session import DOCUMENT_PROFILE
+    from kirchhoff.pipeline.proof_run import run_proof_session_con_run
+
+    class Fermo:
+        def now(self):
+            return datetime(2026, 9, 7, 12, tzinfo=timezone.utc)
+
+    conto = itertools.count(300)
+
+    def entropia():
+        return bytes(((next(conto) + j) % 256 for j in range(10)))
+
+    ir = leggi(REATTIVO_C)
+    esito = run_proof_session_con_run(
+        ir, next(iter(ir.requests)), clock=Fermo(), entropy=entropia,
+        document_profile=DOCUMENT_PROFILE, source_sha="0" * 40, detail="prova")
+    assert isinstance(esito, Refusal)
+    vista = project_refusal(
+        esito, QuestionView("q1", "voltage", "R1"),
+        source_sha="0" * 40, detail="prova")
+    assert _ricostruisci(vista).outcome == "refusal"
+
+
+def test_p1a_guasto_senza_domanda_legale():
+    vista = project_failure(
+        Failure("render", "filo rotto"), None,
+        source_sha="0" * 40, detail="prova")
+    assert vista.outcome == "failure"
+    assert _ricostruisci(vista).outcome == "failure"
+
+
+@pytest.mark.parametrize("outcome", ["refusal", "failure"])
+def test_p1a_status_non_positivo_in_esito_negativo_accettato(outcome):
+    import dataclasses
+    if outcome == "refusal":
+        negativa = project_refusal(
+            Refusal("unsolvable", "q1", "request", "nessuna tecnica"),
+            QuestionView("q1", "voltage", "R1"),
+            source_sha="0" * 40, detail="prova")
+    else:
+        negativa = project_failure(
+            Failure("render", "filo rotto"), QuestionView("q1", "current", "R1"),
+            source_sha="0" * 40, detail="prova")
+    tollerata = dataclasses.replace(
+        negativa, truth=dataclasses.replace(
+            negativa.truth, backend_closure_status="FAILURE"))
+    assert _ricostruisci(tollerata).outcome == outcome
+    for chiusura in ("CLOSED", "VERIFIED"):
+        with pytest.raises(ValueError):
+            _ricostruisci(dataclasses.replace(
+                negativa, truth=dataclasses.replace(
+                    negativa.truth, backend_closure_status=chiusura)))
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            negativa, truth=dataclasses.replace(
+                negativa.truth, electrical_claim_status="VERIFIED")))

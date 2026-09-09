@@ -18,8 +18,10 @@ from __future__ import annotations
 
 import dataclasses
 import json
+import re
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
+from fractions import Fraction
 from typing import TYPE_CHECKING, Literal
 
 from kirchhoff.domain.proof.session import (
@@ -46,6 +48,38 @@ if TYPE_CHECKING:
 SCHEMA_VERSION = "student-session.v0.1"
 
 Outcome = Literal["closed", "refusal", "failure"]
+
+
+#: Espressione razionale canonica emessa da `str(Fraction)` nel profilo
+#: corrente: intero, frazione con segno, zero, negativi; nessun decimale
+#: o esponenziale. Il controllo di forma precede `Fraction` per non
+#: allargare il profilo a stringhe che il parser accetterebbe ma il
+#: produttore non emette.
+_RE_EXACT = re.compile(r"^[+-]?\d+(/\d+)?$")
+
+#: Coerenza fra grandezza e unita' nel vocabolario chiuso del profilo
+#: studente DC corrente.
+_UNITA_PER_QUANTITA: dict[str, set[str]] = {
+    "current": {"ampere"},
+    "voltage": {"volt"},
+}
+
+
+def _valida_frazione(testo: str) -> None:
+    """Il campo exact e' una rappresentazione razionale lecita di Fraction.
+
+    Accetta le stringhe che `Fraction` emette (e strip di spazi); respinge
+    denominatore zero, decimali, esponenziali e simboli non numerici.
+    """
+    if not isinstance(testo, str):
+        raise ValueError(f"exact {testo!r}: serve una stringa")
+    pulito = testo.strip()
+    if not _RE_EXACT.fullmatch(pulito):
+        raise ValueError(f"exact {testo!r}: forma non riconosciuta")
+    try:
+        Fraction(pulito)
+    except (ValueError, ZeroDivisionError) as exc:
+        raise ValueError(f"exact {testo!r}: {exc}") from None
 
 
 def decimale(f, cifre: int = 4) -> str:
@@ -169,17 +203,120 @@ class StudentSessionView:
         if self.schema_version != SCHEMA_VERSION:
             raise ValueError(
                 f"schema {self.schema_version!r}: il contratto e' {SCHEMA_VERSION!r}")
+        if not isinstance(self.truth, TruthView):
+            raise ValueError("truth mancante o non e' un TruthView")
+        if self.truth.product_verified is not False:
+            raise ValueError("product_verified deve essere false in questo profilo")
         if self.outcome == "closed":
             if self.answer is None or self.verification is None:
                 raise ValueError("chiusura senza risposta o senza evidenza")
             if self.refusal is not None or self.failure is not None:
                 raise ValueError("chiusura con rifiuto o guasto")
+            if self.truth.electrical_claim_status != "VERIFIED":
+                raise ValueError(
+                    "claim elettrico della closed diverso da VERIFIED")
+            if self.truth.backend_closure_status != "CLOSED":
+                raise ValueError(
+                    "chiusura di backend diverso da CLOSED")
+            if self.verification.claim_status != "VERIFIED":
+                raise ValueError(
+                    "verification.claim_status diverso da VERIFIED")
+            if self.verification.session_status != "CLOSED":
+                raise ValueError(
+                    "verification.session_status diverso da CLOSED")
+            if self.question is None:
+                raise ValueError("closed senza domanda")
+            if self.answer.target != self.question.target:
+                raise ValueError(
+                    "answer.target non coincide con question.target")
+            if self.answer.quantity != self.question.quantity:
+                raise ValueError(
+                    "answer.quantity non coincide con question.quantity")
+            unita_ammesse = _UNITA_PER_QUANTITA.get(self.answer.quantity)
+            if unita_ammesse is None or self.answer.unit not in unita_ammesse:
+                raise ValueError(
+                    f"unita' {self.answer.unit!r} non coerente con "
+                    f"quantity {self.answer.quantity!r}")
+            _valida_frazione(self.answer.exact)
+            if not self.states:
+                raise ValueError("closed senza stati")
+            refs = {s.ref for s in self.states}
+            if len(refs) != len(self.states):
+                raise ValueError("state refs duplicati")
+            if not self.verification.evidence_ids:
+                raise ValueError("closed senza evidenza")
+            if not self.steps:
+                raise ValueError("closed senza passi")
+            indici: set[int] = set()
+            for passo in self.steps:
+                if isinstance(passo.index, bool) or not isinstance(passo.index, int):
+                    raise ValueError(
+                        f"indice {passo.index!r}: serve un intero")
+                if passo.index < 0:
+                    raise ValueError(
+                        f"indice {passo.index}: negativo")
+                if passo.index in indici:
+                    raise ValueError(
+                        f"indice {passo.index} duplicato")
+                indici.add(passo.index)
+                if passo.before_ref not in refs:
+                    raise ValueError(
+                        f"before_ref {passo.before_ref!r} non risolubile "
+                        "negli stati")
+                if passo.after_ref not in refs:
+                    raise ValueError(
+                        f"after_ref {passo.after_ref!r} non risolubile "
+                        "negli stati")
+                if passo.kind == "analytical":
+                    if passo.before_ref != passo.after_ref:
+                        raise ValueError(
+                            "passo analitico con before_ref diverso da after_ref")
+                    if (len(passo.evidence_refs) != 1
+                            or passo.evidence_refs[0] != passo.before_ref):
+                        raise ValueError(
+                            "evidence_refs del passo analitico non coincide "
+                            "con lo stato")
+                elif passo.kind == "transform":
+                    if passo.before_ref == passo.after_ref:
+                        raise ValueError(
+                            "passo topologico con before_ref uguale ad after_ref")
+                    if tuple(passo.evidence_refs) != (
+                            passo.before_ref, passo.after_ref):
+                        raise ValueError(
+                            "evidence_refs del passo topologico non coincide "
+                            "con before_ref/after_ref")
+                else:
+                    raise ValueError(
+                        f"kind {passo.kind!r} fuori dal vocabolario chiuso")
+                for ref in passo.evidence_refs:
+                    if ref not in refs:
+                        raise ValueError(
+                            f"evidence_ref {ref!r} non risolubile negli stati")
+            if sorted(indici) != list(range(len(self.steps))):
+                raise ValueError(
+                    "indici dei passi non consecutivi da zero")
         elif self.outcome == "refusal":
             if self.refusal is None or self.answer is not None:
                 raise ValueError("rifiuto senza diagnosi o con risposta")
+            if self.verification is not None:
+                raise ValueError("rifiuto con verification")
+            if self.truth.electrical_claim_status == "VERIFIED":
+                raise ValueError("rifiuto con claim positivo")
+            if self.truth.backend_closure_status in ("CLOSED", "VERIFIED"):
+                raise ValueError("rifiuto con prova di chiusura")
+            if self.states or self.steps:
+                raise ValueError("rifiuto con stati o passi")
         elif self.outcome == "failure":
             if self.failure is None or self.answer is not None:
                 raise ValueError("guasto senza messaggio o con risposta")
+            if self.verification is not None:
+                raise ValueError("guasto con verification")
+            if self.truth.electrical_claim_status == "VERIFIED":
+                raise ValueError("guasto con claim positivo")
+            if self.truth.backend_closure_status in ("CLOSED", "VERIFIED"):
+                raise ValueError("guasto con prova di chiusura")
+            if self.states or self.steps:
+                raise ValueError("guasto con stati o passi")
         else:
             raise ValueError(f"esito {self.outcome!r} fuori dal vocabolario")
 
