@@ -22,3 +22,10 @@
 .student-main{padding-top:18px}.student-heading{margin-bottom:18px}.student-heading h1{font-size:36px}.student-picker{padding-block:12px;margin-bottom:20px}.student-svg svg{max-height:390px}.student-svg[data-zoom="125"] svg{max-height:487px}.student-svg[data-zoom="150"] svg{max-height:585px}.student-svg[data-zoom="175"] svg{max-height:682px}.student-svg[data-zoom="200"] svg{max-height:780px}.student-lesson.is-expanded .student-svg svg{max-height:390px}.student-lesson.is-expanded .student-svg[data-zoom="125"] svg{max-height:487px}.student-lesson.is-expanded .student-svg[data-zoom="150"] svg{max-height:585px}.student-lesson.is-expanded .student-svg[data-zoom="175"] svg{max-height:682px}.student-lesson.is-expanded .student-svg[data-zoom="200"] svg{max-height:780px}.student-lesson.is-expanded .student-drawing{max-height:520px}
 
 .student-zoom button{min-width:44px;min-height:44px}.student-view-tools>button{min-height:44px}
+
+.student-free-board iframe{display:block;width:100%;height:650px;border:1px solid #cbd0d4;border-radius:4px;margin-top:18px}.student-free-board[hidden]{display:none}.student-dialog:has(.student-free-board:not([hidden])){max-width:1200px}@media(max-width:650px){.student-free-board iframe{height:680px}.student-dialog:has(.student-free-board:not([hidden])){padding:12px}}
+
+.student-file-help{display:block;font-size:12px;color:#65717b;margin-top:8px}
+
+.student-overlay[hidden]{display:none}
+@media(max-width:650px){.student-dialog>header{align-items:flex-start;gap:12px}.student-dialog>header button{white-space:nowrap;min-width:75px;padding:8px;font-size:14px}.student-dialog>.student-toolbar{display:grid;grid-template-columns:1fr 1fr;gap:8px}.student-dialog>.student-toolbar button{padding:10px 6px;font-size:13px;min-height:44px}}

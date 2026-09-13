@@ -75,3 +75,21 @@ La direzione visiva usa titoli serif, testo operativo sans serif, carta chiara e
 Thévenin distingue ora tensione a vuoto (generatori accesi), resistenza vista (generatori indipendenti spenti, carico ancora staccato), ricollegamento e ritorno all’originale. Ogni operazione ha uno schema e sostituzioni numeriche esplicite. Test dedicati verificano corto delle sorgenti V, apertura delle sorgenti I, carico rimosso e Rth nulla con generatore V ideale ai morsetti.
 
 Il PDF include una prima pagina con originale, domanda e indice effettivo, poi distingue ragionamento e calcolo a ogni passo. Sono stati verificati tutti i 18 PDF tramite estrazione del testo e ispezionate le pagine di apertura e resistenza di Thévenin. La suite finale R2 passa con 1898 test Python (98,70%, dominio 100%) e 68 web; build e confini passano. Screenshot, log e note sono conservati in `../kirchhoff-study-20260913/design-r2/`. Nessuna verifica completa WCAG o prova con studenti reali è implicata da questi controlli. Il perimetro scientifico e i limiti di pubblicazione/API restano quelli dichiarati sopra.
+
+
+## Riuso della lavagna e importazione R3
+
+“Il tuo circuito” offre adesso anche **Lavagna libera**, basata su Excalidraw 0.18.1 già installato e usato in MAESTRO-Studio. Si disegna con penna, forme e testo, oppure si inserisce un’immagine; “Usa questo disegno” esporta localmente una foto e riporta al controllo della trascrizione. “Salva disegno” conserva un file `.excalidraw` modificabile. La lavagna resta in memoria quando si chiude il pannello; ricaricare la pagina richiede di riaprire il file salvato. Anche il testo in corso resta invariato alla riapertura del pannello.
+
+Il codice `imageToDataURL` riusa il caricatore di MAESTRO-Studio. PNG/JPEG/WebP fino a 20 MB sono decodificati e, quando serve, ridotti localmente entro il limite del servizio di riconoscimento. Un file immagine corrotto viene rifiutato. La prova browser usa uno screenshot JPEG locale con padding oltre 2 MB, esplicitamente un fixture di test; non è una convalida OCR su foto reali. Non sono state eseguite chiamate API.
+
+La lavagna è un’applicazione opzionale isolata in un iframe, caricata soltanto alla prima apertura. Non modifica le dipendenze npm del frontend principale. Il bundle distribuito include font locali e licenze, con CSP che limita rete e asset alla stessa origine. Lo scambio verifica origine, finestra mittente, tipo e dimensioni; immagini SVG e URL remoti vengono respinti. La compilazione riusa gli strumenti già installati, senza `npm install`:
+
+```sh
+python3 scripts/build_student_board.py --donor /percorso/whiteboard-studio/studio
+npm --prefix web run build
+```
+
+I sorgenti stanno in `companion-board/`; l’output pronto in `web/public/board/` è circa 22 MB, in gran parte font e moduli opzionali di Excalidraw. La schermata ordinaria conserva un bundle JS di circa 247 kB non compresso. `build-manifest.json` registra versione, commit donor e SHA-256; `THIRD-PARTY-NOTICES.txt` raccoglie conservativamente le licenze trovate nell’installazione donor, comprese dipendenze non necessariamente distribuite. La licenza Excalidraw proviene dal tag ufficiale v0.18.1. I collegamenti locali `node_modules` non fanno parte del commit.
+
+Controlli R3: suite Python completa PASS (1898 casi, copertura 98,70%, dominio 100%), 77 test web PASS, typecheck di entrambe le applicazioni e build PASS. Browser: disegno manuale, esportazione con valori leggibili, recupero scena, recupero trascrizione, preparazione immagine oltre 2 MB, rifiuto immagine corrotta, nessun errore console nella prova. Restano i limiti scientifici e OCR già dichiarati: Excalidraw è lo strumento di disegno, non un riconoscitore di circuiti. La copertura completa di AutoCircuits resta da implementare e validare. Nessun deploy, reset credito o spesa effettuato.

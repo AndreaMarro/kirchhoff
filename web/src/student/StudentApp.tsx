@@ -1,6 +1,8 @@
 import {useEffect,useRef,useState} from 'react';
 import {CircuitEditor} from './CircuitEditor.tsx';
 import './student.css';
+import {prepareCircuitImage} from './imageInput.ts';
+import {readBoardMessage} from './boardProtocol.ts';
 
 type Step={title:string;explanation:string;svg:string;equations:string[];focus:string[]};
 type Lesson={schema:string;outcome:'solved';title:string;netlist:string;method:string;available:string[];original:string;steps:Step[];answer:{exact:string;decimal:string;unit:string;reference:string};fingerprint:string;source_sha:string};
@@ -35,11 +37,21 @@ export function StudentApp(){
  const [lessonImage,setLessonImage]=useState<string|null>(null);
  const [image,setImage]=useState<string|null>(null),[uncertainties,setUncertainties]=useState<string[]>([]),[confirmed,setConfirmed]=useState(false);
  const [api,setApi]=useState(false),[vision,setVision]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState('');
- const request=useRef(0),stage=useRef<HTMLDivElement>(null);
+ const request=useRef(0),stage=useRef<HTMLDivElement>(null),board=useRef<HTMLIFrameElement>(null),boardScene=useRef('');
+ const [boardOpened,setBoardOpened]=useState(false);
  const entry=useRef(new URLSearchParams(location.hash.slice(1)));
  const restoreStep=useRef(true);
  const current=lesson?.steps[step];
  useEffect(()=>{if(step===0)setCompare(false);},[step]);
+ useEffect(()=>{
+  function receive(e:MessageEvent){
+   const message=readBoardMessage(e,board.current?.contentWindow,location.origin);if(!message)return;
+   if(message.type==='kirchhoff:board-ready')board.current?.contentWindow?.postMessage({type:'kirchhoff:board-init',scene:boardScene.current},location.origin);
+   if(message.type==='kirchhoff:board-state')boardScene.current=message.scene;
+   if(message.type==='kirchhoff:board-image'){setImage(message.image);setDraft('');setUncertainties([]);setConfirmed(false);setTab('photo');setError('');}
+  }
+  window.addEventListener('message',receive);return()=>window.removeEventListener('message',receive);
+ },[]);
  useEffect(()=>{
   fetch('api/capabilities').then(r=>r.ok?r.json():null).then(v=>{setApi(Boolean(v?.solve));setVision(Boolean(v?.vision));}).catch(()=>undefined);
   fetch('lessons/index.json').then(response).then(v=>{
@@ -106,8 +118,7 @@ export function StudentApp(){
  async function file(file:File|undefined){
   if(!file)return;setError('');setConfirmed(false);setUncertainties([]);
   if(file.type.startsWith('image/')){
-   if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>2000000){setError('Usa una foto PNG, JPEG o WebP entro 2 MB.');return;}
-   const reader=new FileReader();reader.onload=()=>{setImage(String(reader.result));setDraft('');setTab('photo');};reader.readAsDataURL(file);
+   try{const value=await prepareCircuitImage(file);setImage(value);setDraft('');setTab('photo');}catch(e){setError(e instanceof Error?e.message:'Foto non leggibile.');}
   }else{if(file.size>16000){setError('Il file circuito supera 16000 caratteri.');return;}setDraft(await file.text());setImage(null);setTab('text');}
  }
  async function recognize(){
@@ -127,7 +138,7 @@ export function StudentApp(){
  }
  function navigate(n:number){setStep(n);setShowOriginal(false);}
  return <div className="student-app">
-  <header className="student-header"><a href="#" className="student-brand">Kirchhoff<span>con Andrea Marro</span></a><span className="student-tag">Capire il circuito, un passaggio alla volta</span><button onClick={()=>{setDraft(netlist);setTab('photo');setPanel(true);setError('');}}>Il tuo circuito <span aria-hidden="true">＋</span></button></header>
+  <header className="student-header"><a href="#" className="student-brand">Kirchhoff<span>con Andrea Marro</span></a><span className="student-tag">Capire il circuito, un passaggio alla volta</span><button onClick={()=>{setTab('photo');setPanel(true);setError('');}}>Il tuo circuito <span aria-hidden="true">＋</span></button></header>
   <main className="student-main">
    <div className="student-heading"><div><p className="student-eyebrow">Il laboratorio dei circuiti</p><h1>Il circuito, passo per passo.</h1></div><p>Scegli una strada. Segui i disegni. Torna all’originale quando serve.</p></div>
    <div className="student-toolbar student-picker"><label>Esercizio <select aria-label="Scegli un circuito" value={example} disabled={busy} onChange={e=>{const ex=examples.find(x=>x.id===e.target.value);if(ex){setMethod('auto');setExample(ex.id);setNetlist(ex.netlist);setDraft(ex.netlist);setImage(null);setLessonImage(null);}}}>{!example?<option value="">Il tuo circuito</option>:null}{examples.map(e=><option key={e.id} value={e.id}>{e.title}</option>)}</select></label><label>Metodo <select aria-label="Scegli il metodo" value={method} disabled={busy||!lesson} onChange={e=>{if(example)setMethod(e.target.value);else void solve(netlist,e.target.value);}}>{(lesson?.available??['auto']).map(m=><option key={m} value={m}>{names[m]}</option>)}</select></label><button disabled={busy||!lesson} onClick={()=>void pdf()}>Scarica PDF ↓</button></div>
@@ -147,10 +158,11 @@ export function StudentApp(){
    <details className="student-scope"><summary>Cosa puoi risolvere in questa versione</summary><p>Circuiti resistivi in continua con sorgenti indipendenti. I percorsi a due morsetti includono partitori, Millman, equivalenti Thévenin e Norton e sovrapposizione. Per i ponti resistivi puoi usare stella → triangolo quando la grandezza cercata resta esterna alla stella. Per altre topologie DC il nucleo usa l’analisi nodale. AC, transitori e quadripoli non sono ancora coperti dall’esperienza didattica.</p><p>{api?'Puoi risolvere circuiti nuovi: il server locale è collegato.':'Stai usando il catalogo statico. Per risolvere circuiti nuovi occorre collegare il server Kirchhoff.'}</p></details>
    <details className="student-scope"><summary>Controllo del risultato e provenienza</summary><p>Il risultato elettrico proviene dal nucleo verificato; le derivazioni didattiche vengono confrontate in aritmetica esatta. Questa verifica del risultato non certifica da sola ogni scelta grafica e didattica.</p><code>{lesson?.source_sha}</code><p><a href={`?view=proof${location.hash}`}>Apri gli strumenti tecnici di verifica ↗</a></p></details>
   </main>
-  {panel?<div className="student-overlay"><section role="dialog" aria-modal="true" aria-labelledby="input-title" className="student-dialog"><header><h2 id="input-title">Partiamo dal tuo circuito</h2><button aria-label="Chiudi ingresso circuito" onClick={()=>setPanel(false)}>Chiudi ×</button></header><div className="student-toolbar">{[['text','Componenti e collegamenti'],['photo','Foto o file'],['draw','Disegna sulla lavagna']].map(([id,label])=><button key={id} aria-pressed={tab===id} onClick={()=>setTab(id)}>{label}</button>)}</div>
+  {panel||boardOpened?<div className="student-overlay" hidden={!panel}><section role="dialog" aria-modal="true" aria-labelledby="input-title" className="student-dialog"><header><h2 id="input-title">Partiamo dal tuo circuito</h2><button aria-label="Chiudi ingresso circuito" onClick={()=>setPanel(false)}>Chiudi ×</button></header><div className="student-toolbar">{[['text','Testo del circuito'],['photo','Foto o file'],['draw','Schema a componenti'],['free','Lavagna libera']].map(([id,label])=><button key={id} aria-pressed={tab===id} onClick={()=>{setTab(id);if(id==='free')setBoardOpened(true);}}>{label}</button>)}</div>
    {error?<p role="alert" className="student-error">{error}</p>:null}
-   {tab==='draw'?<CircuitEditor onUse={text=>{setDraft(text);setConfirmed(false);setTab('text');}}/>:<>
-    {tab==='photo'?<div className="student-upload" onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();void file(e.dataTransfer.files[0]);}}><label>Trascina una foto o un file circuito, oppure scegli un file<input type="file" accept="image/png,image/jpeg,image/webp,.txt,.net,.cir" onChange={e=>void file(e.target.files?.[0])}/></label>{image?<img src={image} alt="Il circuito caricato da confrontare con la ricostruzione"/>:null}{image?<><p>La foto resta sul dispositivo fino a quando scegli di inviarla per la trascrizione. Prima del calcolo controlla sempre valori, collegamenti e domanda.</p><button disabled={!vision||busy} onClick={()=>void recognize()}>Invia a OpenAI e trascrivi</button>{!vision?<p>Riconoscimento automatico non configurato. Puoi ricostruire il circuito con la lavagna o nel campo qui sotto.</p>:null}</>:null}</div>:null}
+   {boardOpened?<div className="student-free-board" hidden={tab!=='free'}><iframe ref={board} title="Lavagna libera Excalidraw" src="board/index.html"/></div>:null}
+   {tab==='free'?null:tab==='draw'?<CircuitEditor onUse={text=>{setDraft(text);setConfirmed(false);setTab('text');}}/>:<>
+    {tab==='photo'?<div className="student-upload" onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();void file(e.dataTransfer.files[0]);}}><label>Trascina una foto o un file circuito, oppure scegli un file<span className="student-file-help">PNG, JPEG o WebP fino a 20 MB; file circuito .net, .cir o .txt.</span><input type="file" accept="image/png,image/jpeg,image/webp,.txt,.net,.cir" onChange={e=>void file(e.target.files?.[0])}/></label>{image?<img src={image} alt="Il circuito caricato da confrontare con la ricostruzione"/>:null}{image?<><p>La foto resta sul dispositivo fino a quando scegli di inviarla per la trascrizione. Prima del calcolo controlla sempre valori, collegamenti e domanda.</p><button disabled={!vision||busy} onClick={()=>void recognize()}>Invia a OpenAI e trascrivi</button>{!vision?<p>Riconoscimento automatico non configurato. Ricostruisci il circuito con “Schema a componenti” oppure nel campo qui sotto. Il disegno libero e la foto richiedono una trascrizione confermata.</p>:null}</>:null}</div>:null}
     <label className="student-netlist">Componenti, nodi e domanda<textarea aria-label="Circuito da risolvere" spellCheck={false} value={draft} onChange={e=>{setDraft(e.target.value);setConfirmed(false);}} placeholder={'V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\n? voltage R2'}/></label><details><summary>Come leggere e modificare il circuito</summary><p>Ogni riga contiene nome, primo nodo, secondo nodo, valore e unità. R = resistore (ohm), V = sorgente di tensione (volt), I = sorgente di corrente (ampere). Il nodo 0 è il riferimento. Valori decimali o frazioni sono esatti. L’ultima riga indica la domanda: <code>? voltage R2</code> oppure <code>? current R2</code>. I file SPICE completi non sono ancora accettati.</p></details>
     {uncertainties.length?<ul>{uncertainties.map((u,i)=><li key={i}>{u}</li>)}</ul>:null}
     {image?<label className="student-confirm"><input type="checkbox" checked={confirmed} onChange={e=>setConfirmed(e.target.checked)}/>Ho confrontato con la foto e corretto valori, nodi, versi e domanda.</label>:null}
