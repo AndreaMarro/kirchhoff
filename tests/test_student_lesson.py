@@ -209,3 +209,31 @@ def test_http_new_circuit_pdf_and_origin_boundary(monkeypatch):
         assert send('GET','/%2e%2e/pyproject.toml')[0]==404
     finally:
         server.shutdown();server.server_close();thread.join(timeout=2)
+
+
+def test_thevenin_explains_open_voltage_then_deactivates_sources_separately():
+    lesson=create_lesson(TWO,'thevenin')
+    voltage=next(s for s in lesson['steps'] if 'tensione a vuoto' in s['title'])
+    resistance=next(s for s in lesson['steps'] if 'resistenza vista' in s['title'])
+    assert lesson['steps'].index(voltage)<lesson['steps'].index(resistance)
+    assert 'corto' not in voltage['svg']
+    assert resistance['svg'].count(': corto')==2
+    assert 'Ramo rimosso' in voltage['svg'] and 'Ramo rimosso' in resistance['svg']
+    assert any('1/(13/10)' in e and '1/(16/5)' in e for e in resistance['equations'])
+    assert any('= 208/225 Ω' in e for e in resistance['equations'])
+    pdf=export_pdf(lesson)
+    assert b'IL PERCORSO DEL RAGIONAMENTO' in pdf
+    assert b'/BaseFont /Times-Roman' in pdf
+    assert pdf.count(b'/Type /Page ')==len(lesson['steps'])+1
+
+
+def test_thevenin_open_current_source_and_zero_resistance_voltage_source():
+    current=create_lesson('I1 0 a 2 ampere\nR1 a 0 3 ohm\nR2 a 0 6 ohm\n? current R2','thevenin')
+    step=next(s for s in current['steps'] if 'resistenza vista' in s['title'])
+    assert 'I1: aperto' in step['svg']
+    assert any('= 3 Ω' in e for e in step['equations'])
+    voltage=create_lesson('V1 a 0 12 volt\nR1 a 0 3 ohm\nR2 a 0 6 ohm\n? current R2','thevenin')
+    step=next(s for s in voltage['steps'] if 'resistenza vista' in s['title'])
+    assert step['equations']==['Rth = 0 Ω']
+    assert 'V1: corto' in step['svg']
+    assert voltage['answer']['exact']=='2'

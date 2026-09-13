@@ -65,3 +65,13 @@ I due fallimenti iniziali della baseline erano dovuti all'assenza del dataset ig
 Nel branch locale del sito la pagina Metodo torna a un unico riquadro interattivo, con link alla stessa app a schermo intero; le tre illustrazioni statiche della precedente proposta sono state rimosse. La presentazione generale del tuo insegnamento resta prima dell'esempio di elettrotecnica. In sviluppo si usa il server localhost; in produzione il collegamento rimane quello GitHub Pages finché non viene pubblicata la nuova versione, oppure si può impostare `KIRCHHOFF_APP_URL`.
 
 Prossimi interventi sostanziali: convalida visiva su foto reali con API configurata; pubblicazione frontend/backend; estensione di dominio con oracoli indipendenti alle famiglie AC e transitorie. Queste capacità non sono date per concluse dal numero di test o dalla qualità dell'interfaccia.
+
+## Revisione di design e didattica R2
+
+Il percorso ora ha un indice laterale con titoli espliciti, un solo schema centrale, confronto facoltativo con il passaggio precedente e zoom dal 100 al 200%. Su mobile lo schema scorre nel proprio riquadro: pagina e viewport restano di 390 px nella prova eseguita. La modalità ingrandita trattiene il focus e si chiude con Escape. L’indirizzo conserva esercizio distribuito, metodo, passaggio e vista originale anche dopo la ricarica; i circuiti personali non vengono serializzati nell’URL o salvati automaticamente.
+
+La direzione visiva usa titoli serif, testo operativo sans serif, carta chiara e un solo accento blu. La scaletta è navigazione dello stesso circuito, non una sequenza di diapositive nella pagina. Le formule hanno un’area distinta dalla spiegazione. I titoli del percorso nodale sono tradotti in linguaggio studente.
+
+Thévenin distingue ora tensione a vuoto (generatori accesi), resistenza vista (generatori indipendenti spenti, carico ancora staccato), ricollegamento e ritorno all’originale. Ogni operazione ha uno schema e sostituzioni numeriche esplicite. Test dedicati verificano corto delle sorgenti V, apertura delle sorgenti I, carico rimosso e Rth nulla con generatore V ideale ai morsetti.
+
+Il PDF include una prima pagina con originale, domanda e indice effettivo, poi distingue ragionamento e calcolo a ogni passo. Sono stati verificati tutti i 18 PDF tramite estrazione del testo e ispezionate le pagine di apertura e resistenza di Thévenin. La suite finale R2 passa con 1898 test Python (98,70%, dominio 100%) e 68 web; build e confini passano. Screenshot, log e note sono conservati in `../kirchhoff-study-20260913/design-r2/`. Nessuna verifica completa WCAG o prova con studenti reali è implicata da questi controlli. Il perimetro scientifico e i limiti di pubblicazione/API restano quelli dichiarati sopra.

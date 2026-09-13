@@ -19,8 +19,8 @@ def _literal(s):
     return _plain(str(s)).replace('\\', '\\\\').replace('(', '\\(').replace(')', '\\)')
 
 
-def _text(x, y, text, size=11):
-    return f'BT /F1 {size} Tf 1 0 0 1 {x:.2f} {y:.2f} Tm ({_literal(text)}) Tj ET\n'
+def _text(x, y, text, size=11, font='F1'):
+    return f'BT /{font} {size} Tf 1 0 0 1 {x:.2f} {y:.2f} Tm ({_literal(text)}) Tj ET\n'
 
 
 def _rgb(color):
@@ -31,11 +31,11 @@ def _rgb(color):
     return ' '.join(str(int(color[i:i+2],16)/255) for i in (1,3,5))
 
 
-def _drawing(svg):
+def _drawing(svg, ytop=727, max_height=320):
     root = ET.fromstring(svg)
     _, _, w, h = map(float, root.attrib['viewBox'].split())
-    scale = min(510/w, 320/h)
-    xoff, ytop = (595-w*scale)/2, 727
+    scale = min(510/w, max_height/h)
+    xoff = (595-w*scale)/2
     def xy(x, y):
         return xoff+float(x)*scale, ytop-float(y)*scale
     result = 'q\n'
@@ -71,20 +71,40 @@ def _drawing(svg):
 def export_pdf(lesson):
     if lesson.get('outcome') != 'solved':
         raise ValueError('Il PDF richiede una lezione risolta.')
-    objects = [b'', b'', b'<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>']
+    objects = [b'', b'', b'<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>',
+               b'<< /Type /Font /Subtype /Type1 /BaseFont /Times-Roman /Encoding /WinAnsiEncoding >>']
     pages=[]
     def page(stream):
         content=stream.encode('cp1252','replace');content_id=len(objects)+1
         objects.append(f'<< /Length {len(content)} >>\nstream\n'.encode()+content+b'endstream')
         page_id=len(objects)+1
-        objects.append(f'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents {content_id} 0 R >>'.encode())
+        objects.append(f'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents {content_id} 0 R >>'.encode())
         pages.append(page_id)
+    # La prima pagina orienta lo studio: domanda, originale e percorso effettivo.
+    stream='0.14 0.20 0.29 rg\n'+_text(42,800,'KIRCHHOFF / con Andrea Marro',10)
+    stream+=_text(42,757,'Il circuito, passo per passo.',29,'F2')
+    stream+=_text(42,730,lesson['title']+' / riferimento '+lesson['answer']['reference'],12)
+    drawing,y=_drawing(lesson['original'],ytop=699,max_height=265);stream+=drawing
+    stream+='0.16 0.27 0.68 rg\n'+_text(42,y,'IL PERCORSO DEL RAGIONAMENTO',10)+'0.14 0.20 0.29 rg\n';y-=25
+    for i,step in enumerate(lesson['steps']):
+        for line in textwrap.wrap(f'{i+1:02d}  '+_plain(step['title']),80):
+            if y<80:
+                stream+=_text(42,35,'Il percorso - continua',9);page(stream)
+                stream='0.14 0.20 0.29 rg\n'+_text(42,790,'Il percorso del ragionamento',20,'F2');y=755
+            stream+=_text(42,y,line,11);y-=16
+        y-=7
+    stream+=_text(42,35,'Schemi e calcoli provengono dalla stessa lezione. Conserva i riferimenti indicati.',9)
+    page(stream)
     for i, step in enumerate(lesson['steps']):
-        stream='0.14 0.20 0.29 rg\n'+_text(42,800,'KIRCHHOFF / Il circuito, un passaggio alla volta',11)
+        stream='0.14 0.20 0.29 rg\n'+_text(42,800,f'KIRCHHOFF / PASSAGGIO {i+1:02d}',10)
         title=textwrap.wrap(_plain(step['title']),62)
-        for j,line in enumerate(title): stream+=_text(42,771-j*18,line,15)
+        for j,line in enumerate(title): stream+=_text(42,771-j*20,line,19,'F2')
         drawing,y=_drawing(step['svg']);stream+=drawing
-        for paragraph in [step['explanation'], *step['equations']]:
+        for index, paragraph in enumerate([step['explanation'], *step['equations']]):
+            if index in (0,1):
+                if y<105:
+                    page(stream);stream='0.14 0.20 0.29 rg\n';y=770
+                stream+='0.16 0.27 0.68 rg\n'+_text(42,y,'IL RAGIONAMENTO' if index==0 else 'IL CALCOLO',9)+'0.14 0.20 0.29 rg\n';y-=22
             for line in textwrap.wrap(_plain(paragraph),82,break_long_words=True):
                 if y<70:
                     stream+=_text(42,35,f'Passaggio {i+1} - continua',9);page(stream)

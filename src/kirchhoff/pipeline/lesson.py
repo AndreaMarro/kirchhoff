@@ -234,7 +234,8 @@ def create_lesson(text: str, method: str = 'auto', source_sha: str = '') -> dict
                 'serie': 'Nel nodo intermedio non esistono diramazioni: i resistori hanno la stessa corrente. Sommiamo le resistenze; il collegamento con la grandezza originale è conservato dalla derivazione.',
                 'parallelo': 'I resistori condividono entrambi i nodi, quindi hanno la stessa tensione. Sommiamo le conduttanze e prendiamo il reciproco per ottenere la resistenza equivalente.',
             }.get(st['action'], 'Seguiamo l’equazione della derivazione e conserviamo i riferimenti della domanda iniziale.')
-            steps.append(_step(st['action'], explanation,
+            titles = {'choose_reference':'Scegliamo il riferimento', 'define_nodal_unknowns':'Quali tensioni dobbiamo trovare?', 'write_kcl':'Scriviamo il bilancio delle correnti', 'write_voltage_constraint':'La tensione imposta dal generatore', 'solve_system':'Risolviamo le equazioni', 'recover_observable':'Ritroviamo la grandezza richiesta', 'serie':'Sommiamo le resistenze in serie', 'parallelo':'Riduciamo le resistenze in parallelo'}
+            steps.append(_step(titles.get(st['action'], st['action'].replace('_', ' ')), explanation,
                                st['svg'], st['equations']))
         chosen = 'nodal'
     steps.append(_step('Torniamo al circuito originale',
@@ -312,17 +313,35 @@ def _human_steps(ir, topology, target, quantity, method, load, original):
         ideal = any(b.resistance == 0 and b.imposed() is None for b in remaining)
         gr = sum((1/b.resistance for b in remaining if b.resistance and b.imposed() is None), F(0))
         rth = F(0) if ideal else 1/gr
-        result.append(_step('Stacchiamo il carico e guardiamo i suoi morsetti',
-            f'{target} è il carico: lo rimuoviamo soltanto per caratterizzare il resto della rete. '
-            'La tensione a vuoto diventa Vth. Spegnendo le sorgenti indipendenti, i rami resistivi restanti '
-            'sono in parallelo: il loro equivalente è Rth.',
+        emf_sum = sum((b.emf()/b.resistance for b in remaining if b.resistance and b.imposed() is None), F(0))
+        imposed_sum = sum((b.imposed() or F(0) for b in remaining), F(0))
+        result.append(_step('Stacchiamo il carico: troviamo la tensione a vuoto',
+            f'{target} è il carico. Staccandolo, nessuna corrente attraversa i suoi morsetti aperti. '
+            'I generatori del resto della rete rimangono accesi: la tensione fra questi morsetti è Vth. '
+            'Usiamo il vincolo della sorgente ideale se presente, altrimenti Millman sui rami rimasti.',
             schematic(ir, topology, omit=[target]),
-            [f'Vth = {number(vth)} V', f'Rth = {number(rth)} Ω']))
+            [f'Vth = V({p}) − V({q}) = {number(vth)} V'] if ideal else
+            [f'G a vuoto = Σ(1/R) = {number(gr)} S',
+             f'Vth = (Σ(E/R) − ΣI) / G = ({number(emf_sum)} − ({number(imposed_sum)})) / ({number(gr)}) = {number(vth)} V']))
+        result.append(_step('Spegniamo le sorgenti: troviamo la resistenza vista',
+            'Il carico resta staccato. Ora azzeriamo soltanto i generatori indipendenti: '
+            'ogni generatore di tensione diventa un cortocircuito e ogni generatore di corrente un ramo aperto. '
+            'Guardiamo dentro la rete dai due morsetti del carico. ' +
+            ('Il cortocircuito fra i morsetti impone Rth = 0.' if ideal else
+             'I rami rimasti conducenti sono in parallelo: sommiamo le loro conduttanze e invertiamo.'),
+            schematic(ir, topology, omit=[target], active='__all_off__'),
+            [f'Rth = {number(rth)} Ω'] if ideal else
+            ['G vista = ' + ' + '.join(f'1/({number(b.resistance)})' for b in remaining if b.resistance and b.imposed() is None) + f' = {number(gr)} S',
+             f'Rth = 1 / G vista = 1 / ({number(gr)}) = {number(rth)} Ω']))
+        iload = vth/(rth+bs[load].resistance)
         result.append(_step('Ricolleghiamo il carico all’equivalente Thévenin',
-            'Ora abbiamo un solo generatore e due resistenze in serie. Il partitore restituisce la tensione '
-            'sul carico; la corrente si ottiene dividendo per la sua resistenza. I riferimenti restano quelli indicati ai morsetti.',
+            'Riaccendiamo la rete attraverso il suo equivalente: Vth in serie a Rth. '
+            f'Ricolleghiamo {target} ai medesimi morsetti. Le resistenze sono ora in serie: '
+            'troviamo la corrente con la legge di Ohm e la tensione del carico con il partitore. '
+            f'I valori qui sotto seguono il verso {p} → {q}; sull’originale recuperiamo il riferimento della domanda.',
             schematic(ir, topology, thevenin=(load, vth, rth)),
-            [f'I carico ({p} → {q}) = Vth / (Rth + R carico) = {number(vth/(rth+bs[load].resistance))} A']))
+            [f'I carico = Vth / (Rth + R carico) = ({number(vth)}) / ({number(rth)} + {number(bs[load].resistance)}) = {number(iload)} A',
+             f'V carico = I carico × R carico = ({number(iload)}) × ({number(bs[load].resistance)}) = {number(iload*bs[load].resistance)} V']))
         return result
     if method == 'norton':
         converted = []

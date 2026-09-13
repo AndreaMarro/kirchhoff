@@ -4,17 +4,139 @@
 << /Type /Catalog /Pages 2 0 R >>
 endobj
 2 0 obj
-<< /Type /Pages /Count 5 /Kids [5 0 R 7 0 R 9 0 R 11 0 R 13 0 R] >>
+<< /Type /Pages /Count 6 /Kids [6 0 R 8 0 R 10 0 R 12 0 R 14 0 R 16 0 R] >>
 endobj
 3 0 obj
 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
 endobj
 4 0 obj
-<< /Length 6525 >>
+<< /Type /Font /Subtype /Type1 /BaseFont /Times-Roman /Encoding /WinAnsiEncoding >>
+endobj
+5 0 obj
+<< /Length 6727 >>
 stream
 0.14 0.20 0.29 rg
-BT /F1 11 Tf 1 0 0 1 42.00 800.00 Tm (KIRCHHOFF / Il circuito, un passaggio alla volta) Tj ET
-BT /F1 15 Tf 1 0 0 1 42.00 771.00 Tm (Leggiamo il circuito e la domanda) Tj ET
+BT /F1 10 Tf 1 0 0 1 42.00 800.00 Tm (KIRCHHOFF / con Andrea Marro) Tj ET
+BT /F2 29 Tf 1 0 0 1 42.00 757.00 Tm (Il circuito, passo per passo.) Tj ET
+BT /F1 12 Tf 1 0 0 1 42.00 730.00 Tm (Tensione di R2 / riferimento a -> 0) Tj ET
+q
+0.1411764705882353 0.2 0.29411764705882354 RG 0.14 0.20 0.29 rg 1.677 w
+163.323 655.392 m
+304.209 655.392 l
+S
+0.1411764705882353 0.2 0.29411764705882354 RG 0.14 0.20 0.29 rg 1.677 w
+163.323 477.608 m
+304.209 477.608 l
+S
+0.1411764705882353 0.2 0.29411764705882354 RG 0.1411764705882353 0.2 0.29411764705882354 rg 1.342 w
+BT /F1 11.405063291139241 Tf 1 0 0 1 139.12 652.04 Tm (b) Tj ET
+0.1411764705882353 0.2 0.29411764705882354 RG 0.1411764705882353 0.2 0.29411764705882354 rg 1.342 w
+BT /F1 11.405063291139241 Tf 1 0 0 1 139.12 474.25 Tm (0) Tj ET
+0.1411764705882353 0.2 0.29411764705882354 RG 0.1411764705882353 0.2 0.29411764705882354 rg 1.342 w
+165.671 655.392 m 165.671 656.689 164.620 657.741 163.323 657.741 c 162.026 657.741 160.975 656.689 160.975 655.392 c 160.975 654.096 162.026 653.044 163.323 653.044 c 164.620 653.044 165.671 654.096 165.671 655.392 c f
+0.1411764705882353 0.2 0.29411764705882354 RG 0.1411764705882353 0.2 0.29411764705882354 rg 1.342 w
+165.671 477.608 m 165.671 478.904 164.620 479.956 163.323 479.956 c 162.026 479.956 160.975 478.904 160.975 477.608 c 160.975 476.311 162.026 475.259 163.323 475.259 c 164.620 475.259 165.671 476.311 165.671 477.608 c f
+0.1411764705882353 0.2 0.29411764705882354 RG 0.14 0.20 0.29 rg 1.677 w
+163.323 655.392 m
+163.323 590.652 l
+S
+0.1411764705882353 0.2 0.29411764705882354 RG 1 1 1 rg 1.677 w
+181.437 566.500 m 181.437 576.504 173.327 584.614 163.323 584.614 c 153.319 584.614 145.209 576.504 145.209 566.500 c 145.209 556.496 153.319 548.386 163.323 548.386 c 173.327 548.386 181.437 556.496 181.437 566.500 c B
+0.1411764705882353 0.2 0.29411764705882354 RG 0.14 0.20 0.29 rg 1.677 w
+163.323 590.652 m
+163.323 584.614 l
+S
+0.1411764705882353 0.2 0.29411764705882354 RG 0.14 0.20 0.29 rg 1.677 w
+163.323 548.386 m
+163.323 542.348 l
+S
+0.1411764705882353 0.2 0.29411764705882354 RG 0.1411764705882353 0.2 0.29411764705882354 rg 1.342 w
+BT /F1 15.430379746835444 Tf 1 0 0 1 159.62 570.53 Tm (+) Tj ET
+0.1411764705882353 0.2 0.29411764705882354 RG 0.1411764705882353 0.2 0.29411764705882354 rg 1.342 w
+BT /F1 15.430379746835444 Tf 1 0 0 1 159.62 552.41 Tm (-) Tj ET
+0.1411764705882353 0.2 0.29411764705882354 RG 0.1411764705882353 0.2 0.29411764705882354 rg 1.342 w
+BT /F1 11.405063291139241 Tf 1 0 0 1 190.16 569.85 Tm (V1) Tj ET
+0.1411764705882353 0.2 0.29411764705882354 RG 0.1411764705882353 0.2 0.29411764705882354 rg 1.342 w
+BT /F1 10.734177215189874 Tf 1 0 0 1 190.16 554.42 Tm (12 V) Tj ET
+0.1411764705882353 0.2 0.29411764705882354 RG 0.14 0.20 0.29 rg 1.677 w
+163.323 542.348 m
+163.323 477.608 l
+S
+0.1411764705882353 0.2 0.29411764705882354 RG 0.1411764705882353 0.2 0.29411764705882354 rg 1.342 w
+306.557 655.392 m 306.557 656.689 305.506 657.741 304.209 657.741 c 302.912 657.741 301.861 656.689 301.861 655.392 c 301.861 654.096 302.912 653.044 304.209 653.044 c 305.506 653.044 306.557 654.096 306.557 655.392 c f
+0.1411764705882353 0.2 0.29411764705882354 RG 0.1411764705882353 0.2 0.29411764705882354 rg 1.342 w
+306.557 477.608 m 306.557 478.904 305.506 479.956 304.209 479.956 c 302.912 479.956 301.861 478.904 301.861 477.608 c 301.861 476.311 302.912 475.259 304.209 475.259 c 305.506 475.259 306.557 476.311 306.557 477.608 c f
+0.1411764705882353 0.2 0.29411764705882354 RG 0.14 0.20 0.29 rg 1.677 w
+304.209 655.392 m
+304.209 635.098 l
+S
+0.1411764705882353 0.2 0.29411764705882354 RG 1 1 1 rg 1.677 w
+296.829 590.820 14.759 40.253 re B
+0.1411764705882353 0.2 0.29411764705882354 RG 0.14 0.20 0.29 rg 1.677 w
+304.209 635.098 m
+304.209 631.073 l
+S
+0.1411764705882353 0.2 0.29411764705882354 RG 0.14 0.20 0.29 rg 1.677 w
+304.209 590.820 m
+304.209 586.794 l
+S
+0.1411764705882353 0.2 0.29411764705882354 RG 0.1411764705882353 0.2 0.29411764705882354 rg 1.342 w
+BT /F1 11.405063291139241 Tf 1 0 0 1 331.04 614.30 Tm (R1) Tj ET
+0.1411764705882353 0.2 0.29411764705882354 RG 0.1411764705882353 0.2 0.29411764705882354 rg 1.342 w
+BT /F1 10.734177215189874 Tf 1 0 0 1 331.04 598.87 Tm (100 ohm) Tj ET
+0.1411764705882353 0.2 0.29411764705882354 RG 0.1411764705882353 0.2 0.29411764705882354 rg 1.342 w
+306.557 566.500 m 306.557 567.797 305.506 568.848 304.209 568.848 c 302.912 568.848 301.861 567.797 301.861 566.500 c 301.861 565.203 302.912 564.152 304.209 564.152 c 305.506 564.152 306.557 565.203 306.557 566.500 c f
+0.1411764705882353 0.2 0.29411764705882354 RG 0.1411764705882353 0.2 0.29411764705882354 rg 1.342 w
+BT /F1 10.063291139240507 Tf 1 0 0 1 293.34 573.21 Tm (a) Tj ET
+0.1411764705882353 0.2 0.29411764705882354 RG 0.14 0.20 0.29 rg 1.677 w
+304.209 586.794 m
+304.209 546.206 l
+S
+0.1411764705882353 0.2 0.29411764705882354 RG 1 1 1 rg 1.677 w
+296.829 501.927 14.759 40.253 re B
+0.1411764705882353 0.2 0.29411764705882354 RG 0.14 0.20 0.29 rg 1.677 w
+304.209 546.206 m
+304.209 542.180 l
+S
+0.1411764705882353 0.2 0.29411764705882354 RG 0.14 0.20 0.29 rg 1.677 w
+304.209 501.927 m
+304.209 497.902 l
+S
+0.1411764705882353 0.2 0.29411764705882354 RG 0.1411764705882353 0.2 0.29411764705882354 rg 1.342 w
+BT /F1 11.405063291139241 Tf 1 0 0 1 331.04 525.41 Tm (R2) Tj ET
+0.1411764705882353 0.2 0.29411764705882354 RG 0.1411764705882353 0.2 0.29411764705882354 rg 1.342 w
+BT /F1 10.734177215189874 Tf 1 0 0 1 331.04 509.98 Tm (220 ohm) Tj ET
+0.1411764705882353 0.2 0.29411764705882354 RG 0.1411764705882353 0.2 0.29411764705882354 rg 1.342 w
+BT /F1 11.405063291139241 Tf 1 0 0 1 286.04 530.78 Tm (+) Tj ET
+0.1411764705882353 0.2 0.29411764705882354 RG 0.1411764705882353 0.2 0.29411764705882354 rg 1.342 w
+BT /F1 11.405063291139241 Tf 1 0 0 1 286.04 506.62 Tm (-) Tj ET
+0.1411764705882353 0.2 0.29411764705882354 RG 0.1411764705882353 0.2 0.29411764705882354 rg 1.342 w
+BT /F1 11.405063291139241 Tf 1 0 0 1 276.60 518.70 Tm (v) Tj ET
+0.1411764705882353 0.2 0.29411764705882354 RG 0.14 0.20 0.29 rg 1.677 w
+304.209 497.902 m
+304.209 477.608 l
+S
+Q
+0.16 0.27 0.68 rg
+BT /F1 10 Tf 1 0 0 1 42.00 406.00 Tm (IL PERCORSO DEL RAGIONAMENTO) Tj ET
+0.14 0.20 0.29 rg
+BT /F1 11 Tf 1 0 0 1 42.00 381.00 Tm (01  Leggiamo il circuito e la domanda) Tj ET
+BT /F1 11 Tf 1 0 0 1 42.00 358.00 Tm (02  Riconosciamo le resistenze in serie) Tj ET
+BT /F1 11 Tf 1 0 0 1 42.00 335.00 Tm (03  La tensione è già imposta) Tj ET
+BT /F1 11 Tf 1 0 0 1 42.00 312.00 Tm (04  Recuperiamo la grandezza nel ramo originale) Tj ET
+BT /F1 11 Tf 1 0 0 1 42.00 289.00 Tm (05  Torniamo al circuito originale) Tj ET
+BT /F1 9 Tf 1 0 0 1 42.00 35.00 Tm (Schemi e calcoli provengono dalla stessa lezione. Conserva i riferimenti indicati.) Tj ET
+endstream
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 5 0 R >>
+endobj
+7 0 obj
+<< /Length 6597 >>
+stream
+0.14 0.20 0.29 rg
+BT /F1 10 Tf 1 0 0 1 42.00 800.00 Tm (KIRCHHOFF / PASSAGGIO 01) Tj ET
+BT /F2 19 Tf 1 0 0 1 42.00 771.00 Tm (Leggiamo il circuito e la domanda) Tj ET
 q
 0.1411764705882353 0.2 0.29411764705882354 RG 0.14 0.20 0.29 rg 2.025 w
 135.475 674.342 m
@@ -113,22 +235,25 @@ BT /F1 13.772151898734178 Tf 1 0 0 1 272.26 509.28 Tm (v) Tj ET
 305.601 459.658 l
 S
 Q
-BT /F1 11 Tf 1 0 0 1 42.00 379.00 Tm (Cerchiamo la tensione di r2. Il riferimento è a -> 0: per la tensione sottraiamo) Tj ET
-BT /F1 11 Tf 1 0 0 1 42.00 363.00 Tm (il potenziale del secondo nodo da quello del primo; per la corrente il verso) Tj ET
-BT /F1 11 Tf 1 0 0 1 42.00 347.00 Tm (positivo va dal primo al secondo. Un risultato negativo indica il verso opposto,) Tj ET
-BT /F1 11 Tf 1 0 0 1 42.00 331.00 Tm (non un errore.) Tj ET
+0.16 0.27 0.68 rg
+BT /F1 9 Tf 1 0 0 1 42.00 379.00 Tm (IL RAGIONAMENTO) Tj ET
+0.14 0.20 0.29 rg
+BT /F1 11 Tf 1 0 0 1 42.00 357.00 Tm (Cerchiamo la tensione di r2. Il riferimento è a -> 0: per la tensione sottraiamo) Tj ET
+BT /F1 11 Tf 1 0 0 1 42.00 341.00 Tm (il potenziale del secondo nodo da quello del primo; per la corrente il verso) Tj ET
+BT /F1 11 Tf 1 0 0 1 42.00 325.00 Tm (positivo va dal primo al secondo. Un risultato negativo indica il verso opposto,) Tj ET
+BT /F1 11 Tf 1 0 0 1 42.00 309.00 Tm (non un errore.) Tj ET
 BT /F1 9 Tf 1 0 0 1 42.00 35.00 Tm (1/5 - Tensione di R2 - a -> 0) Tj ET
 endstream
 endobj
-5 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 4 0 R >>
+8 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 7 0 R >>
 endobj
-6 0 obj
-<< /Length 4776 >>
+9 0 obj
+<< /Length 4939 >>
 stream
 0.14 0.20 0.29 rg
-BT /F1 11 Tf 1 0 0 1 42.00 800.00 Tm (KIRCHHOFF / Il circuito, un passaggio alla volta) Tj ET
-BT /F1 15 Tf 1 0 0 1 42.00 771.00 Tm (Riconosciamo le resistenze in serie) Tj ET
+BT /F1 10 Tf 1 0 0 1 42.00 800.00 Tm (KIRCHHOFF / PASSAGGIO 02) Tj ET
+BT /F2 19 Tf 1 0 0 1 42.00 771.00 Tm (Riconosciamo le resistenze in serie) Tj ET
 q
 0.1411764705882353 0.2 0.29411764705882354 RG 0.14 0.20 0.29 rg 2.025 w
 135.475 674.342 m
@@ -199,22 +324,28 @@ BT /F1 12.962025316455696 Tf 1 0 0 1 338.01 552.42 Tm (320 ohm) Tj ET
 305.601 459.658 l
 S
 Q
-BT /F1 11 Tf 1 0 0 1 42.00 379.00 Tm (All’interno di ciascun ramo non ci sono diramazioni. La corrente è comune:) Tj ET
-BT /F1 11 Tf 1 0 0 1 42.00 363.00 Tm (possiamo sommare le resistenze. Conserviamo i nomi originali per ricostruire poi) Tj ET
-BT /F1 11 Tf 1 0 0 1 42.00 347.00 Tm (tensioni e correnti su ciascun componente.) Tj ET
-BT /F1 11 Tf 1 0 0 1 42.00 318.00 Tm (R ramo 2 = 100 + 220 = 320 ohm) Tj ET
+0.16 0.27 0.68 rg
+BT /F1 9 Tf 1 0 0 1 42.00 379.00 Tm (IL RAGIONAMENTO) Tj ET
+0.14 0.20 0.29 rg
+BT /F1 11 Tf 1 0 0 1 42.00 357.00 Tm (All’interno di ciascun ramo non ci sono diramazioni. La corrente è comune:) Tj ET
+BT /F1 11 Tf 1 0 0 1 42.00 341.00 Tm (possiamo sommare le resistenze. Conserviamo i nomi originali per ricostruire poi) Tj ET
+BT /F1 11 Tf 1 0 0 1 42.00 325.00 Tm (tensioni e correnti su ciascun componente.) Tj ET
+0.16 0.27 0.68 rg
+BT /F1 9 Tf 1 0 0 1 42.00 296.00 Tm (IL CALCOLO) Tj ET
+0.14 0.20 0.29 rg
+BT /F1 11 Tf 1 0 0 1 42.00 274.00 Tm (R ramo 2 = 100 + 220 = 320 ohm) Tj ET
 BT /F1 9 Tf 1 0 0 1 42.00 35.00 Tm (2/5 - Tensione di R2 - a -> 0) Tj ET
 endstream
 endobj
-7 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 6 0 R >>
+10 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 9 0 R >>
 endobj
-8 0 obj
-<< /Length 6373 >>
+11 0 obj
+<< /Length 6536 >>
 stream
 0.14 0.20 0.29 rg
-BT /F1 11 Tf 1 0 0 1 42.00 800.00 Tm (KIRCHHOFF / Il circuito, un passaggio alla volta) Tj ET
-BT /F1 15 Tf 1 0 0 1 42.00 771.00 Tm (La tensione è già imposta) Tj ET
+BT /F1 10 Tf 1 0 0 1 42.00 800.00 Tm (KIRCHHOFF / PASSAGGIO 03) Tj ET
+BT /F2 19 Tf 1 0 0 1 42.00 771.00 Tm (La tensione è già imposta) Tj ET
 q
 0.1411764705882353 0.2 0.29411764705882354 RG 0.14 0.20 0.29 rg 2.025 w
 135.475 674.342 m
@@ -313,21 +444,27 @@ BT /F1 13.772151898734178 Tf 1 0 0 1 272.26 509.28 Tm (v) Tj ET
 305.601 459.658 l
 S
 Q
-BT /F1 11 Tf 1 0 0 1 42.00 379.00 Tm (Una sorgente ideale impone direttamente la tensione fra i due morsetti. Non) Tj ET
-BT /F1 11 Tf 1 0 0 1 42.00 363.00 Tm (dividiamo per una resistenza nulla: usiamo il vincolo del generatore.) Tj ET
-BT /F1 11 Tf 1 0 0 1 42.00 334.00 Tm (V = 12 V) Tj ET
+0.16 0.27 0.68 rg
+BT /F1 9 Tf 1 0 0 1 42.00 379.00 Tm (IL RAGIONAMENTO) Tj ET
+0.14 0.20 0.29 rg
+BT /F1 11 Tf 1 0 0 1 42.00 357.00 Tm (Una sorgente ideale impone direttamente la tensione fra i due morsetti. Non) Tj ET
+BT /F1 11 Tf 1 0 0 1 42.00 341.00 Tm (dividiamo per una resistenza nulla: usiamo il vincolo del generatore.) Tj ET
+0.16 0.27 0.68 rg
+BT /F1 9 Tf 1 0 0 1 42.00 312.00 Tm (IL CALCOLO) Tj ET
+0.14 0.20 0.29 rg
+BT /F1 11 Tf 1 0 0 1 42.00 290.00 Tm (V = 12 V) Tj ET
 BT /F1 9 Tf 1 0 0 1 42.00 35.00 Tm (3/5 - Tensione di R2 - a -> 0) Tj ET
 endstream
 endobj
-9 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 8 0 R >>
+12 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 11 0 R >>
 endobj
-10 0 obj
-<< /Length 6923 >>
+13 0 obj
+<< /Length 7086 >>
 stream
 0.14 0.20 0.29 rg
-BT /F1 11 Tf 1 0 0 1 42.00 800.00 Tm (KIRCHHOFF / Il circuito, un passaggio alla volta) Tj ET
-BT /F1 15 Tf 1 0 0 1 42.00 771.00 Tm (Recuperiamo la grandezza nel ramo originale) Tj ET
+BT /F1 10 Tf 1 0 0 1 42.00 800.00 Tm (KIRCHHOFF / PASSAGGIO 04) Tj ET
+BT /F2 19 Tf 1 0 0 1 42.00 771.00 Tm (Recuperiamo la grandezza nel ramo originale) Tj ET
 q
 0.1411764705882353 0.2 0.29411764705882354 RG 0.14 0.20 0.29 rg 2.025 w
 135.475 674.342 m
@@ -430,23 +567,29 @@ BT /F1 13.772151898734178 Tf 1 0 0 1 272.26 509.28 Tm (v) Tj ET
 305.601 459.658 l
 S
 Q
-BT /F1 11 Tf 1 0 0 1 42.00 379.00 Tm (Nel ramo che contiene R2, la corrente di riferimento b -> 0 vale 3/80 A. Per la) Tj ET
-BT /F1 11 Tf 1 0 0 1 42.00 363.00 Tm (tensione di un resistore usiamo V = R x I; se il componente ha i morsetti) Tj ET
-BT /F1 11 Tf 1 0 0 1 42.00 347.00 Tm (nell’ordine opposto cambiamo il segno. Una sorgente di corrente impone I, mentre) Tj ET
-BT /F1 11 Tf 1 0 0 1 42.00 331.00 Tm (una sorgente di tensione impone la propria caduta.) Tj ET
-BT /F1 11 Tf 1 0 0 1 42.00 302.00 Tm (R2: 33/4 V) Tj ET
+0.16 0.27 0.68 rg
+BT /F1 9 Tf 1 0 0 1 42.00 379.00 Tm (IL RAGIONAMENTO) Tj ET
+0.14 0.20 0.29 rg
+BT /F1 11 Tf 1 0 0 1 42.00 357.00 Tm (Nel ramo che contiene R2, la corrente di riferimento b -> 0 vale 3/80 A. Per la) Tj ET
+BT /F1 11 Tf 1 0 0 1 42.00 341.00 Tm (tensione di un resistore usiamo V = R x I; se il componente ha i morsetti) Tj ET
+BT /F1 11 Tf 1 0 0 1 42.00 325.00 Tm (nell’ordine opposto cambiamo il segno. Una sorgente di corrente impone I, mentre) Tj ET
+BT /F1 11 Tf 1 0 0 1 42.00 309.00 Tm (una sorgente di tensione impone la propria caduta.) Tj ET
+0.16 0.27 0.68 rg
+BT /F1 9 Tf 1 0 0 1 42.00 280.00 Tm (IL CALCOLO) Tj ET
+0.14 0.20 0.29 rg
+BT /F1 11 Tf 1 0 0 1 42.00 258.00 Tm (R2: 33/4 V) Tj ET
 BT /F1 9 Tf 1 0 0 1 42.00 35.00 Tm (4/5 - Tensione di R2 - a -> 0) Tj ET
 endstream
 endobj
-11 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 10 0 R >>
+14 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 13 0 R >>
 endobj
-12 0 obj
-<< /Length 6781 >>
+15 0 obj
+<< /Length 6944 >>
 stream
 0.14 0.20 0.29 rg
-BT /F1 11 Tf 1 0 0 1 42.00 800.00 Tm (KIRCHHOFF / Il circuito, un passaggio alla volta) Tj ET
-BT /F1 15 Tf 1 0 0 1 42.00 771.00 Tm (Torniamo al circuito originale) Tj ET
+BT /F1 10 Tf 1 0 0 1 42.00 800.00 Tm (KIRCHHOFF / PASSAGGIO 05) Tj ET
+BT /F2 19 Tf 1 0 0 1 42.00 771.00 Tm (Torniamo al circuito originale) Tj ET
 q
 0.1411764705882353 0.2 0.29411764705882354 RG 0.14 0.20 0.29 rg 2.025 w
 135.475 674.342 m
@@ -547,35 +690,44 @@ BT /F1 13.772151898734178 Tf 1 0 0 1 272.26 509.28 Tm (v) Tj ET
 305.601 459.658 l
 S
 Q
-BT /F1 11 Tf 1 0 0 1 42.00 379.00 Tm (La risposta alla domanda iniziale è 33/4 V, nel riferimento a -> 0. Ritrova il) Tj ET
-BT /F1 11 Tf 1 0 0 1 42.00 363.00 Tm (componente nello schema di partenza: gli equivalenti servono a calcolare, ma la) Tj ET
-BT /F1 11 Tf 1 0 0 1 42.00 347.00 Tm (domanda riguarda sempre questo circuito. Il valore della derivazione è confrontato) Tj ET
-BT /F1 11 Tf 1 0 0 1 42.00 331.00 Tm (esattamente con il risultato del nucleo verificato.) Tj ET
-BT /F1 11 Tf 1 0 0 1 42.00 302.00 Tm (Tensione di R2 = 33/4 V) Tj ET
+0.16 0.27 0.68 rg
+BT /F1 9 Tf 1 0 0 1 42.00 379.00 Tm (IL RAGIONAMENTO) Tj ET
+0.14 0.20 0.29 rg
+BT /F1 11 Tf 1 0 0 1 42.00 357.00 Tm (La risposta alla domanda iniziale è 33/4 V, nel riferimento a -> 0. Ritrova il) Tj ET
+BT /F1 11 Tf 1 0 0 1 42.00 341.00 Tm (componente nello schema di partenza: gli equivalenti servono a calcolare, ma la) Tj ET
+BT /F1 11 Tf 1 0 0 1 42.00 325.00 Tm (domanda riguarda sempre questo circuito. Il valore della derivazione è confrontato) Tj ET
+BT /F1 11 Tf 1 0 0 1 42.00 309.00 Tm (esattamente con il risultato del nucleo verificato.) Tj ET
+0.16 0.27 0.68 rg
+BT /F1 9 Tf 1 0 0 1 42.00 280.00 Tm (IL CALCOLO) Tj ET
+0.14 0.20 0.29 rg
+BT /F1 11 Tf 1 0 0 1 42.00 258.00 Tm (Tensione di R2 = 33/4 V) Tj ET
 BT /F1 9 Tf 1 0 0 1 42.00 35.00 Tm (5/5 - Tensione di R2 - a -> 0) Tj ET
 endstream
 endobj
-13 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 12 0 R >>
+16 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 15 0 R >>
 endobj
 xref
-0 14
+0 17
 0000000000 65535 f 
 0000000015 00000 n 
 0000000064 00000 n 
-0000000147 00000 n 
-0000000244 00000 n 
-0000006820 00000 n 
-0000006946 00000 n 
-0000011773 00000 n 
-0000011899 00000 n 
-0000018323 00000 n 
-0000018449 00000 n 
-0000025424 00000 n 
-0000025552 00000 n 
-0000032385 00000 n 
+0000000155 00000 n 
+0000000252 00000 n 
+0000000351 00000 n 
+0000007129 00000 n 
+0000007265 00000 n 
+0000013913 00000 n 
+0000014049 00000 n 
+0000019039 00000 n 
+0000019176 00000 n 
+0000025764 00000 n 
+0000025902 00000 n 
+0000033040 00000 n 
+0000033178 00000 n 
+0000040174 00000 n 
 trailer
-<< /Size 14 /Root 1 0 R >>
+<< /Size 17 /Root 1 0 R >>
 startxref
-32513
+40312
 %%EOF
