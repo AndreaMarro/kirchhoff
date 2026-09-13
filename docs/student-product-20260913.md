@@ -93,3 +93,7 @@ npm --prefix web run build
 I sorgenti stanno in `companion-board/`; l’output pronto in `web/public/board/` è circa 22 MB, in gran parte font e moduli opzionali di Excalidraw. La schermata ordinaria conserva un bundle JS di circa 247 kB non compresso. `build-manifest.json` registra versione, commit donor e SHA-256; `THIRD-PARTY-NOTICES.txt` raccoglie conservativamente le licenze trovate nell’installazione donor, comprese dipendenze non necessariamente distribuite. La licenza Excalidraw proviene dal tag ufficiale v0.18.1. I collegamenti locali `node_modules` non fanno parte del commit.
 
 Controlli R3: suite Python completa PASS (1898 casi, copertura 98,70%, dominio 100%), 77 test web PASS, typecheck di entrambe le applicazioni e build PASS. Browser: disegno manuale, esportazione con valori leggibili, recupero scena, recupero trascrizione, preparazione immagine oltre 2 MB, rifiuto immagine corrotta, nessun errore console nella prova. Restano i limiti scientifici e OCR già dichiarati: Excalidraw è lo strumento di disegno, non un riconoscitore di circuiti. La copertura completa di AutoCircuits resta da implementare e validare. Nessun deploy, reset credito o spesa effettuato.
+
+### Ingresso dagli appunti
+
+Nel pannello circuito si può anche incollare una foto con Cmd/Ctrl+V. Si riusa lo stesso controllo e preparazione dei file; l’incolla normale del testo continua a funzionare. Entrambi i percorsi sono stati provati nel browser reale. Suite web: 77 PASS; typecheck/build PASS. Nessun nuovo riconoscitore o servizio introdotto.
