@@ -1,5 +1,6 @@
 import {useEffect,useRef,useState} from 'react';
 import {CircuitEditor} from './CircuitEditor.tsx';
+import {StudentTracePanel} from './StudentTracePanel.tsx';
 import './student.css';
 import {prepareCircuitImage} from './imageInput.ts';
 import {readBoardMessage} from './boardProtocol.ts';
@@ -155,6 +156,7 @@ export function StudentApp(){
     <div className="student-progress" aria-label="Passaggi">{lesson.steps.map((s,i)=><button key={i} title={s.title} aria-label={`Passaggio ${i+1}: ${s.title}`} aria-current={step===i?'step':undefined} onClick={()=>navigate(i)}><span/></button>)}</div>
     <div className="student-explanation" aria-live="polite"><p className="student-eyebrow">{showOriginal?'Collega il passaggio all’originale':'Perché facciamo questo passaggio'}</p><p>{current.explanation}</p>{current.equations.length?<div className="student-equations"><span className="student-eyebrow">Il calcolo, con i riferimenti scelti</span>{current.equations.map((e,i)=><p key={i}>{e}</p>)}</div>:null}{step===lesson.steps.length-1?<p className="student-result">{lesson.answer.exact} <span>{lesson.answer.unit} · ≈ {lesson.answer.decimal.replace('.',',')} {lesson.answer.unit}</span></p>:null}</div>
    </section>:<p role="status">{busy?'Preparo la lezione…':error?'Nessuna nuova lezione disponibile.':'Caricamento…'}</p>}
+   {lesson&&api?<StudentTracePanel key={lesson.fingerprint} netlist={lesson.netlist} fingerprint={lesson.fingerprint}/>:null}
    <details className="student-scope"><summary>Cosa puoi risolvere in questa versione</summary><p>Circuiti resistivi in continua con sorgenti indipendenti. I percorsi a due morsetti includono partitori, Millman, equivalenti Thévenin e Norton e sovrapposizione. Per i ponti resistivi puoi usare stella → triangolo quando la grandezza cercata resta esterna alla stella. Per altre topologie DC il nucleo usa l’analisi nodale. AC, transitori e quadripoli non sono ancora coperti dall’esperienza didattica.</p><p>{api?'Puoi risolvere circuiti nuovi: il server locale è collegato.':'Stai usando il catalogo statico. Per risolvere circuiti nuovi occorre collegare il server Kirchhoff.'}</p></details>
    <details className="student-scope"><summary>Controllo del risultato e provenienza</summary><p>Il risultato elettrico proviene dal nucleo verificato; le derivazioni didattiche vengono confrontate in aritmetica esatta. Questa verifica del risultato non certifica da sola ogni scelta grafica e didattica.</p><code>{lesson?.source_sha}</code><p><a href={`?view=proof${location.hash}`}>Apri gli strumenti tecnici di verifica ↗</a></p></details>
   </main>
