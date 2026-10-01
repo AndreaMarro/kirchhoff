@@ -1,7 +1,8 @@
 # Kirchhoff
 
-Risolutore di circuiti verificato. Il valore non è la risposta: è che la risposta ha superato
-cinque controlli indipendenti prima di essere mostrata.
+Risolutore di circuiti con verifiche ispezionabili. Il risultato numerico
+viene controllato insieme alle equazioni e alla derivazione; questi controlli
+non sono cinque oracoli statisticamente indipendenti.
 
 Il piano completo è in `docs/00-fonte-piano-kirchhoff.md` (decisioni **D1–D12** in testa, sono il
 contratto). Gli artefatti BMAD stanno in `_bmad-output/`.
@@ -75,6 +76,17 @@ che non hanno un decimale finito e le direttive/modelli non previsti vengono
 rifiutati esplicitamente. L'importazione non equivale al supporto didattico
 di C/L o AC. Il round trip e un punto di lavoro indipendente sono verificati
 con ngspice dove installato.
+
+## CircuitikZ a etichette di rete
+
+La pagina, l'API locale e il tool MCP `export_circuitikz` esportano un documento
+`.tex` deterministico da un circuito DC canonico. Ogni componente mostra i due
+terminali nell'ordine originale; etichette di nodo uguali indicano una
+connessione, evitando incroci grafici ambigui. Valori, unita', nodi di controllo
+E/G e domanda sono inclusi; etichette non sicure vengono rifiutate. Il file
+richiede il pacchetto LaTeX CircuitikZ per la compilazione. Il test locale di
+compilazione e' ancora bloccato: la cache TeX disponibile non include il formato
+LaTeX e non e' stato installato un runtime aggiuntivo.
 
 ## Cosa e' verificato e cosa no
 

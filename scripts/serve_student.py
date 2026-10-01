@@ -25,6 +25,7 @@ from kirchhoff.pipeline.lesson_pdf import export_pdf
 from kirchhoff.pipeline.student_trace import diagnose_payload
 from kirchhoff.pipeline.image_revision import source_receipt, confirm_revision, verify_revision
 from kirchhoff.pipeline.spice import import_spice, export_spice, SCHEMA as SPICE_SCHEMA
+from kirchhoff.pipeline.circuitikz import export_circuitikz, SCHEMA as CIRCUITIKZ_SCHEMA
 
 TWO = 'V1 1 0 31/5 volt\nR1 1 2 13/10 ohm\nR2 2 0 11/10 ohm\nV2 3 0 18/5 volt\nR3 3 2 16/5 ohm\n? current R2'
 EXAMPLES = [
@@ -88,7 +89,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if not self.permitted():return self.send(403,dict(message='Origine non consentita.'))
         if self.path=='/api/capabilities':
-            return self.send(200,dict(solve=True,vision=bool(os.environ.get('OPENAI_API_KEY') and os.environ.get('KIRCHHOFF_VISION_MODEL')),spice=SPICE_SCHEMA,scope='DC resistivo',examples=EXAMPLES))
+            return self.send(200,dict(solve=True,vision=bool(os.environ.get('OPENAI_API_KEY') and os.environ.get('KIRCHHOFF_VISION_MODEL')),spice=SPICE_SCHEMA,circuitikz=CIRCUITIKZ_SCHEMA,scope='DC resistivo',examples=EXAMPLES))
         root=(ROOT/'web/dist').resolve()
         path=(root/unquote(urlparse(self.path).path).lstrip('/')).resolve()
         if path==root:path=root/'index.html'
@@ -111,6 +112,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send(200,dict(schema=SPICE_SCHEMA,netlist=import_spice(payload.get('spice'))))
             if self.path=='/api/spice/export':
                 return self.send(200,dict(schema=SPICE_SCHEMA,spice=export_spice(payload.get('netlist'))))
+            if self.path=='/api/circuitikz/export':
+                return self.send(200,dict(schema=CIRCUITIKZ_SCHEMA,tex=export_circuitikz(payload.get('netlist'))))
             if self.path=='/api/recognize':
                 result=recognize(payload.get('image'),os.environ.get('OPENAI_API_KEY'),os.environ.get('KIRCHHOFF_VISION_MODEL'))
                 return self.send(200,result)
