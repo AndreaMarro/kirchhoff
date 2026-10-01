@@ -16,6 +16,7 @@ from mcp.server.apps import Apps
 
 from kirchhoff.pipeline.lesson import create_lesson
 from kirchhoff.pipeline.student_trace import diagnose_payload
+from kirchhoff.pipeline.spice import import_spice, export_spice, SCHEMA as SPICE_SCHEMA
 
 
 APP_URI = "ui://kirchhoff/circuit-lesson.html"
@@ -52,7 +53,15 @@ def build_server() -> MCPServer:
     def circuit_capabilities() -> dict[str, Any]:
         return dict(schema="kirchhoff-capabilities.v1", solve="DC resistivo, R/V/I indipendenti e casi VCVS/VCCS del kernel",
                     diagnosis="riduzioni di due resistori in serie o parallelo",
-                    photo=False, ac=False, transients=False, product_verified=False)
+                    spice=SPICE_SCHEMA, photo=False, ac=False, transients=False, product_verified=False)
+
+    @server.tool(name="import_spice_dc", description="Importa solo il sottoinsieme SPICE DC dichiarato, preservando i valori esatti e rifiutando direttive ignote.", structured_output=True)
+    def import_spice_dc(spice: str) -> dict[str, Any]:
+        return dict(schema=SPICE_SCHEMA, netlist=import_spice(spice))
+
+    @server.tool(name="export_spice_dc", description="Esporta il circuito confermato nel sottoinsieme SPICE DC; frazioni periodiche vengono rifiutate.", structured_output=True)
+    def export_spice_dc(netlist: str) -> dict[str, Any]:
+        return dict(schema=SPICE_SCHEMA, spice=export_spice(netlist))
 
     return server
 

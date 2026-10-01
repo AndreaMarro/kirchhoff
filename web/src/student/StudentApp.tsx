@@ -7,7 +7,7 @@ import {readBoardMessage} from './boardProtocol.ts';
 import {safeSvg} from './safeSvg.ts';
 
 type Step={title:string;explanation:string;svg:string;equations:string[];focus:string[]};
-type Lesson={schema:string;outcome:'solved';title:string;netlist:string;method:string;available:string[];original:string;steps:Step[];answer:{exact:string;decimal:string;unit:string;reference:string};fingerprint:string;source_sha:string};
+type Lesson={schema:string;outcome:'solved';title:string;netlist:string;method:string;available:string[];original:string;steps:Step[];answer:{exact:string;decimal:string;unit:string;reference:string};fingerprint:string;source_sha:string;input_provenance?:{source_kind:string;source_sha256:string;circuit_sha256:string;confirmed_at_unix:number}};
 type Example={id:string;title:string;netlist:string;methods:Record<string,string>};
 const names:Record<string,string>={auto:'Percorso consigliato',divider:'Partitore',current_divider:'Partitore di corrente',millman:'Millman',norton:'Trasformazioni Norton',thevenin:'Equivalente Thévenin',superposition:'Sovrapposizione',nodal:'Analisi nodale',star_delta:'Stella → triangolo'};
 
@@ -25,6 +25,7 @@ export function StudentApp(){
  const [step,setStep]=useState(0),[showOriginal,setShowOriginal]=useState(false),[method,setMethod]=useState('auto'),[expanded,setExpanded]=useState(false),[compare,setCompare]=useState(false),[zoom,setZoom]=useState(100);
  const [netlist,setNetlist]=useState(''),[draft,setDraft]=useState(''),[panel,setPanel]=useState(false),[tab,setTab]=useState('text');
  const [lessonImage,setLessonImage]=useState<string|null>(null);
+ const [photoConfirmationToken,setPhotoConfirmationToken]=useState<string|null>(null);
  const [image,setImage]=useState<string|null>(null),[uncertainties,setUncertainties]=useState<string[]>([]),[confirmed,setConfirmed]=useState(false);
  const [api,setApi]=useState(false),[vision,setVision]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState('');
  const request=useRef(0),stage=useRef<HTMLDivElement>(null),board=useRef<HTMLIFrameElement>(null),boardScene=useRef('');
@@ -38,7 +39,7 @@ export function StudentApp(){
    const message=readBoardMessage(e,board.current?.contentWindow,location.origin);if(!message)return;
    if(message.type==='kirchhoff:board-ready')board.current?.contentWindow?.postMessage({type:'kirchhoff:board-init',scene:boardScene.current},location.origin);
    if(message.type==='kirchhoff:board-state')boardScene.current=message.scene;
-   if(message.type==='kirchhoff:board-image'){setImage(message.image);setDraft('');setUncertainties([]);setConfirmed(false);setTab('photo');setError('');}
+   if(message.type==='kirchhoff:board-image'){request.current++;setImage(message.image);setDraft('');setUncertainties([]);setConfirmed(false);setTab('photo');setError('');}
   }
   window.addEventListener('message',receive);return()=>window.removeEventListener('message',receive);
  },[]);
@@ -97,33 +98,60 @@ export function StudentApp(){
   }
   document.addEventListener('keydown',trap);return()=>{document.removeEventListener('keydown',trap);previous?.focus();};
  },[panel]);
- async function solve(text=draft,chosen=method){
+ async function solve(text=draft,chosen=method,sourceImageOverride?:string|null,existingToken?:string|null){
   const n=++request.current;setBusy(true);setError('');
   try{
    if(!api)throw new Error('Per risolvere un nuovo circuito serve il server Kirchhoff. Il catalogo resta disponibile; questa pagina statica non contiene il solutore.');
-   const value=parseLesson(await response(await fetch('api/solve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({netlist:text,method:chosen})})));
-   if(n!==request.current)return;setLesson(value);setLessonImage(image);setExample('');history.replaceState(null,'',location.pathname+location.search);setNetlist(text);setDraft(text);setMethod(chosen);setStep(0);setShowOriginal(false);setCompare(false);setZoom(100);setPanel(false);
+   const sourceImage=sourceImageOverride===undefined?image:sourceImageOverride;
+   let confirmationToken=existingToken??null;
+   if(sourceImage&&!confirmationToken){
+    if(!confirmed)throw new Error('Confronta la foto con il circuito e conferma questa revisione prima del calcolo.');
+    const source=await response(await fetch('api/source',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:sourceImage})})) as {source_token:string};
+    if(n!==request.current)return;
+    const approval=await response(await fetch('api/confirm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({source_token:source.source_token,netlist:text,confirmed:true})})) as {confirmation_token:string};
+    if(n!==request.current)return;confirmationToken=approval.confirmation_token;
+   }
+   const value=parseLesson(await response(await fetch('api/solve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({netlist:text,method:chosen,source_kind:sourceImage?'image':'netlist',confirmation_token:confirmationToken})})));
+   if(n!==request.current)return;setLesson(value);setLessonImage(sourceImage);setPhotoConfirmationToken(confirmationToken);setExample('');history.replaceState(null,'',location.pathname+location.search);setNetlist(text);setDraft(text);setMethod(chosen);setStep(0);setShowOriginal(false);setCompare(false);setZoom(100);setPanel(false);
   }catch(e){if(n===request.current)setError(e instanceof Error?e.message:String(e));}finally{if(n===request.current)setBusy(false);}
  }
  async function file(file:File|undefined){
-  if(!file)return;setError('');setConfirmed(false);setUncertainties([]);
+  if(!file)return;const n=++request.current;setError('');setConfirmed(false);setUncertainties([]);
   if(file.type.startsWith('image/')){
-   try{const value=await prepareCircuitImage(file);setImage(value);setDraft('');setTab('photo');}catch(e){setError(e instanceof Error?e.message:'Foto non leggibile.');}
-  }else{if(file.size>16000){setError('Il file circuito supera 16000 caratteri.');return;}setDraft(await file.text());setImage(null);setTab('text');}
+   try{const value=await prepareCircuitImage(file);if(n!==request.current)return;setImage(value);setDraft('');setTab('photo');}catch(e){if(n===request.current)setError(e instanceof Error?e.message:'Foto non leggibile.');}
+  }else{
+   if(file.size>16000){setError('Il file circuito supera 16000 caratteri.');return;}
+   try{
+    let value=await file.text();if(n!==request.current)return;
+    if(/\.(cir|spice|sp)$/i.test(file.name)){
+     if(!api)throw new Error('Per importare SPICE serve il server Kirchhoff.');
+     const imported=await response(await fetch('api/spice/import',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({spice:value})})) as {netlist:string};
+     value=imported.netlist;
+    }
+    if(n!==request.current)return;setDraft(value);setImage(null);setTab('text');
+   }catch(e){if(n===request.current)setError(e instanceof Error?e.message:String(e));}
+  }
  }
  async function recognize(){
-  if(!image)return;setBusy(true);setError('');
-  try{const v=await response(await fetch('api/recognize',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image})})) as {netlist:string;uncertainties:string[]};setDraft(v.netlist);setUncertainties(v.uncertainties);setConfirmed(false);}
-  catch(e){setError(e instanceof Error?e.message:String(e));}finally{setBusy(false);}
+  if(!image)return;const n=++request.current;setBusy(true);setError('');
+  try{const v=await response(await fetch('api/recognize',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image})})) as {netlist:string;uncertainties:string[]};if(n!==request.current)return;setDraft(v.netlist);setUncertainties(v.uncertainties);setConfirmed(false);}
+  catch(e){if(n===request.current)setError(e instanceof Error?e.message:String(e));}finally{if(n===request.current)setBusy(false);}
  }
  async function pdf(){
   if(!lesson)return;setBusy(true);setError('');
   try{
    const ex=examples.find(e=>e.id===example);
-   const res=ex?await fetch(`lessons/${ex.methods[method]??ex.methods.auto}.pdf`):await fetch('api/pdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({netlist,method})});
+   const res=ex?await fetch(`lessons/${ex.methods[method]??ex.methods.auto}.pdf`):await fetch('api/pdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({netlist,method,source_kind:lessonImage?'image':'netlist',confirmation_token:photoConfirmationToken})});
    if(!res.ok){await response(res);return;}
    if(!res.headers.get('Content-Type')?.includes('application/pdf'))throw new Error('Documento PDF non disponibile.');
    const url=URL.createObjectURL(await res.blob()),a=document.createElement('a');a.href=url;a.download='Kirchhoff-circuito-passo-passo.pdf';a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);
+  }catch(e){setError(e instanceof Error?e.message:String(e));}finally{setBusy(false);}
+ }
+ async function spice(){
+  if(!lesson||!api)return;setBusy(true);setError('');
+  try{
+   const value=await response(await fetch('api/spice/export',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({netlist:lesson.netlist})})) as {spice:string};
+   const url=URL.createObjectURL(new Blob([value.spice],{type:'text/plain'})),a=document.createElement('a');a.href=url;a.download='circuito-DC.cir';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
   }catch(e){setError(e instanceof Error?e.message:String(e));}finally{setBusy(false);}
  }
  function navigate(n:number){setStep(n);setShowOriginal(false);}
@@ -131,7 +159,7 @@ export function StudentApp(){
   <header className="student-header"><a href="#" className="student-brand">Kirchhoff<span>con Andrea Marro</span></a><span className="student-tag">Capire il circuito, un passaggio alla volta</span><button onClick={()=>{setTab('photo');setPanel(true);setError('');}}>Il tuo circuito <span aria-hidden="true">＋</span></button></header>
   <main className="student-main">
    <div className="student-heading"><div><p className="student-eyebrow">Il laboratorio dei circuiti</p><h1>Il circuito, passo per passo.</h1></div><p>Scegli una strada. Segui i disegni. Torna all’originale quando serve.</p></div>
-   <div className="student-toolbar student-picker"><label>Esercizio <select aria-label="Scegli un circuito" value={example} disabled={busy} onChange={e=>{const ex=examples.find(x=>x.id===e.target.value);if(ex){setMethod('auto');setExample(ex.id);setNetlist(ex.netlist);setDraft(ex.netlist);setImage(null);setLessonImage(null);}}}>{!example?<option value="">Il tuo circuito</option>:null}{examples.map(e=><option key={e.id} value={e.id}>{e.title}</option>)}</select></label><label>Metodo <select aria-label="Scegli il metodo" value={method} disabled={busy||!lesson} onChange={e=>{if(example)setMethod(e.target.value);else void solve(netlist,e.target.value);}}>{(lesson?.available??['auto']).map(m=><option key={m} value={m}>{names[m]}</option>)}</select></label><button disabled={busy||!lesson} onClick={()=>void pdf()}>Scarica PDF ↓</button></div>
+   <div className="student-toolbar student-picker"><label>Esercizio <select aria-label="Scegli un circuito" value={example} disabled={busy} onChange={e=>{const ex=examples.find(x=>x.id===e.target.value);if(ex){setMethod('auto');setExample(ex.id);setNetlist(ex.netlist);setDraft(ex.netlist);setImage(null);setLessonImage(null);setPhotoConfirmationToken(null);}}}>{!example?<option value="">Il tuo circuito</option>:null}{examples.map(e=><option key={e.id} value={e.id}>{e.title}</option>)}</select></label><label>Metodo <select aria-label="Scegli il metodo" value={method} disabled={busy||!lesson} onChange={e=>{if(example)setMethod(e.target.value);else void solve(netlist,e.target.value,lessonImage,photoConfirmationToken);}}>{(lesson?.available??['auto']).map(m=><option key={m} value={m}>{names[m]}</option>)}</select></label><button disabled={busy||!lesson||!api} onClick={()=>void spice()}>Scarica SPICE ↓</button><button disabled={busy||!lesson} onClick={()=>void pdf()}>Scarica PDF ↓</button></div>
    {error?<div className="student-error" role="alert">{error}</div>:null}
    {lesson&&current?<section className={`student-lesson ${expanded?"is-expanded":""}`} aria-busy={busy}>
     <nav className="student-outline" aria-label="Percorso ragionato"><p className="student-eyebrow">Il percorso</p><p className="student-route-method">{names[lesson.method]}</p><ol>{lesson.steps.map((s,i)=><li key={i}><button disabled={busy} aria-current={step===i?'step':undefined} onClick={()=>navigate(i)}><span className="student-step-number">{String(i+1).padStart(2,'0')}</span><span>{s.title}</span></button></li>)}</ol><p className="student-route-note">Ogni equivalente conserva una relazione. La domanda resta sul circuito originale.</p></nav>
@@ -147,16 +175,16 @@ export function StudentApp(){
    </section>:<p role="status">{busy?'Preparo la lezione…':error?'Nessuna nuova lezione disponibile.':'Caricamento…'}</p>}
    {lesson&&api?<StudentTracePanel key={lesson.fingerprint} netlist={lesson.netlist} fingerprint={lesson.fingerprint}/>:null}
    <details className="student-scope"><summary>Cosa puoi risolvere in questa versione</summary><p>Circuiti resistivi in continua con sorgenti indipendenti. I percorsi a due morsetti includono partitori, Millman, equivalenti Thévenin e Norton e sovrapposizione. Per i ponti resistivi puoi usare stella → triangolo quando la grandezza cercata resta esterna alla stella. Per altre topologie DC il nucleo usa l’analisi nodale. AC, transitori e quadripoli non sono ancora coperti dall’esperienza didattica.</p><p>{api?'Puoi risolvere circuiti nuovi: il server locale è collegato.':'Stai usando il catalogo statico. Per risolvere circuiti nuovi occorre collegare il server Kirchhoff.'}</p></details>
-   <details className="student-scope"><summary>Controllo del risultato e provenienza</summary><p>Il risultato elettrico proviene dal nucleo verificato; le derivazioni didattiche vengono confrontate in aritmetica esatta. Questa verifica del risultato non certifica da sola ogni scelta grafica e didattica.</p><code>{lesson?.source_sha}</code><p><a href={`?view=proof${location.hash}`}>Apri gli strumenti tecnici di verifica ↗</a></p></details>
+   <details className="student-scope"><summary>Controllo del risultato e provenienza</summary><p>Il risultato elettrico proviene dal nucleo verificato; le derivazioni didattiche vengono confrontate in aritmetica esatta. Questa verifica del risultato non certifica da sola ogni scelta grafica e didattica.</p><p>Versione del motore: <code>{lesson?.source_sha}</code></p>{lesson?.input_provenance?<><p>Immagine preparata per l’analisi: <code>{lesson.input_provenance.source_sha256}</code></p><p>Circuito corretto e confermato: <code>{lesson.input_provenance.circuit_sha256}</code></p><p>Confermato il {new Date(lesson.input_provenance.confirmed_at_unix*1000).toLocaleString('it-IT')}.</p><p>La conferma lega questa revisione all’immagine preparata; non certifica che la trascrizione sia fedele.</p></>:null}<p><a href={`?view=proof${location.hash}`}>Apri gli strumenti tecnici di verifica ↗</a></p></details>
   </main>
   {panel||boardOpened?<div className="student-overlay" hidden={!panel}><section role="dialog" aria-modal="true" aria-labelledby="input-title" className="student-dialog" onPaste={e=>{const photo=[...e.clipboardData.files].find(f=>f.type.startsWith('image/'));if(photo){e.preventDefault();void file(photo);}}}><header><h2 id="input-title">Partiamo dal tuo circuito</h2><button aria-label="Chiudi ingresso circuito" onClick={()=>setPanel(false)}>Chiudi ×</button></header><div className="student-toolbar">{[['text','Testo del circuito'],['photo','Foto o file'],['draw','Schema a componenti'],['free','Lavagna libera']].map(([id,label])=><button key={id} aria-pressed={tab===id} onClick={()=>{setTab(id);if(id==='free')setBoardOpened(true);}}>{label}</button>)}</div>
    {error?<p role="alert" className="student-error">{error}</p>:null}
    {boardOpened?<div className="student-free-board" hidden={tab!=='free'}><iframe ref={board} title="Lavagna libera Excalidraw" src="board/index.html"/></div>:null}
-   {tab==='free'?null:tab==='draw'?<CircuitEditor onUse={text=>{setDraft(text);setConfirmed(false);setTab('text');}}/>:<>
-    {tab==='photo'?<div className="student-upload" onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();void file(e.dataTransfer.files[0]);}}><label>Trascina o incolla una foto, oppure scegli un file circuito<span className="student-file-help">PNG, JPEG o WebP fino a 20 MB; file circuito .net, .cir o .txt.</span><input type="file" accept="image/png,image/jpeg,image/webp,.txt,.net,.cir" onChange={e=>void file(e.target.files?.[0])}/></label>{image?<img src={image} alt="Il circuito caricato da confrontare con la ricostruzione"/>:null}{image?<><p>La foto resta sul dispositivo fino a quando scegli di inviarla per la trascrizione. Prima del calcolo controlla sempre valori, collegamenti e domanda.</p><button disabled={!vision||busy} onClick={()=>void recognize()}>Invia a OpenAI e trascrivi</button>{!vision?<p>Riconoscimento automatico non configurato. Ricostruisci il circuito con “Schema a componenti” oppure nel campo qui sotto. Il disegno libero e la foto richiedono una trascrizione confermata.</p>:null}</>:null}</div>:null}
-    <label className="student-netlist">Componenti, nodi e domanda<textarea aria-label="Circuito da risolvere" spellCheck={false} value={draft} onChange={e=>{setDraft(e.target.value);setConfirmed(false);}} placeholder={'V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\n? voltage R2'}/></label><details><summary>Come leggere e modificare il circuito</summary><p>Ogni riga contiene nome, primo nodo, secondo nodo, valore e unità. R = resistore (ohm), V = sorgente di tensione (volt), I = sorgente di corrente (ampere). Il nodo 0 è il riferimento. Valori decimali o frazioni sono esatti. L’ultima riga indica la domanda: <code>? voltage R2</code> oppure <code>? current R2</code>. I file SPICE completi non sono ancora accettati.</p></details>
+   {tab==='free'?null:tab==='draw'?<CircuitEditor onUse={text=>{request.current++;setDraft(text);setImage(null);setUncertainties([]);setConfirmed(false);setTab('text');}}/>:<>
+    {tab==='photo'?<div className="student-upload" onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();void file(e.dataTransfer.files[0]);}}><label>Trascina o incolla una foto, oppure scegli un file circuito<span className="student-file-help">PNG, JPEG o WebP fino a 20 MB; netlist .net/.txt o SPICE DC .cir/.spice.</span><input type="file" accept="image/png,image/jpeg,image/webp,.txt,.net,.cir,.sp,.spice" onChange={e=>void file(e.target.files?.[0])}/></label>{image?<img src={image} alt="Il circuito caricato da confrontare con la ricostruzione"/>:null}{image?<><p>La foto resta sul dispositivo fino a quando scegli di inviarla per la trascrizione. Prima del calcolo controlla sempre valori, collegamenti e domanda.</p><button disabled={!vision||busy} onClick={()=>void recognize()}>Invia a OpenAI e trascrivi</button>{!vision?<p>Riconoscimento automatico non configurato. Ricostruisci il circuito con “Schema a componenti” oppure nel campo qui sotto. Il disegno libero e la foto richiedono una trascrizione confermata.</p>:null}</>:null}</div>:null}
+    <label className="student-netlist">Componenti, nodi e domanda<textarea aria-label="Circuito da risolvere" spellCheck={false} value={draft} onChange={e=>{request.current++;setDraft(e.target.value);setConfirmed(false);}} placeholder={'V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\n? voltage R2'}/></label><details><summary>Come leggere e modificare il circuito</summary><p>Ogni riga contiene nome, primo nodo, secondo nodo, valore e unità. R = resistore (ohm), V = sorgente di tensione (volt), I = sorgente di corrente (ampere). Il nodo 0 è il riferimento. Valori decimali o frazioni sono esatti. L’ultima riga indica la domanda: <code>? voltage R2</code> oppure <code>? current R2</code>. SPICE: questa versione importa solo R/C/L, V/I DC, E/G, .op e .end; una direttiva sconosciuta viene rifiutata.</p></details>
     {uncertainties.length?<ul>{uncertainties.map((u,i)=><li key={i}>{u}</li>)}</ul>:null}
-    {image?<label className="student-confirm"><input type="checkbox" checked={confirmed} onChange={e=>setConfirmed(e.target.checked)}/>Ho confrontato con la foto e corretto valori, nodi, versi e domanda.</label>:null}
+    {image?<label className="student-confirm"><input type="checkbox" checked={confirmed} onChange={e=>{request.current++;setConfirmed(e.target.checked);}}/>Ho confrontato con la foto e corretto valori, nodi, versi e domanda.</label>:null}
     <div className="student-dialog-actions"><button className="student-primary" disabled={busy||!draft.trim()||Boolean(image&&!confirmed)} onClick={()=>void solve(draft,'auto')}>{busy?'Preparo i passaggi…':'Risolvi e spiega →'}</button><button onClick={()=>{const url=URL.createObjectURL(new Blob([draft],{type:'text/plain'}));const a=document.createElement('a');a.href=url;a.download='circuito.net';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}}>Salva circuito</button></div>
    </>}
   </section></div>:null}

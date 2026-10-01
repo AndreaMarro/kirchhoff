@@ -37,6 +37,11 @@ La trascrizione di fotografie richiede `OPENAI_API_KEY` e
 `KIRCHHOFF_VISION_MODEL` sul server e un invio esplicito dalla pagina; il
 risultato deve essere corretto e confermato prima del calcolo. Il disegno libero
 produce un'immagine che richiede la stessa trascrizione confermata.
+Anche senza riconoscimento automatico puoi trascrivere manualmente una foto: il
+server convalida l'immagine, firma una ricevuta temporanea e lega la conferma
+all'impronta esatta del circuito. Una modifica successiva richiede una nuova
+conferma; foto e chiavi non sono salvate dal server. La ricevuta non dimostra
+la fedelta' della trascrizione e scade dopo un'ora o al riavvio del server.
 
 Per il banco tecnico statico: `cd web && npm run dev`, poi `/?view=proof`.
 Le sue sessioni versionate si rigenerano con
@@ -59,6 +64,17 @@ risorsa `ui://kirchhoff/circuit-lesson.html` per host MCP App compatibili. Un
 client headless usa gli stessi tool senza la vista. La verifica locale usa il
 client ufficiale in-process e via stdio; non equivale a una prova in un host
 MCP App di produzione.
+
+## SPICE DC controllato
+
+La pagina e gli strumenti MCP importano/esportano il sottoinsieme
+`kirchhoff-spice-dc.v1`: R/C/L, sorgenti V/I indipendenti DC, E/G controllate
+da tensione, `.op`, `.end` e domanda in commento `* KIRCHHOFF_REQUEST`.
+Valori e nodi sono preservati; `M` significa milli e `MEG` mega. Le frazioni
+che non hanno un decimale finito e le direttive/modelli non previsti vengono
+rifiutati esplicitamente. L'importazione non equivale al supporto didattico
+di C/L o AC. Il round trip e un punto di lavoro indipendente sono verificati
+con ngspice dove installato.
 
 ## Cosa e' verificato e cosa no
 

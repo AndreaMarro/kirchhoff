@@ -86,6 +86,11 @@ def export_pdf(lesson):
     stream+=_text(42,730,lesson['title']+' / riferimento '+lesson['answer']['reference'],12)
     drawing,y=_drawing(lesson['original'],ytop=699,max_height=265);stream+=drawing
     stream+='0.16 0.27 0.68 rg\n'+_text(42,y,'IL PERCORSO DEL RAGIONAMENTO',10)+'0.14 0.20 0.29 rg\n';y-=25
+    provenance=lesson.get('input_provenance')
+    if provenance:
+        # La ricevuta e' sul PDF ma la fotografia resta fuori dal documento.
+        stream+=_text(42,60,'Foto SHA256: '+provenance['source_sha256'],8)
+        stream+=_text(42,49,'Circuito confermato SHA256: '+provenance['circuit_sha256'],8)
     for i,step in enumerate(lesson['steps']):
         for line in textwrap.wrap(f'{i+1:02d}  '+_plain(step['title']),80):
             if y<80:

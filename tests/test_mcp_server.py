@@ -16,7 +16,7 @@ def test_headless_client_and_app_resource_share_canonical_result():
     async def run():
         async with Client(build_server()) as client:
             tools = {tool.name: tool for tool in (await client.list_tools()).tools}
-            assert {"solve_circuit", "diagnose_steps", "circuit_capabilities"} <= tools.keys()
+            assert {"solve_circuit", "diagnose_steps", "circuit_capabilities", "import_spice_dc", "export_spice_dc"} <= tools.keys()
             assert tools["solve_circuit"].meta["ui"]["resourceUri"] == APP_URI
             result = await client.call_tool("solve_circuit", {"netlist": NETLIST})
             assert not result.is_error
@@ -31,6 +31,11 @@ def test_headless_client_and_app_resource_share_canonical_result():
             diagnosis = await client.call_tool("diagnose_steps", {"netlist": NETLIST, "trace": trace})
             assert not diagnosis.is_error
             assert diagnosis.structured_content["outcome"] == "first_invalid"
+            spice = await client.call_tool("export_spice_dc", {"netlist": NETLIST})
+            assert not spice.is_error
+            restored = await client.call_tool("import_spice_dc", {"spice": spice.structured_content["spice"]})
+            assert not restored.is_error
+            assert "? voltage R2" in restored.structured_content["netlist"]
             bad = await client.call_tool("solve_circuit", {"netlist": "R1 a b nope ohm"})
             assert bad.is_error
     asyncio.run(run())
