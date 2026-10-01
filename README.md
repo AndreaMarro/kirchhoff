@@ -8,8 +8,8 @@ contratto). Gli artefatti BMAD stanno in `_bmad-output/`.
 
 ## Stato
 
-**Kirchhoff Proof Workbench Beta 0.3** — release candidate: una radice applicativa canonica, una
-proiezione visuale certificata, una superficie studente navigabile nel browser.
+**CircuitCheck, versione locale in sviluppo** — una radice applicativa canonica,
+una lezione visuale per circuiti DC resistivi e un banco tecnico di prova.
 
 ![Il banco di dimostrazione: circuito, passi, risposta esatta](docs/img/workbench-desktop.png)
 
@@ -18,23 +18,51 @@ proiezione visuale certificata, una superficie studente navigabile nel browser.
 | Radice canonica (R3) | `run_proof_session`: ogni richiesta di prodotto passa di qui, una sola orchestrazione e una sola certificazione; `resolve` e' compatibilita' che delega |
 | Verita' visuale singola (H5) | `render/` non riesegue `transform()`: proietta `TransformExecution` certificata (0 chiamate produttive, testato) |
 | Contratto di presentazione | `StudentSessionView` (student-session.v0.1): esatto prima del decimale, Claim VERIFIED vs sessione CLOSED, mai Product Verified |
-| Superficie | React 19 + TS strict + Vite (solo react/react-dom a runtime): 3 esercizi veri + 1 rifiuto onesto, 40 casi E2E verdi (desktop + mobile) |
+| Superficie | React 19 + TS strict + Vite: lo studente apre `/`, il banco tecnico `/?view=proof`; foto automatica solo con provider configurato |
+| Lavagna e procedimento | Schema a componenti con incroci distinti dalle giunzioni; StudentTrace verifica le riduzioni R in serie/parallelo e si astiene sugli altri metodi |
+| MCP | Tool stdio senza UI + risorsa MCP App interattiva; la compatibilita' con un host reale richiede ancora prova |
 | Backend storico | Epic 1 chiusa, P1-J/K/L integrati, H2.5/O0/H2.75 fusi in `main` |
 
-## Il banco in 2 comandi
+## Avvio locale dello studente
 
 ```bash
-cd web && npm install && npm run dev
+uv sync --frozen
+cd web && npm ci && npm run build && cd ..
+uv run --no-sync python scripts/serve_student.py --port 43921
 ```
 
-poi apri l'URL stampato (le viste in `web/public/sessions/` sono gia'
-versionate; si rigenerano dal kernel con
-`uv run --no-sync python scripts/generate_workbench.py` e il drift test
-`tests/test_workbench_generation.py` ne prova la byte-identita').
+Apri `http://127.0.0.1:43921/`. Il catalogo e' disponibile anche senza un
+provider foto; il server risolve circuiti nuovi nel perimetro DC dichiarato.
+La trascrizione di fotografie richiede `OPENAI_API_KEY` e
+`KIRCHHOFF_VISION_MODEL` sul server e un invio esplicito dalla pagina; il
+risultato deve essere corretto e confermato prima del calcolo. Il disegno libero
+produce un'immagine che richiede la stessa trascrizione confermata.
+
+Per il banco tecnico statico: `cd web && npm run dev`, poi `/?view=proof`.
+Le sue sessioni versionate si rigenerano con
+`uv run --no-sync python scripts/generate_workbench.py`; il test
+`tests/test_workbench_generation.py` ne controlla il contenuto.
+
+## MCP locale
+
+```bash
+uv sync --frozen --extra mcp
+cd web && npm ci && npm run build && cd ..
+uv run --no-sync python -m kirchhoff.api.mcp_server
+```
+
+Configura il client MCP con trasporto `stdio` e l'ultimo comando come processo.
+`solve_circuit` restituisce la lezione canonica, `diagnose_steps` controlla una
+`student-trace.v1` legata allo SHA-256 della netlist, `circuit_capabilities`
+dichiara i limiti. Il tool di soluzione pubblica `_meta.ui.resourceUri` e la
+risorsa `ui://kirchhoff/circuit-lesson.html` per host MCP App compatibili. Un
+client headless usa gli stessi tool senza la vista. La verifica locale usa il
+client ufficiale in-process e via stdio; non equivale a una prova in un host
+MCP App di produzione.
 
 ## Cosa e' verificato e cosa no
 
-- Verificato e pubblicato: continua DC con domande esplicite, via percorso
+- Verificato nel percorso locale: continua DC con domande esplicite, via percorso
   didattico certificato (Claim elettrico VERIFIED + sessione CLOSED).
 - Verificato a livello di dominio ma NON pubblicato dal prodotto: fasori,
   sorgenti controllate, transitori (i solutori `mna`/tableau e l'eval

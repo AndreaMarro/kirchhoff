@@ -21,8 +21,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT/'src'))
 from kirchhoff.pipeline.lesson import create_lesson
 from kirchhoff.pipeline.lesson_pdf import export_pdf
-from kirchhoff.pipeline.netlist import leggi
-from kirchhoff.domain.student_trace import StudentStep, StudentTrace, diagnose
+from kirchhoff.pipeline.student_trace import diagnose_payload
 
 TWO = 'V1 1 0 31/5 volt\nR1 1 2 13/10 ohm\nR2 2 0 11/10 ohm\nV2 3 0 18/5 volt\nR3 3 2 16/5 ohm\n? current R2'
 EXAMPLES = [
@@ -107,19 +106,7 @@ class Handler(BaseHTTPRequestHandler):
             if self.path not in {'/api/solve','/api/pdf','/api/diagnose'}:return self.send(404,dict(message='Operazione non trovata.'))
             if not isinstance(payload.get('netlist'),str):raise ValueError('Manca il circuito da risolvere.')
             if self.path=='/api/diagnose':
-                text=payload['netlist']
-                if len(text)>16000:raise ValueError('Circuito troppo lungo: massimo 16000 caratteri.')
-                ir=leggi(text)
-                if len(ir.components)>32 or len(ir.nodes)>24:raise ValueError('Questo banco accetta al massimo 32 componenti e 24 nodi.')
-                raw=payload.get('trace')
-                if not isinstance(raw,dict) or not isinstance(raw.get('steps'),list) or len(raw['steps'])>32:
-                    raise ValueError('Serve un procedimento strutturato di massimo 32 passaggi.')
-                steps=[]
-                for item in raw['steps']:
-                    if not isinstance(item,dict):raise ValueError('Passaggio non interpretabile.')
-                    steps.append(StudentStep(**item))
-                trace=StudentTrace(raw.get('circuit_fingerprint'),tuple(steps),raw.get('schema'))
-                return self.send(200,diagnose(ir,trace,text))
+                return self.send(200,diagnose_payload(payload['netlist'],payload.get('trace')))
             result=create_lesson(payload['netlist'],payload.get('method','auto'),revision())
             if self.path=='/api/pdf':return self.send(200,export_pdf(result),'application/pdf')
             return self.send(200,result)

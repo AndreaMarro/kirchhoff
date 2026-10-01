@@ -25,7 +25,7 @@ jobs:
           # riproducibile; osservato fetch failed su manifest versioni).
           version: "0.11.8"
       - name: Sync frozen environment
-        run: uv sync --frozen --extra dev
+        run: uv sync --frozen --extra dev --extra mcp
       - name: Build reference-set
         run: uv run --no-sync kirchhoff-eval build --n 60 --seed 1 --depth 3 --split 0.6 --out reference-set
       - name: pytest

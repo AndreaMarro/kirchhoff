@@ -4,6 +4,7 @@ import {StudentTracePanel} from './StudentTracePanel.tsx';
 import './student.css';
 import {prepareCircuitImage} from './imageInput.ts';
 import {readBoardMessage} from './boardProtocol.ts';
+import {safeSvg} from './safeSvg.ts';
 
 type Step={title:string;explanation:string;svg:string;equations:string[];focus:string[]};
 type Lesson={schema:string;outcome:'solved';title:string;netlist:string;method:string;available:string[];original:string;steps:Step[];answer:{exact:string;decimal:string;unit:string;reference:string};fingerprint:string;source_sha:string};
@@ -19,18 +20,6 @@ function parseLesson(value:unknown):Lesson {
  if(x.schema!=='circuit-lesson.v1'||!Array.isArray(x.steps)||!x.steps.length||typeof x.original!=='string'||!x.answer||!Array.isArray(x.available)||x.steps.some(s=>typeof s.svg!=='string'||typeof s.explanation!=='string'||!Array.isArray(s.equations)))throw new Error('Lezione non interpretabile.');
  return x;
 }
-/** Stessa origine del motore, ma il markup resta un confine esplicito. */
-function safeSvg(svg:string):string {
- const doc=new DOMParser().parseFromString(svg,'image/svg+xml');
- if(doc.querySelector('parsererror')||doc.documentElement.localName!=='svg')return '';
- const allowed=new Set(['svg','g','path','rect','circle','text']);
- for(const el of [...doc.querySelectorAll('*')]){
-  if(!allowed.has(el.localName)){el.remove();continue;}
-  for(const attr of [...el.attributes])if(/^on/i.test(attr.name)||/href/i.test(attr.name)||(/url\s*\(/i.test(attr.value))||attr.name==='style')el.removeAttribute(attr.name);
- }
- return new XMLSerializer().serializeToString(doc.documentElement);
-}
-
 export function StudentApp(){
  const [examples,setExamples]=useState<Example[]>([]),[example,setExample]=useState(''),[lesson,setLesson]=useState<Lesson|null>(null);
  const [step,setStep]=useState(0),[showOriginal,setShowOriginal]=useState(false),[method,setMethod]=useState('auto'),[expanded,setExpanded]=useState(false),[compare,setCompare]=useState(false),[zoom,setZoom]=useState(100);
