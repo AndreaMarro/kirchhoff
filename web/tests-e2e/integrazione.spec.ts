@@ -28,7 +28,7 @@ async function incornicia(
   larghezza: number,
   altezza: number,
 ): Promise<void> {
-  const base = test.info().project.use.baseURL ?? "http://localhost:4173";
+  const base = (test.info().project.use.baseURL ?? "http://localhost:4173") + "/?view=proof";
   await page.setContent(ospite(base, hash, larghezza, altezza));
   await expect(page.frameLocator("iframe.kf-ospite").locator(".kf-chip")).toHaveCount(4, {
     timeout: 10_000,
@@ -119,11 +119,11 @@ test("incorniciato stessa origine: copia-link consegna il deep link", async ({
   // Modello stesso-dominio (futuro /kirchhoff/): l'ospite condivide
   // l'origine, gli appunti sono concedibili e la copia riesce.
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
-  await page.goto("/#exercise=partitore-d1&step=-1&frame=before", {
+  await page.goto("/?view=proof#exercise=partitore-d1&step=-1&frame=before", {
     waitUntil: "domcontentloaded",
   });
   await page.setContent(
-    ospite("", "#exercise=partitore-d1&step=0&frame=after", 1100, 700),
+    ospite("/?view=proof", "#exercise=partitore-d1&step=0&frame=after", 1100, 700),
   );
   const banco = page.frameLocator("iframe.kf-ospite");
   await expect(banco.locator(".kf-chip")).toHaveCount(4, { timeout: 10_000 });

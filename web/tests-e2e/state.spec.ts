@@ -2,7 +2,7 @@
 import { expect, test } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
-  await page.goto("/", { waitUntil: "networkidle" });
+  await page.goto("/?view=proof", { waitUntil: "networkidle" });
   await expect(page.locator(".kf-chip")).toHaveCount(4, { timeout: 10_000 });
 });
 
@@ -38,14 +38,14 @@ test("cambio passo non lascia selezioni stantie", async ({ page }) => {  await p
 });
 
 test("fotogramma non disponibile si normalizza a prima", async ({ page }) => {
-  await page.goto("/#exercise=ponte-nodale&step=2&frame=after", { waitUntil: "networkidle" });
+  await page.goto("/?view=proof#exercise=ponte-nodale&step=2&frame=after", { waitUntil: "networkidle" });
   await expect(page.locator(".kf-chip")).toHaveCount(4, { timeout: 10_000 });
   await expect(page).toHaveURL(/#exercise=ponte-nodale&step=2&frame=before/);
   await expect(page.locator(".kf-stage-caption")).toContainText("prima");
 });
 
 test("passo invalido si normalizza all'apertura", async ({ page }) => {
-  await page.goto("/#exercise=partitore-d1&step=99&frame=before", { waitUntil: "networkidle" });
+  await page.goto("/?view=proof#exercise=partitore-d1&step=99&frame=before", { waitUntil: "networkidle" });
   await expect(page.locator(".kf-chip")).toHaveCount(4, { timeout: 10_000 });
   await expect(page.locator('.kf-rail-step[aria-current="true"]')).toContainText("Apertura");
   await expect(page).toHaveURL(/#exercise=partitore-d1&step=-1&frame=before/);

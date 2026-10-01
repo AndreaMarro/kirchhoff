@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test.use({ reducedMotion: "reduce" });
 
 test("moto ridotto: semantica intatta, durate nulle", async ({ page }) => {
-  await page.goto("/", { waitUntil: "networkidle" });
+  await page.goto("/?view=proof", { waitUntil: "networkidle" });
   await expect(page.locator(".kf-chip")).toHaveCount(4, { timeout: 10_000 });
   const veloce = await page.evaluate(() =>
     getComputedStyle(document.documentElement).getPropertyValue("--kf-motion-quick").trim(),
