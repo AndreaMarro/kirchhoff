@@ -5,7 +5,7 @@ const image=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR
 test('una modifica semantica dopo la conferma della foto invalida il consenso',async({page})=>{
  await page.goto('/');
  await page.getByRole('button',{name:/Il tuo circuito/}).click();
- await page.locator('input[type=file]').setInputFiles({name:'sorgente.png',mimeType:'image/png',buffer:image});
+ await page.locator('input[type=file][accept*="image/png"]').setInputFiles({name:'sorgente.png',mimeType:'image/png',buffer:image});
  const circuit=page.getByRole('textbox',{name:'Circuito da risolvere'});
  await circuit.fill('V1 a 0 12 volt\nR1 a 0 100 ohm\n? voltage R1');
  const confirmation=page.getByRole('checkbox',{name:/Ho confrontato/});

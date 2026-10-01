@@ -15,7 +15,15 @@ function Board(){
  const api=useRef<ExcalidrawImperativeAPI|null>(null),timer=useRef<ReturnType<typeof setTimeout>|null>(null);
  const [initial,setInitial]=useState<object|null|undefined>(undefined),[error,setError]=useState(''),[busy,setBusy]=useState(false);
  useEffect(()=>{
-  function receive(e:MessageEvent){if(e.origin!==origin||e.source!==parent||e.data?.type!=='kirchhoff:board-init')return;try{const scene=e.data.scene?JSON.parse(e.data.scene):null;if(scene&&!Array.isArray(scene.elements))throw Error();setInitial(scene);}catch{setError('Scena non interpretabile. Apri il disegno salvato dal menu.');setInitial(null);}}
+  function receive(e:MessageEvent){
+   if(e.origin!==origin||e.source!==parent)return;
+   if(e.data?.type==='kirchhoff:board-snapshot-request'&&typeof e.data.requestId==='string'){
+    if(api.current)parent.postMessage({type:'kirchhoff:board-snapshot',requestId:e.data.requestId,scene:snapshot()},origin);
+    return;
+   }
+   if(e.data?.type!=='kirchhoff:board-init')return;
+   try{const scene=e.data.scene?JSON.parse(e.data.scene):null;if(scene&&!Array.isArray(scene.elements))throw Error();setInitial(scene);}catch{setError('Scena non interpretabile. Apri il disegno salvato dal menu.');setInitial(null);}
+  }
   window.addEventListener('message',receive);
   if(parent===window)setInitial(null);else parent.postMessage({type:'kirchhoff:board-ready'},origin);
   return()=>{window.removeEventListener('message',receive);if(timer.current)clearTimeout(timer.current);};

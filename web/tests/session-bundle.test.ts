@@ -1,0 +1,30 @@
+import {describe,it,expect} from 'vitest';
+import {makeSessionBundle,readSessionBundle} from '../src/student/sessionBundle.ts';
+
+const netlist='V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\n? voltage R2';
+const board=JSON.stringify({type:'excalidraw',version:2,elements:[{id:'board-mark'}],files:{}});
+const fields={netlist,method:'auto',answerExact:'33/4',engineRevision:'abc123',selectedStep:2,
+ showOriginal:true,boardScene:board,traceSteps:[{transcription:'R1 + R2',operation:'serie',first:'R1',second:'R2',claimed_value:'320',reading:'clear'}],priorImageSha256:null};
+
+describe('quaderno portabile',()=>{
+ it('conserva circuito, lavagna e tentativo ma richiede ricalcolo della soluzione',async()=>{
+  const bundle=await makeSessionBundle(fields);
+  expect(await readSessionBundle(JSON.stringify(bundle))).toEqual(bundle);
+  expect('proof' in bundle).toBe(false);
+  expect('image' in bundle).toBe(false);
+ });
+ it('rifiuta una netlist sostituita a revisione invariata',async()=>{
+  const bundle=await makeSessionBundle(fields);
+  await expect(readSessionBundle(JSON.stringify({...bundle,netlist:netlist.replace('220','221')}))).rejects.toThrow('modificato');
+ });
+ it('rifiuta scene e procedimenti corrotti prima del caricamento della lavagna',async()=>{
+  const bundle=await makeSessionBundle(fields);
+  await expect(readSessionBundle(JSON.stringify({...bundle,boardScene:'{"elements":42}'}))).rejects.toThrow('lavagna');
+  await expect(readSessionBundle(JSON.stringify({...bundle,traceSteps:[{...fields.traceSteps[0],operation:'esegui-istruzioni'}]}))).rejects.toThrow('procedimento');
+ });
+ it('rifiuta versioni non supportate e file troppo grandi',async()=>{
+  const bundle=await makeSessionBundle(fields);
+  await expect(readSessionBundle(JSON.stringify({...bundle,schema:'future'}))).rejects.toThrow('Versione');
+  await expect(readSessionBundle(' '.repeat(10_500_001))).rejects.toThrow('10 MB');
+ });
+});

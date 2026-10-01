@@ -88,6 +88,19 @@ richiede il pacchetto LaTeX CircuitikZ per la compilazione. Il test locale di
 compilazione e' ancora bloccato: la cache TeX disponibile non include il formato
 LaTeX e non e' stato installato un runtime aggiuntivo.
 
+## Quaderno portabile locale
+
+**Salva quaderno** scarica un JSON versionato con circuito, metodo, passaggio
+selezionato, lavagna Excalidraw e passaggi scritti dallo studente. La lavagna
+viene letta nell'istante del salvataggio e deve appartenere alla revisione del
+circuito; il pulsante nella lavagna consente un'associazione esplicita. **Apri
+quaderno** richiede il server locale, convalida il file e ricalcola la lezione:
+un'impronta o un risultato diverso blocca il caricamento. La foto originale, le
+chiavi e la precedente autorizzazione fotografica non sono nel JSON. Se il
+quaderno proveniva da una foto, la riapertura mostra il circuito ricostruito
+come testo e chiede una nuova foto/conferma per ristabilire la provenienza.
+Questo file non sostituisce la persistenza di una lezione Ardesia.
+
 ## Cosa e' verificato e cosa no
 
 - Verificato nel percorso locale: continua DC con domande esplicite, via percorso

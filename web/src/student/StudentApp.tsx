@@ -1,6 +1,8 @@
 import {useEffect,useRef,useState} from 'react';
 import {CircuitEditor} from './CircuitEditor.tsx';
-import {StudentTracePanel} from './StudentTracePanel.tsx';
+import {StudentTracePanel,blankTraceStep} from './StudentTracePanel.tsx';
+import type {TraceStep} from './StudentTracePanel.tsx';
+import {makeSessionBundle,readSessionBundle} from './sessionBundle.ts';
 import './student.css';
 import {prepareCircuitImage} from './imageInput.ts';
 import {readBoardMessage} from './boardProtocol.ts';
@@ -26,10 +28,13 @@ export function StudentApp(){
  const [netlist,setNetlist]=useState(''),[draft,setDraft]=useState(''),[panel,setPanel]=useState(false),[tab,setTab]=useState('text');
  const [lessonImage,setLessonImage]=useState<string|null>(null);
  const [photoConfirmationToken,setPhotoConfirmationToken]=useState<string|null>(null);
- const [image,setImage]=useState<string|null>(null),[uncertainties,setUncertainties]=useState<string[]>([]),[confirmed,setConfirmed]=useState(false);
- const [api,setApi]=useState(false),[vision,setVision]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState('');
- const request=useRef(0),stage=useRef<HTMLDivElement>(null),board=useRef<HTMLIFrameElement>(null),boardScene=useRef('');
+ const [image,setImage]=useState<string|null>(null),[imageFromBoard,setImageFromBoard]=useState(false),[uncertainties,setUncertainties]=useState<string[]>([]),[confirmed,setConfirmed]=useState(false);
+ const [api,setApi]=useState(false),[vision,setVision]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState('');
+ const request=useRef(0),stage=useRef<HTMLDivElement>(null),board=useRef<HTMLIFrameElement>(null),boardScene=useRef(''),boardOwner=useRef<string|null>(null);
+ const sessionInput=useRef<HTMLInputElement>(null),boardSnapshot=useRef(new Map<string,{resolve:(scene:string)=>void;reject:(error:Error)=>void;timer:ReturnType<typeof setTimeout>}>());
  const [boardOpened,setBoardOpened]=useState(false);
+ const [boardEpoch,setBoardEpoch]=useState(0),[sessionEpoch,setSessionEpoch]=useState(0);
+ const [traceState,setTraceState]=useState<{fingerprint:string;steps:TraceStep[]}>({fingerprint:'',steps:[blankTraceStep()]});
  const entry=useRef(new URLSearchParams(location.hash.slice(1)));
  const restoreStep=useRef(true);
  const current=lesson?.steps[step];
@@ -39,9 +44,17 @@ export function StudentApp(){
    const message=readBoardMessage(e,board.current?.contentWindow,location.origin);if(!message)return;
    if(message.type==='kirchhoff:board-ready')board.current?.contentWindow?.postMessage({type:'kirchhoff:board-init',scene:boardScene.current},location.origin);
    if(message.type==='kirchhoff:board-state')boardScene.current=message.scene;
-   if(message.type==='kirchhoff:board-image'){request.current++;setImage(message.image);setDraft('');setUncertainties([]);setConfirmed(false);setTab('photo');setError('');}
+   if(message.type==='kirchhoff:board-snapshot'){
+    const pending=boardSnapshot.current.get(message.requestId);
+    if(pending){clearTimeout(pending.timer);boardSnapshot.current.delete(message.requestId);boardScene.current=message.scene;pending.resolve(message.scene);}
+   }
+   if(message.type==='kirchhoff:board-image'){request.current++;boardOwner.current=null;setImage(message.image);setImageFromBoard(true);setDraft('');setUncertainties([]);setConfirmed(false);setTab('photo');setError('');}
   }
-  window.addEventListener('message',receive);return()=>window.removeEventListener('message',receive);
+  window.addEventListener('message',receive);return()=>{
+   window.removeEventListener('message',receive);
+   for(const pending of boardSnapshot.current.values()){clearTimeout(pending.timer);pending.reject(new Error('La pagina è stata chiusa prima del salvataggio.'));}
+   boardSnapshot.current.clear();
+  };
  },[]);
  useEffect(()=>{
   fetch('api/capabilities').then(r=>r.ok?r.json():null).then(v=>{setApi(Boolean(v?.solve));setVision(Boolean(v?.vision));}).catch(()=>undefined);
@@ -99,7 +112,7 @@ export function StudentApp(){
   document.addEventListener('keydown',trap);return()=>{document.removeEventListener('keydown',trap);previous?.focus();};
  },[panel]);
  async function solve(text=draft,chosen=method,sourceImageOverride?:string|null,existingToken?:string|null){
-  const n=++request.current;setBusy(true);setError('');
+  const n=++request.current;setBusy(true);setError('');setNotice('');
   try{
    if(!api)throw new Error('Per risolvere un nuovo circuito serve il server Kirchhoff. Il catalogo resta disponibile; questa pagina statica non contiene il solutore.');
    const sourceImage=sourceImageOverride===undefined?image:sourceImageOverride;
@@ -112,13 +125,14 @@ export function StudentApp(){
     if(n!==request.current)return;confirmationToken=approval.confirmation_token;
    }
    const value=parseLesson(await response(await fetch('api/solve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({netlist:text,method:chosen,source_kind:sourceImage?'image':'netlist',confirmation_token:confirmationToken})})));
-   if(n!==request.current)return;setLesson(value);setLessonImage(sourceImage);setPhotoConfirmationToken(confirmationToken);setExample('');history.replaceState(null,'',location.pathname+location.search);setNetlist(text);setDraft(text);setMethod(chosen);setStep(0);setShowOriginal(false);setCompare(false);setZoom(100);setPanel(false);
+   if(n!==request.current)return;if(imageFromBoard&&sourceImage)boardOwner.current=value.fingerprint;
+   setLesson(value);setLessonImage(sourceImage);setPhotoConfirmationToken(confirmationToken);setExample('');history.replaceState(null,'',location.pathname+location.search);setNetlist(text);setDraft(text);setMethod(chosen);setStep(0);setShowOriginal(false);setCompare(false);setZoom(100);setPanel(false);
   }catch(e){if(n===request.current)setError(e instanceof Error?e.message:String(e));}finally{if(n===request.current)setBusy(false);}
  }
  async function file(file:File|undefined){
   if(!file)return;const n=++request.current;setError('');setConfirmed(false);setUncertainties([]);
   if(file.type.startsWith('image/')){
-   try{const value=await prepareCircuitImage(file);if(n!==request.current)return;setImage(value);setDraft('');setTab('photo');}catch(e){if(n===request.current)setError(e instanceof Error?e.message:'Foto non leggibile.');}
+   try{const value=await prepareCircuitImage(file);if(n!==request.current)return;setImage(value);setImageFromBoard(false);setDraft('');setTab('photo');}catch(e){if(n===request.current)setError(e instanceof Error?e.message:'Foto non leggibile.');}
   }else{
    if(file.size>16000){setError('Il file circuito supera 16000 caratteri.');return;}
    try{
@@ -128,7 +142,7 @@ export function StudentApp(){
      const imported=await response(await fetch('api/spice/import',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({spice:value})})) as {netlist:string};
      value=imported.netlist;
     }
-    if(n!==request.current)return;setDraft(value);setImage(null);setTab('text');
+    if(n!==request.current)return;setDraft(value);setImage(null);setImageFromBoard(false);setTab('text');
    }catch(e){if(n===request.current)setError(e instanceof Error?e.message:String(e));}
   }
  }
@@ -161,13 +175,69 @@ export function StudentApp(){
    const url=URL.createObjectURL(new Blob([value.tex],{type:'text/plain'})),a=document.createElement('a');a.href=url;a.download='circuito-kirchhoff.tex';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
   }catch(e){setError(e instanceof Error?e.message:String(e));}finally{setBusy(false);}
  }
+ async function currentBoardScene():Promise<string>{
+  if(!boardOpened)return boardScene.current;
+  const frame=board.current?.contentWindow;
+  if(!frame)throw new Error('Lavagna non pronta: attendi che si apra e riprova.');
+  const requestId=crypto.randomUUID();
+  return new Promise((resolve,reject)=>{
+   const timer=setTimeout(()=>{boardSnapshot.current.delete(requestId);reject(new Error('La lavagna non ha risposto: il quaderno non è stato salvato.'));},2500);
+   boardSnapshot.current.set(requestId,{resolve,reject,timer});
+   frame.postMessage({type:'kirchhoff:board-snapshot-request',requestId},location.origin);
+  });
+ }
+ async function saveSession(){
+  if(!lesson)return;const n=request.current;setBusy(true);setError('');setNotice('');
+  try{
+   let scene=await currentBoardScene();
+   if(n!==request.current)return;
+   if(scene){
+    const parsed=JSON.parse(scene) as {elements?:unknown[]};
+    if(parsed.elements?.length&&boardOwner.current!==lesson.fingerprint)
+     throw new Error('La lavagna appartiene a un’altra revisione: aprila e associala esplicitamente alla lezione corrente.');
+    if(!parsed.elements?.length)scene='';
+   }
+   const bundle=await makeSessionBundle({netlist:lesson.netlist,method,answerExact:lesson.answer.exact,
+    engineRevision:lesson.source_sha,selectedStep:step,showOriginal,boardScene:scene,
+    traceSteps:traceState.fingerprint===lesson.fingerprint?traceState.steps:[blankTraceStep()],
+    priorImageSha256:lesson.input_provenance?.source_sha256??null});
+   if(n!==request.current)return;
+   const data=JSON.stringify(bundle);
+   if(data.length>10_500_000)throw new Error('Il quaderno supera 10 MB. Riduci le immagini nella lavagna.');
+   const url=URL.createObjectURL(new Blob([data],{type:'application/json'})),a=document.createElement('a');
+   a.href=url;a.download='quaderno-kirchhoff.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);
+   setNotice('Quaderno salvato sul tuo dispositivo. Alla riapertura la soluzione sarà ricalcolata.');
+  }catch(e){if(n===request.current)setError(e instanceof Error?e.message:String(e));}finally{if(n===request.current)setBusy(false);}
+ }
+ async function openSession(file:File|undefined){
+  if(!file)return;const n=++request.current;setBusy(true);setError('');setNotice('');
+  try{
+   if(!api)throw new Error('Per riaprire un quaderno serve il server Kirchhoff.');
+   if(file.size>10_500_000)throw new Error('Il quaderno supera 10 MB.');
+   const bundle=await readSessionBundle(await file.text());if(n!==request.current)return;
+   const value=parseLesson(await response(await fetch('api/solve',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({netlist:bundle.netlist,method:bundle.method,source_kind:'netlist'})})));
+   if(n!==request.current)return;
+   if(value.fingerprint!==bundle.circuitFingerprint||value.answer.exact!==bundle.answerExact)
+    throw new Error('Il risultato salvato non coincide con la nuova verifica: il quaderno resta chiuso.');
+   boardScene.current=bundle.boardScene;boardOwner.current=bundle.boardScene?value.fingerprint:null;setBoardEpoch(x=>x+1);if(bundle.boardScene)setBoardOpened(true);
+   setTraceState({fingerprint:value.fingerprint,steps:bundle.traceSteps});setSessionEpoch(x=>x+1);
+   setLesson(value);setLessonImage(null);setPhotoConfirmationToken(null);setImage(null);setImageFromBoard(false);setConfirmed(false);setUncertainties([]);
+   setExample('');setNetlist(bundle.netlist);setDraft(bundle.netlist);setMethod(bundle.method);setStep(Math.min(bundle.selectedStep,value.steps.length-1));
+   setShowOriginal(bundle.showOriginal);setCompare(false);setZoom(100);setPanel(false);
+   const revisionNotice=bundle.engineRevision!==value.source_sha?' Il motore è cambiato; la soluzione mostrata è quella appena ricalcolata.':'';
+   setNotice((bundle.priorImageSha256?'Quaderno riaperto e soluzione ricalcolata. La foto originale non è inclusa: la vecchia conferma fotografica non è stata ripristinata.':'Quaderno riaperto e soluzione ricalcolata dal circuito salvato.')+revisionNotice);
+  }catch(e){if(n===request.current)setError(e instanceof Error?e.message:String(e));}finally{if(n===request.current)setBusy(false);}
+ }
  function navigate(n:number){setStep(n);setShowOriginal(false);}
  return <div className="student-app">
   <header className="student-header"><a href="#" className="student-brand">Kirchhoff<span>con Andrea Marro</span></a><span className="student-tag">Capire il circuito, un passaggio alla volta</span><button onClick={()=>{setTab('photo');setPanel(true);setError('');}}>Il tuo circuito <span aria-hidden="true">＋</span></button></header>
   <main className="student-main">
    <div className="student-heading"><div><p className="student-eyebrow">Il laboratorio dei circuiti</p><h1>Il circuito, passo per passo.</h1></div><p>Scegli una strada. Segui i disegni. Torna all’originale quando serve.</p></div>
-   <div className="student-toolbar student-picker"><label>Esercizio <select aria-label="Scegli un circuito" value={example} disabled={busy} onChange={e=>{const ex=examples.find(x=>x.id===e.target.value);if(ex){setMethod('auto');setExample(ex.id);setNetlist(ex.netlist);setDraft(ex.netlist);setImage(null);setLessonImage(null);setPhotoConfirmationToken(null);}}}>{!example?<option value="">Il tuo circuito</option>:null}{examples.map(e=><option key={e.id} value={e.id}>{e.title}</option>)}</select></label><label>Metodo <select aria-label="Scegli il metodo" value={method} disabled={busy||!lesson} onChange={e=>{if(example)setMethod(e.target.value);else void solve(netlist,e.target.value,lessonImage,photoConfirmationToken);}}>{(lesson?.available??['auto']).map(m=><option key={m} value={m}>{names[m]}</option>)}</select></label><button disabled={busy||!lesson||!api} onClick={()=>void circuitikz()}>Scarica CircuitikZ ↓</button><button disabled={busy||!lesson||!api} onClick={()=>void spice()}>Scarica SPICE ↓</button><button disabled={busy||!lesson} onClick={()=>void pdf()}>Scarica PDF ↓</button></div>
+   <div className="student-toolbar student-picker"><label>Esercizio <select aria-label="Scegli un circuito" value={example} disabled={busy} onChange={e=>{const ex=examples.find(x=>x.id===e.target.value);if(ex){setMethod('auto');setExample(ex.id);setNetlist(ex.netlist);setDraft(ex.netlist);setImage(null);setImageFromBoard(false);setLessonImage(null);setPhotoConfirmationToken(null);}}}>{!example?<option value="">Il tuo circuito</option>:null}{examples.map(e=><option key={e.id} value={e.id}>{e.title}</option>)}</select></label><label>Metodo <select aria-label="Scegli il metodo" value={method} disabled={busy||!lesson} onChange={e=>{if(example)setMethod(e.target.value);else void solve(netlist,e.target.value,lessonImage,photoConfirmationToken);}}>{(lesson?.available??['auto']).map(m=><option key={m} value={m}>{names[m]}</option>)}</select></label><button disabled={busy||!lesson||!api} onClick={()=>void circuitikz()}>Scarica CircuitikZ ↓</button><button disabled={busy||!lesson||!api} onClick={()=>void spice()}>Scarica SPICE ↓</button><button disabled={busy||!lesson} onClick={()=>void pdf()}>Scarica PDF ↓</button></div>
+   <div className="student-toolbar student-session-actions"><button disabled={busy||!lesson} onClick={()=>void saveSession()}>Salva quaderno ↓</button><button disabled={busy} onClick={()=>sessionInput.current?.click()}>Apri quaderno ↑</button><input ref={sessionInput} type="file" accept=".json,application/json" hidden onChange={e=>{void openSession(e.target.files?.[0]);e.target.value='';}}/></div>
    {error?<div className="student-error" role="alert">{error}</div>:null}
+   {notice?<p role="status">{notice}</p>:null}
    {lesson&&current?<section className={`student-lesson ${expanded?"is-expanded":""}`} aria-busy={busy}>
     <nav className="student-outline" aria-label="Percorso ragionato"><p className="student-eyebrow">Il percorso</p><p className="student-route-method">{names[lesson.method]}</p><ol>{lesson.steps.map((s,i)=><li key={i}><button disabled={busy} aria-current={step===i?'step':undefined} onClick={()=>navigate(i)}><span className="student-step-number">{String(i+1).padStart(2,'0')}</span><span>{s.title}</span></button></li>)}</ol><p className="student-route-note">Ogni equivalente conserva una relazione. La domanda resta sul circuito originale.</p></nav>
     <div className="student-stage-head"><div><span className="student-eyebrow">{lesson.title} · {lesson.answer.reference}</span><h2>{showOriginal?'Il circuito da cui siamo partiti':current.title}</h2></div><button onClick={()=>setExpanded(!expanded)}>{expanded?'Riduci ↙':'Ingrandisci ↗'}</button><button aria-pressed={showOriginal} onClick={()=>{setShowOriginal(!showOriginal);setCompare(false);}}>{showOriginal?'Torna al passaggio':'Rivedi l’originale'}</button></div>
@@ -180,14 +250,14 @@ export function StudentApp(){
     <div className="student-progress" aria-label="Passaggi">{lesson.steps.map((s,i)=><button key={i} title={s.title} aria-label={`Passaggio ${i+1}: ${s.title}`} aria-current={step===i?'step':undefined} onClick={()=>navigate(i)}><span/></button>)}</div>
     <div className="student-explanation" aria-live="polite"><p className="student-eyebrow">{showOriginal?'Collega il passaggio all’originale':'Perché facciamo questo passaggio'}</p><p>{current.explanation}</p>{current.equations.length?<div className="student-equations"><span className="student-eyebrow">Il calcolo, con i riferimenti scelti</span>{current.equations.map((e,i)=><p key={i}>{e}</p>)}</div>:null}{step===lesson.steps.length-1?<p className="student-result">{lesson.answer.exact} <span>{lesson.answer.unit} · ≈ {lesson.answer.decimal.replace('.',',')} {lesson.answer.unit}</span></p>:null}</div>
    </section>:<p role="status">{busy?'Preparo la lezione…':error?'Nessuna nuova lezione disponibile.':'Caricamento…'}</p>}
-   {lesson&&api?<StudentTracePanel key={lesson.fingerprint} netlist={lesson.netlist} fingerprint={lesson.fingerprint}/>:null}
+   {lesson&&api?<StudentTracePanel key={`${lesson.fingerprint}:${sessionEpoch}`} netlist={lesson.netlist} fingerprint={lesson.fingerprint} steps={traceState.fingerprint===lesson.fingerprint?traceState.steps:[blankTraceStep()]} onStepsChange={steps=>setTraceState({fingerprint:lesson.fingerprint,steps})}/>:null}
    <details className="student-scope"><summary>Cosa puoi risolvere in questa versione</summary><p>Circuiti resistivi in continua con sorgenti indipendenti. I percorsi a due morsetti includono partitori, Millman, equivalenti Thévenin e Norton e sovrapposizione. Per i ponti resistivi puoi usare stella → triangolo quando la grandezza cercata resta esterna alla stella. Per altre topologie DC il nucleo usa l’analisi nodale. AC, transitori e quadripoli non sono ancora coperti dall’esperienza didattica.</p><p>{api?'Puoi risolvere circuiti nuovi: il server locale è collegato.':'Stai usando il catalogo statico. Per risolvere circuiti nuovi occorre collegare il server Kirchhoff.'}</p></details>
    <details className="student-scope"><summary>Controllo del risultato e provenienza</summary><p>Il risultato elettrico proviene dal nucleo verificato; le derivazioni didattiche vengono confrontate in aritmetica esatta. Questa verifica del risultato non certifica da sola ogni scelta grafica e didattica.</p><p>Versione del motore: <code>{lesson?.source_sha}</code></p>{lesson?.input_provenance?<><p>Immagine preparata per l’analisi: <code>{lesson.input_provenance.source_sha256}</code></p><p>Circuito corretto e confermato: <code>{lesson.input_provenance.circuit_sha256}</code></p><p>Confermato il {new Date(lesson.input_provenance.confirmed_at_unix*1000).toLocaleString('it-IT')}.</p><p>La conferma lega questa revisione all’immagine preparata; non certifica che la trascrizione sia fedele.</p></>:null}<p><a href={`?view=proof${location.hash}`}>Apri gli strumenti tecnici di verifica ↗</a></p></details>
   </main>
-  {panel||boardOpened?<div className="student-overlay" hidden={!panel}><section role="dialog" aria-modal="true" aria-labelledby="input-title" className="student-dialog" onPaste={e=>{const photo=[...e.clipboardData.files].find(f=>f.type.startsWith('image/'));if(photo){e.preventDefault();void file(photo);}}}><header><h2 id="input-title">Partiamo dal tuo circuito</h2><button aria-label="Chiudi ingresso circuito" onClick={()=>setPanel(false)}>Chiudi ×</button></header><div className="student-toolbar">{[['text','Testo del circuito'],['photo','Foto o file'],['draw','Schema a componenti'],['free','Lavagna libera']].map(([id,label])=><button key={id} aria-pressed={tab===id} onClick={()=>{setTab(id);if(id==='free')setBoardOpened(true);}}>{label}</button>)}</div>
+  {panel||boardOpened?<div className="student-overlay" hidden={!panel}><section role="dialog" aria-modal="true" aria-labelledby="input-title" className="student-dialog" onPaste={e=>{const photo=[...e.clipboardData.files].find(f=>f.type.startsWith('image/'));if(photo){e.preventDefault();void file(photo);}}}><header><h2 id="input-title">Partiamo dal tuo circuito</h2><button aria-label="Chiudi ingresso circuito" onClick={()=>setPanel(false)}>Chiudi ×</button></header><div className="student-toolbar">{[['text','Testo del circuito'],['photo','Foto o file'],['draw','Schema a componenti'],['free','Lavagna libera']].map(([id,label])=><button key={id} aria-pressed={tab===id} onClick={()=>{setTab(id);if(id==='free'){if(!boardScene.current)boardOwner.current=lesson?.fingerprint??null;setBoardOpened(true);}}}>{label}</button>)}</div>
    {error?<p role="alert" className="student-error">{error}</p>:null}
-   {boardOpened?<div className="student-free-board" hidden={tab!=='free'}><iframe ref={board} title="Lavagna libera Excalidraw" src="board/index.html"/></div>:null}
-   {tab==='free'?null:tab==='draw'?<CircuitEditor onUse={text=>{request.current++;setDraft(text);setImage(null);setUncertainties([]);setConfirmed(false);setTab('text');}}/>:<>
+  {boardOpened?<div className="student-free-board" hidden={tab!=='free'}><iframe key={boardEpoch} ref={board} title="Lavagna libera Excalidraw" src="board/index.html"/></div>:null}
+   {tab==='free'?<div className="student-dialog-actions"><button disabled={!lesson} onClick={()=>{if(lesson){boardOwner.current=lesson.fingerprint;setNotice('Lavagna associata alla revisione corrente della lezione.');}}}>Associa lavagna alla lezione corrente</button></div>:tab==='draw'?<CircuitEditor onUse={text=>{request.current++;setDraft(text);setImage(null);setImageFromBoard(false);setUncertainties([]);setConfirmed(false);setTab('text');}}/>:<>
     {tab==='photo'?<div className="student-upload" onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();void file(e.dataTransfer.files[0]);}}><label>Trascina o incolla una foto, oppure scegli un file circuito<span className="student-file-help">PNG, JPEG o WebP fino a 20 MB; netlist .net/.txt o SPICE DC .cir/.spice.</span><input type="file" accept="image/png,image/jpeg,image/webp,.txt,.net,.cir,.sp,.spice" onChange={e=>void file(e.target.files?.[0])}/></label>{image?<img src={image} alt="Il circuito caricato da confrontare con la ricostruzione"/>:null}{image?<><p>La foto resta sul dispositivo fino a quando scegli di inviarla per la trascrizione. Prima del calcolo controlla sempre valori, collegamenti e domanda.</p><button disabled={!vision||busy} onClick={()=>void recognize()}>Invia a OpenAI e trascrivi</button>{!vision?<p>Riconoscimento automatico non configurato. Ricostruisci il circuito con “Schema a componenti” oppure nel campo qui sotto. Il disegno libero e la foto richiedono una trascrizione confermata.</p>:null}</>:null}</div>:null}
     <label className="student-netlist">Componenti, nodi e domanda<textarea aria-label="Circuito da risolvere" spellCheck={false} value={draft} onChange={e=>{request.current++;setDraft(e.target.value);setConfirmed(false);}} placeholder={'V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\n? voltage R2'}/></label><details><summary>Come leggere e modificare il circuito</summary><p>Ogni riga contiene nome, primo nodo, secondo nodo, valore e unità. R = resistore (ohm), V = sorgente di tensione (volt), I = sorgente di corrente (ampere). Il nodo 0 è il riferimento. Valori decimali o frazioni sono esatti. L’ultima riga indica la domanda: <code>? voltage R2</code> oppure <code>? current R2</code>. SPICE: questa versione importa solo R/C/L, V/I DC, E/G, .op e .end; una direttiva sconosciuta viene rifiutata.</p></details>
     {uncertainties.length?<ul>{uncertainties.map((u,i)=><li key={i}>{u}</li>)}</ul>:null}
