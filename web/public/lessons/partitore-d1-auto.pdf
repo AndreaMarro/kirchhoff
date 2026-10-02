@@ -341,7 +341,7 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 9 0 R >>
 endobj
 11 0 obj
-<< /Length 5211 >>
+<< /Length 5370 >>
 stream
 0.14 0.20 0.29 rg
 BT /F1 10 Tf 1 0 0 1 42.00 800.00 Tm (KIRCHHOFF / PASSAGGIO 03) Tj ET
@@ -421,14 +421,15 @@ BT /F1 9 Tf 1 0 0 1 42.00 379.00 Tm (IL RAGIONAMENTO) Tj ET
 0.14 0.20 0.29 rg
 BT /F1 11 Tf 1 0 0 1 42.00 357.00 Tm (La sorgente impone la tensione ai capi del ramo resistivo. La stessa corrente) Tj ET
 BT /F1 11 Tf 1 0 0 1 42.00 341.00 Tm (attraversa tutti i suoi resistori: I = V / R totale. Ogni caduta vale I x R, cioè) Tj ET
-BT /F1 11 Tf 1 0 0 1 42.00 325.00 Tm (V x R / R totale.) Tj ET
+BT /F1 11 Tf 1 0 0 1 42.00 325.00 Tm (V x R / R totale. Se i morsetti del resistore sono opposti al verso del ramo, la) Tj ET
+BT /F1 11 Tf 1 0 0 1 42.00 309.00 Tm (tensione orientata cambia segno.) Tj ET
 0.16 0.27 0.68 rg
-BT /F1 9 Tf 1 0 0 1 42.00 296.00 Tm (IL CALCOLO) Tj ET
+BT /F1 9 Tf 1 0 0 1 42.00 280.00 Tm (IL CALCOLO) Tj ET
 0.14 0.20 0.29 rg
-BT /F1 11 Tf 1 0 0 1 42.00 274.00 Tm (V\(b\) - V\(0\) = 12 V) Tj ET
-BT /F1 11 Tf 1 0 0 1 42.00 245.00 Tm (I ramo 2 = \(12\) / \(320\) = 3/80 A) Tj ET
-BT /F1 11 Tf 1 0 0 1 42.00 216.00 Tm (V\(R1\) = \(3/80\) x \(100\) = 15/4 V \(verso del ramo\)) Tj ET
-BT /F1 11 Tf 1 0 0 1 42.00 187.00 Tm (V\(R2\) = \(3/80\) x \(220\) = 33/4 V \(verso del ramo\)) Tj ET
+BT /F1 11 Tf 1 0 0 1 42.00 258.00 Tm (V\(b\) - V\(0\) = 12 V) Tj ET
+BT /F1 11 Tf 1 0 0 1 42.00 229.00 Tm (I ramo 2 = \(12\) / \(320\) = 3/80 A) Tj ET
+BT /F1 11 Tf 1 0 0 1 42.00 200.00 Tm (V\(R1\) = \(3/80\) x \(100\) = 15/4 V \(morsetti del componente\)) Tj ET
+BT /F1 11 Tf 1 0 0 1 42.00 171.00 Tm (V\(R2\) = \(3/80\) x \(220\) = 33/4 V \(morsetti del componente\)) Tj ET
 BT /F1 9 Tf 1 0 0 1 42.00 35.00 Tm (3/5 - Tensione di R2 - a -> 0) Tj ET
 endstream
 endobj
@@ -697,13 +698,13 @@ xref
 0000014074 00000 n 
 0000019064 00000 n 
 0000019201 00000 n 
-0000024464 00000 n 
-0000024602 00000 n 
-0000031740 00000 n 
-0000031878 00000 n 
-0000038874 00000 n 
+0000024623 00000 n 
+0000024761 00000 n 
+0000031899 00000 n 
+0000032037 00000 n 
+0000039033 00000 n 
 trailer
 << /Size 17 /Root 1 0 R >>
 startxref
-39012
+39171
 %%EOF
