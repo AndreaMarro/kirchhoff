@@ -103,13 +103,17 @@ def recognize(image, key, model):
     candidates=[]
     seen=set()
     for reading in readings:
-        if reading['netlist'] not in seen:
+        identity=(reading['netlist'],json.dumps(reading['observations'],sort_keys=True,separators=(',',':')))
+        if identity not in seen:
             candidates.append({key:reading[key] for key in ('netlist','observations','uncertainties','model_reported_complete')})
-            seen.add(reading['netlist'])
+            seen.add(identity)
     agree=len(candidates)==1 and all(reading['model_reported_complete'] for reading in readings)
     doubts=list(dict.fromkeys(doubt for reading in readings for doubt in reading['uncertainties']))
     if len(candidates)>1:
-        doubts.append('Le letture divergono su valori, collegamenti o domanda: confronta ogni candidato con la foto e correggi il testo prima della conferma.')
+        if len({candidate['netlist'] for candidate in candidates})==1:
+            doubts.append('Le letture concordano sul testo ma divergono sulle regioni di origine: confronta ogni riga con la foto prima della conferma.')
+        else:
+            doubts.append('Le letture divergono su valori, collegamenti o domanda: confronta ogni candidato con la foto e correggi il testo prima della conferma.')
     if len(doubts)>32:
         raise ValueError('Troppi dubbi nella foto: ritaglia meglio o ricostruisci manualmente.')
     # L'unanimità può ancora essere un errore comune. La conferma umana resta

@@ -46,6 +46,33 @@ test('la foto mostra la provenienza delle righe e perde le regioni quando il cir
  await expect(page.getByRole('checkbox',{name:/Ho confrontato/})).toBeEnabled();
 });
 
+test('zone fotografiche discordanti restano confrontabili anche con testo identico',async({page})=>{
+ await page.route('**/api/capabilities',route=>route.fulfill({json:{solve:true,vision:true}}));
+ const netlist='V1 a 0 12 volt\nR1 a 0 6 ohm\n? current R1';
+ const first=netlist.split('\n').map((line,i)=>({line,region:{x1:100+i*100,y1:100,x2:200+i*100,y2:300}}));
+ const second=first.map((item,i)=>i===1?{...item,region:{...item.region,x1:400,x2:500}}:item);
+ await page.route('**/api/recognize',route=>route.fulfill({json:{
+  netlist,requires_confirmation:true,model_reported_complete:false,
+  uncertainties:['Le letture divergono sulle regioni di origine.'],observations:first,
+  candidates:[
+   {netlist,observations:first,uncertainties:[],model_reported_complete:true},
+   {netlist,observations:second,uncertainties:[],model_reported_complete:true},
+  ],
+ }}));
+ await page.goto('/');
+ await page.getByRole('button',{name:/Il tuo circuito/}).click();
+ await page.locator('input[type=file][accept*="image/png"]').setInputFiles({name:'esame.png',mimeType:'image/png',buffer:image});
+ await page.getByRole('button',{name:/Invia a OpenAI/}).click();
+ await expect(page.getByText(/concordano sul testo ma indicano zone diverse/)).toBeVisible();
+ await page.getByRole('button',{name:'R1 a 0 6 ohm'}).click();
+ await expect(page.locator('[data-source-region="1"]')).toHaveAttribute('style',/left: 20%/);
+ await expect(page.locator('[data-source-region="1"]')).toHaveAttribute('style',/width: 10%/);
+ await page.getByRole('button',{name:'Lettura 2'}).click();
+ await page.getByRole('button',{name:'R1 a 0 6 ohm'}).click();
+ await expect(page.locator('[data-source-region="1"]')).toHaveAttribute('style',/left: 40%/);
+ await expect(page.locator('[data-source-region="1"]')).toHaveAttribute('style',/width: 10%/);
+});
+
 test('una trascrizione senza stato di completezza non abilita il calcolo',async({page})=>{
  await page.route('**/api/capabilities',route=>route.fulfill({json:{solve:true,vision:true}}));
  await page.route('**/api/recognize',route=>route.fulfill({json:{netlist:'V1 a 0 12 volt\nR1 a 0 6 ohm\n? current R1',observations:[],uncertainties:[]}}));

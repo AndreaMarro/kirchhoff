@@ -150,6 +150,32 @@ def test_recognizer_disagreement_stays_incomplete_and_keeps_alternatives(monkeyp
     assert result["requires_confirmation"] is True
 
 
+def test_recognizer_does_not_hide_disagreement_about_source_regions(monkeypatch):
+    path = Path(__file__).resolve().parents[1] / "scripts/serve_student.py"
+    spec = importlib.util.spec_from_file_location("student_vision_region_disagreement", path)
+    server = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(server)
+    monkeypatch.setenv("KIRCHHOFF_EXTRACTION_PASSES", "3")
+    shifted = [{"line": line, "region": {**REGION, "x1": REGION["x1"] + (20 if index == 1 else 0)}}
+               for index, line in enumerate(NETLIST.splitlines())]
+    readings = [response(), response(observations=shifted), response()]
+
+    class FakeHTTP:
+        def __init__(self, raw): self.raw = raw
+        def __enter__(self): return self
+        def __exit__(self, *_): return False
+        def read(self): return json.dumps(self.raw).encode()
+
+    monkeypatch.setattr(server, "urlopen", lambda _request, timeout: FakeHTTP(readings.pop(0)))
+    image = ("data:image/png;base64,"
+             "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9b4wAAAABJRU5ErkJggg==")
+    result = server.recognize(image, "test-key", "configured-model")
+    assert result["model_reported_complete"] is False
+    assert [candidate["netlist"] for candidate in result["candidates"]] == [NETLIST, NETLIST]
+    assert result["candidates"][0]["observations"] != result["candidates"][1]["observations"]
+    assert any("region" in doubt.lower() for doubt in result["uncertainties"])
+
+
 def test_recognizer_requires_protected_pass_count_before_network(monkeypatch):
     path = Path(__file__).resolve().parents[1] / "scripts/serve_student.py"
     spec = importlib.util.spec_from_file_location("student_vision_pass_policy", path)
