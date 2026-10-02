@@ -102,6 +102,32 @@ def test_superposition_sources_are_off_in_other_branch_and_rejoined():
     assert '2452/911' in lesson['steps'][-2]['equations'][0]
 
 
+def test_superposition_rejects_compensating_wrong_intermediate_contributions(monkeypatch):
+    import kirchhoff.pipeline.lesson as lesson_module
+    original = lesson_module.observed
+
+    def damaged(bs, target, quantity, active=None):
+        value = original(bs, target, quantity, active)
+        return value + (F(1) if active == 'V1' else -F(1)) if active else value
+
+    monkeypatch.setattr(lesson_module, 'observed', damaged)
+    with pytest.raises(ValueError, match='sovrapposizione|contributo'):
+        create_lesson(TWO, 'superposition')
+
+
+def test_superposition_rejects_wrong_subcircuit_voltage_even_with_right_target(monkeypatch):
+    import kirchhoff.pipeline.lesson as lesson_module
+    original = lesson_module.potential
+
+    def damaged(bs, active=None):
+        voltage, currents = original(bs, active)
+        return (voltage + 1, currents) if active == 'V1' else (voltage, currents)
+
+    monkeypatch.setattr(lesson_module, 'potential', damaged)
+    with pytest.raises(ValueError, match='sovrapposizione|tensione'):
+        create_lesson(TWO, 'superposition')
+
+
 def test_random_millman_and_load_thevenin_match_independent_formula():
     rng=random.Random(713)
     for _ in range(30):

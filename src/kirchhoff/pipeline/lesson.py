@@ -164,6 +164,32 @@ def _verify_thevenin_port(ir: IR, target: str, p: str, q: str, vth: F, rth: F) -
         raise ValueError('La resistenza vista di Thévenin non coincide con il tableau indipendente: lezione non esposta.')
 
 
+def _verify_superposition_contribution(ir: IR, active: str, target: str,
+                                       quantity: str, p: str, q: str,
+                                       contribution: F, port_voltage: F) -> None:
+    """Controlla separatamente il sottocircuito e la sua tensione di porta.
+
+    Il tableau usa tensioni/correnti di ramo e KVL su un albero, indipendenti
+    dal riconoscitore Millman che ha generato il passaggio da pubblicare.
+    Una sonda ideale da 0 A misura V(p)-V(q) senza perturbare il circuito.
+    """
+    from kirchhoff.domain.independent_dc import solve_dc_tableau
+
+    off = tuple(Component.of(c.id, c.type, c.terminals,
+                             c.value.amount if c.id == active or c.type == 'resistor' else F(0),
+                             c.symbolic) for c in ir.components)
+    probe_id = 'I_port_sovrapposizione'
+    while any(c.id == probe_id for c in off):
+        probe_id += 'x'
+    probe = Component.of(probe_id, 'current_source_dc', (p, q), F(0), probe_id)
+    subcircuit = replace(ir, components=off + (probe,), requests=())
+    independent = solve_dc_tableau(subcircuit)
+    if independent[target][quantity] != contribution:
+        raise ValueError(f'Il contributo di {active} in sovrapposizione non coincide con il tableau indipendente: lezione non esposta.')
+    if independent[probe_id]['voltage'] != port_voltage:
+        raise ValueError(f'La tensione del sottocircuito {active} in sovrapposizione non coincide con il tableau indipendente: lezione non esposta.')
+
+
 def _step(title: str, explanation: str, svg: str, equations: list[str] | None = None,
           focus: list[str] | None = None) -> dict:
     return dict(title=title, explanation=explanation, svg=svg,
@@ -327,6 +353,7 @@ def _human_steps(ir, topology, target, quantity, method, load, original):
             value = observed(bs, target, quantity, source.id)
             contributions.append(value)
             us, _ = potential(bs, source.id)
+            _verify_superposition_contribution(ir, source.id, target, quantity, p, q, value, us)
             fixed = any(b.resistance == 0 and b.imposed(source.id) is None for b in bs)
             numerator = sum((b.emf(source.id)/b.resistance for b in bs if b.resistance and b.imposed(source.id) is None), F(0)) - sum((b.imposed(source.id) or F(0) for b in bs), F(0))
             formula = f'V = numeratore / G = ({number(numerator)}) / ({number(g)}) = {number(us)} V' if not fixed else f'La sorgente ideale impone V = {number(us)} V'
@@ -336,6 +363,9 @@ def _human_steps(ir, topology, target, quantity, method, load, original):
                 'con gli stessi riferimenti dell’originale. Qui tutti i componenti sono lineari e indipendenti.',
                 schematic(ir, topology, active=source.id, focus=[source.id]),
                 [formula, f'V({p}) − V({q}) = {number(us)} V', f'Contributo di {source.id} a {target} = {number(value)} {"V" if quantity == "voltage" else "A"}']))
+        from kirchhoff.domain.independent_dc import solve_dc_tableau
+        if sum(contributions, F(0)) != solve_dc_tableau(ir)[target][quantity]:
+            raise ValueError('La somma dei contributi in sovrapposizione non coincide con il tableau indipendente: lezione non esposta.')
         result.append(_step('Sommiamo i contributi con il loro segno',
             'Ricongiungiamo i sottoproblemi. Sommiamo tensioni o correnti nella medesima orientazione. '
             'Non si applica questa somma alle potenze, che dipendono quadraticamente da tensioni e correnti.', original,
