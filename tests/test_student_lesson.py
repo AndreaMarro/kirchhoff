@@ -11,6 +11,8 @@ from threading import Thread
 from kirchhoff.pipeline.lesson import create_lesson, branches, observed, potential
 from kirchhoff.pipeline.lesson_pdf import export_pdf
 from kirchhoff.pipeline.netlist import leggi
+from kirchhoff.domain.ir import Component
+from kirchhoff.pipeline.lesson_bridge import _verifica_tre_morsetti
 
 TWO='V1 1 0 31/5 volt\nR1 1 2 13/10 ohm\nR2 2 0 11/10 ohm\nV2 3 0 18/5 volt\nR3 3 2 16/5 ohm\n? current R2'
 DIVIDER='V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\n? voltage R2'
@@ -180,6 +182,33 @@ def test_bridge_numeric_variants_keep_exact_values_and_polarity():
         voltage=F(rng.randrange(-15,16))
         text=f'V1 c 0 {voltage} volt\nR1 c a {rs[0]} ohm\nR2 c b {rs[1]} ohm\nR3 a 0 {rs[2]} ohm\nR4 b 0 {rs[3]} ohm\nRg a b {rs[4]} ohm\n? current R4'
         assert create_lesson(text,'star_delta')['answer']==create_lesson(text,'nodal')['answer']
+
+
+@pytest.mark.parametrize('part',['equation','diagram'])
+def test_bridge_corrupt_intermediate_is_not_published_with_correct_final_answer(monkeypatch,part):
+    import kirchhoff.pipeline.lesson as lesson_module
+    original=lesson_module._step
+    def damaged(title,explanation,svg,equations=None,focus=None):
+        step=original(title,explanation,svg,equations,focus)
+        if title=='Trasformiamo la stella in un triangolo':
+            if part=='equation':step['equations'][0]='Rdelta = 999 Ω'
+            else:step['svg']=step['svg'].replace('Rdelta01','Rdelta99')
+        return step
+    monkeypatch.setattr(lesson_module,'_step',damaged)
+    with pytest.raises(ValueError,match='passaggio intermedio'):
+        create_lesson(BRIDGE,'star_delta')
+
+
+def test_star_delta_checks_all_three_ports_not_just_the_requested_answer():
+    legs={node:Component.of('R'+node,'resistor',('x',node),value,'R'+node)
+          for node,value in [('a',F(2)),('b',F(3)),('c',F(5))]}
+    delta=[Component.of('Dab','resistor',('a','b'),F(31,5),'Dab'),
+           Component.of('Dac','resistor',('a','c'),F(31,3),'Dac'),
+           Component.of('Dbc','resistor',('b','c'),F(31,2),'Dbc')]
+    _verifica_tre_morsetti(legs,('a','b','c'),delta)
+    delta[2]=Component.of('Dbc','resistor',('b','c'),F(16),'Dbc')
+    with pytest.raises(ValueError,match='tre morsetti'):
+        _verifica_tre_morsetti(legs,('a','b','c'),delta)
 
 
 def test_http_new_circuit_pdf_and_origin_boundary(monkeypatch):
