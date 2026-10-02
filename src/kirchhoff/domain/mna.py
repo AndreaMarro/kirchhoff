@@ -54,6 +54,10 @@ def _classify_phasor(omega: Fraction, c: Component) -> tuple[str, Cyc12]:
         return "E", Cyc12.of(c.value.amount) * zeta_pow(c.phase_steps)
     if c.type == "current_source_ac":
         return "I", Cyc12.of(c.value.amount) * zeta_pow(c.phase_steps)
+    if c.type == "voltage_controlled_voltage_source":
+        return "VCVS", Cyc12.of(c.value.amount)
+    if c.type == "voltage_controlled_current_source":
+        return "VCCS", Cyc12.of(c.value.amount)
     if c.type == "ideal_opamp":
         return "OPAMP", Cyc12.of(0)
     raise ValueError(f"{c.id}: {c.type} non ammesso in regime sinusoidale")

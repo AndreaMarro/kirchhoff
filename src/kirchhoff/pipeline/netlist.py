@@ -32,6 +32,9 @@ Sorgenti controllate da tensione:
     E1 p q cp cq 2
     G1 p q cp cq 1/10 siemens
 
+I guadagni E/G sono reali ed esatti anche in AC: il fasore complesso nasce
+dalla tensione di controllo, non da una fase indipendente della sorgente.
+
 Operazionale ideale in regione lineare (uscita p,q; ingressi +,-):
 
     O1 p q plus minus
@@ -102,8 +105,6 @@ def leggi(testo: str) -> IR:
         iniziale = ident[0].upper()
 
         if iniziale == "E":
-            if ac_omega is not None:
-                raise ValueError(f"riga {numero}: sorgente controllata E non ancora ammessa nel sottoinsieme AC.")
             if len(pezzi) not in (6, 7):
                 raise ValueError(
                     f"riga {numero}: una VCVS e' «<id> <p> <q> <cp> <cq> <μ> "
@@ -125,8 +126,6 @@ def leggi(testo: str) -> IR:
             continue
 
         if iniziale == "G":
-            if ac_omega is not None:
-                raise ValueError(f"riga {numero}: sorgente controllata G non ancora ammessa nel sottoinsieme AC.")
             if len(pezzi) not in (6, 7):
                 raise ValueError(
                     f"riga {numero}: una VCCS e' «<id> <p> <q> <cp> <cq> <g> "

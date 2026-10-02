@@ -2,8 +2,9 @@
 
 Non importa il solutore MNA né le sue classificazioni o matrice. Condivide
 soltanto l'aritmetica esatta Cyc12 e la costruzione dell'albero del tableau DC.
-L'inviluppo è intenzionalmente ristretto a R/L/C e generatori sinusoidali di
-tensione e corrente con fasi multiple di 30 gradi; non è ancora una lezione servita.
+L'inviluppo è intenzionalmente ristretto a R/L/C, generatori sinusoidali di
+tensione/corrente con fasi multiple di 30 gradi e controllate E/G a guadagno
+reale; non è ancora una lezione servita.
 """
 
 from __future__ import annotations
@@ -12,7 +13,11 @@ from .exact import Cyc12, J, ONE, ZERO, zeta_pow
 from .independent_dc import _albero_ricoprente, _percorso_albero, _vcontrol_coeffs
 from .ir import IR, REFERENCE_NODE
 
-PHASOR_TABLEAU_TYPES = frozenset({"resistor", "inductor", "capacitor", "voltage_source_ac", "current_source_ac", "ideal_opamp"})
+PHASOR_TABLEAU_TYPES = frozenset({
+    "resistor", "inductor", "capacitor", "voltage_source_ac", "current_source_ac",
+    "voltage_controlled_voltage_source", "voltage_controlled_current_source",
+    "ideal_opamp",
+})
 
 
 def _impedance(ir: IR, component) -> Cyc12:
@@ -95,6 +100,12 @@ def solve_phasor_tableau(ir: IR) -> dict[str, dict[str, Cyc12]]:
             cp, cq = component.control_nodes
             for cid, sign in _vcontrol_coeffs(ir, parent, cp, cq):
                 matrix[row][positions[cid]] += Cyc12.of(sign)
+        elif component.type in {"voltage_controlled_voltage_source", "voltage_controlled_current_source"}:
+            cp, cq = component.control_nodes
+            column = index if component.type == "voltage_controlled_voltage_source" else count + index
+            matrix[row][column] = ONE
+            for cid, sign in _vcontrol_coeffs(ir, parent, cp, cq):
+                matrix[row][positions[cid]] -= Cyc12.of(component.value.amount * sign)
         else:
             matrix[row][index] = ONE
             matrix[row][count + index] = -_impedance(ir, component)

@@ -42,7 +42,7 @@ def test_typed_ac_netlist_reaches_both_exact_independent_assemblies():
     (AC.replace("30deg", "30.5deg"), "30"),
     (AC.replace("V1 a 0 10 volt 30deg", "V1 a 0 10 volt"), "fase"),
     (AC.replace("@ac 100 rad/s\n", ""), "riga"),
-    (AC.replace("R1 a b 3 ohm", "E1 a b a 0 2 dimensionless"), "non.*AC"),
+    (AC.replace("R1 a b 3 ohm", "E1 a b a 0 2 siemens"), "attesa.*dimensionless"),
     (AC.replace("@ac 100 rad/s", "@ac 100 rad/s\n@ac 200 rad/s"), "una sola"),
     (AC.replace("@ac 100 rad/s\n", "V2 a 0 1 volt\n@ac 100 rad/s\n"), "prima"),
 ])
