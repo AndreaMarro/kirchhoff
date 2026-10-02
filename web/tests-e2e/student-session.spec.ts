@@ -42,6 +42,7 @@ test('il salvataggio attende uno snapshot attuale della lavagna libera',async({p
  await page.getByRole('button',{name:/Il tuo circuito/}).click();
  await page.getByRole('button',{name:'Lavagna libera'}).click();
  await expect(page.frameLocator('iframe[title="Lavagna libera Excalidraw"]').getByRole('button',{name:'Salva disegno'})).toBeVisible();
+ await expect(page.frameLocator('iframe[title="Lavagna libera Excalidraw"]').getByRole('button',{name:'Usa selezione →'})).toBeVisible();
  await page.getByRole('button',{name:'Chiudi ingresso circuito'}).click();
  const download=page.waitForEvent('download');
  await page.getByRole('button',{name:'Salva quaderno ↓'}).click();
