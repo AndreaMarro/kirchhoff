@@ -75,6 +75,29 @@ def test_thevenin_seen_resistance_is_checked_at_the_port():
     _verify_thevenin_port(ir, 'R2', 'a', '0', F(12), F(0))
 
 
+@pytest.mark.parametrize('corruption', ['other_branch_current', 'port_voltage'])
+def test_human_lesson_rejects_wrong_intermediate_with_correct_requested_answer(monkeypatch, corruption):
+    import kirchhoff.pipeline.lesson as lesson_module
+    net = DIVIDER.replace('? voltage R2', '? current V1')
+    original = lesson_module.potential
+    off_target = next(i for i, branch in enumerate(branches(leggi(net))[2])
+                      if any(c.id == 'R2' for c, _ in branch.parts))
+
+    def damaged(bs, active=None):
+        voltage, currents = original(bs, active)
+        if active is not None:
+            return voltage, currents
+        if corruption == 'port_voltage':
+            return voltage + 1, currents
+        altered = currents.copy()
+        altered[off_target] += 1
+        return voltage, altered
+
+    monkeypatch.setattr(lesson_module, 'potential', damaged)
+    with pytest.raises(ValueError, match='passaggio intermedio'):
+        create_lesson(net)
+
+
 @pytest.mark.parametrize('method',['auto','millman','norton','thevenin','superposition','nodal'])
 def test_same_real_problem_all_methods(method):
     lesson=create_lesson(TWO,method)

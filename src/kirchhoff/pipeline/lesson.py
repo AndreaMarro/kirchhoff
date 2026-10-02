@@ -190,6 +190,26 @@ def _verify_superposition_contribution(ir: IR, active: str, target: str,
         raise ValueError(f'La tensione del sottocircuito {active} in sovrapposizione non coincide con il tableau indipendente: lezione non esposta.')
 
 
+def _verify_branch_state(ir: IR, bs: tuple[Branch, ...], u: F, currents: list[F]) -> None:
+    """Ogni ramo mostrato deve concordare col tableau, anche fuori dalla domanda.
+
+    Un controllo della sola risposta finale non vede una corrente sbagliata su
+    un altro ramo né una tensione comune errata se si chiede una corrente
+    impressa. Il tableau è assemblato senza il riconoscitore Millman.
+    """
+    from kirchhoff.domain.independent_dc import solve_dc_tableau
+
+    independent = solve_dc_tableau(ir)
+    for branch, current in zip(bs, currents, strict=True):
+        for component, sign in branch.parts:
+            if sign * current != independent[component.id]['current']:
+                raise ValueError('La corrente di un passaggio intermedio non coincide con il tableau indipendente: lezione non esposta.')
+        drop = sum((sign * independent[component.id]['voltage']
+                    for component, sign in branch.parts), F(0))
+        if drop != u:
+            raise ValueError('La tensione comune di un passaggio intermedio non coincide con il tableau indipendente: lezione non esposta.')
+
+
 def _step(title: str, explanation: str, svg: str, equations: list[str] | None = None,
           focus: list[str] | None = None) -> dict:
     return dict(title=title, explanation=explanation, svg=svg,
@@ -319,6 +339,7 @@ def create_lesson(text: str, method: str = 'auto', source_sha: str = '') -> dict
 def _human_steps(ir, topology, target, quantity, method, load, original):
     p, q, bs = topology
     u, currents = potential(bs)
+    _verify_branch_state(ir, bs, u, currents)
     equations = [f'R ramo {i+1} = ' + ' + '.join(number(c.value.amount) for c, _ in b.parts if c.type == 'resistor') + f' = {number(b.resistance)} Ω'
                  for i, b in enumerate(bs) if sum(c.type == 'resistor' for c, _ in b.parts) > 1]
     result = []
