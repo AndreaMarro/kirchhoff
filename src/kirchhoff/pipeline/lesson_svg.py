@@ -45,13 +45,24 @@ def schematic(ir, topology=None, *, focus=(), reduced=False, active=None,
         if kind == 'resistor':
             pieces.append(f'<rect x="{x-11}" y="{y-30}" width="22" height="60" fill="white" stroke="{color}" stroke-width="2.5"/>')
             line(x, y-36, x, y-30); line(x, y+30, x, y+36)
+        elif kind == 'capacitor':
+            pieces.append(f'<path data-symbol="capacitor" d="M{x-17} {y-10} L{x+17} {y-10} M{x-17} {y+10} L{x+17} {y+10}" stroke="{color}" fill="none" stroke-width="2.5"/>')
+            line(x, y-36, x, y-10); line(x, y+10, x, y+36)
+        elif kind == 'inductor':
+            pieces.append(f'<path data-symbol="inductor" d="M{x} {y-24} C{x+17} {y-24} {x+17} {y-12} {x} {y-12} C{x+17} {y-12} {x+17} {y} {x} {y} C{x+17} {y} {x+17} {y+12} {x} {y+12} C{x+17} {y+12} {x+17} {y+24} {x} {y+24}" stroke="{color}" fill="none" stroke-width="2.5"/>')
+            line(x, y-36, x, y-24); line(x, y+24, x, y+36)
         else:
-            pieces.append(f'<circle cx="{x}" cy="{y}" r="27" fill="white" stroke="{color}" stroke-width="2.5"/>')
+            marker = f' data-symbol="{kind}"' if kind in {'voltage_source_ac', 'current_source_ac'} else ''
+            pieces.append(f'<circle{marker} cx="{x}" cy="{y}" r="27" fill="white" stroke="{color}" stroke-width="2.5"/>')
             line(x, y-36, x, y-27); line(x, y+27, x, y+36)
             if kind == 'voltage_source_dc':
                 text(x, y-6, '+' if sign == 1 else '−', size=23)
                 text(x, y+21, '−' if sign == 1 else '+', size=23)
-            elif kind == 'current_source_dc':
+            elif kind == 'voltage_source_ac':
+                text(x-15, y-8, '+' if sign == 1 else '−', size=17)
+                text(x-15, y+20, '−' if sign == 1 else '+', size=17)
+                text(x+6, y+7, '~', size=25)
+            elif kind in {'current_source_dc', 'current_source_ac'}:
                 line(x, y-16*sign, x, y+16*sign, color)
                 line(x, y+16*sign, x-6, y+7*sign, color)
                 line(x, y+16*sign, x+6, y+7*sign, color)
@@ -70,7 +81,14 @@ def schematic(ir, topology=None, *, focus=(), reduced=False, active=None,
                 line(x-36, y+19*sign, x-41, y+10*sign, '#294bd3')
                 line(x-36, y+19*sign, x-31, y+10*sign, '#294bd3')
                 text(x-43, y+5, 'i', 'end', 17)
-    units = {'resistor':'Ω', 'voltage_source_dc':'V', 'current_source_dc':'A'}
+    units = {'resistor':'Ω', 'capacitor':'F', 'inductor':'H',
+             'voltage_source_dc':'V', 'current_source_dc':'A',
+             'voltage_source_ac':'V', 'current_source_ac':'A'}
+    def label_value(component):
+        value = f'{value_text(component.value.amount)} {units.get(component.type, component.value.unit)}'
+        if component.type in {'voltage_source_ac', 'current_source_ac'}:
+            value += f' ∠ {component.phase_steps * 30}°'
+        return value
     sources=[c for c in ir.components if c.type=='voltage_source_dc']
     bridge=None
     if topology is None and len(ir.nodes)==4 and len(ir.components)==6 and len(sources)==1:
@@ -140,7 +158,7 @@ def schematic(ir, topology=None, *, focus=(), reduced=False, active=None,
             x, y = 80+300*(i % 3), 145+230*(i//3)
             line(x, y-70, x, y-36); line(x, y+36, x, y+70)
             node(x, y-70, c.terminals[0]); node(x, y+70, c.terminals[1])
-            symbol(x, y, c.type, c.id, f'{value_text(c.value.amount)} {units.get(c.type, c.value.unit)}', highlight=c.id in focus)
+            symbol(x, y, c.type, c.id, label_value(c), highlight=c.id in focus)
     else:
         p, q, branches = topology
         maxparts = max(len(b.parts) for b in branches)
