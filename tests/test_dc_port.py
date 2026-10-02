@@ -4,7 +4,7 @@ from dataclasses import replace
 from fractions import Fraction as F
 
 import kirchhoff.domain.port as port_module
-from kirchhoff.domain.ir import IR, Magnitude
+from kirchhoff.domain.ir import IR, Magnitude, Provenance
 from kirchhoff.domain.port import analyze_dc_port
 from kirchhoff.domain.refusal import Refusal
 from kirchhoff.pipeline.netlist import leggi
@@ -18,6 +18,15 @@ def test_passive_port_uses_one_ampere_without_inventing_a_source_in_the_answer()
     assert result.norton_current == Magnitude(F(0), "ampere")
     assert analyze_dc_port(replace(ir, domain="dc_resistive"), ("a", "0")) == result
     assert analyze_dc_port(replace(ir, components=tuple(reversed(ir.components))), ("a", "0")) == result
+
+
+def test_image_component_regions_do_not_break_generated_dc_port_probes():
+    netlist = leggi("R1 a 0 3 ohm\nR2 a 0 6 ohm")
+    region = Provenance(F(1, 10), F(1, 10), F(1, 5), F(1, 5))
+    image = replace(netlist, source_kind="image",
+                    components=tuple(replace(c, provenance=region) for c in netlist.components))
+    assert analyze_dc_port(image, ("a", "0")) == analyze_dc_port(netlist, ("a", "0"))
+    assert all(c.provenance == region for c in image.components)
 
 
 def test_port_equivalent_extinguishes_independent_voltage_sources():

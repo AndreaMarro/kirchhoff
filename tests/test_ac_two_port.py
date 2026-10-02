@@ -7,6 +7,7 @@ import pytest
 
 import kirchhoff.domain.two_port as two_port_module
 from kirchhoff.domain.exact import Cyc12, J
+from kirchhoff.domain.ir import Provenance
 from kirchhoff.domain.refusal import Refusal
 from kirchhoff.domain.two_port import analyze_ac_y_matrix
 from kirchhoff.pipeline.netlist import leggi
@@ -26,6 +27,15 @@ def test_exact_symmetric_y_matrix_with_oriented_port_currents():
                               (Cyc12.of(-F(1, 3)), Cyc12.of(F(2, 3))))
     assert analyze_ac_y_matrix(replace(ir, components=tuple(reversed(ir.components))),
                                PORTS) == result
+
+
+def test_image_component_regions_do_not_break_generated_two_port_probes():
+    netlist = leggi(BASE)
+    region = Provenance(F(1, 10), F(1, 10), F(1, 5), F(1, 5))
+    image = replace(netlist, source_kind="image",
+                    components=tuple(replace(c, provenance=region) for c in netlist.components))
+    assert analyze_ac_y_matrix(image, PORTS) == analyze_ac_y_matrix(netlist, PORTS)
+    assert all(c.provenance == region for c in image.components)
 
 
 def test_y_matrix_cannot_lie_about_units_or_embed_rounded_entries():

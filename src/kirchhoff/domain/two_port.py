@@ -50,9 +50,10 @@ def _column(ir: IR, ports: tuple[tuple[str, str], tuple[str, str]], driven: int)
     components = []
     for c in ir.components:
         if c.type in {"voltage_source_ac", "current_source_ac"}:
-            components.append(replace(c, value=Magnitude(Fraction(0), c.value.unit), phase_steps=0))
+            components.append(replace(c, value=Magnitude(Fraction(0), c.value.unit),
+                                      phase_steps=0, provenance=None))
         else:
-            components.append(c)
+            components.append(replace(c, provenance=None))
     measured = replace(ir, source_kind="generated", components=tuple(components + sources),
                        requests=())
     gate = validate(measured)

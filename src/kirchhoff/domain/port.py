@@ -64,9 +64,10 @@ def _probe(ir: IR, port: tuple[str, str], amperes: Fraction, *, off: bool) -> tu
     components = []
     for c in ir.components:
         if off and c.type in {"voltage_source_dc", "current_source_dc"}:
-            components.append(replace(c, value=Magnitude(Fraction(0), c.value.unit)))
+            components.append(replace(c, value=Magnitude(Fraction(0), c.value.unit),
+                                      provenance=None))
         else:
-            components.append(c)
+            components.append(replace(c, provenance=None))
     components.append(Component.of(probe_id, "current_source_dc", (port[1], port[0]),
                                    amperes, probe_id))
     # Il circuito di prova e' generato analiticamente: non inventiamo un'area
@@ -127,9 +128,10 @@ def _ac_probe(ir: IR, port: tuple[str, str], amperes: Fraction, *, off: bool) ->
     components = []
     for c in ir.components:
         if off and c.type in {"voltage_source_ac", "current_source_ac"}:
-            components.append(replace(c, value=Magnitude(Fraction(0), c.value.unit), phase_steps=0))
+            components.append(replace(c, value=Magnitude(Fraction(0), c.value.unit),
+                                      phase_steps=0, provenance=None))
         else:
-            components.append(c)
+            components.append(replace(c, provenance=None))
     components.append(Component.of(probe_id, "current_source_ac", (port[1], port[0]),
                                    amperes, probe_id, phase_steps=0))
     return replace(ir, source_kind="generated", components=tuple(components), requests=()), probe_id

@@ -1,12 +1,13 @@
 """Impedenza AC di porta con prova fasoriale e controllo indipendente."""
 
+from dataclasses import replace
 from fractions import Fraction as F
 
 import pytest
 
 import kirchhoff.domain.port as port_module
 from kirchhoff.domain.exact import Cyc12, J
-from kirchhoff.domain.ir import IR
+from kirchhoff.domain.ir import IR, Provenance
 from kirchhoff.domain.port import PhasorMagnitude, analyze_ac_port
 from kirchhoff.domain.refusal import Refusal
 from kirchhoff.pipeline.netlist import leggi
@@ -19,6 +20,15 @@ def test_series_rl_port_has_exact_complex_impedance():
     assert result.impedance.amount == Cyc12.of(3) + J * Cyc12.of(4)
     assert result.impedance.unit == "ohm"
     assert result.norton_current.amount == 0
+
+
+def test_image_component_regions_do_not_break_generated_ac_port_probes():
+    netlist = leggi("@ac 2 rad/s\nR1 a b 3 ohm\nL1 b 0 2 henry")
+    region = Provenance(F(1, 10), F(1, 10), F(1, 5), F(1, 5))
+    image = replace(netlist, source_kind="image",
+                    components=tuple(replace(c, provenance=region) for c in netlist.components))
+    assert analyze_ac_port(image, ("a", "0")) == analyze_ac_port(netlist, ("a", "0"))
+    assert all(c.provenance == region for c in image.components)
 
 
 def test_parallel_rc_port_inverts_admittance_without_float_approximation():
