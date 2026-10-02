@@ -101,6 +101,20 @@ quaderno proveniva da una foto, la riapertura mostra il circuito ricostruito
 come testo e chiede una nuova foto/conferma per ristabilire la provenienza.
 Questo file non sostituisce la persistenza di una lezione Ardesia.
 
+## Ricompilare la lavagna
+
+La lavagna Excalidraw ha un package e un lockfile propri in
+`companion-board/`. Da questo checkout, senza donor o repository privati:
+
+```sh
+npm ci --prefix companion-board
+python3 scripts/build_student_board.py
+```
+
+Il controllo dei tipi precede la build; il bundle, i font, le licenze e il
+manifest con hash delle sorgenti e del lockfile vengono scritti in
+`web/public/board/`. Excalidraw resta fissato alla versione 0.18.1.
+
 ## Cosa e' verificato e cosa no
 
 - Verificato nel percorso locale: continua DC con domande esplicite, via percorso
