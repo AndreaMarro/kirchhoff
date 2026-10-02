@@ -20,6 +20,10 @@ PHASOR_TABLEAU_TYPES = frozenset({
 })
 
 
+class PhasorTableauSingularError(ValueError):
+    """Il tableau fasoriale e' matematicamente singolare."""
+
+
 def _impedance(ir: IR, component) -> Cyc12:
     if component.type == "resistor":
         return Cyc12.of(component.value.amount)
@@ -35,7 +39,7 @@ def _eliminate(matrix: list[list[Cyc12]], known: list[Cyc12]) -> list[Cyc12]:
     for column in range(size):
         pivot = next((i for i in range(column, size) if rows[i][column]), None)
         if pivot is None:
-            raise ValueError(f"tableau fasoriale singolare alla colonna {column}")
+            raise PhasorTableauSingularError(f"tableau fasoriale singolare alla colonna {column}")
         rows[column], rows[pivot] = rows[pivot], rows[column]
         for index in range(column + 1, size):
             if rows[index][column]:

@@ -13,10 +13,13 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from fractions import Fraction
 
-from .exact import SingularSystemError
+from .exact import Cyc12, SingularSystemError
 from .independent_dc import DC_TABLEAU_TYPES, TableauSingularError, solve_dc_tableau
+from .independent_phasor import (
+    PHASOR_TABLEAU_TYPES, PhasorTableauSingularError, solve_phasor_tableau,
+)
 from .ir import DC_DOMAINS, Component, IR, Magnitude
-from .mna import solve_dc
+from .mna import solve_dc, solve_phasor
 from .refusal import Refusal
 from .validate import validate
 from .verify import verify
@@ -28,6 +31,29 @@ class DCPortEquivalent:
     voltage: Magnitude
     resistance: Magnitude
     norton_current: Magnitude | None
+
+
+@dataclass(frozen=True, slots=True)
+class PhasorMagnitude:
+    """Fasore esatto con unita'; la convenzione RMS/picco rimane non dichiarata."""
+
+    amount: Cyc12
+    unit: str
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.amount, Cyc12):
+            raise TypeError("un fasore di porta richiede Cyc12 esatto")
+        if self.unit not in {"volt", "ohm", "ampere"}:
+            raise ValueError(f"unita' fasoriale di porta non supportata: {self.unit}")
+
+
+@dataclass(frozen=True, slots=True)
+class ACPortEquivalent:
+    port: tuple[str, str]
+    omega: Fraction
+    voltage: PhasorMagnitude
+    impedance: PhasorMagnitude
+    norton_current: PhasorMagnitude | None
 
 
 def _probe(ir: IR, port: tuple[str, str], amperes: Fraction, *, off: bool) -> tuple[IR, str]:
@@ -91,3 +117,65 @@ def analyze_dc_port(ir: IR, port: tuple[str, str]) -> DCPortEquivalent | Refusal
     norton = None if resistance == 0 else Magnitude(voltage / resistance, "ampere")
     return DCPortEquivalent(port, Magnitude(voltage, "volt"),
                             Magnitude(resistance, "ohm"), norton)
+
+
+def _ac_probe(ir: IR, port: tuple[str, str], amperes: Fraction, *, off: bool) -> tuple[IR, str]:
+    existing = {c.id for c in ir.components}
+    probe_id = "I_port_probe"
+    while probe_id in existing:
+        probe_id += "_"
+    components = []
+    for c in ir.components:
+        if off and c.type in {"voltage_source_ac", "current_source_ac"}:
+            components.append(replace(c, value=Magnitude(Fraction(0), c.value.unit), phase_steps=0))
+        else:
+            components.append(c)
+    components.append(Component.of(probe_id, "current_source_ac", (port[1], port[0]),
+                                   amperes, probe_id, phase_steps=0))
+    return replace(ir, source_kind="generated", components=tuple(components), requests=()), probe_id
+
+
+def _measure_ac(ir: IR, port: tuple[str, str], amperes: Fraction, *, off: bool) -> Cyc12 | Refusal:
+    measured, probe_id = _ac_probe(ir, port, amperes, off=off)
+    gate = validate(measured)
+    if isinstance(gate, Refusal):
+        return gate
+    try:
+        nodal = solve_phasor(measured)
+        branch = solve_phasor_tableau(measured)
+    except (SingularSystemError, PhasorTableauSingularError):
+        return Refusal("unsolvable", f"{port[0]}→{port[1]}", "operation",
+                       "La porta non ha una soluzione AC finita per la sorgente di prova.")
+    if nodal != branch:
+        return Refusal("path_disagreement", probe_id, "component",
+                       "MNA e tableau fasoriale non concordano sulla misura di porta.")
+    residual = verify(measured, nodal)
+    if residual is not None:
+        return residual
+    return -nodal[probe_id]["voltage"]
+
+
+def analyze_ac_port(ir: IR, port: tuple[str, str]) -> ACPortEquivalent | Refusal:
+    """Vth, Zth e Norton finito su fasori a frequenza singola esatta.
+
+    Non fissa RMS/picco, dunque non autorizza una conclusione di potenza.
+    Fornisce il fatto elettrico; richiesta/prova didattica AC non servite.
+    """
+    label = f"{port[0]}→{port[1]}"
+    if port[0] == port[1] or any(node not in ir.nodes for node in port):
+        return Refusal("claim_unsupported", label, "operation",
+                       "La porta deve nominare due nodi distinti del circuito.")
+    if ir.domain != "ac_sinusoidal" or not ir.components or any(
+        c.type not in PHASOR_TABLEAU_TYPES for c in ir.components
+    ):
+        return Refusal("claim_unsupported", label, "operation",
+                       "Questa porta ammette solo il sottoinsieme AC sinusoidale modellato.")
+    voltage = _measure_ac(ir, port, Fraction(0), off=False)
+    if isinstance(voltage, Refusal):
+        return voltage
+    impedance = _measure_ac(ir, port, Fraction(1), off=True)
+    if isinstance(impedance, Refusal):
+        return impedance
+    norton = None if impedance == 0 else PhasorMagnitude(voltage / impedance, "ampere")
+    return ACPortEquivalent(port, ir.omega, PhasorMagnitude(voltage, "volt"),
+                            PhasorMagnitude(impedance, "ohm"), norton)
