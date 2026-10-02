@@ -22,6 +22,100 @@ test('un quaderno non catalogato si riapre attraverso il server e si salva di nu
  expect(saved.answerExact).toBe('42/5');
 });
 
+test('un ritaglio reale della lavagna conserva i tratti scelti nel quaderno dopo riapertura',async({page})=>{
+ const netlist='V1 p 0 12 volt\nR1 p 0 6 ohm\n? current R1';
+ await page.goto(base!);
+ await page.getByRole('button',{name:/Il tuo circuito/}).click();
+ await page.getByRole('button',{name:'Lavagna libera'}).click();
+ const board=page.frameLocator('iframe[title="Lavagna libera Excalidraw"]');
+ await board.locator('label:has(input[aria-label="Disegno"])').click();
+ const canvas=board.locator('canvas').first();
+ const box=await canvas.boundingBox();
+ expect(box).not.toBeNull();
+ await page.mouse.move(box!.x+box!.width/2-50,box!.y+box!.height/2);
+ await page.mouse.down();
+ await page.mouse.move(box!.x+box!.width/2+50,box!.y+box!.height/2,{steps:12});
+ await page.mouse.up();
+ await board.getByRole('button',{name:'Usa tutto il disegno →'}).click();
+ await expect(page.getByText(/Ritaglio dalla lavagna: 1 tratto del disegno intero/)).toBeVisible();
+ await page.getByRole('textbox',{name:'Circuito da risolvere'}).fill(netlist);
+ await page.getByRole('checkbox',{name:/Ho confrontato con la foto/}).check();
+ await page.getByRole('button',{name:/Risolvi e spiega/}).click();
+ await expect(page.locator('.student-lesson')).toHaveAttribute('aria-busy','false');
+ const download=page.waitForEvent('download');
+ await page.getByRole('button',{name:'Salva quaderno ↓'}).click();
+ const saved=JSON.parse(await readFile(await (await download).path(),'utf8')) as {
+  boardScene:string;boardSource:{sceneSha256:string;selectedElementIds:string[];selectionOnly:boolean};priorImageSha256:string;
+ };
+ expect(saved.boardSource.selectedElementIds).toHaveLength(1);
+ expect(saved.boardSource.selectionOnly).toBe(false);
+ expect(saved.boardSource.sceneSha256).toBe(createHash('sha256').update(saved.boardScene).digest('hex'));
+ expect(saved.priorImageSha256).toMatch(/^[a-f0-9]{64}$/);
+ await page.locator('input[type=file][accept*="application/json"]').setInputFiles({name:'quaderno.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(saved))});
+ await expect(page.getByText(/Quaderno riaperto e soluzione ricalcolata/)).toBeVisible();
+ await page.getByText('Controllo del risultato e provenienza').click();
+ await expect(page.getByText(/Ritaglio della lavagna: 1 tratto del disegno intero/)).toBeVisible();
+ const secondDownload=page.waitForEvent('download');
+ await page.getByRole('button',{name:'Salva quaderno ↓'}).click();
+ const reopened=JSON.parse(await readFile(await (await secondDownload).path(),'utf8')) as typeof saved;
+ expect(reopened.boardSource).toEqual(saved.boardSource);
+ expect(reopened.priorImageSha256).toBe(saved.priorImageSha256);
+ await page.getByRole('button',{name:/Il tuo circuito/}).click();
+ await page.getByRole('button',{name:'Lavagna libera'}).click();
+ await page.frameLocator('iframe[title="Lavagna libera Excalidraw"]').getByRole('button',{name:'Salva disegno'}).waitFor();
+ await page.getByRole('button',{name:'Chiudi ingresso circuito'}).click();
+ const thirdDownload=page.waitForEvent('download',{timeout:5000});
+ await page.getByRole('button',{name:'Salva quaderno ↓'}).click();
+ const viewed=JSON.parse(await readFile(await (await thirdDownload).path(),'utf8')) as typeof saved;
+ expect(viewed.boardSource).toEqual(saved.boardSource);
+ await page.getByRole('button',{name:/Il tuo circuito/}).click();
+ await page.getByRole('button',{name:'Lavagna libera'}).click();
+ const restoredBoard=page.frameLocator('iframe[title="Lavagna libera Excalidraw"]');
+ await restoredBoard.locator('label:has(input[aria-label="Disegno"])').click();
+ const restoredBox=await restoredBoard.locator('canvas').first().boundingBox();
+ expect(restoredBox).not.toBeNull();
+ await page.mouse.move(restoredBox!.x+restoredBox!.width/2-50,restoredBox!.y+restoredBox!.height/2+70);
+ await page.mouse.down();
+ await page.mouse.move(restoredBox!.x+restoredBox!.width/2+50,restoredBox!.y+restoredBox!.height/2+70,{steps:12});
+ await page.mouse.up();
+ await page.getByRole('button',{name:'Chiudi ingresso circuito'}).click();
+ await page.getByRole('button',{name:'Salva quaderno ↓'}).click();
+ await expect(page.getByRole('alert')).toContainText('La lavagna è cambiata dopo il ritaglio');
+});
+
+test('la selezione reale esporta un solo tratto e conserva il resto della scena',async({page})=>{
+ const netlist='V1 p 0 12 volt\nR1 p 0 6 ohm\n? current R1';
+ await page.goto(base!);
+ await page.getByRole('button',{name:/Il tuo circuito/}).click();
+ await page.getByRole('button',{name:'Lavagna libera'}).click();
+ const board=page.frameLocator('iframe[title="Lavagna libera Excalidraw"]');
+ await board.locator('label:has(input[aria-label="Disegno"])').click();
+ const box=await board.locator('canvas').first().boundingBox();
+ expect(box).not.toBeNull();
+ const cx=box!.x+box!.width/2,cy=box!.y+box!.height/2;
+ for(const y of [cy-45,cy+45]){
+  await page.mouse.move(cx-50,y);await page.mouse.down();
+  await page.mouse.move(cx+50,y,{steps:12});await page.mouse.up();
+ }
+ await board.locator('label:has(input[aria-label="Selezione"])').click();
+ await page.mouse.click(cx,cy-45);
+ await board.getByRole('button',{name:'Usa selezione →'}).click();
+ await expect(page.getByText(/Ritaglio dalla lavagna: 1 tratto selezionato/)).toBeVisible();
+ await page.getByRole('textbox',{name:'Circuito da risolvere'}).fill(netlist);
+ await page.getByRole('checkbox',{name:/Ho confrontato con la foto/}).check();
+ await page.getByRole('button',{name:/Risolvi e spiega/}).click();
+ await expect(page.locator('.student-lesson')).toHaveAttribute('aria-busy','false');
+ const download=page.waitForEvent('download');
+ await page.getByRole('button',{name:'Salva quaderno ↓'}).click();
+ const saved=JSON.parse(await readFile(await (await download).path(),'utf8')) as {
+  boardScene:string;boardSource:{sceneSha256:string;selectedElementIds:string[];selectionOnly:boolean};
+ };
+ expect(saved.boardSource.selectionOnly).toBe(true);
+ expect(saved.boardSource.selectedElementIds).toHaveLength(1);
+ expect((JSON.parse(saved.boardScene) as {elements:unknown[]}).elements).toHaveLength(2);
+ expect(saved.boardSource.sceneSha256).toBe(createHash('sha256').update(saved.boardScene).digest('hex'));
+});
+
 test('due sorgenti: la lezione servita mostra la differenza di tensione reale',async({page})=>{
  const netlist='V1 a 0 10 volt\nR1 a b 2 ohm\nV2 b 0 4 volt\n? current R1';
  await page.goto(base!);

@@ -37,13 +37,16 @@ function Board(){
   setBusy(true);setError('');
   try{
    const state=api.current.getAppState();
-   const elements=elementsForInterpretation(api.current.getSceneElements(),state.selectedElementIds,selectionOnly);
-   const options={elements,appState:{...state,exportBackground:true,viewBackgroundColor:'#ffffff',exportWithDarkMode:false},files:api.current.getFiles(),maxWidthOrHeight:1800,exportPadding:35};
+   const allElements=api.current.getSceneElements(),files=api.current.getFiles();
+   const elements=elementsForInterpretation(allElements,state.selectedElementIds,selectionOnly);
+   const scene=serializeAsJSON(allElements,state,files,'local');
+   if(scene.length>10000000)throw Error('La lavagna supera la dimensione consentita per la provenienza del disegno.');
+   const options={elements,appState:{...state,exportBackground:true,viewBackgroundColor:'#ffffff',exportWithDarkMode:false},files,maxWidthOrHeight:1800,exportPadding:35};
    let blob=await exportToBlob(options);if(blob.size>2000000)blob=await exportToBlob({...options,mimeType:'image/jpeg',quality:.88});
    if(blob.size>2000000)throw Error('Il disegno è troppo grande: riduci le immagini inserite.');
    const dataURL=await new Promise<string>((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result));r.onerror=()=>reject(Error('Esportazione immagine fallita.'));r.readAsDataURL(blob);});
-   const scene=snapshot();if(scene.length<=10000000)parent.postMessage({type:'kirchhoff:board-state',scene},origin);
-   if(parent===window)download(blob,blob.type==='image/jpeg'?'circuito.jpg':'circuito.png');else parent.postMessage({type:'kirchhoff:board-image',image:dataURL},origin);
+   if(scene!==snapshot())throw Error('La lavagna è cambiata durante il ritaglio: seleziona di nuovo i tratti.');
+   if(parent===window)download(blob,blob.type==='image/jpeg'?'circuito.jpg':'circuito.png');else parent.postMessage({type:'kirchhoff:board-image',image:dataURL,scene,selectedElementIds:elements.map(element=>element.id),selectionOnly},origin);
   }catch(e){setError(e instanceof Error?e.message:'Esportazione non riuscita.');}finally{setBusy(false);}
  }
  return <main className="board-shell"><header><div><strong>La tua lavagna</strong><span>Disegna, scrivi i valori, indica la domanda.</span></div><button disabled={busy} onClick={()=>download(new Blob([snapshot()],{type:'application/json'}),'circuito.excalidraw')}>Salva disegno</button><button disabled={busy} onClick={()=>void useDrawing(true)}>Usa selezione →</button><button className="primary" disabled={busy} onClick={()=>void useDrawing()}>{busy?'Preparo l’immagine…':'Usa tutto il disegno →'}</button></header>{error?<p role="alert">{error}</p>:null}<section aria-label="Lavagna Excalidraw">{initial!==undefined?<Excalidraw initialData={initial??{appState:{currentItemStrokeColor:'#202b37',currentItemRoughness:0,currentItemFontFamily:2,viewBackgroundColor:'#ffffff'}}} excalidrawAPI={value=>{api.current=value;}} onChange={changed} langCode="it-IT" theme="light" aiEnabled={false} validateEmbeddable={()=>false} UIOptions={{canvasActions:{export:false,saveAsImage:false}}}/>:<p>Preparo la lavagna…</p>}</section><footer>Il disegno resta in questa pagina. Seleziona tratti o una regione per interpretarne solo il contenuto, oppure usa tutto il disegno. La trascrizione resta da controllare e confermare prima del calcolo. <a href="./THIRD-PARTY-NOTICES.txt" target="_blank" rel="noreferrer">Excalidraw · licenze</a></footer></main>;

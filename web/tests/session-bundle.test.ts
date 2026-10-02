@@ -1,5 +1,5 @@
 import {describe,it,expect} from 'vitest';
-import {makeSessionBundle,readSessionBundle} from '../src/student/sessionBundle.ts';
+import {boardSceneSha256,makeSessionBundle,readSessionBundle} from '../src/student/sessionBundle.ts';
 
 const netlist='V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\n? voltage R2';
 const board=JSON.stringify({type:'excalidraw',version:2,elements:[{id:'board-mark'}],files:{}});
@@ -27,6 +27,19 @@ describe('quaderno portabile',()=>{
   const kvl={...fields.traceSteps[0],operation:'kvl',first:'b',second:'+R1,+R2,-V1',claimed_value:null,transcription:'KVL alla maglia'};
   const bundle=await makeSessionBundle({...fields,traceSteps:[kvl]});
   expect((await readSessionBundle(JSON.stringify(bundle))).traceSteps).toEqual([kvl]);
+ });
+ it('conserva la scena sorgente e i tratti scelti come provenienza storica, senza foto privata',async()=>{
+  const source={sceneSha256:await boardSceneSha256(board),selectedElementIds:['board-mark'],selectionOnly:true};
+  const bundle=await makeSessionBundle({...fields,priorImageSha256:'a'.repeat(64),boardSource:source});
+  expect((await readSessionBundle(JSON.stringify(bundle))).boardSource).toEqual(source);
+  expect(JSON.stringify(bundle)).not.toContain('data:image/');
+  await expect(readSessionBundle(JSON.stringify({...bundle,boardSource:{...source,selectedElementIds:['board-mark','board-mark']}}))).rejects.toThrow('provenienza');
+  await expect(readSessionBundle(JSON.stringify({...bundle,priorImageSha256:null}))).rejects.toThrow('provenienza');
+  await expect(readSessionBundle(JSON.stringify({...bundle,boardScene:''}))).rejects.toThrow('provenienza');
+  await expect(readSessionBundle(JSON.stringify({...bundle,boardSource:{...source,sceneSha256:'invalid'}}))).rejects.toThrow('provenienza');
+  await expect(readSessionBundle(JSON.stringify({...bundle,boardSource:{...source,sceneSha256:'b'.repeat(64)}}))).rejects.toThrow('provenienza');
+  await expect(readSessionBundle(JSON.stringify({...bundle,boardSource:{...source,selectedElementIds:['another-mark']}}))).rejects.toThrow('provenienza');
+  await expect(readSessionBundle(JSON.stringify({...bundle,boardScene:JSON.stringify({type:'excalidraw',version:2,elements:[{id:'board-mark'},{id:'second-mark'}],files:{}}),boardSource:{...source,selectionOnly:false}}))).rejects.toThrow('provenienza');
  });
  it('rifiuta una netlist sostituita a revisione invariata',async()=>{
   const bundle=await makeSessionBundle(fields);

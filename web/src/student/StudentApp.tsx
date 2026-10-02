@@ -2,7 +2,8 @@ import {useEffect,useRef,useState} from 'react';
 import {CircuitEditor} from './CircuitEditor.tsx';
 import {StudentTracePanel,blankTraceStep} from './StudentTracePanel.tsx';
 import type {TraceStep} from './StudentTracePanel.tsx';
-import {makeSessionBundle,readSessionBundle} from './sessionBundle.ts';
+import {boardSceneSha256,makeSessionBundle,readSessionBundle} from './sessionBundle.ts';
+import type {BoardSourceRecord} from './sessionBundle.ts';
 import './student.css';
 import {prepareCircuitImage} from './imageInput.ts';
 import {readBoardMessage} from './boardProtocol.ts';
@@ -14,6 +15,17 @@ type Example={id:string;title:string;netlist:string;methods:Record<string,string
 type ImageObservation={line:string;region:{x1:number;y1:number;x2:number;y2:number}};
 type ImageCandidate={netlist:string;observations:ImageObservation[];uncertainties:string[];model_reported_complete:boolean};
 const names:Record<string,string>={auto:'Percorso consigliato',divider:'Partitore',current_divider:'Partitore di corrente',millman:'Millman',norton:'Trasformazioni Norton',thevenin:'Equivalente Thévenin',superposition:'Sovrapposizione',nodal:'Analisi nodale',star_delta:'Stella → triangolo'};
+function boardStrokeLabel(count:number, selectionOnly:boolean):string{return `${count} ${count===1?'tratto':'tratti'} ${selectionOnly?(count===1?'selezionato':'selezionati'):'del disegno intero'}`;}
+function sameBoardRevision(left:string,right:string):boolean{
+ try{
+  const revision=(scene:string)=>{
+   const value=JSON.parse(scene) as {elements?:Array<{id:string;type:string;version:number;versionNonce:number;isDeleted:boolean}>;files?:Record<string,unknown>};
+   if(!Array.isArray(value.elements)||!value.files)return null;
+   return JSON.stringify({elements:value.elements.map(({id,type,version,versionNonce,isDeleted})=>[id,type,version,versionNonce,isDeleted]),files:Object.keys(value.files).sort()});
+  };
+  const original=revision(left);return original!==null&&original===revision(right);
+ }catch{return false;}
+}
 
 async function response(res:Response):Promise<unknown>{
  const value=await res.json() as {message?:string};if(!res.ok)throw new Error(value.message??`Richiesta non riuscita (${res.status})`);return value;
@@ -36,6 +48,9 @@ export function StudentApp(){
  const [api,setApi]=useState(false),[vision,setVision]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState('');
  const [scope,setScope]=useState('');
  const request=useRef(0),stage=useRef<HTMLDivElement>(null),board=useRef<HTMLIFrameElement>(null),boardScene=useRef(''),boardOwner=useRef<string|null>(null);
+ const boardSourceCandidate=useRef<{image:string;scene:string;selectedElementIds:string[];selectionOnly:boolean}|null>(null);
+ const boardSourceOwner=useRef<{fingerprint:string;source:BoardSourceRecord;scene:string}|null>(null);
+ const historicalImageDigest=useRef<{fingerprint:string;sha256:string}|null>(null);
  const sessionInput=useRef<HTMLInputElement>(null),boardSnapshot=useRef(new Map<string,{resolve:(scene:string)=>void;reject:(error:Error)=>void;timer:ReturnType<typeof setTimeout>}>());
  const [boardOpened,setBoardOpened]=useState(false);
  const [boardEpoch,setBoardEpoch]=useState(0),[sessionEpoch,setSessionEpoch]=useState(0);
@@ -43,6 +58,7 @@ export function StudentApp(){
  const entry=useRef(new URLSearchParams(location.hash.slice(1)));
  const restoreStep=useRef(true);
  const current=lesson?.steps[step];
+ const visibleBoardSource=lesson&&boardSourceOwner.current&&boardSourceOwner.current.fingerprint===lesson.fingerprint?boardSourceOwner.current.source:null;
  useEffect(()=>{if(step===0)setCompare(false);},[step]);
  useEffect(()=>{
   function receive(e:MessageEvent){
@@ -53,7 +69,7 @@ export function StudentApp(){
     const pending=boardSnapshot.current.get(message.requestId);
     if(pending){clearTimeout(pending.timer);boardSnapshot.current.delete(message.requestId);boardScene.current=message.scene;pending.resolve(message.scene);}
    }
-   if(message.type==='kirchhoff:board-image'){request.current++;boardOwner.current=null;setImage(message.image);setImageFromBoard(true);setDraft('');setUncertainties([]);setObservations([]);setCandidates([]);setModelReportedComplete(null);setConfirmed(false);setTab('photo');setError('');}
+   if(message.type==='kirchhoff:board-image'){request.current++;boardScene.current=message.scene;boardOwner.current=null;boardSourceCandidate.current={image:message.image,scene:message.scene,selectedElementIds:message.selectedElementIds,selectionOnly:message.selectionOnly};setImage(message.image);setImageFromBoard(true);setDraft('');setUncertainties([]);setObservations([]);setCandidates([]);setModelReportedComplete(null);setConfirmed(false);setTab('photo');setError('');}
   }
   window.addEventListener('message',receive);return()=>{
    window.removeEventListener('message',receive);
@@ -130,14 +146,23 @@ export function StudentApp(){
     if(n!==request.current)return;confirmationToken=approval.confirmation_token;
    }
    const value=parseLesson(await response(await fetch('api/solve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({netlist:text,method:chosen,source_kind:sourceImage?'image':'netlist',confirmation_token:confirmationToken})})));
-   if(n!==request.current)return;if(imageFromBoard&&sourceImage)boardOwner.current=value.fingerprint;
+   if(n!==request.current)return;
+   const candidate=boardSourceCandidate.current;
+   const priorOwner=boardSourceOwner.current;
+   const source:BoardSourceRecord|null=candidate&&sourceImage===candidate.image
+    ?{sceneSha256:await boardSceneSha256(candidate.scene),selectedElementIds:candidate.selectedElementIds,selectionOnly:candidate.selectionOnly}
+    :existingToken&&sourceImage&&priorOwner&&lesson&&priorOwner.fingerprint===lesson.fingerprint?priorOwner.source:null;
+   if(n!==request.current)return;
+   boardSourceOwner.current=source?{fingerprint:value.fingerprint,source,scene:candidate&&sourceImage===candidate.image?candidate.scene:priorOwner?.scene??''}:null;
+   historicalImageDigest.current=value.input_provenance?{fingerprint:value.fingerprint,sha256:value.input_provenance.source_sha256}:null;
+   if(source)boardOwner.current=value.fingerprint;
    setLesson(value);setLessonImage(sourceImage);setPhotoConfirmationToken(confirmationToken);setExample('');history.replaceState(null,'',location.pathname+location.search);setNetlist(text);setDraft(text);setMethod(chosen);setStep(0);setShowOriginal(false);setCompare(false);setZoom(100);setPanel(false);
   }catch(e){if(n===request.current)setError(e instanceof Error?e.message:String(e));}finally{if(n===request.current)setBusy(false);}
  }
  async function file(file:File|undefined){
   if(!file)return;const n=++request.current;setError('');setConfirmed(false);setUncertainties([]);setObservations([]);setCandidates([]);setModelReportedComplete(null);
   if(file.type.startsWith('image/')){
-   try{const value=await prepareCircuitImage(file);if(n!==request.current)return;setImage(value);setImageFromBoard(false);setDraft('');setTab('photo');}catch(e){if(n===request.current)setError(e instanceof Error?e.message:'Foto non leggibile.');}
+   try{const value=await prepareCircuitImage(file);if(n!==request.current)return;boardSourceCandidate.current=null;setImage(value);setImageFromBoard(false);setDraft('');setTab('photo');}catch(e){if(n===request.current)setError(e instanceof Error?e.message:'Foto non leggibile.');}
   }else{
    if(file.size>16000){setError('Il file circuito supera 16000 caratteri.');return;}
    try{
@@ -147,7 +172,7 @@ export function StudentApp(){
      const imported=await response(await fetch('api/spice/import',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({spice:value})})) as {netlist:string};
      value=imported.netlist;
     }
-    if(n!==request.current)return;setDraft(value);setImage(null);setImageFromBoard(false);setTab('text');
+    if(n!==request.current)return;boardSourceCandidate.current=null;setDraft(value);setImage(null);setImageFromBoard(false);setTab('text');
    }catch(e){if(n===request.current)setError(e instanceof Error?e.message:String(e));}
   }
  }
@@ -202,10 +227,18 @@ export function StudentApp(){
      throw new Error('La lavagna appartiene a un’altra revisione: aprila e associala esplicitamente alla lezione corrente.');
     if(!parsed.elements?.length)scene='';
    }
+   const boardSource=boardSourceOwner.current?.fingerprint===lesson.fingerprint?boardSourceOwner.current.source:null;
+   if(boardSource&&await boardSceneSha256(scene)!==boardSource.sceneSha256){
+    const original=boardSourceOwner.current?.scene;
+    if(!original||!sameBoardRevision(original,scene))
+     throw new Error('La lavagna è cambiata dopo il ritaglio: usa di nuovo i tratti scelti e conferma il circuito prima di salvare.');
+    scene=original;
+   }
    const bundle=await makeSessionBundle({netlist:lesson.netlist,method,answerExact:lesson.answer.exact,
     engineRevision:lesson.source_sha,selectedStep:step,showOriginal,boardScene:scene,
     traceSteps:traceState.fingerprint===lesson.fingerprint?traceState.steps:[blankTraceStep()],
-    priorImageSha256:lesson.input_provenance?.source_sha256??null});
+    priorImageSha256:lesson.input_provenance?.source_sha256??(historicalImageDigest.current?.fingerprint===lesson.fingerprint?historicalImageDigest.current.sha256:null),
+    boardSource});
    if(n!==request.current)return;
    const data=JSON.stringify(bundle);
    if(data.length>10_500_000)throw new Error('Il quaderno supera 10 MB. Riduci le immagini nella lavagna.');
@@ -225,7 +258,10 @@ export function StudentApp(){
    if(n!==request.current)return;
    if(value.fingerprint!==bundle.circuitFingerprint||value.answer.exact!==bundle.answerExact)
     throw new Error('Il risultato salvato non coincide con la nuova verifica: il quaderno resta chiuso.');
-   boardScene.current=bundle.boardScene;boardOwner.current=bundle.boardScene?value.fingerprint:null;setBoardEpoch(x=>x+1);if(bundle.boardScene)setBoardOpened(true);
+   boardScene.current=bundle.boardScene;boardOwner.current=bundle.boardScene?value.fingerprint:null;boardSourceCandidate.current=null;
+   boardSourceOwner.current=bundle.boardSource?{fingerprint:value.fingerprint,source:bundle.boardSource,scene:bundle.boardScene}:null;
+   historicalImageDigest.current=bundle.priorImageSha256?{fingerprint:value.fingerprint,sha256:bundle.priorImageSha256}:null;
+   setBoardEpoch(x=>x+1);setBoardOpened(false);
    setTraceState({fingerprint:value.fingerprint,steps:bundle.traceSteps});setSessionEpoch(x=>x+1);
    setLesson(value);setLessonImage(null);setPhotoConfirmationToken(null);setImage(null);setImageFromBoard(false);setConfirmed(false);setUncertainties([]);setObservations([]);setCandidates([]);setModelReportedComplete(null);
    setExample('');setNetlist(bundle.netlist);setDraft(bundle.netlist);setMethod(bundle.method);setStep(Math.min(bundle.selectedStep,value.steps.length-1));
@@ -239,7 +275,7 @@ export function StudentApp(){
   <header className="student-header"><a href="#" className="student-brand">Kirchhoff<span>con Andrea Marro</span></a><span className="student-tag">Capire il circuito, un passaggio alla volta</span><button onClick={()=>{setTab('photo');setPanel(true);setError('');}}>Il tuo circuito <span aria-hidden="true">＋</span></button></header>
   <main className="student-main">
    <div className="student-heading"><div><p className="student-eyebrow">Il laboratorio dei circuiti</p><h1>Il circuito, passo per passo.</h1></div><p>Scegli una strada. Segui i disegni. Torna all’originale quando serve.</p></div>
-   <div className="student-toolbar student-picker"><label>Esercizio <select aria-label="Scegli un circuito" value={example} disabled={busy} onChange={e=>{const ex=examples.find(x=>x.id===e.target.value);if(ex){setMethod('auto');setExample(ex.id);setNetlist(ex.netlist);setDraft(ex.netlist);setImage(null);setImageFromBoard(false);setLessonImage(null);setPhotoConfirmationToken(null);}}}>{!example?<option value="">Il tuo circuito</option>:null}{examples.map(e=><option key={e.id} value={e.id}>{e.title}</option>)}</select></label><label>Metodo <select aria-label="Scegli il metodo" value={method} disabled={busy||!lesson} onChange={e=>{if(example)setMethod(e.target.value);else void solve(netlist,e.target.value,lessonImage,photoConfirmationToken);}}>{(lesson?.available??['auto']).map(m=><option key={m} value={m}>{names[m]}</option>)}</select></label><button disabled={busy||!lesson||!api} onClick={()=>void circuitikz()}>Scarica CircuitikZ ↓</button><button disabled={busy||!lesson||!api} onClick={()=>void spice()}>Scarica SPICE ↓</button><button disabled={busy||!lesson} onClick={()=>void pdf()}>Scarica PDF ↓</button></div>
+   <div className="student-toolbar student-picker"><label>Esercizio <select aria-label="Scegli un circuito" value={example} disabled={busy} onChange={e=>{const ex=examples.find(x=>x.id===e.target.value);if(ex){boardSourceCandidate.current=null;boardSourceOwner.current=null;setMethod('auto');setExample(ex.id);setNetlist(ex.netlist);setDraft(ex.netlist);setImage(null);setImageFromBoard(false);setLessonImage(null);setPhotoConfirmationToken(null);}}}>{!example?<option value="">Il tuo circuito</option>:null}{examples.map(e=><option key={e.id} value={e.id}>{e.title}</option>)}</select></label><label>Metodo <select aria-label="Scegli il metodo" value={method} disabled={busy||!lesson} onChange={e=>{if(example)setMethod(e.target.value);else void solve(netlist,e.target.value,lessonImage,photoConfirmationToken);}}>{(lesson?.available??['auto']).map(m=><option key={m} value={m}>{names[m]}</option>)}</select></label><button disabled={busy||!lesson||!api} onClick={()=>void circuitikz()}>Scarica CircuitikZ ↓</button><button disabled={busy||!lesson||!api} onClick={()=>void spice()}>Scarica SPICE ↓</button><button disabled={busy||!lesson} onClick={()=>void pdf()}>Scarica PDF ↓</button></div>
    <div className="student-toolbar student-session-actions"><button disabled={busy||!lesson} onClick={()=>void saveSession()}>Salva quaderno ↓</button><button disabled={busy} onClick={()=>sessionInput.current?.click()}>Apri quaderno ↑</button><input ref={sessionInput} type="file" accept=".json,application/json" hidden onChange={e=>{void openSession(e.target.files?.[0]);e.target.value='';}}/></div>
    {error?<div className="student-error" role="alert">{error}</div>:null}
    {notice?<p role="status">{notice}</p>:null}
@@ -257,13 +293,13 @@ export function StudentApp(){
    </section>:<p role="status">{busy?'Preparo la lezione…':error?'Nessuna nuova lezione disponibile.':'Caricamento…'}</p>}
    {lesson&&api?<StudentTracePanel key={`${lesson.fingerprint}:${sessionEpoch}`} netlist={lesson.netlist} fingerprint={lesson.fingerprint} steps={traceState.fingerprint===lesson.fingerprint?traceState.steps:[blankTraceStep()]} onStepsChange={steps=>setTraceState({fingerprint:lesson.fingerprint,steps})}/>:null}
    <details className="student-scope"><summary>Cosa puoi risolvere in questa versione</summary><p>{scope||'Circuiti resistivi in continua con sorgenti indipendenti. AC e transitori non sono ancora coperti dalla lezione.'}</p><p>{api?'Puoi risolvere circuiti nuovi: il server locale è collegato.':'Stai usando il catalogo statico. Per risolvere circuiti nuovi occorre collegare il server Kirchhoff.'}</p></details>
-   <details className="student-scope"><summary>Controllo del risultato e provenienza</summary><p>Il risultato elettrico proviene dal nucleo verificato; le derivazioni didattiche vengono confrontate in aritmetica esatta. Questa verifica del risultato non certifica da sola ogni scelta grafica e didattica.</p><p>Versione del motore: <code>{lesson?.source_sha}</code></p>{lesson?.input_provenance?<><p>Immagine preparata per l’analisi: <code>{lesson.input_provenance.source_sha256}</code></p><p>Circuito corretto e confermato: <code>{lesson.input_provenance.circuit_sha256}</code></p><p>Confermato il {new Date(lesson.input_provenance.confirmed_at_unix*1000).toLocaleString('it-IT')}.</p><p>La conferma lega questa revisione all’immagine preparata; non certifica che la trascrizione sia fedele.</p></>:null}<p><a href={`?view=proof${location.hash}`}>Apri gli strumenti tecnici di verifica ↗</a></p></details>
+   <details className="student-scope"><summary>Controllo del risultato e provenienza</summary><p>Il risultato elettrico proviene dal nucleo verificato; le derivazioni didattiche vengono confrontate in aritmetica esatta. Questa verifica del risultato non certifica da sola ogni scelta grafica e didattica.</p><p>Versione del motore: <code>{lesson?.source_sha}</code></p>{lesson?.input_provenance?<><p>Immagine preparata per l’analisi: <code>{lesson.input_provenance.source_sha256}</code></p><p>Circuito corretto e confermato: <code>{lesson.input_provenance.circuit_sha256}</code></p><p>Confermato il {new Date(lesson.input_provenance.confirmed_at_unix*1000).toLocaleString('it-IT')}.</p><p>La conferma lega questa revisione all’immagine preparata; non certifica che la trascrizione sia fedele.</p></>:null}{visibleBoardSource?<p>Ritaglio della lavagna: {boardStrokeLabel(visibleBoardSource.selectedElementIds.length,visibleBoardSource.selectionOnly)}; impronta della scena usata: <code>{visibleBoardSource.sceneSha256}</code>. Questa è la provenienza del ritaglio, non una verifica della trascrizione.</p>:null}<p><a href={`?view=proof${location.hash}`}>Apri gli strumenti tecnici di verifica ↗</a></p></details>
   </main>
   {panel||boardOpened?<div className="student-overlay" hidden={!panel}><section role="dialog" aria-modal="true" aria-labelledby="input-title" className="student-dialog" onPaste={e=>{const photo=[...e.clipboardData.files].find(f=>f.type.startsWith('image/'));if(photo){e.preventDefault();void file(photo);}}}><header><h2 id="input-title">Partiamo dal tuo circuito</h2><button aria-label="Chiudi ingresso circuito" onClick={()=>setPanel(false)}>Chiudi ×</button></header><div className="student-toolbar">{[['text','Testo del circuito'],['photo','Foto o file'],['draw','Schema a componenti'],['free','Lavagna libera']].map(([id,label])=><button key={id} aria-pressed={tab===id} onClick={()=>{setTab(id);if(id==='free'){if(!boardScene.current)boardOwner.current=lesson?.fingerprint??null;setBoardOpened(true);}}}>{label}</button>)}</div>
    {error?<p role="alert" className="student-error">{error}</p>:null}
   {boardOpened?<div className="student-free-board" hidden={tab!=='free'}><iframe key={boardEpoch} ref={board} title="Lavagna libera Excalidraw" src="board/index.html"/></div>:null}
-   {tab==='free'?<div className="student-dialog-actions"><button disabled={!lesson} onClick={()=>{if(lesson){boardOwner.current=lesson.fingerprint;setNotice('Lavagna associata alla revisione corrente della lezione.');}}}>Associa lavagna alla lezione corrente</button></div>:tab==='draw'?<CircuitEditor onUse={text=>{request.current++;setDraft(text);setImage(null);setImageFromBoard(false);setUncertainties([]);setObservations([]);setModelReportedComplete(null);setConfirmed(false);setTab('text');}}/>:<>
-    {tab==='photo'?<div className="student-upload" onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();void file(e.dataTransfer.files[0]);}}><label>Trascina o incolla una foto, oppure scegli un file circuito<span className="student-file-help">PNG, JPEG o WebP fino a 20 MB; netlist .net/.txt o SPICE DC .cir/.spice.</span><input type="file" accept="image/png,image/jpeg,image/webp,.txt,.net,.cir,.sp,.spice" onChange={e=>void file(e.target.files?.[0])}/></label>{image?<div style={{position:'relative',display:'inline-block',maxWidth:'100%',margin:'15px 0',lineHeight:0}}><img src={image} alt="Il circuito caricato da confrontare con la ricostruzione" style={{display:'block',maxWidth:'100%',margin:0}}/>{observations[selectedObservation]?<span aria-hidden="true" data-source-region={selectedObservation} style={{position:'absolute',left:`${observations[selectedObservation].region.x1/10}%`,top:`${observations[selectedObservation].region.y1/10}%`,width:`${(observations[selectedObservation].region.x2-observations[selectedObservation].region.x1)/10}%`,height:`${(observations[selectedObservation].region.y2-observations[selectedObservation].region.y1)/10}%`,border:'2px solid #c25332',background:'rgba(194,83,50,.15)',boxSizing:'border-box',pointerEvents:'none'}}/>:null}</div>:null}{image?<><p>La foto resta sul dispositivo fino a quando scegli di inviarla per la trascrizione. Prima del calcolo controlla sempre valori, collegamenti e domanda.</p><button disabled={!vision||busy} onClick={()=>void recognize()}>Invia a OpenAI e trascrivi</button>{!vision?<p>Riconoscimento automatico non configurato. Ricostruisci il circuito con “Schema a componenti” oppure nel campo qui sotto. Il disegno libero e la foto richiedono una trascrizione confermata.</p>:null}</>:null}</div>:null}
+   {tab==='free'?<div className="student-dialog-actions"><button disabled={!lesson} onClick={()=>{if(lesson){boardOwner.current=lesson.fingerprint;setNotice('Lavagna associata alla revisione corrente della lezione.');}}}>Associa lavagna alla lezione corrente</button></div>:tab==='draw'?<CircuitEditor onUse={text=>{request.current++;boardSourceCandidate.current=null;setDraft(text);setImage(null);setImageFromBoard(false);setUncertainties([]);setObservations([]);setModelReportedComplete(null);setConfirmed(false);setTab('text');}}/>:<>
+   {tab==='photo'?<div className="student-upload" onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();void file(e.dataTransfer.files[0]);}}><label>Trascina o incolla una foto, oppure scegli un file circuito<span className="student-file-help">PNG, JPEG o WebP fino a 20 MB; netlist .net/.txt o SPICE DC .cir/.spice.</span><input type="file" accept="image/png,image/jpeg,image/webp,.txt,.net,.cir,.sp,.spice" onChange={e=>void file(e.target.files?.[0])}/></label>{image?<div style={{position:'relative',display:'inline-block',maxWidth:'100%',margin:'15px 0',lineHeight:0}}><img src={image} alt="Il circuito caricato da confrontare con la ricostruzione" style={{display:'block',maxWidth:'100%',margin:0}}/>{observations[selectedObservation]?<span aria-hidden="true" data-source-region={selectedObservation} style={{position:'absolute',left:`${observations[selectedObservation].region.x1/10}%`,top:`${observations[selectedObservation].region.y1/10}%`,width:`${(observations[selectedObservation].region.x2-observations[selectedObservation].region.y1)/10}%`,height:`${(observations[selectedObservation].region.y2-observations[selectedObservation].region.y1)/10}%`,border:'2px solid #c25332',background:'rgba(194,83,50,.15)',boxSizing:'border-box',pointerEvents:'none'}}/>:null}</div>:null}{image?<><p>La foto resta sul dispositivo fino a quando scegli di inviarla per la trascrizione. Prima del calcolo controlla sempre valori, collegamenti e domanda.</p>{imageFromBoard&&boardSourceCandidate.current?.image===image?<p>Ritaglio dalla lavagna: {boardStrokeLabel(boardSourceCandidate.current.selectedElementIds.length,boardSourceCandidate.current.selectionOnly)}.</p>:null}<button disabled={!vision||busy} onClick={()=>void recognize()}>Invia a OpenAI e trascrivi</button>{!vision?<p>Riconoscimento automatico non configurato. Ricostruisci il circuito con “Schema a componenti” oppure nel campo qui sotto. Il disegno libero e la foto richiedono una trascrizione confermata.</p>:null}</>:null}</div>:null}
     {observations.length?<section aria-label="Origine delle righe lette"><p>Posizioni proposte dal modello: seleziona una riga e confrontala con la zona evidenziata nella foto. Non dimostrano che il circuito sia completo.</p><ol>{observations.map((item,i)=><li key={i}><button type="button" aria-pressed={selectedObservation===i} onClick={()=>setSelectedObservation(i)}>{item.line}</button></li>)}</ol></section>:null}
     {candidates.length>1?<section aria-label="Letture alternative della foto"><p>Le letture non coincidono. Seleziona un'ipotesi, confrontala con la foto e correggi il testo.</p>{candidates.map((candidate,i)=><button key={i} type="button" onClick={()=>{request.current++;setDraft(candidate.netlist);setObservations(candidate.observations);setSelectedObservation(0);setModelReportedComplete(false);setConfirmed(false);}}>Lettura {i+1}</button>)}</section>:null}
     {modelReportedComplete===false?<p role="status">La lettura è incompleta o discordante. Correggi il circuito dalla foto prima di confermare.</p>:null}
