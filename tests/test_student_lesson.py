@@ -53,6 +53,28 @@ def test_f01_corrupt_intermediate_is_not_published_with_correct_final_answer(mon
         create_lesson('V1 a 0 10 volt\nR1 a b 2 ohm\nV2 b 0 4 volt\n? current R1')
 
 
+def test_thevenin_open_port_error_is_blocked_even_when_final_answer_stays_correct(monkeypatch):
+    import kirchhoff.pipeline.lesson as lesson_module
+    original = lesson_module.potential
+    branch_count = len(branches(leggi(TWO))[2])
+
+    def damaged(bs, active=None):
+        voltage, currents = original(bs, active)
+        return (voltage + 1, currents) if len(bs) == branch_count - 1 else (voltage, currents)
+
+    monkeypatch.setattr(lesson_module, 'potential', damaged)
+    with pytest.raises(ValueError, match='Thévenin|vuoto'):
+        create_lesson(TWO, 'thevenin')
+
+
+def test_thevenin_seen_resistance_is_checked_at_the_port():
+    from kirchhoff.pipeline.lesson import _verify_thevenin_port
+    ir = leggi('V1 a 0 12 volt\nR1 a 0 3 ohm\nR2 a 0 6 ohm\n? current R2')
+    with pytest.raises(ValueError, match='resistenza vista di Thévenin'):
+        _verify_thevenin_port(ir, 'R2', 'a', '0', F(12), F(1))
+    _verify_thevenin_port(ir, 'R2', 'a', '0', F(12), F(0))
+
+
 @pytest.mark.parametrize('method',['auto','millman','norton','thevenin','superposition','nodal'])
 def test_same_real_problem_all_methods(method):
     lesson=create_lesson(TWO,method)

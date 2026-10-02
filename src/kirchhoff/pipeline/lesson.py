@@ -7,7 +7,7 @@ Nessun LLM, nessun arrotondamento nel ragionamento, nessuna dipendenza esterna.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from fractions import Fraction as F
 import hashlib
@@ -133,6 +133,35 @@ def observed(bs: tuple[Branch, ...], target: str, quantity: str, active: str | N
                 return c.value.amount if active is None or active == c.id else F(0)
             return sign*(u-b.emf(active)-current*b.resistance)
     raise ValueError('Bersaglio assente dai rami riconosciuti.')
+
+
+def _verify_thevenin_port(ir: IR, target: str, p: str, q: str, vth: F, rth: F) -> None:
+    """Controlla i due risultati intermedi con il tableau di ramo indipendente.
+
+    La sorgente di prova a corrente zero misura la porta a vuoto senza
+    ricostruire le equazioni del percorso Millman. La prova a 1 A, dopo lo
+    spegnimento delle sorgenti, misura la resistenza vista dai medesimi morsetti.
+    """
+    from kirchhoff.domain.independent_dc import solve_dc_tableau
+
+    remaining = tuple(c for c in ir.components if c.id != target)
+    probe_id = 'I_port_verifica'
+    while any(c.id == probe_id for c in remaining):
+        probe_id += 'x'
+    open_probe = Component.of(probe_id, 'current_source_dc', (p, q), F(0), probe_id)
+    opened = replace(ir, components=remaining + (open_probe,), requests=())
+    independent_vth = solve_dc_tableau(opened)[probe_id]['voltage']
+    if vth != independent_vth:
+        raise ValueError('La tensione a vuoto di Thévenin non coincide con il tableau indipendente: lezione non esposta.')
+
+    deactivated = tuple(Component.of(c.id, c.type, c.terminals, F(0), c.symbolic)
+                        if c.type in {'voltage_source_dc', 'current_source_dc'} else c
+                        for c in remaining)
+    test_probe = Component.of(probe_id, 'current_source_dc', (q, p), F(1), probe_id)
+    test_ir = replace(ir, components=deactivated + (test_probe,), requests=())
+    independent_rth = -solve_dc_tableau(test_ir)[probe_id]['voltage']
+    if rth != independent_rth:
+        raise ValueError('La resistenza vista di Thévenin non coincide con il tableau indipendente: lezione non esposta.')
 
 
 def _step(title: str, explanation: str, svg: str, equations: list[str] | None = None,
@@ -319,6 +348,7 @@ def _human_steps(ir, topology, target, quantity, method, load, original):
         ideal = any(b.resistance == 0 and b.imposed() is None for b in remaining)
         gr = sum((1/b.resistance for b in remaining if b.resistance and b.imposed() is None), F(0))
         rth = F(0) if ideal else 1/gr
+        _verify_thevenin_port(ir, target, p, q, vth, rth)
         emf_sum = sum((b.emf()/b.resistance for b in remaining if b.resistance and b.imposed() is None), F(0))
         imposed_sum = sum((b.imposed() or F(0) for b in remaining), F(0))
         result.append(_step('Stacchiamo il carico: troviamo la tensione a vuoto',
