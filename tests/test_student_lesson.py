@@ -121,6 +121,16 @@ def test_divider_rejects_corrupt_displayed_step_with_correct_answer(monkeypatch,
         create_lesson(net)
 
 
+def test_divider_prints_reversed_resistor_voltage_in_its_declared_orientation():
+    net = 'V1 p 0 12 volt\nR1 p q 4 ohm\nR2 0 q 6 ohm\n? voltage R2'
+    lesson = create_lesson(net)
+    assert lesson['method'] == 'divider'
+    assert lesson['answer']['exact'] == '-36/5'
+    step = next(s for s in lesson['steps'] if s['title'] == 'Usiamo il partitore, senza un sistema di equazioni')
+    assert any(e.startswith('V(R2) = (-1) × (6/5) × (6) = -36/5 V') for e in step['equations'])
+    assert b'V(R2) = (-1) ' in export_pdf(lesson).replace(b'\\(', b'(').replace(b'\\)', b')')
+
+
 @pytest.mark.parametrize('method',['auto','millman','norton','thevenin','superposition','nodal'])
 def test_same_real_problem_all_methods(method):
     lesson=create_lesson(TWO,method)

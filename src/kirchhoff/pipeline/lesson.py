@@ -204,6 +204,8 @@ def _verify_branch_state(ir: IR, bs: tuple[Branch, ...], u: F, currents: list[F]
         for component, sign in branch.parts:
             if sign * current != independent[component.id]['current']:
                 raise ValueError('La corrente di un passaggio intermedio non coincide con il tableau indipendente: lezione non esposta.')
+            if component.type == 'resistor' and sign * current * component.value.amount != independent[component.id]['voltage']:
+                raise ValueError('La tensione orientata di un passaggio intermedio non coincide con il tableau indipendente: lezione non esposta.')
         drop = sum((sign * independent[component.id]['voltage']
                     for component, sign in branch.parts), F(0))
         if drop != u:
@@ -469,11 +471,13 @@ def _human_steps(ir, topology, target, quantity, method, load, original):
         equations = [f'V({p}) − V({q}) = {number(u)} V'] + [
             f'I ramo {i+1} = ({number(u)}) / ({number(b.resistance)}) = {number(currents[i])} A'
             for i,b in enumerate(bs) if b.resistance] + [
-            f'V({c.id}) = ({number(currents[i])}) × ({number(c.value.amount)}) = {number(currents[i]*c.value.amount)} V (verso del ramo)'
-            for i,b in enumerate(bs) for c,_ in b.parts if c.type == 'resistor']
+            f'V({c.id}) = ' + (f'({sign}) × ' if sign < 0 else '') +
+            f'({number(currents[i])}) × ({number(c.value.amount)}) = {number(sign*currents[i]*c.value.amount)} V (morsetti del componente)'
+            for i,b in enumerate(bs) for c,sign in b.parts if c.type == 'resistor']
         result.append(_checked_step('Usiamo il partitore, senza un sistema di equazioni',
             'La sorgente impone la tensione ai capi del ramo resistivo. La stessa corrente attraversa '
-            'tutti i suoi resistori: I = V / R totale. Ogni caduta vale I × R, cioè V × R / R totale.',
+            'tutti i suoi resistori: I = V / R totale. Ogni caduta vale I × R, cioè V × R / R totale. '
+            'Se i morsetti del resistore sono opposti al verso del ramo, la tensione orientata cambia segno.',
             schematic(ir, topology, reduced=True), equations))
     else:
         fixed = any(b.resistance == 0 and b.imposed() is None for b in bs)
