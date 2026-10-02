@@ -10,7 +10,7 @@ from __future__ import annotations
 from fractions import Fraction
 import re
 
-from kirchhoff.domain.ir import IR
+from kirchhoff.domain.ir import IR, PortRequest
 from kirchhoff.pipeline.netlist import leggi
 
 SCHEMA = "kirchhoff-spice-dc.v1"
@@ -89,6 +89,10 @@ def export_spice(circuit: IR | str) -> str:
         parts.append(_decimal(component.value.amount))
         lines.append(" ".join(parts))
     for request in ir.requests:
+        if isinstance(request, PortRequest):
+            p, q = request.port
+            lines.append(f"* KIRCHHOFF_REQUEST resistance {p} {q}")
+            continue
         if request.quantity not in {"voltage", "current"}:
             raise ValueError("La domanda non ha un'annotazione nel sottoinsieme SPICE DC.")
         lines.append(f"* KIRCHHOFF_REQUEST {request.quantity} {request.target}")
@@ -102,7 +106,7 @@ def import_spice(source: str) -> str:
     if not lines or not lines[0].strip():
         raise ValueError("SPICE richiede una riga titolo iniziale.")
     components: list[str] = []
-    requests: list[tuple[str, str]] = []
+    requests: list[tuple[str, ...]] = []
     ids: dict[str, str] = {}
     ended = False
     for number, raw in enumerate(lines[1:], 2):
@@ -114,6 +118,9 @@ def import_spice(source: str) -> str:
         if line.startswith("*"):
             words = line[1:].strip().split()
             if words and words[0].upper() == "KIRCHHOFF_REQUEST":
+                if len(words) == 4 and words[1].lower() == "resistance":
+                    requests.append(("resistance", words[2], words[3]))
+                    continue
                 if len(words) != 3 or words[1].lower() not in {"voltage", "current"}:
                     raise ValueError(f"Riga {number}: domanda Kirchhoff non valida.")
                 requests.append((words[1].lower(), words[2]))
@@ -153,7 +160,12 @@ def import_spice(source: str) -> str:
         raise ValueError("File SPICE senza .end.")
     if not components:
         raise ValueError("File SPICE senza componenti.")
-    for quantity, target in requests:
+    for request in requests:
+        if request[0] == "resistance":
+            _, p, q = request
+            components.append(f"? resistance {p.lower()} {q.lower()}")
+            continue
+        quantity, target = request
         if target.casefold() not in ids:
             raise ValueError(f"Domanda su componente inesistente: {target}.")
         components.append(f"? {quantity} {ids[target.casefold()]}")

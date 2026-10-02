@@ -6,6 +6,7 @@ Nessuna equazione elettrica o autorità di certificazione nel renderer.
 """
 from html import escape
 from decimal import Decimal, localcontext
+from kirchhoff.domain.ir import Request
 
 
 def value_text(value):
@@ -71,7 +72,7 @@ def schematic(ir, topology=None, *, focus=(), reduced=False, active=None,
         text(x+40, y-5, label, 'start')
         text(x+40, y+18, value, 'start', 16)
         request = ir.requests[0] if ir.requests else None
-        if request is not None and label == request.target:
+        if isinstance(request, Request) and label == request.target:
             if request.quantity == 'voltage':
                 text(x-23, y-13, '+' if sign == 1 else '−', size=17)
                 text(x-23, y+23, '−' if sign == 1 else '+', size=17)
@@ -142,7 +143,7 @@ def schematic(ir, topology=None, *, focus=(), reduced=False, active=None,
         pieces.append('<rect x="345" y="219" width="50" height="22" fill="white" stroke="#24334b" stroke-width="2.5"/>')
         text(370,205,c.id);text(370,264,f'{value_text(c.value.amount)} Ω',size=16)
         request=ir.requests[0] if ir.requests else None
-        if request and request.target==c.id:
+        if isinstance(request, Request) and request.target==c.id:
             sign=1 if c.terminals==tuple(middle) else -1
             if request.quantity=='current':
                 line(370-25*sign,287,370+25*sign,287,'#294bd3')

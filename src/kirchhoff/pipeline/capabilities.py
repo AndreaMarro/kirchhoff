@@ -16,12 +16,14 @@ from kirchhoff.pipeline.spice import SCHEMA as SPICE_SCHEMA
 
 SOLVE_DESCRIPTION = (
     "Risolve un circuito DC resistivo confermato con R/V/I indipendenti "
-    "quando il percorso didattico e' applicabile. Restituisce un rifiuto "
+    "quando il percorso didattico e' applicabile, inclusa la resistenza vista "
+    "fra due morsetti. Restituisce un rifiuto "
     "negli altri casi; non interpreta fotografie."
 )
 SCOPE = (
     "Circuiti resistivi in continua con resistori e sorgenti indipendenti di "
     "tensione o corrente, quando esiste un percorso didattico applicabile. "
+    "La resistenza di porta DC usa due sottoprove e un controllo indipendente. "
     "Le sorgenti controllate VCVS/VCCS sono accettate dal kernel, ma non "
     "hanno ancora una lezione. AC e transitori non sono esposti nel prodotto."
 )

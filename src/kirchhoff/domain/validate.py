@@ -23,7 +23,7 @@ from dataclasses import dataclass
 from fractions import Fraction
 
 from .exact import Cyc12, ZERO, zeta_pow
-from .ir import IR, REFERENCE_NODE, Component
+from .ir import IR, REFERENCE_NODE, Component, PortRequest
 from .ir.schema import CONTROLLED_SOURCE_TYPES, EXPECTED_UNIT
 from .refusal import Refusal, SubjectKind
 
@@ -123,6 +123,12 @@ def _controlla_controllo(ir: IR) -> Refusal | None:
 def _controlla_richieste(ir: IR) -> Refusal | None:
     noti = {c.id for c in ir.components}
     for r in sorted(ir.requests, key=lambda x: x.id):
+        if isinstance(r, PortRequest):
+            for node in r.port:
+                if node not in ir.nodes:
+                    return Refusal("topology", node, "node",
+                                   f"La domanda {r.id} nomina un morsetto di porta assente.")
+            continue
         if r.target not in noti:
             return Refusal(
                 "unsolvable", r.target, "request",

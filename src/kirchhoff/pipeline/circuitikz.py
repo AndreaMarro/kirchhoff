@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import re
 
-from kirchhoff.domain.ir import IR
+from kirchhoff.domain.ir import IR, PortRequest
 from kirchhoff.pipeline.netlist import leggi
 
 SCHEMA = "kirchhoff-circuitikz-netlabels.v1"
@@ -55,6 +55,10 @@ def export_circuitikz(circuit: IR | str) -> str:
             if not component.control_nodes or any(node not in ir.nodes for node in component.control_nodes):
                 raise ValueError(f"{component.id}: nodi di controllo non rappresentabili.")
     for request in ir.requests:
+        if isinstance(request, PortRequest):
+            for node in request.port:
+                _name(node)
+            continue
         _name(request.target)
         if request.target not in {component.id for component in ir.components}:
             raise ValueError(f"Domanda su componente inesistente: {request.target}.")
@@ -93,6 +97,10 @@ def export_circuitikz(circuit: IR | str) -> str:
         )
     lines.append(r"\end{circuitikz}")
     for request in ir.requests:
+        if isinstance(request, PortRequest):
+            p, q = request.port
+            lines.append(rf"\par\noindent Domanda: resistenza vista fra {_name(p)} e {_name(q)}.")
+            continue
         quantity = "tensione" if request.quantity == "voltage" else "corrente"
         lines.append(rf"\par\noindent Domanda: {quantity} di {_name(request.target)}.")
     lines.extend([r"\end{document}", ""])

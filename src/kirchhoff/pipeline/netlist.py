@@ -14,6 +14,13 @@ Formato, una riga per bipolo:
     R2 a 0 220 ohm
     ? voltage R2
 
+Per una resistenza vista da due morsetti, la domanda nomina i nodi, non un
+componente artificiale:
+
+    R1 a 0 3 ohm
+    R2 a 0 6 ohm
+    ? resistance a 0
+
 Regime sinusoidale tipizzato (la lezione AC non e' ancora servita):
 
     @ac 100 rad/s
@@ -51,7 +58,7 @@ from __future__ import annotations
 from fractions import Fraction
 import re
 
-from kirchhoff.domain.ir import IR, Component, Magnitude, Request
+from kirchhoff.domain.ir import IR, Component, Magnitude, PortRequest, Request
 
 #: Lettera iniziale -> tipo. Chiuso di proposito: una lettera non prevista e' un
 #: errore che nomina il colpevole, non un componente indovinato.
@@ -68,7 +75,7 @@ def _nodo(nodi: list[str], n: str) -> None:
 def leggi(testo: str) -> IR:
     """Da netlist a `IR`. Ogni errore nomina la riga e cosa c'era di sbagliato."""
     componenti: list[Component] = []
-    richieste: list[Request] = []
+    richieste: list[Request | PortRequest] = []
     nodi: list[str] = []
     ac_omega: Fraction | None = None
 
@@ -94,6 +101,12 @@ def leggi(testo: str) -> IR:
             continue
 
         if pezzi[0] == "?":
+            if len(pezzi) > 1 and pezzi[1] == "resistance":
+                if len(pezzi) != 4:
+                    raise ValueError(f"riga {numero}: la domanda di porta è «? resistance <morsetto> <morsetto>».")
+                richieste.append(PortRequest(f"q{len(richieste)+1}",
+                                             "equivalent_resistance", (pezzi[2], pezzi[3])))
+                continue
             if len(pezzi) != 3:
                 raise ValueError(
                     f"riga {numero}: una domanda e' «? <grandezza> <componente>», "

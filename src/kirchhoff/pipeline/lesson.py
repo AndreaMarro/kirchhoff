@@ -15,7 +15,8 @@ from decimal import Decimal, localcontext
 import itertools
 from pathlib import Path
 
-from kirchhoff.domain.ir import IR, Component
+from kirchhoff.domain.ir import IR, Component, PortRequest, Request
+from kirchhoff.domain.port import _probe, analyze_dc_port
 from kirchhoff.domain.refusal import Refusal
 from kirchhoff.domain.proof.session import DOCUMENT_PROFILE
 from kirchhoff.pipeline.failure import Failure
@@ -67,7 +68,7 @@ def branches(ir: IR) -> tuple[str, str, tuple[Branch, ...]] | None:
         if source is None:
             return None
         hubs = list(source.terminals)
-        if source.type == 'current_source_dc' and ir.requests:
+        if source.type == 'current_source_dc' and ir.requests and isinstance(ir.requests[0], Request):
             target = ir.component(ir.requests[0].target)
             if target.type == 'resistor':
                 hubs = list(target.terminals)
@@ -233,7 +234,7 @@ def _checked_step(title: str, explanation: str, svg: str,
 
 def create_lesson(text: str, method: str = 'auto', source_sha: str = '') -> dict:
     """Un solo ingresso per catalogo, input editato, web e PDF."""
-    if method not in {'auto', 'millman', 'norton', 'thevenin', 'superposition', 'nodal', 'star_delta'}:
+    if method not in {'auto', 'millman', 'norton', 'thevenin', 'superposition', 'nodal', 'star_delta', 'test_current'}:
         raise ValueError('Metodo sconosciuto.')
     if len(text) > 16000:
         raise ValueError('Circuito troppo lungo: massimo 16000 caratteri.')
@@ -246,6 +247,12 @@ def create_lesson(text: str, method: str = 'auto', source_sha: str = '') -> dict
     source_sha = _source_sha(source_sha or None)
     if isinstance(source_sha, Failure):
         return dict(outcome='failure', message=source_sha.messaggio)
+    if isinstance(req, PortRequest):
+        if method not in {'auto', 'test_current'}:
+            raise ValueError('Per la resistenza di porta seleziona Automatico o Corrente di prova.')
+        return _create_port_lesson(text, ir, req, source_sha)
+    if method == 'test_current':
+        raise ValueError('La corrente di prova richiede una domanda di resistenza fra due morsetti.')
     count = itertools.count(1)
     class Clock:
         def now(self):
@@ -352,6 +359,103 @@ def create_lesson(text: str, method: str = 'auto', source_sha: str = '') -> dict
                 verification=dict(electrical_claim='VERIFIED', backend='CLOSED',
                                   lesson='exact-answer-crosscheck', product_verified=False),
                 source_sha=source_sha, lesson_build=hashlib.sha256(b''.join((Path(__file__).parent/name).read_bytes() for name in ('lesson.py','lesson_svg.py','lesson_pdf.py','lesson_bridge.py'))).hexdigest(), fingerprint=hashlib.sha256(text.encode()).hexdigest())
+
+
+def _create_port_lesson(text: str, ir: IR, req: PortRequest, source_sha: str) -> dict:
+    """Compone due sottoprove canoniche e le confronta col kernel di porta.
+
+    La trasformazione originale → sonde resta una derivazione di prodotto:
+    le chiusure VERIFIED riguardano i due circuiti generati, non la domanda
+    originale. Il valore non viene esposto se una chiusura o un confronto manca.
+    """
+    fact = analyze_dc_port(ir, req.port)
+    if isinstance(fact, Refusal):
+        return dict(outcome='refusal', cause=fact.cause, message=fact.diagnosis)
+
+    def subproof(amperes: F, *, off: bool, suffix: str):
+        measured, probe_id = _probe(ir, req.port, amperes, off=off)
+        question = Request(f'{req.id}_{suffix}', 'voltage', probe_id)
+        measured = replace(measured, requests=(question,))
+        count = itertools.count(1)
+
+        class Clock:
+            def now(self):
+                return datetime(2026, 9, 13, tzinfo=timezone.utc)
+
+        result = run_proof_session_con_run(
+            measured, question, clock=Clock(),
+            entropy=lambda: next(count).to_bytes(10, 'big'),
+            document_profile=DOCUMENT_PROFILE, source_sha=source_sha,
+            detail=f'CircuitCheck: sottoprova di porta {suffix}')
+        if isinstance(result, Refusal):
+            return result
+        if isinstance(result, Failure):
+            return result
+        _closure, run = result
+        value = run.final_execution.execution.resolved.value
+        if value.unit != 'volt':
+            raise ValueError('La sottoprova di porta non ha prodotto volt.')
+        return -value.amount, measured
+
+    opened = subproof(F(0), off=False, suffix='open')
+    if isinstance(opened, Refusal):
+        return dict(outcome='refusal', cause=opened.cause, message=opened.diagnosis)
+    if isinstance(opened, Failure):
+        return dict(outcome='failure', message=opened.messaggio)
+    v_open, open_ir = opened
+    tested = subproof(F(1), off=True, suffix='test')
+    if isinstance(tested, Refusal):
+        return dict(outcome='refusal', cause=tested.cause, message=tested.diagnosis)
+    if isinstance(tested, Failure):
+        return dict(outcome='failure', message=tested.messaggio)
+    v_test, test_ir = tested
+    if v_open != fact.voltage.amount or v_test != fact.resistance.amount:
+        raise ValueError('Le sottoprove didattiche di porta non coincidono col kernel indipendente.')
+
+    p, q = req.port
+    reference = f'{p} → {q}'
+    title = f'Resistenza vista fra {p} e {q}'
+    original = schematic(ir, branches(ir))
+    steps = [
+        _checked_step('Fissiamo i morsetti della domanda',
+                      f'Cerchiamo la resistenza vista fra {p} e {q}. '
+                      'La coppia di morsetti è orientata; il valore della resistenza non cambia invertendola.',
+                      original),
+        _checked_step('Misuriamo la tensione a vuoto',
+                      'Una sorgente di corrente nulla lascia la porta aperta. '
+                      'Il circuito originale resta alimentato: questa misura distingue la tensione già presente dalla risposta alla prova.',
+                      schematic(open_ir, branches(open_ir)),
+                      [f'I_prova = 0 A', f'V({p}) − V({q}) = {number(v_open)} V']),
+        _checked_step('Spegniamo le sorgenti indipendenti e applichiamo 1 A',
+                      'Una sorgente ideale di tensione spenta è un cortocircuito; una sorgente ideale di corrente spenta è un circuito aperto. '
+                      'Le sorgenti controllate restano attive. Iniettiamo 1 A dal secondo morsetto verso il primo.',
+                      schematic(test_ir, branches(test_ir)),
+                      [f'I_prova = 1 A', f'V({p}) − V({q}) = {number(v_test)} V']),
+        _checked_step('Calcoliamo la resistenza vista',
+                      'La tensione prodotta dalla corrente di prova, divisa per 1 A, dà la resistenza equivalente. '
+                      'Entrambe le misure sono state chiuse come sottoprove e confrontate con MNA e tableau indipendenti.',
+                      schematic(test_ir, branches(test_ir)),
+                      [f'R({p},{q}) = {number(v_test)} V / 1 A = {number(fact.resistance.amount)} Ω']),
+        _checked_step('Torniamo ai morsetti del circuito originale',
+                      f'La risposta riguarda la porta {reference} del circuito iniziale: {number(fact.resistance.amount)} Ω. '
+                      'La sonda è un passaggio di calcolo, non un componente della domanda.',
+                      original, [f'R({p},{q}) = {number(fact.resistance.amount)} Ω']),
+    ]
+    answer = fact.resistance.amount
+    with localcontext() as ctx:
+        ctx.prec = 8
+        decimal = format(Decimal(answer.numerator)/Decimal(answer.denominator), 'g')
+    return dict(schema='circuit-lesson.v1', outcome='solved', title=title,
+                netlist=text, method='test_current', available=['auto', 'test_current'],
+                original=original, steps=steps,
+                answer=dict(exact=number(answer), decimal=decimal, unit='Ω', reference=reference),
+                verification=dict(electrical_claim='PORT_SUBPROOFS_CROSSCHECKED',
+                                  backend='SUBPROOFS_CLOSED', lesson='port-subproof-crosscheck',
+                                  product_verified=False),
+                source_sha=source_sha,
+                lesson_build=hashlib.sha256(b''.join((Path(__file__).parent/name).read_bytes()
+                                                     for name in ('lesson.py', 'lesson_svg.py', 'lesson_pdf.py', 'lesson_bridge.py'))).hexdigest(),
+                fingerprint=hashlib.sha256(text.encode()).hexdigest())
 
 
 def _human_steps(ir, topology, target, quantity, method, load, original):

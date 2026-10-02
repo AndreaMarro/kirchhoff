@@ -31,7 +31,7 @@ import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 
-from kirchhoff.domain.ir import IR
+from kirchhoff.domain.ir import IR, PortRequest
 from kirchhoff.domain.proof.session import DOCUMENT_PROFILE
 from kirchhoff.domain.refusal import Refusal
 from kirchhoff.domain.validate import Validated, validate
@@ -183,6 +183,11 @@ def _esegui(
         return Failure("validate", f"esito inatteso: {type(ingresso)!r}")
     if not circuito.requests:
         return _rifiuto_senza_domande(circuito)
+    for domanda in circuito.requests:
+        if isinstance(domanda, PortRequest):
+            return Refusal(
+                "claim_unsupported", domanda.id, "request",
+                "La resistenza di porta richiede una derivazione canonica non ancora disponibile.")
 
     sha = _source_sha(source_sha)
     if isinstance(sha, Failure):

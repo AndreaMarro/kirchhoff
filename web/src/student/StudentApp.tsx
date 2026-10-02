@@ -14,7 +14,7 @@ type Lesson={schema:string;outcome:'solved';title:string;netlist:string;method:s
 type Example={id:string;title:string;netlist:string;methods:Record<string,string>};
 type ImageObservation={line:string;region:{x1:number;y1:number;x2:number;y2:number}};
 type ImageCandidate={netlist:string;observations:ImageObservation[];uncertainties:string[];model_reported_complete:boolean};
-const names:Record<string,string>={auto:'Percorso consigliato',divider:'Partitore',current_divider:'Partitore di corrente',millman:'Millman',norton:'Trasformazioni Norton',thevenin:'Equivalente Thévenin',superposition:'Sovrapposizione',nodal:'Analisi nodale',star_delta:'Stella → triangolo'};
+const names:Record<string,string>={auto:'Percorso consigliato',divider:'Partitore',current_divider:'Partitore di corrente',millman:'Millman',norton:'Trasformazioni Norton',thevenin:'Equivalente Thévenin',superposition:'Sovrapposizione',nodal:'Analisi nodale',star_delta:'Stella → triangolo',test_current:'Corrente di prova'};
 function boardStrokeLabel(count:number, selectionOnly:boolean):string{return `${count} ${count===1?'tratto':'tratti'} ${selectionOnly?(count===1?'selezionato':'selezionati'):'del disegno intero'}`;}
 function sameBoardRevision(left:string,right:string):boolean{
  try{

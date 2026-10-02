@@ -52,6 +52,9 @@ Quantity = Literal[
 
 QUANTITIES: frozenset[str] = frozenset(get_args(Quantity))
 
+PortQuantity = Literal["equivalent_resistance"]
+PORT_QUANTITIES: frozenset[str] = frozenset(get_args(PortQuantity))
+
 SourceKind = Literal["netlist", "latex", "image", "generated"]
 
 REFERENCE_NODE = "0"
@@ -207,13 +210,32 @@ class Request:
 
 
 @dataclass(frozen=True, slots=True)
+class PortRequest:
+    """Osservazione di due morsetti orientati, senza fingere un componente."""
+
+    id: str
+    quantity: PortQuantity
+    port: tuple[str, str]
+
+    def __post_init__(self) -> None:
+        if self.quantity not in PORT_QUANTITIES:
+            raise ValueError(f"{self.id}: grandezza di porta {self.quantity!r} sconosciuta")
+        if not isinstance(self.port, tuple):
+            raise TypeError("la porta deve essere una coppia ordinata di morsetti")
+        if len(self.port) != 2 or self.port[0] == self.port[1]:
+            raise ValueError("la domanda di porta richiede due morsetti distinti")
+        if any(not isinstance(node, str) or not node for node in self.port):
+            raise TypeError("i morsetti di porta devono essere nomi non vuoti")
+
+
+@dataclass(frozen=True, slots=True)
 class IR:
     ir_version: str
     domain: str
     source_kind: SourceKind
     nodes: tuple[str, ...]
     components: tuple[Component, ...]
-    requests: tuple[Request, ...]
+    requests: tuple[Request | PortRequest, ...]
     #: Pulsazione in rad/s. Zero fuori dal regime sinusoidale.
     omega: Fraction = field(default_factory=lambda: Fraction(0))
 
@@ -253,7 +275,11 @@ class IR:
                             if c.id in visti or visti.add(c.id)})  # type: ignore[func-returns-value]
             raise ValueError(f"identificatori di componente ripetuti: {', '.join(doppi)}")
         for r in self.requests:
-            if r.target not in ids:
+            if isinstance(r, PortRequest):
+                for node in r.port:
+                    if node not in known:
+                        raise ValueError(f"{r.id}: morsetto di porta sconosciuto {node}")
+            elif r.target not in ids:
                 raise ValueError(f"{r.id}: grandezza richiesta su componente inesistente {r.target}")
         if any(c.type in {"voltage_source_ac", "current_source_ac"} for c in self.components) and self.omega <= 0:
             raise ValueError("regime sinusoidale senza pulsazione positiva")
