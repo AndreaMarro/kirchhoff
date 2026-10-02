@@ -6,7 +6,7 @@ export function coveredPoints(part:Pick<Part,'a'|'b'>){
  const a=points[part.a],b=points[part.b];
  return points.flatMap((p,i)=>(a.x===b.x&&p.x===a.x&&p.y>=Math.min(a.y,b.y)&&p.y<=Math.max(a.y,b.y))||(a.y===b.y&&p.y===a.y&&p.x>=Math.min(a.x,b.x)&&p.x<=Math.max(a.x,b.x))?[i]:[]);
 }
-export function buildNetlist(parts:Part[],ground:number){
+export function buildNetlist(parts:Part[],ground:number,question?:{quantity:string;target:string}){
  const wires=parts.filter(p=>p.kind==='W');
  const parent=Array.from({length:points.length+wires.length},(_,i)=>i);
  const root=(a:number):number=>parent[a]===a?a:root(parent[a]);
@@ -25,11 +25,18 @@ export function buildNetlist(parts:Part[],ground:number){
  const node=(n:number)=>root(n)===root(ground)?'0':`n${root(n)}`;
  const components=parts.filter(p=>p.kind!=='W'&&p.kind!=='J');
  if(!components.length)throw new Error('Disegna almeno una sorgente e un resistore.');
+ const quantity=question?.quantity??'voltage';
+ const target=question?.target??(components.find(p=>p.kind==='R')?.id??components[0].id);
+ if(!['voltage','current'].includes(quantity))throw new Error('Scegli tensione o corrente come grandezza richiesta.');
+ if(!components.some(p=>p.id===target))throw new Error('Il componente richiesto non è presente nel circuito.');
  const net=components.map(p=>`${p.id} ${node(p.a)} ${node(p.b)} ${p.value} ${{R:'ohm',V:'volt',I:'ampere'}[p.kind]}`).join('\n');
- return net+`\n? voltage ${components.find(p=>p.kind==='R')?.id??components[0].id}`;
+ return net+`\n? ${quantity} ${target}`;
 }
 export function CircuitEditor({onUse}:{onUse:(text:string)=>void}) {
  const [parts,setParts]=useState<Part[]>([]),[kind,setKind]=useState('R'),[value,setValue]=useState('100'),[start,setStart]=useState<number|null>(null),[ground,setGround]=useState(8),[notice,setNotice]=useState('');
+ const [questionQuantity,setQuestionQuantity]=useState('voltage'),[questionTarget,setQuestionTarget]=useState('');
+ const components=parts.filter(p=>p.kind!=='W'&&p.kind!=='J');
+ const selectedTarget=components.some(p=>p.id===questionTarget)?questionTarget:(components.find(p=>p.kind==='R')?.id??components[0]?.id??'');
  function add(a:number,b:number,k=kind) {
   if(a===b)return;
   if(points[a].x!==points[b].x&&points[a].y!==points[b].y){setNotice('Collega punti sulla stessa riga o colonna.');return;}
@@ -53,7 +60,7 @@ export function CircuitEditor({onUse}:{onUse:(text:string)=>void}) {
   return horizontal&&vertical&&!endpoint&&!junctions.has(i)&&ground!==i?[point]:[];
  });
  function useCircuit() {
-  try{onUse(buildNetlist(parts,ground));}catch(e){setNotice((e as Error).message);}
+  try{onUse(buildNetlist(parts,ground,{quantity:questionQuantity,target:selectedTarget}));}catch(e){setNotice((e as Error).message);}
  }
  return <section className="circuit-editor" aria-label="Lavagna circuitale">
   <p>Scegli un componente e tocca i suoi due morsetti. I fili che si incrociano restano separati: usa Giunzione per collegarli. La fine di un filo su un altro crea una derivazione. Per i generatori il primo morsetto è il positivo (V) o l’origine della freccia (I). Puoi anche trascinare un componente sulla griglia.</p>
@@ -61,6 +68,7 @@ export function CircuitEditor({onUse}:{onUse:(text:string)=>void}) {
    <label>Valore SI <input value={value} onChange={e=>setValue(e.target.value)} aria-label="Valore del componente" /></label>
    <button type="button" disabled={!parts.length} onClick={()=>{setParts(parts.slice(0,-1));setStart(null);}}>Annulla ultimo</button>
   </div>
+  <div className="student-toolbar"><label>Grandezza richiesta <select aria-label="Grandezza richiesta" value={questionQuantity} onChange={e=>setQuestionQuantity(e.target.value)}><option value="voltage">Tensione</option><option value="current">Corrente</option></select></label><label>Componente richiesto <select aria-label="Componente richiesto" value={selectedTarget} onChange={e=>setQuestionTarget(e.target.value)} disabled={!components.length}>{!components.length?<option value="">Disegna un componente</option>:components.map(p=><option value={p.id} key={p.id}>{p.id}</option>)}</select></label></div>
   <svg viewBox="0 0 610 330" aria-label="Griglia per disegnare il circuito" onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();const k=e.dataTransfer.getData('text/plain');if(!['R','V','I','W'].includes(k))return;const b=e.currentTarget.getBoundingClientRect();const x=(e.clientX-b.left)*610/b.width,y=(e.clientY-b.top)*330/b.height;const n=points.reduce((best,p,i)=>Math.hypot(p.x-x,p.y-y)<Math.hypot(points[best].x-x,points[best].y-y)?i:best,0);add(n,n%4===3?n-1:n+1,k);}}>
    {parts.filter(p=>p.kind!=='J').map((p,i)=>{const a=points[p.a],b=points[p.b],x=(a.x+b.x)/2,y=(a.y+b.y)/2,dx=Math.sign(b.x-a.x),dy=Math.sign(b.y-a.y);return <g key={i} stroke="#24334b" strokeWidth="2" fill="white"><path d={`M${a.x} ${a.y}L${b.x} ${b.y}`}/>{p.kind==='R'?<rect x={x-22} y={y-10} width="44" height="20" transform={a.x===b.x?`rotate(90 ${x} ${y})`:undefined}/>:p.kind!=='W'?<><circle cx={x} cy={y} r="19"/>{p.kind==='V'?<><text x={x-dx*9} y={y-dy*9+5} stroke="none" fill="#24334b" textAnchor="middle">+</text><text x={x+dx*9} y={y+dy*9+5} stroke="none" fill="#24334b" textAnchor="middle">−</text></>:<text x={x} y={y+5} stroke="none" fill="#24334b" textAnchor="middle">{dx===1?'→':dx===-1?'←':dy===1?'↓':'↑'}</text>}</>:null}{p.kind!=='W'?<text x={x+28} y={y-15} fill="#24334b" stroke="none" fontSize="14">{p.id} · {p.value}</text>:null}</g>;})}
    {crossingPoints.map((p,i)=><g key={`cross-${i}`} aria-label="Incrocio senza giunzione"><path d={`M${p.x} ${p.y-12}L${p.x} ${p.y+12}`} stroke="white" strokeWidth="6"/><path d={`M${p.x} ${p.y-12}L${p.x} ${p.y-8}C${p.x+12} ${p.y-8} ${p.x+12} ${p.y+8} ${p.x} ${p.y+8}L${p.x} ${p.y+12}`} stroke="white" strokeWidth="6" fill="none"/><path d={`M${p.x} ${p.y-12}L${p.x} ${p.y-8}C${p.x+12} ${p.y-8} ${p.x+12} ${p.y+8} ${p.x} ${p.y+8}L${p.x} ${p.y+12}`} stroke="#24334b" strokeWidth="2" fill="none"/></g>)}

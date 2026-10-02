@@ -34,4 +34,11 @@ describe('Lavagna: connessioni elettriche esplicite',()=>{
   expect(lines.find(x=>x.startsWith('R1 '))?.split(' ')[1]).toBe(lines.find(x=>x.startsWith('R2 '))?.split(' ')[1]);
  });
  it('rifiuta la lavagna vuota',()=>expect(()=>buildNetlist([],8)).toThrow());
+ it('mantiene la domanda scelta sul componente esatto',()=>{
+  const parts:Part[]=[{kind:'V',a:0,b:8,id:'V1',value:'12'},{kind:'R',a:0,b:8,id:'R1',value:'100'},{kind:'R',a:4,b:8,id:'R2',value:'200'}];
+  expect(buildNetlist(parts,8,{quantity:'current',target:'R2'})).toMatch(/\? current R2$/);
+  expect(buildNetlist(parts,8,{quantity:'voltage',target:'V1'})).toMatch(/\? voltage V1$/);
+  expect(()=>buildNetlist(parts,8,{quantity:'power',target:'R2'})).toThrow(/grandezza/i);
+  expect(()=>buildNetlist(parts,8,{quantity:'current',target:'R3'})).toThrow(/componente/i);
+ });
 });
