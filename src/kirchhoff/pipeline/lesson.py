@@ -216,6 +216,15 @@ def _step(title: str, explanation: str, svg: str, equations: list[str] | None = 
                 equations=equations or [], focus=focus or [])
 
 
+def _checked_step(title: str, explanation: str, svg: str, equations: list[str]) -> dict:
+    """Blocca un passaggio se la proiezione altera equazioni o schema attesi."""
+    expected = tuple(equations)
+    step = _step(title, explanation, svg, list(equations))
+    if tuple(step['equations']) != expected or step['svg'] != svg:
+        raise ValueError('Il passaggio intermedio non coincide con le equazioni o lo schema calcolati.')
+    return step
+
+
 def create_lesson(text: str, method: str = 'auto', source_sha: str = '') -> dict:
     """Un solo ingresso per catalogo, input editato, web e PDF."""
     if method not in {'auto', 'millman', 'norton', 'thevenin', 'superposition', 'nodal', 'star_delta'}:
@@ -444,17 +453,28 @@ def _human_steps(ir, topology, target, quantity, method, load, original):
                     [f'I_N{i+1} = E / R = ({number(b.emf())}) / ({number(b.resistance)}) = {number(b.emf()/b.resistance)} A']))
     if method == 'current_divider':
         total = -sum((b.imposed() or F(0) for b in bs), F(0))
-        result.append(_step('Il partitore di corrente',
+        for i, b in enumerate(bs):
+            if b.imposed() is None and total/(b.resistance*g) != currents[i]:
+                raise ValueError('La corrente del passaggio intermedio nel partitore non coincide con il ramo verificato.')
+        equations = [f'I entrante = {number(total)} A', f'G totale = {number(g)} S'] + [
+            f'I ramo {i+1} = I entrante × (1/R ramo) / G totale = {number(total/(b.resistance*g))} A'
+            for i,b in enumerate(bs) if b.imposed() is None]
+        result.append(_checked_step('Il partitore di corrente',
             'I rami resistivi condividono la tensione. La corrente del generatore si divide in proporzione alle conduttanze: un ramo con resistenza minore conduce più corrente. Prima calcoliamo la conduttanza totale, poi moltiplichiamo la corrente entrante per la frazione di conduttanza del ramo cercato.',
-            original, [f'I entrante = {number(total)} A', f'G totale = {number(g)} S'] +
-            [f'I ramo {i+1} = I entrante × (1/R ramo) / G totale = {number(total/(b.resistance*g))} A' for i,b in enumerate(bs) if b.imposed() is None]))
+            original, equations))
     elif method == 'divider':
-        result.append(_step('Usiamo il partitore, senza un sistema di equazioni',
+        for i, b in enumerate(bs):
+            if b.resistance and u/b.resistance != currents[i]:
+                raise ValueError('La corrente del passaggio intermedio nel partitore non coincide con il ramo verificato.')
+        equations = [f'V({p}) − V({q}) = {number(u)} V'] + [
+            f'I ramo {i+1} = ({number(u)}) / ({number(b.resistance)}) = {number(currents[i])} A'
+            for i,b in enumerate(bs) if b.resistance] + [
+            f'V({c.id}) = ({number(currents[i])}) × ({number(c.value.amount)}) = {number(currents[i]*c.value.amount)} V (verso del ramo)'
+            for i,b in enumerate(bs) for c,_ in b.parts if c.type == 'resistor']
+        result.append(_checked_step('Usiamo il partitore, senza un sistema di equazioni',
             'La sorgente impone la tensione ai capi del ramo resistivo. La stessa corrente attraversa '
             'tutti i suoi resistori: I = V / R totale. Ogni caduta vale I × R, cioè V × R / R totale.',
-            schematic(ir, topology, reduced=True), [f'V({p}) − V({q}) = {number(u)} V'] +
-            [f'I ramo {i+1} = ({number(u)}) / ({number(b.resistance)}) = {number(currents[i])} A' for i,b in enumerate(bs) if b.resistance] +
-            [f'V({c.id}) = ({number(currents[i])}) × ({number(c.value.amount)}) = {number(currents[i]*c.value.amount)} V (verso del ramo)' for i,b in enumerate(bs) for c,_ in b.parts if c.type == 'resistor']))
+            schematic(ir, topology, reduced=True), equations))
     else:
         fixed = any(b.resistance == 0 and b.imposed() is None for b in bs)
         explanation = ('Una sorgente ideale impone direttamente la tensione fra i due morsetti. Non dividiamo per una resistenza nulla: usiamo il vincolo del generatore.' if fixed else

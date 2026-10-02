@@ -98,6 +98,29 @@ def test_human_lesson_rejects_wrong_intermediate_with_correct_requested_answer(m
         create_lesson(net)
 
 
+@pytest.mark.parametrize('net,title', [
+    (DIVIDER, 'Usiamo il partitore, senza un sistema di equazioni'),
+    ('I1 0 a 2 ampere\nR1 a 0 3 ohm\nR2 a 0 6 ohm\n? current R2', 'Il partitore di corrente'),
+])
+@pytest.mark.parametrize('part', ['equation', 'diagram'])
+def test_divider_rejects_corrupt_displayed_step_with_correct_answer(monkeypatch, net, title, part):
+    import kirchhoff.pipeline.lesson as lesson_module
+    original = lesson_module._step
+
+    def damaged(step_title, explanation, svg, equations=None, focus=None):
+        step = original(step_title, explanation, svg, equations, focus)
+        if step_title == title:
+            if part == 'equation':
+                step['equations'][-1] = 'I ramo = 999 A'
+            else:
+                step['svg'] += '<schema-estraneo/>'
+        return step
+
+    monkeypatch.setattr(lesson_module, '_step', damaged)
+    with pytest.raises(ValueError, match='passaggio intermedio'):
+        create_lesson(net)
+
+
 @pytest.mark.parametrize('method',['auto','millman','norton','thevenin','superposition','nodal'])
 def test_same_real_problem_all_methods(method):
     lesson=create_lesson(TWO,method)
