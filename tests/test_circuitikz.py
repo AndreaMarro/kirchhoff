@@ -20,13 +20,14 @@ def test_output_is_deterministic_and_retains_oriented_terminal_topology():
     assert r"\documentclass" in result and r"\usepackage[american]{circuitikz}" in result
     assert r"node[left]{$ \texttt{b} $} to[R,l_={$ \texttt{R1}=100\, \Omega $}] (6,0) node[right]{$ \texttt{a} $}" in result
     assert r"node[left]{$ \texttt{a} $} to[R,l_={$ \texttt{R2}=220\, \Omega $}] (6,-2) node[right]{$ \texttt{0} $}" in result
-    assert r"node[left]{$ \texttt{b} $} to[V,invert,l_={$ \texttt{V1}=12\, \mathrm{V} $}] (6,-4) node[right]{$ \texttt{0} $}" in result
+    assert r"node[left]{$ \texttt{b} $} to[V,l_={$ \texttt{V1}=12\, \mathrm{V} $}] (6,-4) node[right]{$ \texttt{0} $}" in result
+    assert "sinistra a destra.\\par\n\\begin{circuitikz}" in result
 
 
 def test_controlled_source_reference_and_fraction_are_visible():
     netlist = "V1 a 0 1 volt\nE1 b 0 a 0 3/2\nG1 b 0 a 0 1/10 siemens\nR1 b 0 4 ohm\n? voltage R1"
     result = export_circuitikz(netlist)
-    assert r"to[cV,invert" in result and r"to[cI" in result
+    assert r"to[cV,l_" in result and r"to[cI" in result
     assert r"\frac{3}{2}" in result
     assert r"V(\texttt{a})-V(\texttt{0})" in result
 

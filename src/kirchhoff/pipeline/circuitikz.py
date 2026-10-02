@@ -67,7 +67,7 @@ def export_circuitikz(circuit: IR | str) -> str:
         r"\begin{document}",
         r"\pagestyle{empty}",
         r"\noindent\textbf{Circuito Kirchhoff}\\",
-        r"Etichette uguali identificano lo stesso nodo elettrico. Ogni ramo e' orientato da sinistra a destra.",
+        r"\par\noindent Etichette uguali identificano lo stesso nodo elettrico. Ogni ramo e' orientato da sinistra a destra.\par",
     ]
     for index, component in enumerate(sorted(ir.components, key=lambda item: item.id.casefold())):
         if index % 8 == 0:
@@ -75,9 +75,8 @@ def export_circuitikz(circuit: IR | str) -> str:
                 lines.extend([r"\end{circuitikz}", r"\newpage", r"\noindent\textbf{Circuito Kirchhoff, continua}\\"])
             lines.append(r"\begin{circuitikz}[american voltages]")
         symbol, unit = _KINDS[component.type]
-        # Con american voltages CircuitikZ pone + alla fine del path;
-        # l'IR definisce positivo il primo terminale, quindi invertiamo V/E.
-        orientation = ",invert" if symbol in {"V", "cV"} else ""
+        # In questo host CircuitikZ, V e cV senza `invert` pongono + sul
+        # primo terminale del path, come il riferimento dichiarato nell'IR.
         p, q = component.terminals
         value = _number(component.value.amount)
         description = rf"{_name(component.id)}={value}"
@@ -89,7 +88,7 @@ def export_circuitikz(circuit: IR | str) -> str:
         y = -2 * (index % 8)
         lines.append(
             rf"\draw (0,{y}) node[left]{{$ {_name(p)} $}} "
-            rf"to[{symbol}{orientation},l_={{$ {description} $}}] (6,{y}) "
+            rf"to[{symbol},l_={{$ {description} $}}] (6,{y}) "
             rf"node[right]{{$ {_name(q)} $}};"
         )
     lines.append(r"\end{circuitikz}")
