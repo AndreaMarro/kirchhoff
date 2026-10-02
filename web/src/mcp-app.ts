@@ -6,6 +6,7 @@ type Lesson={schema:string;outcome:string;netlist:string;title:string;steps:Step
 const app=new App({name:'Kirchhoff CircuitCheck',version:'0.1.0'},{});
 const input=document.querySelector<HTMLTextAreaElement>('#circuit')!;
 const status=document.querySelector<HTMLElement>('#status')!;
+const scope=document.querySelector<HTMLElement>('#scope')!;
 const title=document.querySelector<HTMLElement>('#step-title')!;
 const drawing=document.querySelector<HTMLElement>('#drawing')!;
 const explanation=document.querySelector<HTMLElement>('#explanation')!;
@@ -55,4 +56,11 @@ solve.addEventListener('click',async()=>{
  finally{solve.disabled=false;}
 });
 show();
-app.connect(new PostMessageTransport(window.parent,window.parent)).then(()=>{connected=true;status.textContent='Host collegato. Controlla il circuito e avvia la verifica.';}).catch(()=>{status.textContent='Host MCP non collegato.';});
+app.connect(new PostMessageTransport(window.parent,window.parent)).then(async()=>{
+ connected=true;status.textContent='Host collegato. Controlla il circuito e avvia la verifica.';
+ try{
+  const result=await app.callServerTool({name:'circuit_capabilities',arguments:{}});
+  const value=result.structuredContent as {scope?:unknown}|undefined;
+  if(typeof value?.scope==='string')scope.textContent=value.scope;
+ }catch{scope.textContent='';}
+}).catch(()=>{status.textContent='Host MCP non collegato.';});

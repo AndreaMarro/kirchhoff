@@ -8,6 +8,7 @@ import pytest
 mcp = pytest.importorskip("mcp")
 from mcp import Client, StdioServerParameters
 from kirchhoff.api.mcp_server import APP_URI, build_server
+from kirchhoff.pipeline.capabilities import product_capabilities
 
 NETLIST = "V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\n? voltage R2"
 
@@ -53,4 +54,30 @@ def test_real_stdio_transport_answers_without_ui_host():
             assert not result.is_error
             assert result.structured_content["photo"] is False
             assert result.structured_content["product_verified"] is False
+    asyncio.run(run())
+
+
+def test_capabilities_reflect_served_lesson_not_only_kernel():
+    async def run():
+        async with Client(build_server()) as client:
+            base = (await client.call_tool("circuit_capabilities")).structured_content
+            assert base == product_capabilities()
+            assert base["solve"] is True
+            assert base["controlled_sources"] is False
+            assert base["ac"] is False and base["transients"] is False
+            assert base["kernel_controlled_sources"] == ["VCVS", "VCCS"]
+
+            good = (await client.call_tool("circuit_capabilities", {"netlist": NETLIST})).structured_content
+            solved = (await client.call_tool("solve_circuit", {"netlist": NETLIST})).structured_content
+            assert good["circuit"]["outcome"] == solved["outcome"] == "solved"
+            assert good["circuit"]["available_methods"] == solved["available"]
+
+            controlled = (
+                "V1 a 0 10 volt\nR0 a 0 10 ohm\n"
+                "E1 b 0 a 0 2\nR1 b 0 5 ohm\n? current R1"
+            )
+            unsupported = (await client.call_tool("circuit_capabilities", {"netlist": controlled})).structured_content
+            actual = (await client.call_tool("solve_circuit", {"netlist": controlled})).structured_content
+            assert unsupported["circuit"]["outcome"] == actual["outcome"] == "refusal"
+            assert unsupported["circuit"]["available_methods"] == []
     asyncio.run(run())

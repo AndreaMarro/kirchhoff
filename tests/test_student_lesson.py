@@ -9,6 +9,7 @@ import pytest
 import http.client
 from threading import Thread
 from kirchhoff.pipeline.lesson import create_lesson, branches, observed, potential
+from kirchhoff.pipeline.capabilities import product_capabilities
 from kirchhoff.pipeline.lesson_pdf import export_pdf
 from kirchhoff.pipeline.netlist import leggi
 from kirchhoff.domain.ir import Component
@@ -259,7 +260,9 @@ def test_http_new_circuit_pdf_and_origin_boundary(monkeypatch):
         response=client.getresponse();data=response.read();status=response.status;client.close()
         return status,data
     try:
-        status,data=send('GET','/api/capabilities');assert status==200 and json.loads(data)['solve']
+        status,data=send('GET','/api/capabilities');assert status==200
+        capabilities=json.loads(data)
+        assert {key:value for key,value in capabilities.items() if key!='examples'} == product_capabilities()
         text=DIVIDER.replace('12 volt','10 volt')
         status,data=send('POST','/api/solve',dict(netlist=text));assert status==200
         assert json.loads(data)['answer']['exact']=='55/8'

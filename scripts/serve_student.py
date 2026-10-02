@@ -19,6 +19,7 @@ import mimetypes
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT/'src'))
 from kirchhoff.pipeline.lesson import create_lesson
+from kirchhoff.pipeline.capabilities import product_capabilities
 from kirchhoff.pipeline.lesson_pdf import export_pdf
 from kirchhoff.pipeline.student_trace import diagnose_payload
 from kirchhoff.pipeline.image_revision import source_receipt, confirm_revision, verify_revision
@@ -94,7 +95,8 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if not self.permitted():return self.send(403,dict(message='Origine non consentita.'))
         if self.path=='/api/capabilities':
-            return self.send(200,dict(solve=True,vision=bool(os.environ.get('OPENAI_API_KEY') and os.environ.get('KIRCHHOFF_VISION_MODEL')),spice=SPICE_SCHEMA,circuitikz=CIRCUITIKZ_SCHEMA,scope='DC resistivo',examples=EXAMPLES))
+            capabilities=product_capabilities(vision=bool(os.environ.get('OPENAI_API_KEY') and os.environ.get('KIRCHHOFF_VISION_MODEL')))
+            return self.send(200,dict(**capabilities,examples=EXAMPLES))
         root=(ROOT/'web/dist').resolve()
         path=(root/unquote(urlparse(self.path).path).lstrip('/')).resolve()
         if path==root:path=root/'index.html'

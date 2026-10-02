@@ -33,3 +33,13 @@ test('due sorgenti: la lezione servita mostra la differenza di tensione reale',a
  await expect(page.locator('.student-equations')).toContainText('(10 - (4)) / (2) = 3 A');
  await expect(page.locator('.student-equations')).not.toContainText('(10) / (2) = 3 A');
 });
+
+test('il perimetro visibile coincide con quello dichiarato dal server',async({page})=>{
+ const declared=await fetch(`${base}/api/capabilities`).then(r=>r.json()) as {scope:string;controlled_sources:boolean;ac:boolean;transients:boolean};
+ expect(declared.controlled_sources).toBe(false);
+ expect(declared.ac).toBe(false);
+ expect(declared.transients).toBe(false);
+ await page.goto(base!);
+ await page.getByText('Cosa puoi risolvere in questa versione').click();
+ await expect(page.locator('.student-scope').first()).toContainText(declared.scope);
+});

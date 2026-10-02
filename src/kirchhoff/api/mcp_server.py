@@ -15,6 +15,7 @@ from mcp.server import MCPServer
 from mcp.server.apps import Apps
 
 from kirchhoff.pipeline.lesson import create_lesson
+from kirchhoff.pipeline.capabilities import product_capabilities, SOLVE_DESCRIPTION
 from kirchhoff.pipeline.student_trace import diagnose_payload
 from kirchhoff.pipeline.spice import import_spice, export_spice, SCHEMA as SPICE_SCHEMA
 from kirchhoff.pipeline.circuitikz import export_circuitikz, SCHEMA as CIRCUITIKZ_SCHEMA
@@ -41,7 +42,7 @@ def build_server() -> MCPServer:
     server = MCPServer("kirchhoff-circuitcheck", version="0.1.0", extensions=[apps])
 
     @server.tool(name="solve_circuit", meta={"ui": {"resourceUri": APP_URI}},
-                 description="Risolve un circuito DC resistivo confermato e restituisce una derivazione verificata. Non interpreta fotografie.",
+                 description=SOLVE_DESCRIPTION,
                  structured_output=True)
     def solve_circuit(netlist: str, method: str = "auto") -> dict[str, Any]:
         return create_lesson(netlist, method)
@@ -51,11 +52,8 @@ def build_server() -> MCPServer:
         return diagnose_payload(netlist, trace)
 
     @server.tool(name="circuit_capabilities", description="Dichiara il perimetro realmente esposto dagli strumenti MCP.", structured_output=True)
-    def circuit_capabilities() -> dict[str, Any]:
-        return dict(schema="kirchhoff-capabilities.v1", solve="DC resistivo, R/V/I indipendenti e casi VCVS/VCCS del kernel",
-                    diagnosis="riduzioni di due resistori in serie o parallelo",
-                    spice=SPICE_SCHEMA, circuitikz=CIRCUITIKZ_SCHEMA,
-                    photo=False, ac=False, transients=False, product_verified=False)
+    def circuit_capabilities(netlist: str | None = None) -> dict[str, Any]:
+        return product_capabilities(netlist)
 
     @server.tool(name="import_spice_dc", description="Importa solo il sottoinsieme SPICE DC dichiarato, preservando i valori esatti e rifiutando direttive ignote.", structured_output=True)
     def import_spice_dc(spice: str) -> dict[str, Any]:
