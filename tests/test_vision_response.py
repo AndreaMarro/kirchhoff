@@ -87,6 +87,7 @@ def test_http_recognizer_uses_strict_schema_and_does_not_send_invalid_image(monk
     spec = importlib.util.spec_from_file_location("student_vision_contract", path)
     server = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(server)
+    monkeypatch.setenv("KIRCHHOFF_EXTRACTION_PASSES", "3")
     sent = []
 
     class FakeHTTP:
@@ -109,10 +110,66 @@ def test_http_recognizer_uses_strict_schema_and_does_not_send_invalid_image(monk
              "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9b4wAAAABJRU5ErkJggg==")
     result = server.recognize(image, "test-key", "configured-model")
     assert result["netlist"] == NETLIST and result["source_sha256"]
-    assert sent[0]["text"]["format"] == VISION_SCHEMA
+    assert len(sent) == 3
+    assert all(call["text"]["format"] == VISION_SCHEMA for call in sent)
+    assert len({call["input"][0]["content"][0]["text"] for call in sent}) == 3
+    assert all(call["input"][0]["content"][1]["image_url"] == image for call in sent)
+    assert result["extraction_passes"] == 3
+    assert result["model_reported_complete"] is True
     with pytest.raises(ValueError, match="PNG"):
         server.recognize("https://example.org/image", "test-key", "configured-model")
-    assert len(sent) == 1
+    assert len(sent) == 3
+
+
+def test_recognizer_disagreement_stays_incomplete_and_keeps_alternatives(monkeypatch):
+    path = Path(__file__).resolve().parents[1] / "scripts/serve_student.py"
+    spec = importlib.util.spec_from_file_location("student_vision_disagreement", path)
+    server = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(server)
+    monkeypatch.setenv("KIRCHHOFF_EXTRACTION_PASSES", "3")
+    readings = [response(), response(NETLIST.replace("12 volt", "13 volt")), response()]
+
+    class FakeHTTP:
+        def __init__(self, raw): self.raw = raw
+        def __enter__(self): return self
+        def __exit__(self, *_): return False
+        def read(self): return json.dumps(self.raw).encode()
+
+    def fake_urlopen(_request, timeout):
+        assert timeout == 60
+        return FakeHTTP(readings.pop(0))
+
+    monkeypatch.setattr(server, "urlopen", fake_urlopen)
+    image = ("data:image/png;base64,"
+             "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9b4wAAAABJRU5ErkJggg==")
+    result = server.recognize(image, "test-key", "configured-model")
+    assert result["model_reported_complete"] is False
+    assert len(result["candidates"]) == 2
+    assert [candidate["netlist"] for candidate in result["candidates"]] == [NETLIST, NETLIST.replace("12 volt", "13 volt")]
+    assert any("diverg" in doubt.lower() for doubt in result["uncertainties"])
+    assert result["requires_confirmation"] is True
+
+
+def test_recognizer_requires_protected_pass_count_before_network(monkeypatch):
+    path = Path(__file__).resolve().parents[1] / "scripts/serve_student.py"
+    spec = importlib.util.spec_from_file_location("student_vision_pass_policy", path)
+    server = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(server)
+    monkeypatch.delenv("KIRCHHOFF_EXTRACTION_PASSES", raising=False)
+    monkeypatch.setattr(server, "urlopen", lambda *_args, **_kwargs: pytest.fail("network called"))
+    image = ("data:image/png;base64,"
+             "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9b4wAAAABJRU5ErkJggg==")
+    with pytest.raises(ValueError, match="KIRCHHOFF_EXTRACTION_PASSES"):
+        server.recognize(image, "test-key", "configured-model")
+    assert server.vision_ready() is False
+    monkeypatch.setenv("KIRCHHOFF_EXTRACTION_PASSES", "2")
+    with pytest.raises(ValueError, match="almeno 3"):
+        server.recognize(image, "test-key", "configured-model")
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    monkeypatch.setenv("KIRCHHOFF_VISION_MODEL", "configured-model")
+    assert server.vision_ready() is False
+    monkeypatch.setenv("KIRCHHOFF_EXTRACTION_PASSES", "3")
+    assert server.vision_ready() is True
 
 
 def test_provider_schema_rejection_is_reported_as_operational_failure(monkeypatch):
@@ -122,6 +179,7 @@ def test_provider_schema_rejection_is_reported_as_operational_failure(monkeypatc
     spec.loader.exec_module(server_module)
     monkeypatch.setenv("OPENAI_API_KEY", "test-key")
     monkeypatch.setenv("KIRCHHOFF_VISION_MODEL", "configured-model")
+    monkeypatch.setenv("KIRCHHOFF_EXTRACTION_PASSES", "3")
 
     def reject(*_args, **_kwargs):
         raise HTTPError("https://api.openai.com/v1/responses", 400, "schema rejected", None, None)

@@ -12,6 +12,7 @@ type Step={title:string;explanation:string;svg:string;equations:string[];focus:s
 type Lesson={schema:string;outcome:'solved';title:string;netlist:string;method:string;available:string[];original:string;steps:Step[];answer:{exact:string;decimal:string;unit:string;reference:string};fingerprint:string;source_sha:string;input_provenance?:{source_kind:string;source_sha256:string;circuit_sha256:string;confirmed_at_unix:number}};
 type Example={id:string;title:string;netlist:string;methods:Record<string,string>};
 type ImageObservation={line:string;region:{x1:number;y1:number;x2:number;y2:number}};
+type ImageCandidate={netlist:string;observations:ImageObservation[];uncertainties:string[];model_reported_complete:boolean};
 const names:Record<string,string>={auto:'Percorso consigliato',divider:'Partitore',current_divider:'Partitore di corrente',millman:'Millman',norton:'Trasformazioni Norton',thevenin:'Equivalente Thévenin',superposition:'Sovrapposizione',nodal:'Analisi nodale',star_delta:'Stella → triangolo'};
 
 async function response(res:Response):Promise<unknown>{
@@ -31,6 +32,7 @@ export function StudentApp(){
  const [photoConfirmationToken,setPhotoConfirmationToken]=useState<string|null>(null);
  const [image,setImage]=useState<string|null>(null),[imageFromBoard,setImageFromBoard]=useState(false),[uncertainties,setUncertainties]=useState<string[]>([]),[confirmed,setConfirmed]=useState(false);
  const [observations,setObservations]=useState<ImageObservation[]>([]),[selectedObservation,setSelectedObservation]=useState(0),[modelReportedComplete,setModelReportedComplete]=useState<boolean|null>(null);
+ const [candidates,setCandidates]=useState<ImageCandidate[]>([]);
  const [api,setApi]=useState(false),[vision,setVision]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState('');
  const [scope,setScope]=useState('');
  const request=useRef(0),stage=useRef<HTMLDivElement>(null),board=useRef<HTMLIFrameElement>(null),boardScene=useRef(''),boardOwner=useRef<string|null>(null);
@@ -51,7 +53,7 @@ export function StudentApp(){
     const pending=boardSnapshot.current.get(message.requestId);
     if(pending){clearTimeout(pending.timer);boardSnapshot.current.delete(message.requestId);boardScene.current=message.scene;pending.resolve(message.scene);}
    }
-   if(message.type==='kirchhoff:board-image'){request.current++;boardOwner.current=null;setImage(message.image);setImageFromBoard(true);setDraft('');setUncertainties([]);setObservations([]);setModelReportedComplete(null);setConfirmed(false);setTab('photo');setError('');}
+   if(message.type==='kirchhoff:board-image'){request.current++;boardOwner.current=null;setImage(message.image);setImageFromBoard(true);setDraft('');setUncertainties([]);setObservations([]);setCandidates([]);setModelReportedComplete(null);setConfirmed(false);setTab('photo');setError('');}
   }
   window.addEventListener('message',receive);return()=>{
    window.removeEventListener('message',receive);
@@ -133,7 +135,7 @@ export function StudentApp(){
   }catch(e){if(n===request.current)setError(e instanceof Error?e.message:String(e));}finally{if(n===request.current)setBusy(false);}
  }
  async function file(file:File|undefined){
-  if(!file)return;const n=++request.current;setError('');setConfirmed(false);setUncertainties([]);setObservations([]);setModelReportedComplete(null);
+  if(!file)return;const n=++request.current;setError('');setConfirmed(false);setUncertainties([]);setObservations([]);setCandidates([]);setModelReportedComplete(null);
   if(file.type.startsWith('image/')){
    try{const value=await prepareCircuitImage(file);if(n!==request.current)return;setImage(value);setImageFromBoard(false);setDraft('');setTab('photo');}catch(e){if(n===request.current)setError(e instanceof Error?e.message:'Foto non leggibile.');}
   }else{
@@ -151,7 +153,7 @@ export function StudentApp(){
  }
  async function recognize(){
   if(!image)return;const n=++request.current;setBusy(true);setError('');
-  try{const v=await response(await fetch('api/recognize',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image})})) as {netlist:string;uncertainties:string[];observations:ImageObservation[];model_reported_complete:boolean};if(n!==request.current)return;setDraft(v.netlist);setUncertainties(v.uncertainties);setObservations(v.observations);setSelectedObservation(0);setModelReportedComplete(v.model_reported_complete);setConfirmed(false);}
+  try{const v=await response(await fetch('api/recognize',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image})})) as {netlist:string;uncertainties:string[];observations:ImageObservation[];model_reported_complete:boolean;candidates?:ImageCandidate[]};if(n!==request.current)return;if(typeof v.netlist!=='string'||typeof v.model_reported_complete!=='boolean'||!Array.isArray(v.uncertainties)||!Array.isArray(v.observations)||!Array.isArray(v.candidates??[]))throw new Error('Trascrizione non interpretabile. Ricostruisci il circuito manualmente.');setDraft(v.netlist);setUncertainties(v.uncertainties);setObservations(v.observations);setCandidates(v.candidates??[]);setSelectedObservation(0);setModelReportedComplete(v.model_reported_complete);setConfirmed(false);}
   catch(e){if(n===request.current)setError(e instanceof Error?e.message:String(e));}finally{if(n===request.current)setBusy(false);}
  }
  async function pdf(){
@@ -225,7 +227,7 @@ export function StudentApp(){
     throw new Error('Il risultato salvato non coincide con la nuova verifica: il quaderno resta chiuso.');
    boardScene.current=bundle.boardScene;boardOwner.current=bundle.boardScene?value.fingerprint:null;setBoardEpoch(x=>x+1);if(bundle.boardScene)setBoardOpened(true);
    setTraceState({fingerprint:value.fingerprint,steps:bundle.traceSteps});setSessionEpoch(x=>x+1);
-   setLesson(value);setLessonImage(null);setPhotoConfirmationToken(null);setImage(null);setImageFromBoard(false);setConfirmed(false);setUncertainties([]);setObservations([]);setModelReportedComplete(null);
+   setLesson(value);setLessonImage(null);setPhotoConfirmationToken(null);setImage(null);setImageFromBoard(false);setConfirmed(false);setUncertainties([]);setObservations([]);setCandidates([]);setModelReportedComplete(null);
    setExample('');setNetlist(bundle.netlist);setDraft(bundle.netlist);setMethod(bundle.method);setStep(Math.min(bundle.selectedStep,value.steps.length-1));
    setShowOriginal(bundle.showOriginal);setCompare(false);setZoom(100);setPanel(false);
    const revisionNotice=bundle.engineRevision!==value.source_sha?' Il motore è cambiato; la soluzione mostrata è quella appena ricalcolata.':'';
@@ -263,11 +265,12 @@ export function StudentApp(){
    {tab==='free'?<div className="student-dialog-actions"><button disabled={!lesson} onClick={()=>{if(lesson){boardOwner.current=lesson.fingerprint;setNotice('Lavagna associata alla revisione corrente della lezione.');}}}>Associa lavagna alla lezione corrente</button></div>:tab==='draw'?<CircuitEditor onUse={text=>{request.current++;setDraft(text);setImage(null);setImageFromBoard(false);setUncertainties([]);setObservations([]);setModelReportedComplete(null);setConfirmed(false);setTab('text');}}/>:<>
     {tab==='photo'?<div className="student-upload" onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();void file(e.dataTransfer.files[0]);}}><label>Trascina o incolla una foto, oppure scegli un file circuito<span className="student-file-help">PNG, JPEG o WebP fino a 20 MB; netlist .net/.txt o SPICE DC .cir/.spice.</span><input type="file" accept="image/png,image/jpeg,image/webp,.txt,.net,.cir,.sp,.spice" onChange={e=>void file(e.target.files?.[0])}/></label>{image?<div style={{position:'relative',display:'inline-block',maxWidth:'100%',margin:'15px 0',lineHeight:0}}><img src={image} alt="Il circuito caricato da confrontare con la ricostruzione" style={{display:'block',maxWidth:'100%',margin:0}}/>{observations[selectedObservation]?<span aria-hidden="true" data-source-region={selectedObservation} style={{position:'absolute',left:`${observations[selectedObservation].region.x1/10}%`,top:`${observations[selectedObservation].region.y1/10}%`,width:`${(observations[selectedObservation].region.x2-observations[selectedObservation].region.x1)/10}%`,height:`${(observations[selectedObservation].region.y2-observations[selectedObservation].region.y1)/10}%`,border:'2px solid #c25332',background:'rgba(194,83,50,.15)',boxSizing:'border-box',pointerEvents:'none'}}/>:null}</div>:null}{image?<><p>La foto resta sul dispositivo fino a quando scegli di inviarla per la trascrizione. Prima del calcolo controlla sempre valori, collegamenti e domanda.</p><button disabled={!vision||busy} onClick={()=>void recognize()}>Invia a OpenAI e trascrivi</button>{!vision?<p>Riconoscimento automatico non configurato. Ricostruisci il circuito con “Schema a componenti” oppure nel campo qui sotto. Il disegno libero e la foto richiedono una trascrizione confermata.</p>:null}</>:null}</div>:null}
     {observations.length?<section aria-label="Origine delle righe lette"><p>Posizioni proposte dal modello: seleziona una riga e confrontala con la zona evidenziata nella foto. Non dimostrano che il circuito sia completo.</p><ol>{observations.map((item,i)=><li key={i}><button type="button" aria-pressed={selectedObservation===i} onClick={()=>setSelectedObservation(i)}>{item.line}</button></li>)}</ol></section>:null}
-    {modelReportedComplete===false?<p role="status">Il modello segnala una lettura incompleta. Correggi i dubbi prima di confermare.</p>:null}
-    <label className="student-netlist">Componenti, nodi e domanda<textarea aria-label="Circuito da risolvere" spellCheck={false} value={draft} onChange={e=>{request.current++;setDraft(e.target.value);setObservations([]);setModelReportedComplete(null);setConfirmed(false);}} placeholder={'V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\n? voltage R2'}/></label><details><summary>Come leggere e modificare il circuito</summary><p>Ogni riga contiene nome, primo nodo, secondo nodo, valore e unità. R = resistore (ohm), V = sorgente di tensione (volt), I = sorgente di corrente (ampere). Il nodo 0 è il riferimento. Valori decimali o frazioni sono esatti. L’ultima riga indica la domanda: <code>? voltage R2</code> oppure <code>? current R2</code>. SPICE: questa versione importa solo R/C/L, V/I DC, E/G, .op e .end; una direttiva sconosciuta viene rifiutata.</p></details>
+    {candidates.length>1?<section aria-label="Letture alternative della foto"><p>Le letture non coincidono. Seleziona un'ipotesi, confrontala con la foto e correggi il testo.</p>{candidates.map((candidate,i)=><button key={i} type="button" onClick={()=>{request.current++;setDraft(candidate.netlist);setObservations(candidate.observations);setSelectedObservation(0);setModelReportedComplete(false);setConfirmed(false);}}>Lettura {i+1}</button>)}</section>:null}
+    {modelReportedComplete===false?<p role="status">La lettura è incompleta o discordante. Correggi il circuito dalla foto prima di confermare.</p>:null}
+    <label className="student-netlist">Componenti, nodi e domanda<textarea aria-label="Circuito da risolvere" spellCheck={false} value={draft} onChange={e=>{request.current++;setDraft(e.target.value);setObservations([]);setCandidates([]);setUncertainties([]);setModelReportedComplete(null);setConfirmed(false);}} placeholder={'V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\n? voltage R2'}/></label><details><summary>Come leggere e modificare il circuito</summary><p>Ogni riga contiene nome, primo nodo, secondo nodo, valore e unità. R = resistore (ohm), V = sorgente di tensione (volt), I = sorgente di corrente (ampere). Il nodo 0 è il riferimento. Valori decimali o frazioni sono esatti. L’ultima riga indica la domanda: <code>? voltage R2</code> oppure <code>? current R2</code>. SPICE: questa versione importa solo R/C/L, V/I DC, E/G, .op e .end; una direttiva sconosciuta viene rifiutata.</p></details>
     {uncertainties.length?<ul>{uncertainties.map((u,i)=><li key={i}>{u}</li>)}</ul>:null}
-    {image?<label className="student-confirm"><input type="checkbox" checked={confirmed} onChange={e=>{request.current++;setConfirmed(e.target.checked);}}/>Ho confrontato con la foto e corretto valori, nodi, versi e domanda.</label>:null}
-    <div className="student-dialog-actions"><button className="student-primary" disabled={busy||!draft.trim()||Boolean(image&&!confirmed)} onClick={()=>void solve(draft,'auto')}>{busy?'Preparo i passaggi…':'Risolvi e spiega →'}</button><button onClick={()=>{const url=URL.createObjectURL(new Blob([draft],{type:'text/plain'}));const a=document.createElement('a');a.href=url;a.download='circuito.net';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}}>Salva circuito</button></div>
+    {image?<label className="student-confirm"><input type="checkbox" checked={confirmed} disabled={modelReportedComplete===false} onChange={e=>{request.current++;setConfirmed(e.target.checked);}}/>Ho confrontato con la foto e corretto valori, nodi, versi e domanda.</label>:null}
+    <div className="student-dialog-actions"><button className="student-primary" disabled={busy||!draft.trim()||Boolean(image&&(!confirmed||modelReportedComplete===false))} onClick={()=>void solve(draft,'auto')}>{busy?'Preparo i passaggi…':'Risolvi e spiega →'}</button><button onClick={()=>{const url=URL.createObjectURL(new Blob([draft],{type:'text/plain'}));const a=document.createElement('a');a.href=url;a.download='circuito.net';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}}>Salva circuito</button></div>
    </>}
   </section></div>:null}
  </div>;
