@@ -37,6 +37,25 @@ test('un quaderno alterato è fermato prima del ricalcolo',async({page})=>{
  expect(solved).toBe(0);
 });
 
+test('la KVL della maglia arriva al controllo con nodo e versi strutturati',async({page})=>{
+ const lesson=await readFile(new URL('../public/lessons/partitore-d1-auto.json',import.meta.url),'utf8');
+ let received:unknown;
+ await page.route('**/api/capabilities',route=>route.fulfill({json:{solve:true,vision:false}}));
+ await page.route('**/api/solve',route=>route.fulfill({body:lesson,contentType:'application/json'}));
+ await page.route('**/api/diagnose',async route=>{
+  received=route.request().postDataJSON();
+  await route.fulfill({json:{outcome:'valid_so_far',step:null,category:null,message:'Maglia verificata.',focus:[],circuit_fingerprint:bundle.circuitFingerprint}});
+ });
+ await page.goto('/');
+ await page.locator('input[type=file][accept*="application/json"]').setInputFiles({name:'quaderno.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(bundle))});
+ await page.getByRole('combobox',{name:'Operazione passaggio 1'}).selectOption('kvl');
+ await page.getByRole('textbox',{name:'Primo componente passaggio 1'}).fill('b');
+ await page.getByRole('textbox',{name:'Secondo componente passaggio 1'}).fill('+R1,+R2,-V1');
+ await page.getByRole('button',{name:'Controlla i passaggi'}).click();
+ await expect(page.getByText('Maglia verificata.')).toBeVisible();
+ expect((received as {trace:{steps:{operation:string;first:string;second:string}[]}}).trace.steps[0]).toMatchObject({operation:'kvl',first:'b',second:'+R1,+R2,-V1'});
+});
+
 test('il salvataggio attende uno snapshot attuale della lavagna libera',async({page})=>{
  await page.goto('/');
  await page.getByRole('button',{name:/Il tuo circuito/}).click();

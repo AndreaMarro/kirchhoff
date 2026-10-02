@@ -39,7 +39,7 @@ export async function readSessionBundle(text:string):Promise<SessionBundle>{
    throw new Error('Versione o campi del quaderno non validi.');
  if(await digest(value.netlist)!==value.circuitFingerprint)throw new Error('Il circuito nel quaderno è stato modificato senza aggiornare la revisione.');
  for(const step of value.traceSteps){
-  if(!record(step)||!['serie','parallelo','kcl','corrente','tensione','altro'].includes(String(step.operation))||!['clear','ambiguous','unreadable'].includes(String(step.reading))||
+  if(!record(step)||!['serie','parallelo','kcl','kvl','corrente','tensione','altro'].includes(String(step.operation))||!['clear','ambiguous','unreadable'].includes(String(step.reading))||
      !['transcription','first','second'].every(key=>typeof step[key]==='string'&&(step[key] as string).length<=500)||
      !(step.claimed_value===null||typeof step.claimed_value==='string'&&step.claimed_value.length<=100))
     throw new Error('Il procedimento nel quaderno contiene un passaggio non valido.');
