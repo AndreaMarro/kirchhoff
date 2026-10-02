@@ -9,10 +9,10 @@ tensione e corrente con fasi multiple di 30 gradi; non è ancora una lezione ser
 from __future__ import annotations
 
 from .exact import Cyc12, J, ONE, ZERO, zeta_pow
-from .independent_dc import _albero_ricoprente, _percorso_albero
+from .independent_dc import _albero_ricoprente, _percorso_albero, _vcontrol_coeffs
 from .ir import IR, REFERENCE_NODE
 
-PHASOR_TABLEAU_TYPES = frozenset({"resistor", "inductor", "capacitor", "voltage_source_ac", "current_source_ac"})
+PHASOR_TABLEAU_TYPES = frozenset({"resistor", "inductor", "capacitor", "voltage_source_ac", "current_source_ac", "ideal_opamp"})
 
 
 def _impedance(ir: IR, component) -> Cyc12:
@@ -91,6 +91,10 @@ def solve_phasor_tableau(ir: IR) -> dict[str, dict[str, Cyc12]]:
         elif component.type == "voltage_source_ac":
             matrix[row][index] = ONE
             known[row] = Cyc12.of(component.value.amount) * zeta_pow(component.phase_steps)
+        elif component.type == "ideal_opamp":
+            cp, cq = component.control_nodes
+            for cid, sign in _vcontrol_coeffs(ir, parent, cp, cq):
+                matrix[row][positions[cid]] += Cyc12.of(sign)
         else:
             matrix[row][index] = ONE
             matrix[row][count + index] = -_impedance(ir, component)

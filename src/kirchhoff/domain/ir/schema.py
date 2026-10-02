@@ -37,6 +37,7 @@ ComponentType = Literal[
     "current_source_ac",
     "voltage_controlled_voltage_source",
     "voltage_controlled_current_source",
+    "ideal_opamp",
 ]
 
 Quantity = Literal[
@@ -77,6 +78,7 @@ EXPECTED_UNIT: dict[str, str] = {
     "current_source_ac": "ampere",
     "voltage_controlled_voltage_source": "dimensionless",
     "voltage_controlled_current_source": "siemens",
+    "ideal_opamp": "dimensionless",
 }
 
 #: Componenti il cui valore è una grandezza fisica strettamente positiva.
@@ -87,6 +89,7 @@ POSITIVE_VALUED: frozenset[str] = frozenset({"resistor", "capacitor", "inductor"
 CONTROLLED_SOURCE_TYPES: frozenset[str] = frozenset({
     "voltage_controlled_voltage_source",
     "voltage_controlled_current_source",
+    "ideal_opamp",
 })
 
 _SEMVER = re.compile(r"^\d+\.\d+\.\d+$")
@@ -158,6 +161,8 @@ class Component:
                 f"{self.id}: valore non positivo per {self.type} ({self.value.amount})")
         if self.phase_steps and self.type not in {"voltage_source_ac", "current_source_ac"}:
             raise ValueError(f"{self.id}: sfasamento su un {self.type}, che non ne ha uno")
+        if self.type == "ideal_opamp" and self.value.amount != 0:
+            raise ValueError(f"{self.id}: un operazionale ideale usa il marcatore dimensionless zero, senza guadagno approssimato")
         if self.type in CONTROLLED_SOURCE_TYPES:
             if self.control_nodes is None:
                 raise ValueError(

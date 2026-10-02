@@ -32,6 +32,13 @@ Sorgenti controllate da tensione:
     E1 p q cp cq 2
     G1 p q cp cq 1/10 siemens
 
+Operazionale ideale in regione lineare (uscita p,q; ingressi +,-):
+
+    O1 p q plus minus
+
+Impone V(plus)=V(minus) e correnti di ingresso nulle. Il guadagno non e'
+approssimato con un numero grande; la lezione op-amp non e' ancora servita.
+
 Il tipo si deduce dalla lettera iniziale — `V` generatore indipendente, `E`
 VCVS, `G` VCCS, `R` resistore — e la riga che comincia con `?` e' una domanda.
 Righe vuote e `#` sono commenti.
@@ -140,6 +147,18 @@ def leggi(testo: str) -> IR:
                 Magnitude(quanto, unita), ident, control_nodes=(cp, cq)))
             continue
 
+        if iniziale == "O":
+            if len(pezzi) != 5:
+                raise ValueError(f"riga {numero}: un operazionale ideale e' «<id> <uscita+> <uscita-> <ingresso+> <ingresso->».")
+            _p, _q, cp, cq = pezzi[1:]
+            for n in (_p, _q, cp, cq):
+                _nodo(nodi, n)
+            componenti.append(Component(
+                ident, "ideal_opamp", (_p, _q),
+                Magnitude(Fraction(0), "dimensionless"), ident,
+                control_nodes=(cp, cq)))
+            continue
+
         phase_steps = 0
         if ac_omega is not None and iniziale in {"V", "I"}:
             if len(pezzi) != 6:
@@ -158,7 +177,7 @@ def leggi(testo: str) -> IR:
         if tipo is None:
             raise ValueError(
                 f"riga {numero}: {ident!r} comincia per {ident[0]!r}, che non e' "
-                f"fra {', '.join(sorted(list(LETTERE) + ['E', 'G']))}. Il vocabolario e' chiuso: un "
+                f"fra {', '.join(sorted(list(LETTERE) + ['E', 'G', 'O']))}. Il vocabolario e' chiuso: un "
                 "componente indovinato verrebbe risolto male in silenzio.")
         if ac_omega is not None and iniziale in {"V", "I"}:
             tipo = "voltage_source_ac" if iniziale == "V" else "current_source_ac"

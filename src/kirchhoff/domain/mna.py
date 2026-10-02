@@ -38,6 +38,8 @@ def _classify_dc(c: Component) -> tuple[str, Fraction]:
         return "VCVS", c.value.amount
     if c.type == "voltage_controlled_current_source":
         return "VCCS", c.value.amount
+    if c.type == "ideal_opamp":
+        return "OPAMP", ZERO
     raise ValueError(f"{c.id}: {c.type} non ammesso in analisi in continua")
 
 
@@ -52,6 +54,8 @@ def _classify_phasor(omega: Fraction, c: Component) -> tuple[str, Cyc12]:
         return "E", Cyc12.of(c.value.amount) * zeta_pow(c.phase_steps)
     if c.type == "current_source_ac":
         return "I", Cyc12.of(c.value.amount) * zeta_pow(c.phase_steps)
+    if c.type == "ideal_opamp":
+        return "OPAMP", Cyc12.of(0)
     raise ValueError(f"{c.id}: {c.type} non ammesso in regime sinusoidale")
 
 
@@ -67,6 +71,8 @@ def _classify_natural(s: Fraction, c: Component) -> tuple[str, Fraction]:
         return "E", ZERO          # sorgente di tensione spenta: un corto circuito
     if c.type == "current_source_dc":
         return "I", ZERO          # sorgente di corrente spenta: un circuito aperto
+    if c.type == "ideal_opamp":
+        return "OPAMP", ZERO       # il vincolo ideale rimane attivo in Laplace
     raise ValueError(f"{c.id}: {c.type} non ammesso nel dominio di Laplace")
 
 
@@ -74,7 +80,7 @@ def _assemble(ir: IR, kinds: list[tuple[Component, str, object]], zero):
     """Costruisce (matrice, termine noto, indice dei nodi, indice delle sorgenti)."""
     unknown_nodes = [n for n in ir.nodes if n != REFERENCE_NODE]
     idx = {n: i for i, n in enumerate(unknown_nodes)}
-    sources = [c for c, kind, _ in kinds if kind in ("E", "VCVS")]
+    sources = [c for c, kind, _ in kinds if kind in ("E", "VCVS", "OPAMP")]
     src_idx = {c.id: len(unknown_nodes) + i for i, c in enumerate(sources)}
     size = len(unknown_nodes) + len(sources)
 
@@ -113,6 +119,17 @@ def _assemble(ir: IR, kinds: list[tuple[Component, str, object]], zero):
                 a[k][idx[cp]] -= val
             if cq in idx:
                 a[k][idx[cq]] += val
+        elif kind == "OPAMP":
+            k = src_idx[c.id]
+            cp, cq = c.control_nodes
+            if p in idx:
+                a[idx[p]][k] += 1
+            if q in idx:
+                a[idx[q]][k] -= 1
+            if cp in idx:
+                a[k][idx[cp]] += 1
+            if cq in idx:
+                a[k][idx[cq]] -= 1
         elif kind == "VCCS":
             if c.control_nodes is None:
                 raise ValueError(f"{c.id}: VCCS senza nodi di controllo")
@@ -149,7 +166,7 @@ def _solve(ir: IR, kinds: list[tuple[Component, str, object]], zero) -> dict[str
         vd = v[p] - v[q]
         if kind == "Y":
             i_c = vd * val
-        elif kind in ("E", "VCVS"):
+        elif kind in ("E", "VCVS", "OPAMP"):
             i_c = sol[src_idx[c.id]]
         elif kind == "VCCS":
             cp, cq = c.control_nodes

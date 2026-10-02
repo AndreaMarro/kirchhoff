@@ -148,11 +148,15 @@ def _controlla_connessione(ir: IR) -> Refusal | None:
 
 def _controlla_grado(ir: IR) -> Refusal | None:
     grado: dict[str, int] = {n: 0 for n in ir.nodes}
+    ingressi_ideali = {n for c in ir.components if c.type == "ideal_opamp"
+                      for n in c.control_nodes}
     for c in ir.components:
         for t in c.terminals:
             grado[t] += 1
     for nodo in sorted(ir.nodes):
-        if grado[nodo] == 1:
+        # Un ingresso ideale legge la tensione ma non assorbe corrente:
+        # un solo ramo fisico puo' fissarne il potenziale senza caricarlo.
+        if grado[nodo] == 1 and nodo not in ingressi_ideali:
             incidente = next(c.id for c in ir.components if nodo in c.terminals)
             return Refusal(
                 "topology", nodo, "node",

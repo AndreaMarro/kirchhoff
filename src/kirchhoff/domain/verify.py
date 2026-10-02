@@ -165,7 +165,9 @@ def constitutive_residuals(ir: IR, sol: dict[str, dict]) -> dict[str, object]:
             continue
         cp, cq = c.control_nodes
         vctrl = _vcontrol_pubblicato(ir, sol, cp, cq)
-        if c.type == "voltage_controlled_voltage_source":
+        if c.type == "ideal_opamp":
+            residui[c.id] = vctrl
+        elif c.type == "voltage_controlled_voltage_source":
             residui[c.id] = sol[c.id]["voltage"] - c.value.amount * vctrl
         else:
             residui[c.id] = sol[c.id]["current"] - c.value.amount * vctrl
