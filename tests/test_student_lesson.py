@@ -391,6 +391,10 @@ def test_http_new_circuit_pdf_and_origin_boundary(monkeypatch):
                    for step in served['steps'] for equation in step['equations'])
         status,data=send('POST','/api/pdf',dict(netlist=f01));assert status==200
         assert b'(10 - (4)) / (2) = 3 A' in data.replace(b'\\(',b'(').replace(b'\\)',b')')
+        ac='@ac 100 rad/s\nV1 a 0 10 volt 30deg\nR1 a 0 3 ohm\n? current R1'
+        status,data=send('POST','/api/solve',dict(netlist=ac));assert status==200
+        assert json.loads(data)['outcome']=='refusal'
+        assert capabilities['ac'] is False
         assert send('POST','/api/solve',dict(netlist=text),'https://untrusted.example')[0]==403
         assert send('POST','/api/solve',dict(netlist='broken'))[0]==422
         assert send('POST','/api/pdf',dict(netlist='broken'))[0]==422

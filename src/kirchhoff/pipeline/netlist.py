@@ -14,6 +14,19 @@ Formato, una riga per bipolo:
     R2 a 0 220 ohm
     ? voltage R2
 
+Regime sinusoidale tipizzato (la lezione AC non e' ancora servita):
+
+    @ac 100 rad/s
+    V1 a 0 10 volt 30deg
+    R1 a b 3 ohm
+    L1 b 0 1/25 henry
+    I1 0 a 2 ampere -60deg
+    ? current R1
+
+La pulsazione e' esatta e positiva; la fase di ciascuna sorgente e' esplicita
+e multipla intera di 30 gradi. I valori sono moduli di fasore: l'IR non
+specifica la convenzione RMS/picco e quindi non autorizza un calcolo di potenza.
+
 Sorgenti controllate da tensione:
 
     E1 p q cp cq 2
@@ -26,6 +39,7 @@ Righe vuote e `#` sono commenti.
 from __future__ import annotations
 
 from fractions import Fraction
+import re
 
 from kirchhoff.domain.ir import IR, Component, Magnitude, Request
 
@@ -33,6 +47,7 @@ from kirchhoff.domain.ir import IR, Component, Magnitude, Request
 #: errore che nomina il colpevole, non un componente indovinato.
 LETTERE = {"V": "voltage_source_dc", "R": "resistor",
            "C": "capacitor", "L": "inductor", "I": "current_source_dc"}
+_PHASE = re.compile(r"^([+-]?\d+)deg$")
 
 
 def _nodo(nodi: list[str], n: str) -> None:
@@ -45,12 +60,28 @@ def leggi(testo: str) -> IR:
     componenti: list[Component] = []
     richieste: list[Request] = []
     nodi: list[str] = []
+    ac_omega: Fraction | None = None
 
     for numero, riga in enumerate(testo.splitlines(), 1):
         riga = riga.split("#", 1)[0].strip()
         if not riga:
             continue
         pezzi = riga.split()
+
+        if pezzi[0] == "@ac":
+            if ac_omega is not None:
+                raise ValueError(f"riga {numero}: una sola direttiva @ac per circuito.")
+            if componenti or richieste:
+                raise ValueError(f"riga {numero}: la direttiva @ac va prima dei componenti e della domanda.")
+            if len(pezzi) != 3 or pezzi[2] != "rad/s":
+                raise ValueError(f"riga {numero}: usa «@ac <pulsazione> rad/s», non Hz o unità implicite.")
+            try:
+                ac_omega = Fraction(pezzi[1])
+            except (ValueError, ZeroDivisionError):
+                raise ValueError(f"riga {numero}: pulsazione AC non esatta.") from None
+            if ac_omega <= 0:
+                raise ValueError(f"riga {numero}: serve una pulsazione AC positiva.")
+            continue
 
         if pezzi[0] == "?":
             if len(pezzi) != 3:
@@ -64,6 +95,8 @@ def leggi(testo: str) -> IR:
         iniziale = ident[0].upper()
 
         if iniziale == "E":
+            if ac_omega is not None:
+                raise ValueError(f"riga {numero}: sorgente controllata E non ancora ammessa nel sottoinsieme AC.")
             if len(pezzi) not in (6, 7):
                 raise ValueError(
                     f"riga {numero}: una VCVS e' «<id> <p> <q> <cp> <cq> <μ> "
@@ -85,6 +118,8 @@ def leggi(testo: str) -> IR:
             continue
 
         if iniziale == "G":
+            if ac_omega is not None:
+                raise ValueError(f"riga {numero}: sorgente controllata G non ancora ammessa nel sottoinsieme AC.")
             if len(pezzi) not in (6, 7):
                 raise ValueError(
                     f"riga {numero}: una VCCS e' «<id> <p> <q> <cp> <cq> <g> "
@@ -105,6 +140,15 @@ def leggi(testo: str) -> IR:
                 Magnitude(quanto, unita), ident, control_nodes=(cp, cq)))
             continue
 
+        phase_steps = 0
+        if ac_omega is not None and iniziale in {"V", "I"}:
+            if len(pezzi) != 6:
+                raise ValueError(f"riga {numero}: una sorgente AC richiede una fase esplicita, per esempio 30deg.")
+            phase = _PHASE.fullmatch(pezzi[5])
+            if phase is None or int(phase.group(1)) % 30:
+                raise ValueError(f"riga {numero}: fase AC esatta in gradi multipli di 30, senza arrotondamento.")
+            phase_steps = int(phase.group(1)) // 30
+            pezzi = pezzi[:5]
         if len(pezzi) != 5:
             raise ValueError(
                 f"riga {numero}: un bipolo e' «<id> <nodo> <nodo> <valore> "
@@ -116,6 +160,8 @@ def leggi(testo: str) -> IR:
                 f"riga {numero}: {ident!r} comincia per {ident[0]!r}, che non e' "
                 f"fra {', '.join(sorted(list(LETTERE) + ['E', 'G']))}. Il vocabolario e' chiuso: un "
                 "componente indovinato verrebbe risolto male in silenzio.")
+        if ac_omega is not None and iniziale in {"V", "I"}:
+            tipo = "voltage_source_ac" if iniziale == "V" else "current_source_ac"
         try:
             quanto = Fraction(valore)
         except ValueError:
@@ -126,10 +172,10 @@ def leggi(testo: str) -> IR:
         for n in (na, nb):
             _nodo(nodi, n)
         componenti.append(Component(ident, tipo, (na, nb),
-                                    Magnitude(quanto, unita), ident))
+                                    Magnitude(quanto, unita), ident, phase_steps=phase_steps))
 
     if not componenti:
         raise ValueError("netlist vuota: nessun bipolo da risolvere.")
-    return IR(ir_version="1.0.0", domain="dc", source_kind="netlist",
+    return IR(ir_version="1.0.0", domain="ac_sinusoidal" if ac_omega is not None else "dc", source_kind="netlist",
               nodes=tuple(sorted(nodi)), components=tuple(componenti),
-              requests=tuple(richieste))
+              requests=tuple(richieste), omega=ac_omega or Fraction(0))
