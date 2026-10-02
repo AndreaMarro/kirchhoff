@@ -1,7 +1,7 @@
 """Primi controlli semantici sul procedimento dello studente.
 
-Il circuito resta l'IR canonico. Si controllano riduzioni R dichiarate e
-osservabili DC numerici sul circuito originale; altri metodi non vengono
+Il circuito resta l'IR canonico. Si controllano riduzioni R dichiarate, KCL,
+KVL e osservabili DC numerici sul circuito originale; altri metodi non vengono
 giudicati errati.
 L'esito e' transitorio, senza profilo o punteggio dello studente.
 """
@@ -129,6 +129,57 @@ def diagnose(ir: IR, trace: StudentTrace, netlist: str) -> dict:
                         "message": f"Al nodo {step.first} le correnti indicate sommano {residual} A, non 0 A, con i versi dichiarati. Controlla segni e rami presenti."}
             return {**base, "outcome": "not_assessable", "category": "simplification",
                     "message": "La somma vale zero in questo circuito, ma la forma non è una KCL topologica completa; chiarisci la semplificazione prima di certificarla."}
+        if step.operation == "kvl":
+            if step.first not in ir.nodes:
+                return {**base, "outcome": "not_assessable", "category": "identifier",
+                        "message": "Il nodo di partenza della maglia non appartiene al circuito originale."}
+            terms = step.second.split(",")
+            if any(not term.strip() or term.strip()[0] not in "+-" or
+                   not term.strip()[1:].strip() for term in terms):
+                return {**base, "outcome": "not_assessable", "category": "transcription",
+                        "message": "Scrivi le tensioni orientate come +R1,+R2,-V1, separate da virgole; la somma è uguale a zero."}
+            signed = [(term.strip()[1:].strip(), 1 if term.strip()[0] == "+" else -1)
+                      for term in terms]
+            known = {c.id for c in ir.components}
+            if any(cid not in known for cid, _ in signed):
+                return {**base, "outcome": "not_assessable", "category": "identifier",
+                        "message": "Una tensione indicata non corrisponde a un componente del circuito originale."}
+            if len({cid for cid, _ in signed}) != len(signed):
+                return {**base, "outcome": "not_assessable", "category": "transcription",
+                        "message": "La stessa tensione compare più volte: chiarisci la forma della tua equazione."}
+            base["focus"] = [step.first, *(cid for cid, _ in signed)]
+            if observed_dc is None:
+                observed_dc = _verified_dc_observables(ir)
+            if observed_dc is None:
+                return {**base, "outcome": "not_assessable", "category": "proof",
+                        "message": "La KVL non è certificabile con i due percorsi indipendenti; non la considero errata."}
+            residual = sum((sign * observed_dc[cid]["voltage"] for cid, sign in signed), Fraction(0))
+            if residual != 0:
+                return {**base, "outcome": "first_invalid", "category": "kvl",
+                        "message": f"Le tensioni orientate indicate sommano {residual} V, non 0 V. Controlla i segni e i rami della maglia."}
+            balance: dict[str, int] = {}
+            adjacency: dict[str, set[str]] = {}
+            for cid, sign in signed:
+                p, q = ir.component(cid).terminals
+                tail, head = (p, q) if sign == 1 else (q, p)
+                balance[tail] = balance.get(tail, 0) + 1
+                balance[head] = balance.get(head, 0) - 1
+                adjacency.setdefault(tail, set()).add(head)
+                adjacency.setdefault(head, set()).add(tail)
+            if step.first not in adjacency or any(balance.values()):
+                return {**base, "outcome": "not_assessable", "category": "simplification",
+                        "message": "La somma vale zero, ma i versi non formano una maglia chiusa dal nodo indicato; chiarisci il percorso."}
+            visited: set[str] = set()
+            pending = [step.first]
+            while pending:
+                node = pending.pop()
+                if node not in visited:
+                    visited.add(node)
+                    pending.extend(adjacency[node] - visited)
+            if visited != set(adjacency):
+                return {**base, "outcome": "not_assessable", "category": "simplification",
+                        "message": "La somma vale zero, ma i rami non formano una sola maglia connessa; chiarisci il percorso."}
+            continue
         if step.operation in {"corrente", "tensione"}:
             base["focus"] = [step.first]
             try:

@@ -135,6 +135,59 @@ def test_kcl_abstains_when_the_independent_paths_disagree(monkeypatch):
     assert (result["outcome"], result["category"]) == ("not_assessable", "proof")
 
 
+def test_kvl_accepts_closed_voltage_walk_in_any_term_order():
+    for terms in ("+R1,+R2,-V1", "+V1,-R2,-R1", "+R2,-V1,+R1"):
+        step = StudentStep("KVL alla maglia", "kvl", "a", terms)
+        assert diagnose(leggi(SERIES), trace(SERIES, step), SERIES)["outcome"] == "valid_so_far"
+    prior = StudentStep("I_R1 = 1/25 A", "corrente", "R1", "", "1/25")
+    loop = StudentStep("KVL alla maglia", "kvl", "a", "+R1,+R2,-V1")
+    assert diagnose(leggi(SERIES), trace(SERIES, prior, loop), SERIES)["outcome"] == "valid_so_far"
+
+
+def test_kvl_rejects_a_false_zero_with_first_invalid_evidence():
+    prior = StudentStep("R1 e R2 in serie", "serie", "R1", "R2", "300")
+    step = StudentStep("V_R1 + V_R2 + V1 = 0", "kvl", "a", "+R1,+R2,+V1")
+    result = diagnose(leggi(SERIES), trace(SERIES, prior, step), SERIES)
+    assert (result["outcome"], result["step"], result["category"]) == ("first_invalid", 2, "kvl")
+    assert result["focus"] == ["a", "R1", "R2", "V1"]
+
+
+def test_kvl_abstains_on_unreadable_or_accidental_zero():
+    zero = "V1 a 0 0 volt\nR1 a 0 3 ohm\n? current R1"
+    for net, first, terms, category in (
+        (SERIES, "a", "R1+R2-V1", "transcription"),
+        (SERIES, "a", "+R1,+RX,-V1", "identifier"),
+        (SERIES, "missing", "+R1,+R2,-V1", "identifier"),
+        (SERIES, "a", "+R1,+R1,-V1", "transcription"),
+        (zero, "a", "+R1", "simplification"),
+    ):
+        result = diagnose(leggi(net), trace(net, StudentStep("KVL", "kvl", first, terms)), net)
+        assert (result["outcome"], result["category"]) == ("not_assessable", category)
+
+
+def test_kvl_does_not_promote_two_disconnected_loops_as_one_maglia():
+    net = ("V1 a b 12 volt\nR1 a b 3 ohm\nV2 c d 6 volt\nR2 c d 2 ohm\n"
+           "Rb b 0 5 ohm\nRc c 0 5 ohm\n? current R1")
+    step = StudentStep("due maglie sommate", "kvl", "a", "+R1,-V1,+R2,-V2")
+    result = diagnose(leggi(net), trace(net, step), net)
+    assert (result["outcome"], result["category"]) == ("not_assessable", "simplification")
+
+
+def test_kvl_abstains_when_independent_solvers_disagree(monkeypatch):
+    import kirchhoff.domain.student_trace as module
+    original = module.solve_dc_tableau
+
+    def damaged(ir):
+        solution = original(ir)
+        solution["R1"]["voltage"] += Fraction(1)
+        return solution
+
+    monkeypatch.setattr(module, "solve_dc_tableau", damaged)
+    step = StudentStep("KVL errata", "kvl", "a", "+R1,+R2,+V1")
+    result = diagnose(leggi(SERIES), trace(SERIES, step), SERIES)
+    assert (result["outcome"], result["category"]) == ("not_assessable", "proof")
+
+
 def test_numeric_observation_abstains_for_unsupported_dc_element():
     text = "V1 a 0 12 volt\nC1 a 0 1 farad\n? voltage C1"
     step = StudentStep("V_C1", "tensione", "C1", "", "12")

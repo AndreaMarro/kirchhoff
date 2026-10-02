@@ -40,7 +40,7 @@ def product_capabilities(netlist: str | None = None, *, vision: bool = False) ->
         component_types=sorted(DIDACTIC_NODAL_COMPONENT_TYPES),
         controlled_sources=False,
         kernel_controlled_sources=["VCVS", "VCCS"],
-        diagnosis="riduzioni R, KCL topologica al nodo e valori DC di corrente/tensione sul circuito originale; le semplificazioni incerte non sono giudicate",
+        diagnosis="riduzioni R, KCL al nodo, KVL su maglia chiusa e valori DC di corrente/tensione sul circuito originale; le semplificazioni incerte non sono giudicate",
         spice=SPICE_SCHEMA,
         circuitikz=CIRCUITIKZ_SCHEMA,
         photo=vision,
