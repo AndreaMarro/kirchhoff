@@ -72,7 +72,7 @@ def export_circuitikz(circuit: IR | str) -> str:
     for index, component in enumerate(sorted(ir.components, key=lambda item: item.id.casefold())):
         if index % 8 == 0:
             if index:
-                lines.extend([r"\end{circuitikz}", r"\newpage", r"\noindent\textbf{Circuito Kirchhoff, continua}\\"])
+                lines.extend([r"\end{circuitikz}", r"\newpage", r"\noindent\textbf{Circuito Kirchhoff, continua}\par\medskip"])
             lines.append(r"\begin{circuitikz}[american voltages]")
         symbol, unit = _KINDS[component.type]
         # In questo host CircuitikZ, V e cV senza `invert` pongono + sul

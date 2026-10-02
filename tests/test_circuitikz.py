@@ -32,6 +32,14 @@ def test_controlled_source_reference_and_fraction_are_visible():
     assert r"V(\texttt{a})-V(\texttt{0})" in result
 
 
+def test_second_page_heading_is_separated_from_its_first_branch():
+    netlist = "\n".join(f"R{i} a 0 {i} ohm" for i in range(1, 10)) + "\n? current R1"
+    result = export_circuitikz(netlist)
+    assert result.count(r"\begin{circuitikz}") == 2
+    assert r"\newpage" in result
+    assert "Circuito Kirchhoff, continua}\\par\\medskip\n\\begin{circuitikz}" in result
+
+
 def test_tex_payload_is_refused_not_interpreted():
     with pytest.raises(ValueError, match="non rappresentabile"):
         export_circuitikz("V1 a 0 1 volt\nR\\write18 a 0 3 ohm\n? voltage V1")
