@@ -19,6 +19,39 @@ DIVIDER='V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\n? voltage R2'
 BRIDGE='V1 c 0 12 volt\nR1 c a 10 ohm\nR2 c b 20 ohm\nR3 a 0 30 ohm\nR4 b 0 40 ohm\nRg a b 50 ohm\n? current R4'
 
 
+@pytest.mark.parametrize('netlist,answer,branch_equation',[
+    ('V1 a 0 10 volt\nR1 a b 2 ohm\nV2 b 0 4 volt\n? current R1', '3', '(10 - (4)) / (2) = 3 A'),
+    ('V1 a 0 10 volt\nR1 a b 2 ohm\nV2 0 b 4 volt\n? current R1', '7', '(10 - (-4)) / (2) = 7 A'),
+    ('V1 0 a 10 volt\nR1 a b 2 ohm\nV2 b 0 4 volt\n? current R1', '-7', '(-10 - (4)) / (2) = -7 A'),
+    ('V1 a 0 10 volt\nR1 b a 2 ohm\nV2 b 0 4 volt\n? current R1', '-3', '(10 - (4)) / (2) = 3 A'),
+    ('V1 a 0 10 volt\nR1 a b 2 ohm\nV2 b 0 4 volt\n? voltage R1', '6', '(10 - (4)) / (2) = 3 A'),
+])
+def test_f01_ideal_source_with_second_emf_never_prints_a_false_divider(netlist,answer,branch_equation):
+    lesson=create_lesson(netlist)
+    equations=[equation for step in lesson['steps'] for equation in step['equations']]
+    assert lesson['answer']['exact']==answer
+    assert lesson['method']=='millman'
+    assert any(branch_equation in equation for equation in equations)
+    assert all('I ramo 2 = (10) / (2) = 3 A' not in equation for equation in equations)
+    pdf=export_pdf(lesson).replace(b'\\(',b'(').replace(b'\\)',b')')
+    assert branch_equation.encode() in pdf
+
+
+@pytest.mark.parametrize('part',['equation','diagram'])
+def test_f01_corrupt_intermediate_is_not_published_with_correct_final_answer(monkeypatch,part):
+    import kirchhoff.pipeline.lesson as lesson_module
+    original=lesson_module._step
+    def damaged(title,explanation,svg,equations=None,focus=None):
+        step=original(title,explanation,svg,equations,focus)
+        if title=='La tensione è già imposta':
+            if part=='equation':step['equations'][-1]='I ramo 2 = (10 - (4)) / (2) = 999 A'
+            else:step['svg']=step['svg'].replace('>V2<','>V9<')
+        return step
+    monkeypatch.setattr(lesson_module,'_step',damaged)
+    with pytest.raises(ValueError,match='passaggio intermedio'):
+        create_lesson('V1 a 0 10 volt\nR1 a b 2 ohm\nV2 b 0 4 volt\n? current R1')
+
+
 @pytest.mark.parametrize('method',['auto','millman','norton','thevenin','superposition','nodal'])
 def test_same_real_problem_all_methods(method):
     lesson=create_lesson(TWO,method)
@@ -231,6 +264,14 @@ def test_http_new_circuit_pdf_and_origin_boundary(monkeypatch):
         status,data=send('POST','/api/solve',dict(netlist=text));assert status==200
         assert json.loads(data)['answer']['exact']=='55/8'
         status,data=send('POST','/api/pdf',dict(netlist=text));assert status==200 and data.startswith(b'%PDF')
+        f01='V1 a 0 10 volt\nR1 a b 2 ohm\nV2 b 0 4 volt\n? current R1'
+        status,data=send('POST','/api/solve',dict(netlist=f01));assert status==200
+        served=json.loads(data)
+        assert served['method']=='millman' and served['answer']['exact']=='3'
+        assert any('(10 - (4)) / (2) = 3 A' in equation
+                   for step in served['steps'] for equation in step['equations'])
+        status,data=send('POST','/api/pdf',dict(netlist=f01));assert status==200
+        assert b'(10 - (4)) / (2) = 3 A' in data.replace(b'\\(',b'(').replace(b'\\)',b')')
         assert send('POST','/api/solve',dict(netlist=text),'https://untrusted.example')[0]==403
         assert send('POST','/api/solve',dict(netlist='broken'))[0]==422
         assert send('POST','/api/pdf',dict(netlist='broken'))[0]==422

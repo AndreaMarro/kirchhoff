@@ -198,7 +198,11 @@ def create_lesson(text: str, method: str = 'auto', source_sha: str = '') -> dict
             load = next((i for i, b in enumerate(bs) if len(b.parts) == 1 and b.parts[0][0].id == req.target and target.type == 'resistor'), None)
             if load is not None and len(bs) > 1 and any(b.resistance and b.imposed() is None for i, b in enumerate(bs) if i != load):
                 available += ['thevenin']
-            chosen = method if method != 'auto' else ('divider' if len(bs) == 2 and any(b.resistance == 0 and b.imposed() is None for b in bs) else 'current_divider' if sum(b.imposed() is not None for b in bs) == 1 and all(b.emf() == 0 for b in bs) else 'millman')
+            divider = (len(bs) == 2
+                       and sum(b.resistance == 0 and b.imposed() is None for b in bs) == 1
+                       and all(all(c.type == 'resistor' for c, _ in b.parts)
+                               for b in bs if b.resistance))
+            chosen = method if method != 'auto' else ('divider' if divider else 'current_divider' if sum(b.imposed() is not None for b in bs) == 1 and all(b.emf() == 0 for b in bs) else 'millman')
             if method != 'auto' and method not in available:
                 raise ValueError('Il metodo selezionato non è applicabile a questa topologia e a questa domanda.')
             if chosen != 'nodal':
@@ -378,9 +382,23 @@ def _human_steps(ir, topology, target, quantity, method, load, original):
             'una sorgente di corrente orientata dal morsetto alto a quello basso entra con segno meno nel numeratore.')
         numerator = ' + '.join(f'({number(b.emf())})/({number(b.resistance)})' for b in bs if b.resistance and b.imposed() is None)
         injections = sum((b.imposed() or F(0) for b in bs), F(0))
-        result.append(_step('Tensione comune: il teorema di Millman' if not fixed else 'La tensione è già imposta', explanation,
-            schematic(ir, topology, norton=converted if method == 'norton' else []),
-            ([f'G = Σ(1/R) = {number(g)} S', f'V = ({numerator} − ({number(injections)})) / ({number(g)}) = {number(u)} V'] if not fixed else [f'V = {number(u)} V'])))
+        branch_equations = []
+        for i, b in enumerate(bs):
+            if b.resistance and b.imposed() is None:
+                branch_current = (u-b.emf())/b.resistance
+                if branch_current != currents[i]:
+                    raise ValueError('La corrente del ramo non coincide con la relazione tensione-resistenza.')
+                branch_equations.append(
+                    f'I ramo {i+1} = ({number(u)} - ({number(b.emf())})) / ({number(b.resistance)}) = {number(branch_current)} A')
+        expected_equations = tuple(
+            ([f'G = Σ(1/R) = {number(g)} S', f'V = ({numerator} − ({number(injections)})) / ({number(g)}) = {number(u)} V']
+             if not fixed else [f'V = {number(u)} V']) + branch_equations)
+        expected_svg = schematic(ir, topology, norton=converted if method == 'norton' else [])
+        step = _step('Tensione comune: il teorema di Millman' if not fixed else 'La tensione è già imposta',
+                     explanation, expected_svg, list(expected_equations))
+        if tuple(step['equations']) != expected_equations or step['svg'] != expected_svg:
+            raise ValueError('Il passaggio intermedio non coincide con il circuito e le equazioni calcolate.')
+        result.append(step)
     for i, b in enumerate(bs):
         if any(c.id == target for c, _ in b.parts):
             focus = [c.id for c, _ in b.parts]

@@ -21,3 +21,15 @@ test('un quaderno non catalogato si riapre attraverso il server e si salva di nu
  expect(saved.method).toBe('auto');
  expect(saved.answerExact).toBe('42/5');
 });
+
+test('due sorgenti: la lezione servita mostra la differenza di tensione reale',async({page})=>{
+ const netlist='V1 a 0 10 volt\nR1 a b 2 ohm\nV2 b 0 4 volt\n? current R1';
+ await page.goto(base!);
+ await page.getByRole('button',{name:/Il tuo circuito/}).click();
+ await page.getByRole('textbox',{name:'Circuito da risolvere'}).fill(netlist);
+ await page.getByRole('button',{name:/Risolvi e spiega/}).click();
+ await expect(page.locator('.student-route-method')).toContainText('Millman');
+ await page.getByRole('button',{name:/La tensione è già imposta/}).click();
+ await expect(page.locator('.student-equations')).toContainText('(10 - (4)) / (2) = 3 A');
+ await expect(page.locator('.student-equations')).not.toContainText('(10) / (2) = 3 A');
+});
