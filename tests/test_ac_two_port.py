@@ -9,7 +9,9 @@ import kirchhoff.domain.two_port as two_port_module
 from kirchhoff.domain.exact import Cyc12, J
 from kirchhoff.domain.ir import Provenance
 from kirchhoff.domain.refusal import Refusal
-from kirchhoff.domain.two_port import analyze_ac_y_matrix
+from kirchhoff.domain.two_port import (
+    ACAdmittanceMatrix, admittance_to_impedance, analyze_ac_y_matrix,
+)
 from kirchhoff.pipeline.netlist import leggi
 
 
@@ -44,6 +46,68 @@ def test_y_matrix_cannot_lie_about_units_or_embed_rounded_entries():
         replace(result, unit="ohm")
     with pytest.raises(TypeError, match="Cyc12"):
         replace(result, entries=((F(1), result.entries[0][1]), result.entries[1]))
+
+
+def test_exact_y_to_z_conversion_preserves_ports_and_unit():
+    admittance = analyze_ac_y_matrix(leggi(BASE), PORTS)
+    impedance = admittance_to_impedance(admittance)
+    assert impedance.unit == "ohm"
+    assert impedance.ports == PORTS
+    assert impedance.omega == F(2)
+    assert impedance.entries == ((Cyc12.of(2), Cyc12.of(1)),
+                                 (Cyc12.of(1), Cyc12.of(2)))
+    for i in range(2):
+        for j in range(2):
+            assert sum((admittance.entries[i][k] * impedance.entries[k][j]
+                        for k in range(2)), Cyc12.of(0)) == int(i == j)
+
+
+def test_supplied_nonreciprocal_reactive_y_converts_exactly():
+    admittance = ACAdmittanceMatrix(
+        PORTS, F(2), ((Cyc12.of(1) + J, Cyc12.of(2)),
+                      (Cyc12.of(3), Cyc12.of(4) - J)))
+    impedance = admittance_to_impedance(admittance)
+    for i in range(2):
+        for j in range(2):
+            assert sum((admittance.entries[i][k] * impedance.entries[k][j]
+                        for k in range(2)), Cyc12.of(0)) == int(i == j)
+    assert impedance.entries[0][1] != impedance.entries[1][0]
+
+
+def test_singular_y_keeps_its_valid_representation_and_refuses_only_z():
+    admittance = ACAdmittanceMatrix(
+        PORTS, F(2), ((Cyc12.of(1), Cyc12.of(1)),
+                      (Cyc12.of(1), Cyc12.of(1))))
+    refusal = admittance_to_impedance(admittance)
+    assert isinstance(refusal, Refusal)
+    assert refusal.cause == "claim_unsupported"
+    assert admittance.entries[0][0] == Cyc12.of(1)
+
+
+def test_two_port_matrix_rejects_wrong_shape_frequency_or_impedance_unit():
+    admittance = analyze_ac_y_matrix(leggi(BASE), PORTS)
+    with pytest.raises(ValueError, match="2×2"):
+        replace(admittance, entries=((Cyc12.of(1),), (Cyc12.of(1),)))
+    with pytest.raises(ValueError, match="positiva"):
+        replace(admittance, omega=F(0))
+    with pytest.raises(ValueError, match="coppie orientate"):
+        replace(admittance, ports=(("a", "0"), ("0", "a")))
+    impedance = admittance_to_impedance(admittance)
+    with pytest.raises(ValueError, match="ohm"):
+        replace(impedance, unit="siemens")
+
+
+def test_y_to_z_requires_a_typed_y_matrix():
+    with pytest.raises(TypeError, match="tipizzata"):
+        admittance_to_impedance(None)
+
+
+def test_corrupted_inverse_fails_exact_matrix_identity(monkeypatch):
+    admittance = analyze_ac_y_matrix(leggi(BASE), PORTS)
+    monkeypatch.setattr(Cyc12, "__truediv__", lambda _self, _other: Cyc12.of(0))
+    refusal = admittance_to_impedance(admittance)
+    assert isinstance(refusal, Refusal)
+    assert refusal.cause == "residual"
 
 
 def test_reversing_one_port_changes_both_off_diagonal_signs():

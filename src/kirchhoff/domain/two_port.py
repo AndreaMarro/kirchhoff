@@ -22,6 +22,19 @@ from .validate import validate
 from .verify import verify
 
 
+def _check_matrix(ports, omega, entries) -> None:
+    if (len(ports) != 2 or any(len(port) != 2 or not all(isinstance(n, str) and n for n in port)
+                               or port[0] == port[1] for port in ports)
+            or set(ports[0]) == set(ports[1])):
+        raise ValueError("una matrice a due porte richiede due coppie orientate distinte")
+    if not isinstance(omega, Fraction) or omega <= 0:
+        raise ValueError("una matrice AC richiede pulsazione positiva esatta")
+    if len(entries) != 2 or any(len(row) != 2 for row in entries):
+        raise ValueError("la matrice di porta deve essere 2×2")
+    if any(not isinstance(value, Cyc12) for row in entries for value in row):
+        raise TypeError("la matrice di porta richiede fasori Cyc12 esatti")
+
+
 @dataclass(frozen=True, slots=True)
 class ACAdmittanceMatrix:
     ports: tuple[tuple[str, str], tuple[str, str]]
@@ -32,8 +45,45 @@ class ACAdmittanceMatrix:
     def __post_init__(self) -> None:
         if self.unit != "siemens":
             raise ValueError("la matrice Y si esprime in siemens")
-        if any(not isinstance(value, Cyc12) for row in self.entries for value in row):
-            raise TypeError("la matrice Y richiede fasori Cyc12 esatti")
+        _check_matrix(self.ports, self.omega, self.entries)
+
+
+@dataclass(frozen=True, slots=True)
+class ACImpedanceMatrix:
+    ports: tuple[tuple[str, str], tuple[str, str]]
+    omega: Fraction
+    entries: tuple[tuple[Cyc12, Cyc12], tuple[Cyc12, Cyc12]]
+    unit: str = "ohm"
+
+    def __post_init__(self) -> None:
+        if self.unit != "ohm":
+            raise ValueError("la matrice Z si esprime in ohm")
+        _check_matrix(self.ports, self.omega, self.entries)
+
+
+def admittance_to_impedance(admittance: ACAdmittanceMatrix) -> ACImpedanceMatrix | Refusal:
+    """Converte Y in Z solo quando det(Y) e' non nullo, senza invalidare Y.
+
+    L'identita' YZ=I verifica la conversione algebrica. Una Y fornita
+    dall'utente non diventa per questo un fatto elettrico certificato.
+    """
+    if not isinstance(admittance, ACAdmittanceMatrix):
+        raise TypeError("serve una matrice Y AC tipizzata")
+    (a, b), (c, d) = admittance.entries
+    determinant = a * d - b * c
+    if not determinant:
+        return Refusal("claim_unsupported", "parametri Z", "operation",
+                       "La matrice Y e' valida ma singolare: la rappresentazione Z non esiste.")
+    entries = ((d / determinant, -b / determinant),
+               (-c / determinant, a / determinant))
+    for i in range(2):
+        for j in range(2):
+            residual = sum((admittance.entries[i][k] * entries[k][j]
+                            for k in range(2)), Cyc12.of(0))
+            if residual != int(i == j):
+                return Refusal("residual", "parametri Z", "operation",
+                               "La conversione di Y non soddisfa l'identita' YZ=I.")
+    return ACImpedanceMatrix(admittance.ports, admittance.omega, entries)
 
 
 def _column(ir: IR, ports: tuple[tuple[str, str], tuple[str, str]], driven: int):
