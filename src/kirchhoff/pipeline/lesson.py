@@ -13,7 +13,6 @@ from fractions import Fraction as F
 import hashlib
 from decimal import Decimal, localcontext
 import itertools
-import subprocess
 from pathlib import Path
 
 from kirchhoff.domain.ir import IR, Component
@@ -22,6 +21,7 @@ from kirchhoff.domain.proof.session import DOCUMENT_PROFILE
 from kirchhoff.pipeline.failure import Failure
 from kirchhoff.pipeline.netlist import leggi
 from kirchhoff.pipeline.proof_run import run_proof_session_con_run
+from kirchhoff.pipeline.resolve import _source_sha
 from kirchhoff.pipeline.presentation import equazione_analitica
 from kirchhoff.pipeline.lesson_svg import schematic
 
@@ -153,7 +153,9 @@ def create_lesson(text: str, method: str = 'auto', source_sha: str = '') -> dict
     if len(ir.requests) != 1:
         raise ValueError('Indica una domanda alla volta: ? voltage R2 oppure ? current R2.')
     req = ir.requests[0]
-    source_sha = source_sha or subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=Path(__file__).resolve().parents[3], text=True).strip()
+    source_sha = _source_sha(source_sha or None)
+    if isinstance(source_sha, Failure):
+        return dict(outcome='failure', message=source_sha.messaggio)
     count = itertools.count(1)
     class Clock:
         def now(self):

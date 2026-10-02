@@ -23,7 +23,9 @@ accanto come fatto letteralmente certificato dalla sessione.
 from __future__ import annotations
 
 import dataclasses
+from importlib import resources
 import os
+import re
 import secrets
 import subprocess
 from datetime import datetime, timezone
@@ -80,11 +82,12 @@ def renderer_supports(ir: IR) -> bool:
 
 
 def _source_sha(dichiarato: str | None) -> str | Failure:
-    """La revisione produttrice: dichiarata, d'ambiente o dal checkout.
+    """La revisione produttrice: dichiarata, d'ambiente, di build o checkout.
 
     Il dominio non tocca Git e una regex non e' un'autorita' (D-H2.5-4):
     questo adattatore lega il campo ai metadati reali quando puo'
-    (override esplicito, poi `KIRCHHOFF_SOURCE_SHA`, poi `git rev-parse`
+    (override esplicito, poi `KIRCHHOFF_SOURCE_SHA`, metadato della wheel,
+    poi `git rev-parse`
     sul checkout che contiene questo file) e dichiara il limite quando
     non puo'. La forma resta validata dal compositore a valle.
     """
@@ -93,6 +96,15 @@ def _source_sha(dichiarato: str | None) -> str | Failure:
     env = os.environ.get("KIRCHHOFF_SOURCE_SHA")
     if env:
         return env
+    try:
+        packaged = resources.files("kirchhoff").joinpath("_build_source_sha.txt")
+        if packaged.is_file():
+            value = packaged.read_text(encoding="ascii").strip()
+            if not re.fullmatch(r"[0-9a-f]{40}", value):
+                return Failure("resolve", "metadato di revisione della build non valido")
+            return value
+    except (OSError, UnicodeError) as exc:
+        return Failure("resolve", f"metadato di revisione della build non leggibile: {exc!r}")
     try:
         radice = Path(__file__).resolve().parents[3]
         completato = subprocess.run(

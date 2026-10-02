@@ -10,7 +10,6 @@ import json
 import os
 import secrets
 import sys
-import subprocess
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
@@ -26,6 +25,8 @@ from kirchhoff.pipeline.image_revision import source_receipt, confirm_revision, 
 from kirchhoff.pipeline.spice import import_spice, export_spice, SCHEMA as SPICE_SCHEMA
 from kirchhoff.pipeline.circuitikz import export_circuitikz, SCHEMA as CIRCUITIKZ_SCHEMA
 from kirchhoff.pipeline.vision_response import VISION_SCHEMA, parse_vision_response
+from kirchhoff.pipeline.resolve import _source_sha
+from kirchhoff.pipeline.failure import Failure
 
 TWO = 'V1 1 0 31/5 volt\nR1 1 2 13/10 ohm\nR2 2 0 11/10 ohm\nV2 3 0 18/5 volt\nR3 3 2 16/5 ohm\n? current R2'
 EXAMPLES = [
@@ -38,7 +39,10 @@ PHOTO_RECEIPT_SECRET = secrets.token_bytes(32)
 
 
 def revision():
-    return subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
+    result = _source_sha(None)
+    if isinstance(result, Failure):
+        raise RuntimeError(result.messaggio)
+    return result
 
 
 def recognize(image, key, model):
