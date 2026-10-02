@@ -67,6 +67,34 @@ def test_thevenin_open_port_error_is_blocked_even_when_final_answer_stays_correc
         create_lesson(TWO, 'thevenin')
 
 
+@pytest.mark.parametrize('method,title', [
+    ('thevenin', 'Stacchiamo il carico: troviamo la tensione a vuoto'),
+    ('thevenin', 'Spegniamo le sorgenti: troviamo la resistenza vista'),
+    ('thevenin', 'Ricolleghiamo il carico all’equivalente Thévenin'),
+    ('superposition', 'Lasciamo attivo soltanto V1'),
+    ('superposition', 'Sommiamo i contributi con il loro segno'),
+])
+@pytest.mark.parametrize('part', ['equation', 'diagram'])
+def test_alternate_method_rejects_corrupt_displayed_step_with_correct_answer(
+    monkeypatch, method, title, part,
+):
+    import kirchhoff.pipeline.lesson as lesson_module
+    original = lesson_module._step
+
+    def damaged(step_title, explanation, svg, equations=None, focus=None):
+        step = original(step_title, explanation, svg, equations, focus)
+        if step_title == title:
+            if part == 'equation':
+                step['equations'][-1] = 'risultato intermedio = 999'
+            else:
+                step['svg'] += '<schema-estraneo/>'
+        return step
+
+    monkeypatch.setattr(lesson_module, '_step', damaged)
+    with pytest.raises(ValueError, match='passaggio intermedio'):
+        create_lesson(TWO, method)
+
+
 def test_thevenin_seen_resistance_is_checked_at_the_port():
     from kirchhoff.pipeline.lesson import _verify_thevenin_port
     ir = leggi('V1 a 0 12 volt\nR1 a 0 3 ohm\nR2 a 0 6 ohm\n? current R2')

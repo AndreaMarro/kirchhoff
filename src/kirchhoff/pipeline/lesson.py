@@ -218,12 +218,16 @@ def _step(title: str, explanation: str, svg: str, equations: list[str] | None = 
                 equations=equations or [], focus=focus or [])
 
 
-def _checked_step(title: str, explanation: str, svg: str, equations: list[str]) -> dict:
-    """Blocca un passaggio se la proiezione altera equazioni o schema attesi."""
-    expected = tuple(equations)
-    step = _step(title, explanation, svg, list(equations))
-    if tuple(step['equations']) != expected or step['svg'] != svg:
-        raise ValueError('Il passaggio intermedio non coincide con le equazioni o lo schema calcolati.')
+def _checked_step(title: str, explanation: str, svg: str,
+                  equations: list[str] | None = None, focus: list[str] | None = None) -> dict:
+    """Blocca un passaggio se la proiezione altera testo, equazioni o schema."""
+    expected_equations = tuple(equations or ())
+    expected_focus = tuple(focus or ())
+    step = _step(title, explanation, svg, list(expected_equations), list(expected_focus))
+    if (step['title'] != title or step['explanation'] != explanation
+            or tuple(step['equations']) != expected_equations
+            or step['svg'] != svg or tuple(step['focus']) != expected_focus):
+        raise ValueError('Il passaggio intermedio non coincide con il contenuto calcolato.')
     return step
 
 
@@ -262,7 +266,7 @@ def create_lesson(text: str, method: str = 'auto', source_sha: str = '') -> dict
     target = ir.component(req.target)
     direction = f'{target.terminals[0]} → {target.terminals[1]}'
     question = f'{"Tensione" if req.quantity == "voltage" else "Corrente"} di {req.target}'
-    steps = [_step('Leggiamo il circuito e la domanda',
+    steps = [_checked_step('Leggiamo il circuito e la domanda',
                    f'Cerchiamo la {question.lower()}. Il riferimento è {direction}: '
                    'per la tensione sottraiamo il potenziale del secondo nodo da quello del primo; '
                    'per la corrente il verso positivo va dal primo al secondo. '
@@ -330,10 +334,10 @@ def create_lesson(text: str, method: str = 'auto', source_sha: str = '') -> dict
                 'parallelo': 'I resistori condividono entrambi i nodi, quindi hanno la stessa tensione. Sommiamo le conduttanze e prendiamo il reciproco per ottenere la resistenza equivalente.',
             }.get(st['action'], 'Seguiamo l’equazione della derivazione e conserviamo i riferimenti della domanda iniziale.')
             titles = {'choose_reference':'Scegliamo il riferimento', 'define_nodal_unknowns':'Quali tensioni dobbiamo trovare?', 'write_kcl':'Scriviamo il bilancio delle correnti', 'write_voltage_constraint':'La tensione imposta dal generatore', 'solve_system':'Risolviamo le equazioni', 'recover_observable':'Ritroviamo la grandezza richiesta', 'serie':'Sommiamo le resistenze in serie', 'parallelo':'Riduciamo le resistenze in parallelo'}
-            steps.append(_step(titles.get(st['action'], st['action'].replace('_', ' ')), explanation,
+            steps.append(_checked_step(titles.get(st['action'], st['action'].replace('_', ' ')), explanation,
                                st['svg'], st['equations']))
         chosen = 'nodal'
-    steps.append(_step('Torniamo al circuito originale',
+    steps.append(_checked_step('Torniamo al circuito originale',
                  f'La risposta alla domanda iniziale è {number(answer)} {unit}, nel riferimento {direction}. '
                  'Ritrova il componente nello schema di partenza: gli equivalenti servono a calcolare, '
                  'ma la domanda riguarda sempre questo circuito. Il valore della derivazione è confrontato '
@@ -360,7 +364,7 @@ def _human_steps(ir, topology, target, quantity, method, load, original):
     if method not in {'superposition', 'thevenin'}:
         irrelevant_series = [i for i,b in enumerate(bs) if b.imposed() is not None and len(b.parts)>1 and all(c.id != target for c,_ in b.parts)]
         if irrelevant_series:
-            result.append(_step('Una corrente imposta rende superflui alcuni dettagli interni',
+            result.append(_checked_step('Una corrente imposta rende superflui alcuni dettagli interni',
                 'Il generatore ideale di corrente impone già la corrente del ramo. I componenti in serie cambiano '
                 'le tensioni interne e la potenza del generatore, ma non la relazione esterna fra i morsetti. '
                 'Qui la domanda non riguarda quei componenti: li nascondiamo nell’equivalente. Se chiedessi '
@@ -370,13 +374,13 @@ def _human_steps(ir, topology, target, quantity, method, load, original):
         if ideal_voltage and not any(c.id==target for b in ideal_voltage for c,_ in b.parts):
             ignored=[c.id for b in bs if all(c.type=='resistor' and c.id != target for c,_ in b.parts) for c,_ in b.parts]
             if ignored:
-                result.append(_step('Una tensione imposta rende irrilevante il ramo in parallelo',
+                result.append(_checked_step('Una tensione imposta rende irrilevante il ramo in parallelo',
                     'Il generatore ideale fissa la tensione fra questi nodi anche senza il ramo resistivo evidenziato dalla rimozione. '
                     'La sua corrente cambierebbe: per questo possiamo fare questa semplificazione soltanto perché '
                     'la domanda non riguarda né quel ramo né il generatore. Conserviamo sempre il circuito originale per recuperare tali grandezze.',
                     schematic(ir,topology,omit=ignored)))
     if equations:
-        result.append(_step('Riconosciamo le resistenze in serie',
+        result.append(_checked_step('Riconosciamo le resistenze in serie',
             'All’interno di ciascun ramo non ci sono diramazioni. La corrente è comune: possiamo sommare le resistenze. '
             'Conserviamo i nomi originali per ricostruire poi tensioni e correnti su ciascun componente.',
             schematic(ir, topology, reduced=True), equations))
@@ -392,7 +396,7 @@ def _human_steps(ir, topology, target, quantity, method, load, original):
             fixed = any(b.resistance == 0 and b.imposed(source.id) is None for b in bs)
             numerator = sum((b.emf(source.id)/b.resistance for b in bs if b.resistance and b.imposed(source.id) is None), F(0)) - sum((b.imposed(source.id) or F(0) for b in bs), F(0))
             formula = f'V = numeratore / G = ({number(numerator)}) / ({number(g)}) = {number(us)} V' if not fixed else f'La sorgente ideale impone V = {number(us)} V'
-            result.append(_step(f'Lasciamo attivo soltanto {source.id}',
+            result.append(_checked_step(f'Lasciamo attivo soltanto {source.id}',
                 'Spegniamo gli altri generatori indipendenti: tensione nulla significa cortocircuito; '
                 'corrente nulla significa circuito aperto. I resistori restano. Risolviamo questo sottoproblema '
                 'con gli stessi riferimenti dell’originale. Qui tutti i componenti sono lineari e indipendenti.',
@@ -401,7 +405,7 @@ def _human_steps(ir, topology, target, quantity, method, load, original):
         from kirchhoff.domain.independent_dc import solve_dc_tableau
         if sum(contributions, F(0)) != solve_dc_tableau(ir)[target][quantity]:
             raise ValueError('La somma dei contributi in sovrapposizione non coincide con il tableau indipendente: lezione non esposta.')
-        result.append(_step('Sommiamo i contributi con il loro segno',
+        result.append(_checked_step('Sommiamo i contributi con il loro segno',
             'Ricongiungiamo i sottoproblemi. Sommiamo tensioni o correnti nella medesima orientazione. '
             'Non si applica questa somma alle potenze, che dipendono quadraticamente da tensioni e correnti.', original,
             [' + '.join(f'({number(x)})' for x in contributions) + f' = {number(sum(contributions, F(0)))}']))
@@ -416,7 +420,7 @@ def _human_steps(ir, topology, target, quantity, method, load, original):
         _verify_thevenin_port(ir, target, p, q, vth, rth)
         emf_sum = sum((b.emf()/b.resistance for b in remaining if b.resistance and b.imposed() is None), F(0))
         imposed_sum = sum((b.imposed() or F(0) for b in remaining), F(0))
-        result.append(_step('Stacchiamo il carico: troviamo la tensione a vuoto',
+        result.append(_checked_step('Stacchiamo il carico: troviamo la tensione a vuoto',
             f'{target} è il carico. Staccandolo, nessuna corrente attraversa i suoi morsetti aperti. '
             'I generatori del resto della rete rimangono accesi: la tensione fra questi morsetti è Vth. '
             'Usiamo il vincolo della sorgente ideale se presente, altrimenti Millman sui rami rimasti.',
@@ -424,7 +428,7 @@ def _human_steps(ir, topology, target, quantity, method, load, original):
             [f'Vth = V({p}) − V({q}) = {number(vth)} V'] if ideal else
             [f'G a vuoto = Σ(1/R) = {number(gr)} S',
              f'Vth = (Σ(E/R) − ΣI) / G = ({number(emf_sum)} − ({number(imposed_sum)})) / ({number(gr)}) = {number(vth)} V']))
-        result.append(_step('Spegniamo le sorgenti: troviamo la resistenza vista',
+        result.append(_checked_step('Spegniamo le sorgenti: troviamo la resistenza vista',
             'Il carico resta staccato. Ora azzeriamo soltanto i generatori indipendenti: '
             'ogni generatore di tensione diventa un cortocircuito e ogni generatore di corrente un ramo aperto. '
             'Guardiamo dentro la rete dai due morsetti del carico. ' +
@@ -435,7 +439,7 @@ def _human_steps(ir, topology, target, quantity, method, load, original):
             ['G vista = ' + ' + '.join(f'1/({number(b.resistance)})' for b in remaining if b.resistance and b.imposed() is None) + f' = {number(gr)} S',
              f'Rth = 1 / G vista = 1 / ({number(gr)}) = {number(rth)} Ω']))
         iload = vth/(rth+bs[load].resistance)
-        result.append(_step('Ricolleghiamo il carico all’equivalente Thévenin',
+        result.append(_checked_step('Ricolleghiamo il carico all’equivalente Thévenin',
             'Riaccendiamo la rete attraverso il suo equivalente: Vth in serie a Rth. '
             f'Ricolleghiamo {target} ai medesimi morsetti. Le resistenze sono ora in serie: '
             'troviamo la corrente con la legge di Ohm e la tensione del carico con il partitore. '
@@ -449,7 +453,7 @@ def _human_steps(ir, topology, target, quantity, method, load, original):
         for i, b in enumerate(bs):
             if b.resistance and b.imposed() is None and any(c.type == 'voltage_source_dc' for c, _ in b.parts):
                 converted.append(i)
-                result.append(_step(f'Trasformiamo il ramo {i+1} in Norton',
+                result.append(_checked_step(f'Trasformiamo il ramo {i+1} in Norton',
                     'Un generatore di tensione con resistenza in serie equivale, ai morsetti del ramo, '
                     'a un generatore di corrente in parallelo alla stessa resistenza. La freccia di Norton va '
                     f'da {q} a {p} quando E/R è positivo. L’equivalenza riguarda il comportamento esterno: '
@@ -510,7 +514,7 @@ def _human_steps(ir, topology, target, quantity, method, load, original):
     for i, b in enumerate(bs):
         if any(c.id == target for c, _ in b.parts):
             focus = [c.id for c, _ in b.parts]
-            result.append(_step('Recuperiamo la grandezza nel ramo originale',
+            result.append(_checked_step('Recuperiamo la grandezza nel ramo originale',
                 f'Nel ramo che contiene {target}, la corrente di riferimento {p} → {q} vale {number(currents[i])} A. '
                 'Per la tensione di un resistore usiamo V = R × I; se il componente ha i morsetti nell’ordine opposto '
                 'cambiamo il segno. Una sorgente di corrente impone I, mentre una sorgente di tensione impone la propria caduta.',
