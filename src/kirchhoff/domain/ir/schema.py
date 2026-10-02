@@ -34,6 +34,7 @@ ComponentType = Literal[
     "voltage_source_dc",
     "current_source_dc",
     "voltage_source_ac",
+    "current_source_ac",
     "voltage_controlled_voltage_source",
     "voltage_controlled_current_source",
 ]
@@ -73,6 +74,7 @@ EXPECTED_UNIT: dict[str, str] = {
     "voltage_source_dc": "volt",
     "voltage_source_ac": "volt",
     "current_source_dc": "ampere",
+    "current_source_ac": "ampere",
     "voltage_controlled_voltage_source": "dimensionless",
     "voltage_controlled_current_source": "siemens",
 }
@@ -154,7 +156,7 @@ class Component:
         if self.type in POSITIVE_VALUED and self.value.amount <= 0:
             raise ValueError(
                 f"{self.id}: valore non positivo per {self.type} ({self.value.amount})")
-        if self.phase_steps and self.type != "voltage_source_ac":
+        if self.phase_steps and self.type not in {"voltage_source_ac", "current_source_ac"}:
             raise ValueError(f"{self.id}: sfasamento su un {self.type}, che non ne ha uno")
         if self.type in CONTROLLED_SOURCE_TYPES:
             if self.control_nodes is None:
@@ -248,7 +250,7 @@ class IR:
         for r in self.requests:
             if r.target not in ids:
                 raise ValueError(f"{r.id}: grandezza richiesta su componente inesistente {r.target}")
-        if any(c.type == "voltage_source_ac" for c in self.components) and self.omega <= 0:
+        if any(c.type in {"voltage_source_ac", "current_source_ac"} for c in self.components) and self.omega <= 0:
             raise ValueError("regime sinusoidale senza pulsazione positiva")
 
     def component(self, cid: str) -> Component:

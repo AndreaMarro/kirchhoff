@@ -3,7 +3,7 @@
 Non importa il solutore MNA né le sue classificazioni o matrice. Condivide
 soltanto l'aritmetica esatta Cyc12 e la costruzione dell'albero del tableau DC.
 L'inviluppo è intenzionalmente ristretto a R/L/C e generatori sinusoidali di
-tensione con fasi multiple di 30 gradi; non è ancora una lezione servita.
+tensione e corrente con fasi multiple di 30 gradi; non è ancora una lezione servita.
 """
 
 from __future__ import annotations
@@ -12,7 +12,7 @@ from .exact import Cyc12, J, ONE, ZERO, zeta_pow
 from .independent_dc import _albero_ricoprente, _percorso_albero
 from .ir import IR, REFERENCE_NODE
 
-PHASOR_TABLEAU_TYPES = frozenset({"resistor", "inductor", "capacitor", "voltage_source_ac"})
+PHASOR_TABLEAU_TYPES = frozenset({"resistor", "inductor", "capacitor", "voltage_source_ac", "current_source_ac"})
 
 
 def _impedance(ir: IR, component) -> Cyc12:
@@ -85,10 +85,14 @@ def solve_phasor_tableau(ir: IR) -> dict[str, dict[str, Cyc12]]:
 
     for component in branches:
         index = positions[component.id]
-        matrix[row][index] = ONE
-        if component.type == "voltage_source_ac":
+        if component.type == "current_source_ac":
+            matrix[row][count + index] = ONE
+            known[row] = Cyc12.of(component.value.amount) * zeta_pow(component.phase_steps)
+        elif component.type == "voltage_source_ac":
+            matrix[row][index] = ONE
             known[row] = Cyc12.of(component.value.amount) * zeta_pow(component.phase_steps)
         else:
+            matrix[row][index] = ONE
             matrix[row][count + index] = -_impedance(ir, component)
         row += 1
 

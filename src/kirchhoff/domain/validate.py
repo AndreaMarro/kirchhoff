@@ -22,6 +22,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from fractions import Fraction
 
+from .exact import Cyc12, ZERO, zeta_pow
 from .ir import IR, REFERENCE_NODE, Component
 from .ir.schema import CONTROLLED_SOURCE_TYPES, EXPECTED_UNIT
 from .refusal import Refusal, SubjectKind
@@ -177,18 +178,27 @@ def _controlla_maglie_di_soli_generatori(ir: IR) -> Refusal | None:
 
 def _controlla_tagli_di_soli_generatori(ir: IR) -> Refusal | None:
     """Un nodo in cui incidono solo generatori di corrente viola la KCL, salvo che
-    le correnti si annullino. Questo controllo copre il taglio piu' semplice — il
-    singolo nodo — e non il caso generale a piu' nodi, che resta aperto."""
+    le correnti si annullino, come scalari DC o fasori AC. Questo controllo copre
+    il taglio piu' semplice — il singolo nodo — e non il caso generale a piu'
+    nodi, che resta aperto."""
     incidenti: dict[str, list[Component]] = {n: [] for n in ir.nodes}
     for c in ir.components:
         for t in c.terminals:
             incidenti[t].append(c)
     for nodo in sorted(ir.nodes):
         rami = incidenti[nodo]
-        if not rami or not all(c.type == "current_source_dc" for c in rami):
+        if not rami:
             continue
-        netta = sum(
-            (c.value.amount if c.terminals[1] == nodo else -c.value.amount) for c in rami)
+        if all(c.type == "current_source_dc" for c in rami):
+            netta = sum(
+                (c.value.amount if c.terminals[1] == nodo else -c.value.amount) for c in rami)
+        elif all(c.type == "current_source_ac" for c in rami):
+            netta = ZERO
+            for c in rami:
+                phasor = Cyc12.of(c.value.amount) * zeta_pow(c.phase_steps)
+                netta += phasor if c.terminals[1] == nodo else -phasor
+        else:
+            continue
         if netta != 0:
             return Refusal(
                 "topology", nodo, "node",
