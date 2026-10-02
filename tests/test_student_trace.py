@@ -44,6 +44,48 @@ def test_different_method_and_uncertain_reading_are_not_accused():
         assert result["outcome"] == "not_assessable"
 
 
+def test_numeric_observations_are_checked_independently_of_the_students_method():
+    steps = (StudentStep("KCL al nodo b: I_R2 = 9/275 A", "corrente", "R2", "", "9/275"),
+             StudentStep("V_R2 = 72/11 V", "tensione", "R2", "", "72/11"))
+    assert diagnose(leggi(BRANCH), trace(BRANCH, *steps), BRANCH)["outcome"] == "valid_so_far"
+    wrong = steps[:1] + (StudentStep("V_R2 = -72/11 V", "tensione", "R2", "", "-72/11"),)
+    result = diagnose(leggi(BRANCH), trace(BRANCH, *wrong), BRANCH)
+    assert (result["outcome"], result["step"], result["category"], result["focus"]) == (
+        "first_invalid", 2, "value", ["R2"])
+
+
+def test_numeric_observation_requires_readable_value_and_known_original_component():
+    for step, category in (
+        (StudentStep("I_R2 = ?", "corrente", "R2", ""), "transcription"),
+        (StudentStep("I_R2 = due", "corrente", "R2", "", "due"), "transcription"),
+        (StudentStep("I_RX = 1", "corrente", "RX", "", "1"), "identifier"),
+    ):
+        result = diagnose(leggi(BRANCH), trace(BRANCH, step), BRANCH)
+        assert (result["outcome"], result["category"]) == ("not_assessable", category)
+
+
+def test_numeric_observation_never_accuses_on_solver_path_disagreement(monkeypatch):
+    import kirchhoff.domain.student_trace as module
+    from fractions import Fraction
+    original = module.solve_dc_tableau
+
+    def damaged(ir):
+        solution = original(ir)
+        solution["R2"]["current"] += Fraction(1, 100)
+        return solution
+
+    monkeypatch.setattr(module, "solve_dc_tableau", damaged)
+    step = StudentStep("I_R2 = 9/275 A", "corrente", "R2", "", "9/275")
+    result = diagnose(leggi(BRANCH), trace(BRANCH, step), BRANCH)
+    assert (result["outcome"], result["category"]) == ("not_assessable", "proof")
+
+
+def test_numeric_observation_after_reduction_is_bound_to_original_component():
+    steps = (StudentStep("R1 + R2 = 300 ohm", "serie", "R1", "R2", "300"),
+             StudentStep("I_R2 = 1/25 A", "corrente", "R2", "", "1/25"))
+    assert diagnose(leggi(SERIES), trace(SERIES, *steps), SERIES)["outcome"] == "valid_so_far"
+
+
 def test_trace_is_bound_to_exact_circuit_revision():
     old = trace(SERIES, StudentStep("R1+R2", "serie", "R1", "R2"))
     with pytest.raises(ValueError, match="circuito è cambiato"):

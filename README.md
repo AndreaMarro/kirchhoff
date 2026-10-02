@@ -20,7 +20,7 @@ una lezione visuale per circuiti DC resistivi e un banco tecnico di prova.
 | Verita' visuale singola (H5) | `render/` non riesegue `transform()`: proietta `TransformExecution` certificata (0 chiamate produttive, testato) |
 | Contratto di presentazione | `StudentSessionView` (student-session.v0.1): esatto prima del decimale, Claim VERIFIED vs sessione CLOSED, mai Product Verified |
 | Superficie | React 19 + TS strict + Vite: lo studente apre `/`, il banco tecnico `/?view=proof`; foto automatica solo con provider configurato |
-| Lavagna e procedimento | Schema a componenti con incroci distinti dalle giunzioni; StudentTrace verifica le riduzioni R in serie/parallelo e si astiene sugli altri metodi |
+| Lavagna e procedimento | Schema a componenti con incroci distinti dalle giunzioni; StudentTrace verifica le riduzioni R e i valori DC di corrente/tensione sul circuito originale, lasciando senza giudizio il metodo non rappresentato |
 | MCP | Tool stdio senza UI + risorsa MCP App interattiva; la compatibilita' con un host reale richiede ancora prova |
 | Backend storico | Epic 1 chiusa, P1-J/K/L integrati, H2.5/O0/H2.75 fusi in `main` |
 

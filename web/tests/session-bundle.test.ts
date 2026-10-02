@@ -13,6 +13,11 @@ describe('quaderno portabile',()=>{
   expect('proof' in bundle).toBe(false);
   expect('image' in bundle).toBe(false);
  });
+ it('riapre un valore misurato con un metodo alternativo senza promuovere il testo a prova',async()=>{
+  const numeric={...fields.traceSteps[0],operation:'tensione',first:'R2',second:'',claimed_value:'33/4',transcription:'KCL al nodo a'};
+  const bundle=await makeSessionBundle({...fields,traceSteps:[numeric]});
+  expect((await readSessionBundle(JSON.stringify(bundle))).traceSteps).toEqual([numeric]);
+ });
  it('rifiuta una netlist sostituita a revisione invariata',async()=>{
   const bundle=await makeSessionBundle(fields);
   await expect(readSessionBundle(JSON.stringify({...bundle,netlist:netlist.replace('220','221')}))).rejects.toThrow('modificato');

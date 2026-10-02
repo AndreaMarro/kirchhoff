@@ -43,3 +43,23 @@ test('il perimetro visibile coincide con quello dichiarato dal server',async({pa
  await page.getByText('Cosa puoi risolvere in questa versione').click();
  await expect(page.locator('.student-scope').first()).toContainText(declared.scope);
 });
+
+test('un valore ricavato con KCL riceve un controllo numerico locale senza giudicare il metodo',async({page})=>{
+ const netlist='V1 a 0 12 volt\nR1 a b 100 ohm\nR2 b 0 200 ohm\nR3 b 0 300 ohm\n? current R2';
+ await page.goto(base!);
+ await page.getByRole('button',{name:/Il tuo circuito/}).click();
+ await page.getByRole('textbox',{name:'Circuito da risolvere'}).fill(netlist);
+ await page.getByRole('button',{name:/Risolvi e spiega/}).click();
+ await expect(page.getByRole('dialog')).toBeHidden();
+ await expect(page.locator('.student-lesson')).toHaveAttribute('aria-busy','false');
+ await page.getByRole('textbox',{name:'Testo passaggio 1'}).fill('KCL al nodo b: I_R2 = 9/275 A');
+ await page.getByRole('combobox',{name:'Operazione passaggio 1'}).selectOption('corrente');
+ await page.getByRole('textbox',{name:'Primo componente passaggio 1'}).fill('R2');
+ await page.getByRole('textbox',{name:'Valore passaggio 1'}).fill('9/275');
+ await page.getByRole('button',{name:'Controlla i passaggi'}).click();
+ await expect(page.locator('.student-trace-result')).toContainText('Passaggi controllati validi fin qui');
+ await page.getByRole('textbox',{name:'Valore passaggio 1'}).fill('1/30');
+ await page.getByRole('button',{name:'Controlla i passaggi'}).click();
+ await expect(page.locator('.student-trace-result')).toContainText('9/275 A, non 1/30 A');
+ await expect(page.locator('.student-trace-result')).toContainText('metodo scritto non è giudicato');
+});
