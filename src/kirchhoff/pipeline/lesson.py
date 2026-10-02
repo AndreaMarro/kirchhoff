@@ -288,7 +288,10 @@ def create_lesson(text: str, method: str = 'auto', source_sha: str = '') -> dict
                        and sum(b.resistance == 0 and b.imposed() is None for b in bs) == 1
                        and all(all(c.type == 'resistor' for c, _ in b.parts)
                                for b in bs if b.resistance))
-            chosen = method if method != 'auto' else ('divider' if divider else 'current_divider' if sum(b.imposed() is not None for b in bs) == 1 and all(b.emf() == 0 for b in bs) else 'millman')
+            current_divider = (sum(b.imposed() is not None for b in bs) == 1
+                               and all(c.type in {'resistor', 'current_source_dc'} for c in ir.components)
+                               and all(b.resistance > 0 for b in bs if b.imposed() is None))
+            chosen = method if method != 'auto' else ('divider' if divider else 'current_divider' if current_divider else 'millman')
             if method != 'auto' and method not in available:
                 raise ValueError('Il metodo selezionato non è applicabile a questa topologia e a questa domanda.')
             if chosen != 'nodal':

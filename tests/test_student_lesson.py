@@ -131,6 +131,18 @@ def test_divider_prints_reversed_resistor_voltage_in_its_declared_orientation():
     assert b'V(R2) = (-1) ' in export_pdf(lesson).replace(b'\\(', b'(').replace(b'\\)', b')')
 
 
+@pytest.mark.parametrize('net,answer,title', [
+    ('I1 0 a 2 ampere\nV1 a 0 0 volt\nR1 a 0 6 ohm\n? current R1', '0', 'La tensione è già imposta'),
+    ('I1 0 a 2 ampere\nV1 b a 0 volt\nR1 b 0 6 ohm\nR2 a 0 3 ohm\n? voltage R2', '4', 'Tensione comune: il teorema di Millman'),
+])
+def test_zero_volt_source_is_not_treated_as_a_current_divider(net, answer, title):
+    lesson = create_lesson(net)
+    assert lesson['method'] == 'millman'
+    assert lesson['answer']['exact'] == answer
+    assert any(step['title'] == title for step in lesson['steps'])
+    assert not any(step['title'] == 'Il partitore di corrente' for step in lesson['steps'])
+
+
 @pytest.mark.parametrize('method',['auto','millman','norton','thevenin','superposition','nodal'])
 def test_same_real_problem_all_methods(method):
     lesson=create_lesson(TWO,method)
