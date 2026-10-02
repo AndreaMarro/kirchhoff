@@ -56,6 +56,33 @@ def test_numeric_observations_are_checked_independently_of_the_students_method()
         "first_invalid", 2, "value", ["R2"])
 
 
+@pytest.mark.parametrize("operation,component,orientation,accepted,wrong", [
+    ("corrente", "R1", "b,a", "-1/25", "1/25"),
+    ("tensione", "R2", "0,b", "-8", "8"),
+])
+def test_numeric_observation_accepts_the_students_reversed_reference(
+    operation, component, orientation, accepted, wrong,
+):
+    correct = StudentStep("verso dichiarato", operation, component, orientation, accepted)
+    assert diagnose(leggi(SERIES), trace(SERIES, correct), SERIES)["outcome"] == "valid_so_far"
+    incorrect = StudentStep("segno errato nel verso dichiarato", operation, component, orientation, wrong)
+    result = diagnose(leggi(SERIES), trace(SERIES, incorrect), SERIES)
+    assert (result["outcome"], result["category"]) == ("first_invalid", "value")
+    assert orientation.replace(",", " → ") in result["message"]
+
+
+def test_numeric_observation_accepts_explicit_component_reference():
+    step = StudentStep("verso esplicito", "corrente", "R1", "a,b", "1/25")
+    assert diagnose(leggi(SERIES), trace(SERIES, step), SERIES)["outcome"] == "valid_so_far"
+
+
+@pytest.mark.parametrize("orientation", ["a,0", "b", "b,b", "b,0,a"])
+def test_numeric_observation_abstains_when_declared_reference_is_not_the_component(orientation):
+    step = StudentStep("verso non chiaro", "tensione", "R2", orientation, "-8")
+    result = diagnose(leggi(SERIES), trace(SERIES, step), SERIES)
+    assert (result["outcome"], result["category"]) == ("not_assessable", "orientation")
+
+
 def test_numeric_observation_requires_readable_value_and_known_original_component():
     for step, category in (
         (StudentStep("I_R2 = ?", "corrente", "R2", ""), "transcription"),

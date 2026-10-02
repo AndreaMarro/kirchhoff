@@ -168,3 +168,25 @@ test('un valore e una KCL dello studente sono controllati fino al primo errore',
  await page.getByRole('button',{name:'Controlla i passaggi'}).click();
  await expect(page.locator('.student-trace-result')).toContainText('Passaggi controllati validi fin qui');
 });
+
+test('il valore nel verso opposto dichiarato è controllato senza cambiare il circuito',async({page})=>{
+ const netlist='V1 a 0 12 volt\nR1 a b 100 ohm\nR2 b 0 200 ohm\n? current R2';
+ await page.goto(base!);
+ await page.getByRole('button',{name:/Il tuo circuito/}).click();
+ await page.getByRole('textbox',{name:'Circuito da risolvere'}).fill(netlist);
+ await page.getByRole('button',{name:/Risolvi e spiega/}).click();
+ await expect(page.getByRole('dialog')).toBeHidden();
+ await page.getByRole('combobox',{name:'Operazione passaggio 1'}).selectOption('corrente');
+ await page.getByRole('textbox',{name:'Primo componente passaggio 1'}).fill('R2');
+ await page.getByRole('textbox',{name:'Verso passaggio 1'}).fill('0,b');
+ await page.getByRole('textbox',{name:'Valore passaggio 1'}).fill('-1/25');
+ await page.getByRole('button',{name:'Controlla i passaggi'}).click();
+ await expect(page.locator('.student-trace-result')).toContainText('Passaggi controllati validi fin qui');
+ await page.getByRole('textbox',{name:'Valore passaggio 1'}).fill('1/25');
+ await page.getByRole('button',{name:'Controlla i passaggi'}).click();
+ await expect(page.locator('.student-trace-result')).toContainText('0 → b: -1/25 A, non 1/25 A');
+ const download=page.waitForEvent('download');
+ await page.getByRole('button',{name:'Salva quaderno ↓'}).click();
+ const saved=JSON.parse(await readFile(await (await download).path(),'utf8'));
+ expect(saved.traceSteps[0]).toMatchObject({operation:'corrente',first:'R2',second:'0,b',claimed_value:'1/25'});
+});

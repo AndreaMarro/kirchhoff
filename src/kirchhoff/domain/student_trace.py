@@ -187,6 +187,18 @@ def diagnose(ir: IR, trace: StudentTrace, netlist: str) -> dict:
             except KeyError:
                 return {**base, "outcome": "not_assessable", "category": "identifier",
                         "message": "Questo componente non appartiene al circuito originale confermato."}
+            reference = component.terminals
+            orientation = 1
+            if step.second.strip():
+                declared = tuple(node.strip() for node in step.second.split(","))
+                if declared == component.terminals:
+                    reference = declared
+                elif declared == component.terminals[::-1]:
+                    reference, orientation = declared, -1
+                else:
+                    p, q = component.terminals
+                    return {**base, "outcome": "not_assessable", "category": "orientation",
+                            "message": f"Il verso dichiarato per {component.id} deve usare i suoi morsetti: {p},{q} oppure {q},{p}. Chiarisci il riferimento prima del controllo."}
             if not step.claimed_value:
                 return {**base, "outcome": "not_assessable", "category": "transcription",
                         "message": "Indica il valore numerico esatto che hai scritto per poterlo controllare."}
@@ -202,9 +214,9 @@ def diagnose(ir: IR, trace: StudentTrace, netlist: str) -> dict:
                         "message": "I controlli indipendenti del circuito non concordano o non sono disponibili; nessun passaggio dello studente viene giudicato errato."}
             quantity = "current" if step.operation == "corrente" else "voltage"
             unit = "A" if quantity == "current" else "V"
-            expected = observed_dc[component.id][quantity]
+            expected = orientation * observed_dc[component.id][quantity]
             if claimed != expected:
-                t0, t1 = component.terminals
+                t0, t1 = reference
                 return {**base, "outcome": "first_invalid", "category": "value",
                         "message": f"Per {component.id}, {step.operation} orientata {t0} → {t1}: {expected} {unit}, non {claimed} {unit}. Il metodo scritto non è giudicato da questo controllo."}
             continue
