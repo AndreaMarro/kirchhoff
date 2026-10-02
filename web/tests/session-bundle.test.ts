@@ -18,6 +18,11 @@ describe('quaderno portabile',()=>{
   const bundle=await makeSessionBundle({...fields,traceSteps:[numeric]});
   expect((await readSessionBundle(JSON.stringify(bundle))).traceSteps).toEqual([numeric]);
  });
+ it('conserva una KCL strutturata nel quaderno',async()=>{
+  const kcl={...fields.traceSteps[0],operation:'kcl',first:'a',second:'-R1,+R2',claimed_value:null,transcription:'KCL al nodo a'};
+  const bundle=await makeSessionBundle({...fields,traceSteps:[kcl]});
+  expect((await readSessionBundle(JSON.stringify(bundle))).traceSteps).toEqual([kcl]);
+ });
  it('rifiuta una netlist sostituita a revisione invariata',async()=>{
   const bundle=await makeSessionBundle(fields);
   await expect(readSessionBundle(JSON.stringify({...bundle,netlist:netlist.replace('220','221')}))).rejects.toThrow('modificato');

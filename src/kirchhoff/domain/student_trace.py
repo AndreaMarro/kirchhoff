@@ -62,6 +62,18 @@ class StudentTrace:
             raise TypeError("StudentTrace richiede passaggi semantici, non immagini o testo grezzo")
 
 
+def _verified_dc_observables(ir: IR) -> dict | None:
+    """Usa entrambi i percorsi esatti prima di giudicare un valore dello studente."""
+    try:
+        tableau = solve_dc_tableau(ir)
+        nodal = mna.solve_dc(ir)
+    except (ValueError, TypeError):
+        return None
+    if compare_exact_solution_paths(nodal, tableau) is not None or verify(ir, nodal) is not None:
+        return None
+    return nodal
+
+
 def diagnose(ir: IR, trace: StudentTrace, netlist: str) -> dict:
     """Si ferma al primo errore provato o al primo passo non valutabile.
 
@@ -81,6 +93,42 @@ def diagnose(ir: IR, trace: StudentTrace, netlist: str) -> dict:
         if step.reading != "clear":
             return {**base, "outcome": "not_assessable", "category": step.reading,
                     "message": "Non riesco a leggere con sicurezza questo passaggio; chiariscilo prima del controllo."}
+        if step.operation == "kcl":
+            if step.first not in ir.nodes or not any(step.first in c.terminals for c in ir.components):
+                return {**base, "outcome": "not_assessable", "category": "identifier",
+                        "message": "Il nodo indicato non appartiene alla rete di rami del circuito originale."}
+            terms = step.second.split(",")
+            if not terms or any(not term.strip() or term.strip()[0] not in "+-" or
+                                not term.strip()[1:].strip() for term in terms):
+                return {**base, "outcome": "not_assessable", "category": "transcription",
+                        "message": "Scrivi le correnti orientate come +R1,-R2,+R3, separate da virgole; la somma è uguale a zero."}
+            signed = [(term.strip()[1:].strip(), 1 if term.strip()[0] == "+" else -1) for term in terms]
+            known = {c.id for c in ir.components}
+            if any(cid not in known for cid, _ in signed):
+                return {**base, "outcome": "not_assessable", "category": "identifier",
+                        "message": "Una corrente indicata non corrisponde a un componente del circuito originale."}
+            if len({cid for cid, _ in signed}) != len(signed):
+                return {**base, "outcome": "not_assessable", "category": "transcription",
+                        "message": "La stessa corrente compare più volte: chiarisci la forma della tua equazione."}
+            base["focus"] = [step.first, *(cid for cid, _ in signed)]
+            declared = dict(signed)
+            expected = {c.id: 1 if c.terminals[0] == step.first else -1
+                        for c in ir.components if step.first in c.terminals}
+            if declared == expected or declared == {cid: -sign for cid, sign in expected.items()}:
+                continue
+            # Una corrente nulla o una semplificazione algebrica può rendere
+            # corretta una forma incompleta: si accusa solo se ΣI non è zero.
+            if observed_dc is None:
+                observed_dc = _verified_dc_observables(ir)
+            if observed_dc is None:
+                return {**base, "outcome": "not_assessable", "category": "proof",
+                        "message": "La KCL non è certificabile con i due percorsi indipendenti; non la considero errata."}
+            residual = sum((sign * observed_dc[cid]["current"] for cid, sign in signed), Fraction(0))
+            if residual != 0:
+                return {**base, "outcome": "first_invalid", "category": "kcl",
+                        "message": f"Al nodo {step.first} le correnti indicate sommano {residual} A, non 0 A, con i versi dichiarati. Controlla segni e rami presenti."}
+            return {**base, "outcome": "not_assessable", "category": "simplification",
+                    "message": "La somma vale zero in questo circuito, ma la forma non è una KCL topologica completa; chiarisci la semplificazione prima di certificarla."}
         if step.operation in {"corrente", "tensione"}:
             base["focus"] = [step.first]
             try:
@@ -97,16 +145,10 @@ def diagnose(ir: IR, trace: StudentTrace, netlist: str) -> dict:
                 return {**base, "outcome": "not_assessable", "category": "transcription",
                         "message": "Il valore scritto non è un numero esatto leggibile; correggi la trascrizione."}
             if observed_dc is None:
-                try:
-                    tableau = solve_dc_tableau(ir)
-                    nodal = mna.solve_dc(ir)
-                except (ValueError, TypeError):
-                    return {**base, "outcome": "not_assessable", "category": "proof",
-                            "message": "Questo osservabile non è certificabile nel circuito confermato; non lo considero errato."}
-                if compare_exact_solution_paths(nodal, tableau) is not None or verify(ir, nodal) is not None:
-                    return {**base, "outcome": "not_assessable", "category": "proof",
-                            "message": "I controlli indipendenti del circuito non concordano; nessun passaggio dello studente viene giudicato errato."}
-                observed_dc = nodal
+                observed_dc = _verified_dc_observables(ir)
+            if observed_dc is None:
+                return {**base, "outcome": "not_assessable", "category": "proof",
+                        "message": "I controlli indipendenti del circuito non concordano o non sono disponibili; nessun passaggio dello studente viene giudicato errato."}
             quantity = "current" if step.operation == "corrente" else "voltage"
             unit = "A" if quantity == "current" else "V"
             expected = observed_dc[component.id][quantity]

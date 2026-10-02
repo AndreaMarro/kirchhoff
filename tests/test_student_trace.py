@@ -1,4 +1,5 @@
 from hashlib import sha256
+from fractions import Fraction
 from http.server import ThreadingHTTPServer
 from pathlib import Path
 from threading import Thread
@@ -39,6 +40,7 @@ def test_valid_series_and_wrong_arithmetic_are_distinct():
 
 def test_different_method_and_uncertain_reading_are_not_accused():
     for step in (StudentStep("KCL al nodo b", "kcl", "b", "", None),
+                 StudentStep("Metodo simbolico", "altro", "", "", None),
                  StudentStep("?", "serie", "R1", "R2", None, "ambiguous")):
         result = diagnose(leggi(BRANCH), trace(BRANCH, step), BRANCH)
         assert result["outcome"] == "not_assessable"
@@ -86,6 +88,60 @@ def test_numeric_observation_after_reduction_is_bound_to_original_component():
     assert diagnose(leggi(SERIES), trace(SERIES, *steps), SERIES)["outcome"] == "valid_so_far"
 
 
+def test_kcl_accepts_either_orientation_and_order_of_all_incident_currents():
+    for terms in ("-R1,+R2,+R3", "+R3,-R1,+R2", "+R1,-R2,-R3"):
+        step = StudentStep(f"KCL al nodo b: {terms}=0", "kcl", "b", terms)
+        result = diagnose(leggi(BRANCH), trace(BRANCH, step), BRANCH)
+        assert result["outcome"] == "valid_so_far"
+
+
+def test_kcl_wrong_sign_or_missing_nonzero_branch_is_first_invalid():
+    prior = StudentStep("I_R2 = 9/275 A", "corrente", "R2", "", "9/275")
+    for terms in ("+R1,+R2,+R3", "-R1,+R2"):
+        step = StudentStep(f"KCL al nodo b: {terms}=0", "kcl", "b", terms)
+        result = diagnose(leggi(BRANCH), trace(BRANCH, prior, step), BRANCH)
+        assert (result["outcome"], result["step"], result["category"]) == (
+            "first_invalid", 2, "kcl")
+
+
+def test_kcl_incomplete_or_ambiguous_syntax_is_not_accused():
+    for first, terms, category in (("not-a-node", "-R1,+R2,+R3", "identifier"),
+                                    ("b", "I_R1+I_R2+I_R3", "transcription"),
+                                    ("b", "-R1,+RX,+R3", "identifier"),
+                                    ("b", "-R1,+R2,+R2,+R3", "transcription")):
+        result = diagnose(leggi(BRANCH), trace(BRANCH, StudentStep("KCL", "kcl", first, terms)), BRANCH)
+        assert (result["outcome"], result["category"]) == ("not_assessable", category)
+
+
+def test_kcl_does_not_accuse_a_valid_zero_current_simplification():
+    text = "V1 a 0 12 volt\nR1 a b 100 ohm\nR2 b 0 200 ohm\nI0 b 0 0 ampere\n? current R2"
+    step = StudentStep("KCL senza ramo a corrente nulla", "kcl", "b", "-R1,+R2")
+    result = diagnose(leggi(text), trace(text, step), text)
+    assert result["outcome"] != "first_invalid"
+
+
+def test_kcl_abstains_when_the_independent_paths_disagree(monkeypatch):
+    import kirchhoff.domain.student_trace as module
+    original = module.solve_dc_tableau
+
+    def damaged(ir):
+        solution = original(ir)
+        solution["R2"]["current"] += Fraction(1, 100)
+        return solution
+
+    monkeypatch.setattr(module, "solve_dc_tableau", damaged)
+    step = StudentStep("KCL con un ramo omesso", "kcl", "b", "-R1,+R2")
+    result = diagnose(leggi(BRANCH), trace(BRANCH, step), BRANCH)
+    assert (result["outcome"], result["category"]) == ("not_assessable", "proof")
+
+
+def test_numeric_observation_abstains_for_unsupported_dc_element():
+    text = "V1 a 0 12 volt\nC1 a 0 1 farad\n? voltage C1"
+    step = StudentStep("V_C1", "tensione", "C1", "", "12")
+    result = diagnose(leggi(text), trace(text, step), text)
+    assert (result["outcome"], result["category"]) == ("not_assessable", "proof")
+
+
 def test_trace_is_bound_to_exact_circuit_revision():
     old = trace(SERIES, StudentStep("R1+R2", "serie", "R1", "R2"))
     with pytest.raises(ValueError, match="circuito è cambiato"):
@@ -102,6 +158,7 @@ def test_image_cannot_be_a_semantic_step():
     (dict(transcription=42, operation="serie", first="R1", second="R2"), TypeError),
     (dict(transcription="R1+R2", operation="serie", first="R1", second="R2", claimed_value=300), TypeError),
     (dict(transcription="x"*501, operation="serie", first="R1", second="R2"), ValueError),
+    (dict(transcription="R1+R2", operation="serie", first="R1", second="R2", claimed_value="1"*101), ValueError),
 ])
 def test_untrusted_step_fields_are_rejected(step, error):
     with pytest.raises(error):
