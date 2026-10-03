@@ -421,8 +421,10 @@ def test_http_new_circuit_pdf_and_origin_boundary(monkeypatch):
         assert b'(10 - (4)) / (2) = 3 A' in data.replace(b'\\(',b'(').replace(b'\\)',b')')
         ac='@ac 100 rad/s\nV1 a 0 10 volt 30deg\nR1 a 0 3 ohm\n? current R1'
         status,data=send('POST','/api/solve',dict(netlist=ac));assert status==200
-        assert json.loads(data)['outcome']=='refusal'
-        assert capabilities['ac'] is False
+        served_ac=json.loads(data)
+        assert served_ac['outcome']=='solved'
+        assert served_ac['verification']['electrical_claim']=='PHASOR_PATHS_CROSSCHECKED'
+        assert capabilities['ac'] is True
         assert send('POST','/api/solve',dict(netlist=text),'https://untrusted.example')[0]==403
         assert send('POST','/api/solve',dict(netlist='broken'))[0]==422
         assert send('POST','/api/pdf',dict(netlist='broken'))[0]==422

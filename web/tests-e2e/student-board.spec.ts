@@ -20,6 +20,7 @@ async function drawCrossing(page: Page, connect: boolean) {
   await page.getByRole('button', { name: 'Resistore' }).click();
   for (const index of [7, 11, 9, 8]) await node(page, index);
   await page.getByRole('button', { name: /Usa il circuito disegnato/ }).click();
+  await page.getByText('Vista esperta: testo del circuito', { exact: true }).click();
   const text = await page.getByRole('textbox', { name: 'Circuito da risolvere' }).inputValue();
   const rows = text.split('\n').filter(line => line.startsWith('R'));
   return rows.map(row => row.split(' ')[1]);
@@ -46,5 +47,6 @@ test('la lavagna conserva la corrente e il componente richiesti', async ({ page 
   await page.getByLabel('Grandezza richiesta').selectOption('current');
   await page.getByLabel('Componente richiesto').selectOption('V1');
   await page.getByRole('button', { name: /Usa il circuito disegnato/ }).click();
+  await page.getByText('Vista esperta: testo del circuito', { exact: true }).click();
   await expect(page.getByRole('textbox', { name: 'Circuito da risolvere' })).toHaveValue(/\? current V1$/);
 });

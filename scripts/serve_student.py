@@ -18,6 +18,10 @@ import mimetypes
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT/'src'))
+from kirchhoff.runtime_identity import RuntimeIdentityError, assert_runtime_current, register_entrypoint
+
+register_entrypoint(__file__)
+
 from kirchhoff.pipeline.lesson import create_lesson
 from kirchhoff.pipeline.capabilities import product_capabilities
 from kirchhoff.pipeline.lesson_pdf import export_pdf
@@ -39,6 +43,27 @@ EXAMPLES = [
 ]
 PHOTO_RECEIPT_SECRET = secrets.token_bytes(32)
 MAX_PHOTO_PASSES = 5
+
+
+def configured_local_origins():
+    """Origini aggiuntive esplicite: solo HTTP(S) loopback con porta esatta."""
+    raw = os.environ.get('KIRCHHOFF_ALLOWED_ORIGINS', '').strip()
+    if not raw:
+        return set()
+    if len(raw) > 2048 or len(raw.split(',')) > 16:
+        raise ValueError('KIRCHHOFF_ALLOWED_ORIGINS supera il limite locale.')
+    origins = set()
+    for item in raw.split(','):
+        origin = item.strip()
+        parsed = urlparse(origin)
+        if (parsed.scheme not in {'http', 'https'} or parsed.hostname not in {'127.0.0.1', 'localhost'}
+                or parsed.username is not None or parsed.password is not None
+                or parsed.path or parsed.query or parsed.fragment or parsed.params
+                or parsed.port is None or not 1 <= parsed.port <= 65535
+                or origin != f'{parsed.scheme}://{parsed.hostname}:{parsed.port}'):
+            raise ValueError('KIRCHHOFF_ALLOWED_ORIGINS richiede origini loopback esatte, senza percorsi o credenziali.')
+        origins.add(origin)
+    return origins
 
 
 def revision():
@@ -141,11 +166,19 @@ class Handler(BaseHTTPRequestHandler):
         host=self.headers.get('Host','').split(':')[0]
         origin=self.headers.get('Origin')
         allowed={f'http://{h}:{p}' for h in ('127.0.0.1','localhost') for p in (self.server.server_port,43920)}
+        try:
+            allowed.update(configured_local_origins())
+        except ValueError:
+            return False
         return host in {'127.0.0.1','localhost'} and (origin is None or origin in allowed)
 
     def do_GET(self):
         if not self.permitted():return self.send(403,dict(message='Origine non consentita.'))
         if self.path=='/api/capabilities':
+            try:
+                assert_runtime_current()
+            except RuntimeIdentityError as exc:
+                return self.send(409,dict(code='runtime_changed',message=str(exc)))
             capabilities=product_capabilities(vision=vision_ready())
             return self.send(200,dict(**capabilities,examples=EXAMPLES))
         root=(ROOT/'web/dist').resolve()
@@ -158,6 +191,7 @@ class Handler(BaseHTTPRequestHandler):
         if not self.permitted() or self.headers.get('Content-Type','').split(';')[0]!='application/json':
             return self.send(403,dict(message='Richiesta non consentita.'))
         try:
+            assert_runtime_current()
             length=int(self.headers.get('Content-Length','0'))
             if not 0<length<=3000000:raise ValueError('Dimensione richiesta non valida.')
             payload=json.loads(self.rfile.read(length))
@@ -188,6 +222,8 @@ class Handler(BaseHTTPRequestHandler):
             if provenance and result.get('outcome')=='solved':result['input_provenance']=provenance
             if self.path=='/api/pdf':return self.send(200,export_pdf(result),'application/pdf')
             return self.send(200,result)
+        except RuntimeIdentityError as exc:
+            self.send(409,dict(code='runtime_changed',message=str(exc)))
         except (ValueError,KeyError,TypeError) as exc:
             self.send(422,dict(message=str(exc)))
         except HTTPError:
@@ -218,5 +254,6 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser();parser.add_argument('--port',type=int,default=43921);parser.add_argument('--export',action='store_true');args=parser.parse_args()
     if args.export:export_catalog()
     else:
+        configured_local_origins()  # Una configurazione invalida ferma l'avvio.
         print(f'Kirchhoff: http://127.0.0.1:{args.port}',flush=True)
         ThreadingHTTPServer(('127.0.0.1',args.port),Handler).serve_forever()

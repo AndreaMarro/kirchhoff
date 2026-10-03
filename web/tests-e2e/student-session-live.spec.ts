@@ -38,6 +38,7 @@ test('un ritaglio reale della lavagna conserva i tratti scelti nel quaderno dopo
  await page.mouse.up();
  await board.getByRole('button',{name:'Usa tutto il disegno →'}).click();
  await expect(page.getByText(/Ritaglio dalla lavagna: 1 tratto del disegno intero/)).toBeVisible();
+ if(!await page.getByRole('textbox',{name:'Circuito da risolvere'}).isVisible())await page.getByText('Vista esperta: testo del circuito',{exact:true}).click();
  await page.getByRole('textbox',{name:'Circuito da risolvere'}).fill(netlist);
  await page.getByRole('checkbox',{name:/Ho confrontato con la foto/}).check();
  await page.getByRole('button',{name:/Risolvi e spiega/}).click();
@@ -101,6 +102,7 @@ test('la selezione reale esporta un solo tratto e conserva il resto della scena'
  await page.mouse.click(cx,cy-45);
  await board.getByRole('button',{name:'Usa selezione →'}).click();
  await expect(page.getByText(/Ritaglio dalla lavagna: 1 tratto selezionato/)).toBeVisible();
+ if(!await page.getByRole('textbox',{name:'Circuito da risolvere'}).isVisible())await page.getByText('Vista esperta: testo del circuito',{exact:true}).click();
  await page.getByRole('textbox',{name:'Circuito da risolvere'}).fill(netlist);
  await page.getByRole('checkbox',{name:/Ho confrontato con la foto/}).check();
  await page.getByRole('button',{name:/Risolvi e spiega/}).click();
@@ -120,6 +122,7 @@ test('due sorgenti: la lezione servita mostra la differenza di tensione reale',a
  const netlist='V1 a 0 10 volt\nR1 a b 2 ohm\nV2 b 0 4 volt\n? current R1';
  await page.goto(base!);
  await page.getByRole('button',{name:/Il tuo circuito/}).click();
+ if(!await page.getByRole('textbox',{name:'Circuito da risolvere'}).isVisible())await page.getByText('Vista esperta: testo del circuito',{exact:true}).click();
  await page.getByRole('textbox',{name:'Circuito da risolvere'}).fill(netlist);
  await page.getByRole('button',{name:/Risolvi e spiega/}).click();
  await expect(page.locator('.student-route-method')).toContainText('Millman');
@@ -131,7 +134,7 @@ test('due sorgenti: la lezione servita mostra la differenza di tensione reale',a
 test('il perimetro visibile coincide con quello dichiarato dal server',async({page})=>{
  const declared=await fetch(`${base}/api/capabilities`).then(r=>r.json()) as {scope:string;controlled_sources:boolean;ac:boolean;transients:boolean};
  expect(declared.controlled_sources).toBe(false);
- expect(declared.ac).toBe(false);
+ expect(declared.ac).toBe(true);
  expect(declared.transients).toBe(false);
  await page.goto(base!);
  await page.getByText('Cosa puoi risolvere in questa versione').click();
@@ -142,6 +145,7 @@ test('un valore e una KCL dello studente sono controllati fino al primo errore',
  const netlist='V1 a 0 12 volt\nR1 a b 100 ohm\nR2 b 0 200 ohm\nR3 b 0 300 ohm\n? current R2';
  await page.goto(base!);
  await page.getByRole('button',{name:/Il tuo circuito/}).click();
+ if(!await page.getByRole('textbox',{name:'Circuito da risolvere'}).isVisible())await page.getByText('Vista esperta: testo del circuito',{exact:true}).click();
  await page.getByRole('textbox',{name:'Circuito da risolvere'}).fill(netlist);
  await page.getByRole('button',{name:/Risolvi e spiega/}).click();
  await expect(page.getByRole('dialog')).toBeHidden();
@@ -173,6 +177,7 @@ test('il valore nel verso opposto dichiarato è controllato senza cambiare il ci
  const netlist='V1 a 0 12 volt\nR1 a b 100 ohm\nR2 b 0 200 ohm\n? current R2';
  await page.goto(base!);
  await page.getByRole('button',{name:/Il tuo circuito/}).click();
+ if(!await page.getByRole('textbox',{name:'Circuito da risolvere'}).isVisible())await page.getByText('Vista esperta: testo del circuito',{exact:true}).click();
  await page.getByRole('textbox',{name:'Circuito da risolvere'}).fill(netlist);
  await page.getByRole('button',{name:/Risolvi e spiega/}).click();
  await expect(page.getByRole('dialog')).toBeHidden();

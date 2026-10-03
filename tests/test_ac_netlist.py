@@ -9,7 +9,7 @@ from kirchhoff.domain.independent_phasor import solve_phasor_tableau
 from kirchhoff.domain.mna import solve_phasor
 from kirchhoff.pipeline.lesson import create_lesson
 from kirchhoff.pipeline.capabilities import product_capabilities
-from kirchhoff.pipeline.netlist import leggi
+from kirchhoff.pipeline.netlist import leggi, leggi_con_convenzioni
 
 
 AC = ("@ac 100 rad/s\nV1 a 0 10 volt 30deg\nR1 a b 3 ohm\n"
@@ -29,10 +29,12 @@ def test_typed_ac_netlist_reaches_both_exact_independent_assemblies():
     assert mna == solve_phasor_tableau(ir)
     assert mna["R1"]["voltage"] == Cyc12.of(3) * mna["R1"]["current"]
     assert mna["L1"]["voltage"] == J * Cyc12.of(4) * mna["L1"]["current"]
-    assert create_lesson(AC)["outcome"] == "refusal"  # no AC lesson claim yet
+    lesson = create_lesson(AC)
+    assert lesson["outcome"] == "solved"
+    assert lesson["verification"]["electrical_claim"] == "PHASOR_PATHS_CROSSCHECKED"
     capabilities = product_capabilities(AC)
-    assert capabilities["ac"] is False
-    assert capabilities["circuit"]["outcome"] == "refusal"
+    assert capabilities["ac"] is True
+    assert capabilities["circuit"]["outcome"] == "solved"
 
 
 @pytest.mark.parametrize("text,reason", [
@@ -48,4 +50,30 @@ def test_typed_ac_netlist_reaches_both_exact_independent_assemblies():
 ])
 def test_ac_netlist_refuses_ambiguous_or_unsupported_inputs(text, reason):
     with pytest.raises(ValueError, match=reason):
+        leggi(text)
+
+
+@pytest.mark.parametrize('amplitude', ['rms', 'peak', 'unspecified'])
+def test_explicit_amplitude_is_retained_without_scaling_the_electrical_ir(amplitude):
+    text = AC.replace('@ac 100 rad/s', f'@ac 100 rad/s\n@amplitude {amplitude} # scala comune')
+    ir, convention = leggi_con_convenzioni(text)
+    assert convention == amplitude
+    assert ir == leggi(AC) == leggi(text)
+    assert leggi_con_convenzioni(AC)[1] == 'unspecified'
+
+
+@pytest.mark.parametrize('directive', ['@amplitude', '@amplitude RMS', '@amplitude average', '@amplitude rms peak', '@amplitude 1', '@amplitude peak\n@amplitude rms', '@amplitude unspecified\n@amplitude unspecified'])
+def test_invalid_or_duplicate_amplitude_is_rejected(directive):
+    with pytest.raises(ValueError, match='riga.*amplitude'):
+        leggi(AC.replace('@ac 100 rad/s', '@ac 100 rad/s\n' + directive))
+
+
+@pytest.mark.parametrize('text', [
+    '@amplitude rms\n' + AC,
+    'V1 a 0 10 volt\n@amplitude rms\nR1 a 0 3 ohm\n? current R1',
+    AC.replace('R1 a b 3 ohm', '@amplitude rms\nR1 a b 3 ohm'),
+    AC + '\n@amplitude rms',
+])
+def test_amplitude_cannot_apply_to_dc_or_appear_after_components_or_question(text):
+    with pytest.raises(ValueError, match='riga.*amplitude'):
         leggi(text)

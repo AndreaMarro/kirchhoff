@@ -1,8 +1,11 @@
 import {App, PostMessageTransport} from '@modelcontextprotocol/ext-apps';
 import {safeSvg} from './student/safeSvg.ts';
+import {lessonMathMarkup,lessonExpressionMarkup} from './student/lessonMath.ts';
+import {verificationDescription,decimalForReading,answerPrefix,isLaplaceLesson} from './student/lessonPresentation.ts';
+import type {Verification} from './student/lessonPresentation.ts';
 
-type Step={title:string;explanation:string;svg:string;equations:string[]};
-type Lesson={schema:string;outcome:string;netlist:string;title:string;steps:Step[];answer:{exact:string;unit:string;reference:string};fingerprint:string;message?:string};
+type Step={math?:unknown;title:string;explanation:string;svg:string;equations:string[]};
+type Lesson={schema:string;outcome:string;method:string;verification:Verification;netlist:string;title:string;steps:Step[];answer:{math?:unknown;display_exact?:string;exact:string;decimal?:string;unit:string;reference:string;quantity?:string};fingerprint:string;conventions?:{domain?:string};message?:string};
 const app=new App({name:'Kirchhoff CircuitCheck',version:'0.1.0'},{});
 const input=document.querySelector<HTMLTextAreaElement>('#circuit')!;
 const status=document.querySelector<HTMLElement>('#status')!;
@@ -23,9 +26,20 @@ function show(){
  title.textContent=step?.title??'Il circuito';
  drawing.innerHTML=step?safeSvg(step.svg):'';
  explanation.textContent=step?.explanation??'';
- equations.replaceChildren(...(step?.equations??[]).map(text=>{const p=document.createElement('p');p.textContent=text;return p;}));
+ const math=lessonMathMarkup(step?.math);
+ if(math)equations.innerHTML=math;
+ else equations.replaceChildren(...(step?.equations??[]).map(text=>{const p=document.createElement('p');p.textContent=text;return p;}));
  progress.textContent=step?`${position+1} / ${lesson!.steps.length}`:'';
- answer.textContent=step&&position===lesson!.steps.length-1?`${lesson!.answer.exact} ${lesson!.answer.unit} · ${lesson!.answer.reference}`:'';
+ const answerNote=lesson ? isLaplaceLesson(lesson)?`${lesson.answer.unit} · Trasformata unilaterale; stato iniziale a t = 0−.`:`${lesson.answer.unit} · ≈ ${decimalForReading(lesson.answer.decimal??lesson.answer.exact)} ${lesson.answer.unit}` : '';
+ answer.textContent=step&&position===lesson!.steps.length-1?`${answerPrefix(lesson!.answer.quantity,lesson!.conventions?.domain)}${lesson!.answer.display_exact??lesson!.answer.exact} ${answerNote} · ${lesson!.answer.reference}`:'';
+ if(step&&position===lesson!.steps.length-1){
+  const exact=lessonExpressionMarkup(lesson!.answer.math);
+  if(exact){
+   const composed=document.createElement('span');composed.innerHTML=exact;
+   answer.replaceChildren(document.createTextNode(answerPrefix(lesson!.answer.quantity,lesson!.conventions?.domain)),composed,
+    document.createTextNode(` ${answerNote} · ${lesson!.answer.reference}`));
+  }
+ }
  previous.disabled=!step||position===0;
  next.disabled=!step||position===lesson!.steps.length-1;
 }
@@ -34,7 +48,7 @@ function receive(raw:unknown){
  if(!data||typeof data!=='object')return;
  if(data.outcome!=='solved'){status.textContent=data.message??'Circuito non risolto: controlla i dati e le condizioni.';lesson=null;show();return;}
  if(data.schema!=='circuit-lesson.v1'||!Array.isArray(data.steps)||!data.steps.length||!data.answer){status.textContent='Risultato non interpretabile.';lesson=null;show();return;}
- lesson=data;input.value=data.netlist;position=0;status.textContent='Derivazione verificata dal motore; la certificazione del prodotto completo richiede ulteriori controlli.';show();
+ lesson=data;input.value=data.netlist;position=0;status.textContent=verificationDescription(data);show();
 }
 function fromResult(result:{isError?:boolean;structuredContent?:unknown;content?:Array<{type:string;text?:string}>}){
  if(result.isError){status.textContent=result.content?.find(c=>c.type==='text')?.text??'Il motore ha rifiutato il circuito.';return;}

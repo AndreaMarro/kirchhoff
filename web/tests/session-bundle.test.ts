@@ -1,5 +1,6 @@
 import {describe,it,expect} from 'vitest';
-import {boardSceneSha256,makeSessionBundle,readSessionBundle} from '../src/student/sessionBundle.ts';
+import {boardSceneSha256,makeSessionBundle,readSessionBundle,MAX_SESSION_BYTES} from '../src/student/sessionBundle.ts';
+import {makeSourceArtifact} from '../src/student/sourceArtifact.ts';
 
 const netlist='V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\n? voltage R2';
 const board=JSON.stringify({type:'excalidraw',version:2,elements:[{id:'board-mark'}],files:{}});
@@ -7,6 +8,23 @@ const fields={netlist,method:'auto',answerExact:'33/4',engineRevision:'abc123',s
  showOriginal:true,boardScene:board,traceSteps:[{transcription:'R1 + R2',operation:'serie',first:'R1',second:'R2',claimed_value:'320',reading:'clear'}],priorImageSha256:null};
 
 describe('quaderno portabile',()=>{
+ it('riapre la versione 1 e conserva una fonte nella versione 2 senza ripristinare la conferma',async()=>{
+  const legacy={...await makeSessionBundle(fields),schema:'kirchhoff-portable-session.v1'};
+  expect((await readSessionBundle(JSON.stringify(legacy))).netlist).toBe(netlist);
+  const image='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9b4wAAAABJRU5ErkJggg==';
+  const source=await makeSourceArtifact(image,'image');
+  const bundle=await makeSessionBundle({...fields,sourceArtifact:source,priorImageSha256:source.prepared.sha256});
+  expect((await readSessionBundle(JSON.stringify(bundle))).sourceArtifact).toEqual(source);
+  await expect(readSessionBundle(JSON.stringify({...bundle,priorImageSha256:'a'.repeat(64)}))).rejects.toThrow('revisione fotografica');
+  await expect(readSessionBundle(JSON.stringify({...bundle,schema:legacy.schema}))).rejects.toThrow('versione 2');
+  await expect(readSessionBundle(JSON.stringify({...bundle,sourceArtifact:{...source,kind:'board'}}))).rejects.toThrow('tratti');
+ });
+ it.each(['rms','peak','unspecified'])('conserva la dichiarazione AC %s e rileva modifiche alla sua revisione',async amplitude=>{
+  const ac=`@ac 100 rad/s\n@amplitude ${amplitude}\nV1 a 0 10 volt 30deg\nR1 a 0 5 ohm\n? current R1`;
+  const bundle=await makeSessionBundle({...fields,netlist:ac,method:'phasor',answerExact:'(sqrt(3)) + j*(1)'});
+  expect((await readSessionBundle(JSON.stringify(bundle))).netlist).toBe(ac);
+  await expect(readSessionBundle(JSON.stringify({...bundle,netlist:ac.replace(`@amplitude ${amplitude}`,`@amplitude ${amplitude==='rms'?'peak':'rms'}`)}))).rejects.toThrow('modificato');
+ });
  it('conserva circuito, lavagna e tentativo ma richiede ricalcolo della soluzione',async()=>{
   const bundle=await makeSessionBundle(fields);
   expect(await readSessionBundle(JSON.stringify(bundle))).toEqual(bundle);
@@ -53,6 +71,6 @@ describe('quaderno portabile',()=>{
  it('rifiuta versioni non supportate e file troppo grandi',async()=>{
   const bundle=await makeSessionBundle(fields);
   await expect(readSessionBundle(JSON.stringify({...bundle,schema:'future'}))).rejects.toThrow('Versione');
-  await expect(readSessionBundle(' '.repeat(10_500_001))).rejects.toThrow('10 MB');
+  await expect(readSessionBundle(' '.repeat(MAX_SESSION_BYTES+1))).rejects.toThrow('42 MB');
  });
 });

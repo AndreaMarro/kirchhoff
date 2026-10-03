@@ -21,9 +21,10 @@ componente artificiale:
     R2 a 0 6 ohm
     ? resistance a 0
 
-Regime sinusoidale tipizzato (la lezione AC non e' ancora servita):
+Regime sinusoidale tipizzato (lezione corrente/tensione per RLC e V/I indipendenti):
 
     @ac 100 rad/s
+    @amplitude rms
     V1 a 0 10 volt 30deg
     R1 a b 3 ohm
     L1 b 0 1/25 henry
@@ -31,8 +32,15 @@ Regime sinusoidale tipizzato (la lezione AC non e' ancora servita):
     ? current R1
 
 La pulsazione e' esatta e positiva; la fase di ciascuna sorgente e' esplicita
-e multipla intera di 30 gradi. I valori sono moduli di fasore: l'IR non
-specifica la convenzione RMS/picco e quindi non autorizza un calcolo di potenza.
+e multipla intera di 30 gradi. La direttiva opzionale @amplitude, dopo @ac
+e prima dei componenti, dichiara rms, peak o unspecified per tutti i fasori.
+Senza direttiva la convenzione resta unspecified. La dichiarazione appartiene
+all'ingresso della lezione e non cambia i numeri dell'IR. La domanda
+«? power R1» richiede rms o peak espliciti e restituisce la potenza complessa
+assorbita in convenzione passiva, con parti attiva P e reattiva Q.
+«? impedance a b» richiede @ac e misura l'impedenza fra due nodi esistenti
+con le sorgenti indipendenti spente. Il rapporto tensione/corrente non dipende
+dalla dichiarazione RMS/picco e non calcola una potenza.
 
 Sorgenti controllate da tensione:
 
@@ -65,6 +73,7 @@ from kirchhoff.domain.ir import IR, Component, Magnitude, PortRequest, Request
 LETTERE = {"V": "voltage_source_dc", "R": "resistor",
            "C": "capacitor", "L": "inductor", "I": "current_source_dc"}
 _PHASE = re.compile(r"^([+-]?\d+)deg$")
+AMPLITUDE_CONVENTIONS = frozenset({'rms', 'peak', 'unspecified'})
 
 
 def _nodo(nodi: list[str], n: str) -> None:
@@ -73,11 +82,24 @@ def _nodo(nodi: list[str], n: str) -> None:
 
 
 def leggi(testo: str) -> IR:
-    """Da netlist a `IR`. Ogni errore nomina la riga e cosa c'era di sbagliato."""
+    """Proiezione elettrica della netlist, senza conversioni di ampiezza."""
+    return leggi_con_convenzioni(testo)[0]
+
+
+def leggi_con_convenzioni(testo: str) -> tuple[IR, str]:
+    """Legge insieme IR e scala dei fasori; ogni errore identifica la riga.
+
+    La convenzione resta fuori dal kernel, che risolve equazioni lineari sulla
+    scala fornita. La lezione conserva la dichiarazione senza inferirla.
+    """
+    if any(line.split('#', 1)[0].split()[:1] == ['@laplace'] for line in testo.splitlines()):
+        from kirchhoff.pipeline.laplace_input import parse_laplace
+        return parse_laplace(testo).ir, 'unspecified'
     componenti: list[Component] = []
     richieste: list[Request | PortRequest] = []
     nodi: list[str] = []
     ac_omega: Fraction | None = None
+    amplitude: str | None = None
 
     for numero, riga in enumerate(testo.splitlines(), 1):
         riga = riga.split("#", 1)[0].strip()
@@ -100,12 +122,27 @@ def leggi(testo: str) -> IR:
                 raise ValueError(f"riga {numero}: serve una pulsazione AC positiva.")
             continue
 
+        if pezzi[0] == '@amplitude':
+            if ac_omega is None:
+                raise ValueError(f'riga {numero}: @amplitude richiede prima una direttiva @ac.')
+            if amplitude is not None:
+                raise ValueError(f'riga {numero}: una sola direttiva @amplitude per circuito.')
+            if componenti or richieste:
+                raise ValueError(f'riga {numero}: @amplitude va prima dei componenti e della domanda.')
+            if len(pezzi) != 2 or pezzi[1] not in AMPLITUDE_CONVENTIONS:
+                raise ValueError(f'riga {numero}: usa «@amplitude rms», «@amplitude peak» oppure «@amplitude unspecified».')
+            amplitude = pezzi[1]
+            continue
+
         if pezzi[0] == "?":
-            if len(pezzi) > 1 and pezzi[1] == "resistance":
+            if len(pezzi) > 1 and pezzi[1] in {"resistance", "impedance"}:
                 if len(pezzi) != 4:
-                    raise ValueError(f"riga {numero}: la domanda di porta è «? resistance <morsetto> <morsetto>».")
+                    raise ValueError(f"riga {numero}: la domanda di porta è «? {pezzi[1]} <morsetto> <morsetto>».")
+                if pezzi[1] == "impedance" and ac_omega is None:
+                    raise ValueError(f"riga {numero}: la domanda di impedenza richiede prima @ac <pulsazione> rad/s.")
                 richieste.append(PortRequest(f"q{len(richieste)+1}",
-                                             "equivalent_resistance", (pezzi[2], pezzi[3])))
+                                             "equivalent_impedance" if pezzi[1] == "impedance" else "equivalent_resistance",
+                                             (pezzi[2], pezzi[3])))
                 continue
             if len(pezzi) != 3:
                 raise ValueError(
@@ -207,6 +244,7 @@ def leggi(testo: str) -> IR:
 
     if not componenti:
         raise ValueError("netlist vuota: nessun bipolo da risolvere.")
-    return IR(ir_version="1.0.0", domain="ac_sinusoidal" if ac_omega is not None else "dc", source_kind="netlist",
+    ir = IR(ir_version="1.0.0", domain="ac_sinusoidal" if ac_omega is not None else "dc", source_kind="netlist",
               nodes=tuple(sorted(nodi)), components=tuple(componenti),
               requests=tuple(richieste), omega=ac_omega or Fraction(0))
+    return ir, amplitude or 'unspecified'

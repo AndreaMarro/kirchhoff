@@ -64,7 +64,8 @@ def test_capabilities_reflect_served_lesson_not_only_kernel():
             assert base == product_capabilities()
             assert base["solve"] is True
             assert base["controlled_sources"] is False
-            assert base["ac"] is False and base["transients"] is False
+            assert base["ac"] is True and base["transients"] is True
+            assert base["ac_scope"]["certified_lesson"] is False
             assert base["kernel_controlled_sources"] == ["VCVS", "VCCS"]
 
             good = (await client.call_tool("circuit_capabilities", {"netlist": NETLIST})).structured_content
@@ -80,4 +81,21 @@ def test_capabilities_reflect_served_lesson_not_only_kernel():
             actual = (await client.call_tool("solve_circuit", {"netlist": controlled})).structured_content
             assert unsupported["circuit"]["outcome"] == actual["outcome"] == "refusal"
             assert unsupported["circuit"]["available_methods"] == []
+    asyncio.run(run())
+
+
+def test_real_stdio_laplace_lesson_matches_canonical_service():
+    from kirchhoff.pipeline.lesson import create_lesson
+    text = "@laplace\nV1 e 0 10 volt step\nR1 e a 2 ohm\nC1 a 0 1/3 farad\n@initial C1 voltage 4 volt\n? voltage C1"
+    expected = create_lesson(text, 'laplace')
+    async def run():
+        params = StdioServerParameters(command=sys.executable, args=["-m", "kirchhoff.api.mcp_server"])
+        async with Client(params) as client:
+            result = await client.call_tool("solve_circuit", {"netlist":text,"method":"laplace"})
+            assert not result.is_error
+            assert result.structured_content == expected
+            capability = (await client.call_tool("circuit_capabilities", {"netlist":text})).structured_content
+            assert capability["circuit"]["available_methods"] == ["auto","laplace"]
+            assert capability["laplace_scope"]["inverse_transform"] is False
+            assert expected["verification"]["product_verified"] is False
     asyncio.run(run())

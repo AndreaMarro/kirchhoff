@@ -20,11 +20,20 @@ from kirchhoff.domain.port import _probe, analyze_dc_port
 from kirchhoff.domain.refusal import Refusal
 from kirchhoff.domain.proof.session import DOCUMENT_PROFILE
 from kirchhoff.pipeline.failure import Failure
-from kirchhoff.pipeline.netlist import leggi
+from kirchhoff.pipeline.netlist import leggi_con_convenzioni
 from kirchhoff.pipeline.proof_run import run_proof_session_con_run
 from kirchhoff.pipeline.resolve import _source_sha
 from kirchhoff.pipeline.presentation import equazione_analitica
 from kirchhoff.pipeline.lesson_svg import schematic
+from kirchhoff.runtime_identity import assert_runtime_current, loaded_revision
+
+
+def lesson_build(*additional: str) -> str:
+    """Revisione dei byte caricati, con guardia sulle dipendenze del processo."""
+    paths = ('lesson.py', 'lesson_svg.py', 'lesson_pdf.py', 'lesson_pdf_math.py',
+             'lesson_bridge.py', '../render/layout/connected.py',
+             '../render/serialize/connectivity.py', *additional)
+    return loaded_revision(['pipeline/'+name for name in paths])
 
 
 def number(v: F) -> str:
@@ -234,11 +243,12 @@ def _checked_step(title: str, explanation: str, svg: str,
 
 def create_lesson(text: str, method: str = 'auto', source_sha: str = '') -> dict:
     """Un solo ingresso per catalogo, input editato, web e PDF."""
-    if method not in {'auto', 'millman', 'norton', 'thevenin', 'superposition', 'nodal', 'star_delta', 'test_current'}:
+    assert_runtime_current()
+    if method not in {'auto', 'millman', 'norton', 'thevenin', 'superposition', 'nodal', 'star_delta', 'test_current', 'phasor', 'laplace'}:
         raise ValueError('Metodo sconosciuto.')
     if len(text) > 16000:
         raise ValueError('Circuito troppo lungo: massimo 16000 caratteri.')
-    ir = leggi(text)
+    ir, amplitude = leggi_con_convenzioni(text)
     if len(ir.components) > 32 or len(ir.nodes) > 24:
         raise ValueError('Questo banco accetta al massimo 32 componenti e 24 nodi.')
     if len(ir.requests) != 1:
@@ -247,6 +257,19 @@ def create_lesson(text: str, method: str = 'auto', source_sha: str = '') -> dict
     source_sha = _source_sha(source_sha or None)
     if isinstance(source_sha, Failure):
         return dict(outcome='failure', message=source_sha.messaggio)
+    if ir.domain == 'laplace':
+        from kirchhoff.pipeline.lesson_laplace import create_laplace_lesson
+        return create_laplace_lesson(text, method, source_sha)
+    if method == 'laplace':
+        raise ValueError('Il metodo Laplace richiede una direttiva @laplace.')
+    if ir.domain == 'ac_sinusoidal':
+        from kirchhoff.pipeline.lesson_ac import create_phasor_lesson
+        return create_phasor_lesson(text, ir, req, method, source_sha, amplitude)
+    if method == 'phasor':
+        raise ValueError('Il metodo fasoriale richiede una direttiva @ac con pulsazione positiva.')
+    if isinstance(req, Request) and req.quantity == 'power':
+        return dict(outcome='refusal', cause='unsupported_domain',
+                    message='La richiesta power serve potenza complessa AC con @ac e @amplitude rms oppure peak.')
     if isinstance(req, PortRequest):
         if method not in {'auto', 'test_current'}:
             raise ValueError('Per la resistenza di porta seleziona Automatico o Corrente di prova.')
@@ -358,7 +381,7 @@ def create_lesson(text: str, method: str = 'auto', source_sha: str = '') -> dict
                 steps=steps, answer=dict(exact=number(answer), decimal=decimal, unit=unit, reference=direction),
                 verification=dict(electrical_claim='VERIFIED', backend='CLOSED',
                                   lesson='exact-answer-crosscheck', product_verified=False),
-                source_sha=source_sha, lesson_build=hashlib.sha256(b''.join((Path(__file__).parent/name).read_bytes() for name in ('lesson.py','lesson_svg.py','lesson_pdf.py','lesson_bridge.py'))).hexdigest(), fingerprint=hashlib.sha256(text.encode()).hexdigest())
+                source_sha=source_sha, lesson_build=lesson_build(), fingerprint=hashlib.sha256(text.encode()).hexdigest())
 
 
 def _create_port_lesson(text: str, ir: IR, req: PortRequest, source_sha: str) -> dict:
@@ -453,8 +476,7 @@ def _create_port_lesson(text: str, ir: IR, req: PortRequest, source_sha: str) ->
                                   backend='SUBPROOFS_CLOSED', lesson='port-subproof-crosscheck',
                                   product_verified=False),
                 source_sha=source_sha,
-                lesson_build=hashlib.sha256(b''.join((Path(__file__).parent/name).read_bytes()
-                                                     for name in ('lesson.py', 'lesson_svg.py', 'lesson_pdf.py', 'lesson_bridge.py'))).hexdigest(),
+                lesson_build=lesson_build(),
                 fingerprint=hashlib.sha256(text.encode()).hexdigest())
 
 

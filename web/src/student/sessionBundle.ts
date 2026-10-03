@@ -1,9 +1,12 @@
 import type {TraceStep} from './StudentTracePanel.tsx';
+import {readSourceArtifact} from './sourceArtifact.ts';
+import type {SourceArtifact} from './sourceArtifact.ts';
 
-export const SESSION_SCHEMA='kirchhoff-portable-session.v1' as const;
+export const SESSION_SCHEMA='kirchhoff-portable-session.v2' as const;
+export const MAX_SESSION_BYTES=42_000_000;
 export type BoardSourceRecord={sceneSha256:string;selectedElementIds:string[];selectionOnly:boolean};
 export type SessionBundle={
- schema:typeof SESSION_SCHEMA;
+ schema:typeof SESSION_SCHEMA|'kirchhoff-portable-session.v1';
  netlist:string;
  method:string;
  circuitFingerprint:string;
@@ -15,6 +18,7 @@ export type SessionBundle={
  traceSteps:TraceStep[];
  priorImageSha256:string|null;
  boardSource?:BoardSourceRecord|null;
+ sourceArtifact?:SourceArtifact|null;
 };
 
 const record=(value:unknown):value is Record<string,unknown>=>Boolean(value)&&typeof value==='object'&&!Array.isArray(value);
@@ -29,10 +33,10 @@ export async function makeSessionBundle(fields:Omit<SessionBundle,'schema'|'circ
 }
 
 export async function readSessionBundle(text:string):Promise<SessionBundle>{
- if(text.length>10_500_000)throw new Error('Il quaderno supera 10 MB. Riduci le immagini nella lavagna.');
+ if(text.length>MAX_SESSION_BYTES)throw new Error('Il quaderno supera 42 MB. Riduci le immagini nella lavagna.');
  let value:unknown;
  try{value=JSON.parse(text);}catch{throw new Error('Il quaderno non è un JSON leggibile.');}
- if(!record(value)||value.schema!==SESSION_SCHEMA||typeof value.netlist!=='string'||!value.netlist.trim()||value.netlist.length>16000||
+ if(!record(value)||![SESSION_SCHEMA,'kirchhoff-portable-session.v1'].includes(String(value.schema))||typeof value.netlist!=='string'||!value.netlist.trim()||value.netlist.length>16000||
     typeof value.method!=='string'||value.method.length>40||typeof value.answerExact!=='string'||value.answerExact.length>200||
     typeof value.engineRevision!=='string'||value.engineRevision.length>100||typeof value.circuitFingerprint!=='string'||
     !/^[a-f0-9]{64}$/.test(value.circuitFingerprint)||!Number.isInteger(value.selectedStep)||Number(value.selectedStep)<0||Number(value.selectedStep)>512||
@@ -40,6 +44,13 @@ export async function readSessionBundle(text:string):Promise<SessionBundle>{
     !Array.isArray(value.traceSteps)||value.traceSteps.length<1||value.traceSteps.length>32||
     !(value.priorImageSha256===null||typeof value.priorImageSha256==='string'&&/^[a-f0-9]{64}$/.test(value.priorImageSha256)))
    throw new Error('Versione o campi del quaderno non validi.');
+ if(value.schema==='kirchhoff-portable-session.v1'&&text.length>10_500_000)throw new Error('Il quaderno versione 1 supera 10 MB.');
+ if(value.sourceArtifact!==undefined&&value.sourceArtifact!==null){
+  if(value.schema!==SESSION_SCHEMA)throw new Error('La fonte richiede un quaderno versione 2.');
+  const source=await readSourceArtifact(value.sourceArtifact);
+  if(source.prepared.sha256!==value.priorImageSha256)throw new Error('La fonte non appartiene alla revisione fotografica del quaderno.');
+  if(source.kind==='board'&&!value.boardSource)throw new Error('Manca la provenienza dei tratti della lavagna.');
+ }
  if(value.boardSource!==undefined&&value.boardSource!==null){
   const source=value.boardSource;
   if(!record(source)||value.priorImageSha256===null||!value.boardScene||typeof source.sceneSha256!=='string'||

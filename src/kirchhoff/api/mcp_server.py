@@ -7,13 +7,12 @@ una risorsa interattiva ai soli host che la supportano.
 """
 from __future__ import annotations
 
-from pathlib import Path
-import re
 from typing import Any
 
 from mcp.server import MCPServer
 from mcp.server.apps import Apps
 
+from kirchhoff.api.app_resource import load_app_html
 from kirchhoff.pipeline.lesson import create_lesson
 from kirchhoff.pipeline.capabilities import product_capabilities, SOLVE_DESCRIPTION
 from kirchhoff.pipeline.student_trace import diagnose_payload
@@ -22,17 +21,8 @@ from kirchhoff.pipeline.circuitikz import export_circuitikz, SCHEMA as CIRCUITIK
 
 
 APP_URI = "ui://kirchhoff/circuit-lesson.html"
-ROOT = Path(__file__).resolve().parents[3]
-
-
 def app_html() -> str:
-    template = (ROOT / "web/mcp-app-template.html").read_text(encoding="utf-8")
-    bundle = ROOT / "web/dist/mcp/kirchhoff-mcp-app.iife.js"
-    if not bundle.is_file():
-        script = "document.getElementById('status').textContent='MCP App non compilata: esegui npm run build in web/.';"
-    else:
-        script = re.sub(r"</script", r"<\\/script", bundle.read_text(encoding="utf-8"), flags=re.IGNORECASE)
-    return template.replace("/* KIRCHHOFF_MCP_APP_BUNDLE */", script)
+    return load_app_html()
 
 
 def build_server() -> MCPServer:

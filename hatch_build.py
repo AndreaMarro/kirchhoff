@@ -7,6 +7,8 @@ inventato. Il file temporaneo non modifica il checkout.
 from __future__ import annotations
 
 from pathlib import Path
+import importlib.util
+import json
 import os
 import re
 import subprocess
@@ -20,6 +22,16 @@ class CustomBuildHook(BuildHookInterface):
         if version == "editable":
             return
         root = Path(self.root)
+        spec = importlib.util.spec_from_file_location('kirchhoff_app_build', root / 'src/kirchhoff/api/app_resource.py')
+        app = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(app)
+        packaged_app = root / 'src/kirchhoff/api/resources'
+        if (packaged_app / app.HTML_NAME).is_file():
+            html = (packaged_app / app.HTML_NAME).read_text(encoding='utf-8')
+            manifest = json.loads((packaged_app / app.MANIFEST_NAME).read_text(encoding='utf-8'))
+            app.validate_packaged_app(html, manifest)
+        else:
+            html, manifest = app.compose_app(root)
         inherited = root / "src/kirchhoff/_build_source_sha.txt"
         if inherited.is_file():
             sha = inherited.read_text(encoding="ascii").strip()
@@ -32,7 +44,7 @@ class CustomBuildHook(BuildHookInterface):
                 ).stdout.strip()
                 dirty = subprocess.run(
                     ["git", "-C", str(root), "status", "--porcelain", "--",
-                     "src/kirchhoff", "pyproject.toml", "hatch_build.py"],
+                     "src/kirchhoff", "pyproject.toml", "hatch_build.py", *sorted(manifest['sources'])],
                     check=True, capture_output=True, text=True, timeout=10,
                 ).stdout
                 if dirty:
@@ -45,6 +57,11 @@ class CustomBuildHook(BuildHookInterface):
         destination = ("src/kirchhoff/_build_source_sha.txt" if self.target_name == "sdist"
                        else "kirchhoff/_build_source_sha.txt")
         build_data["force_include"][str(source)] = destination
+        prefix = 'src/kirchhoff' if self.target_name == 'sdist' else 'kirchhoff'
+        for name, content in ((app.HTML_NAME, html), (app.MANIFEST_NAME, json.dumps(manifest, sort_keys=True))):
+            resource = Path(self._temporary.name) / name
+            resource.write_text(content, encoding='utf-8')
+            build_data['force_include'][str(resource)] = f'{prefix}/api/resources/{name}'
 
     def finalize(self, version: str, build_data: dict, artifact_path: str) -> None:
         temporary = getattr(self, "_temporary", None)

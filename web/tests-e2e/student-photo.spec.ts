@@ -6,6 +6,7 @@ test('una modifica semantica dopo la conferma della foto invalida il consenso',a
  await page.goto('/');
  await page.getByRole('button',{name:/Il tuo circuito/}).click();
  await page.locator('input[type=file][accept*="image/png"]').setInputFiles({name:'sorgente.png',mimeType:'image/png',buffer:image});
+ if(!await page.getByRole('textbox',{name:'Circuito da risolvere'}).isVisible())await page.getByText('Vista esperta: testo del circuito',{exact:true}).click();
  const circuit=page.getByRole('textbox',{name:'Circuito da risolvere'});
  await circuit.fill('V1 a 0 12 volt\nR1 a 0 100 ohm\n? voltage R1');
  const confirmation=page.getByRole('checkbox',{name:/Ho confrontato/});
@@ -36,10 +37,11 @@ test('la foto mostra la provenienza delle righe e perde le regioni quando il cir
  await expect(page.getByText(/La lettura è incompleta o discordante/)).toBeVisible();
  await expect(page.getByRole('checkbox',{name:/Ho confrontato/})).toBeDisabled();
  await page.getByRole('button',{name:'Lettura 2'}).click();
- await expect(page.getByRole('textbox',{name:'Circuito da risolvere'})).toHaveValue(netlist.replace('6 ohm','7 ohm'));
+ await expect(page.getByRole('textbox',{name:'Valore R1',exact:true})).toHaveValue('7');
  await page.getByRole('button',{name:'Lettura 1'}).click();
  await page.getByRole('button',{name:'R1 a 0 6 ohm'}).click();
  await expect(page.locator('[data-source-region="1"]')).toHaveAttribute('style',/left: 20%/);
+ if(!await page.getByRole('textbox',{name:'Circuito da risolvere'}).isVisible())await page.getByText('Vista esperta: testo del circuito',{exact:true}).click();
  await page.getByRole('textbox',{name:'Circuito da risolvere'}).fill(netlist.replace('6 ohm','7 ohm'));
  await expect(page.getByRole('region',{name:'Origine delle righe lette'})).toHaveCount(0);
  await expect(page.getByRole('checkbox',{name:/Ho confrontato/})).not.toBeChecked();

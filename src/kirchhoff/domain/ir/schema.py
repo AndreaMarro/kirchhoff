@@ -43,6 +43,7 @@ ComponentType = Literal[
 Quantity = Literal[
     "voltage",
     "current",
+    "power",
     "time_constant",
     "initial_value",
     "final_value",
@@ -52,7 +53,7 @@ Quantity = Literal[
 
 QUANTITIES: frozenset[str] = frozenset(get_args(Quantity))
 
-PortQuantity = Literal["equivalent_resistance"]
+PortQuantity = Literal["equivalent_resistance", "equivalent_impedance"]
 PORT_QUANTITIES: frozenset[str] = frozenset(get_args(PortQuantity))
 
 SourceKind = Literal["netlist", "latex", "image", "generated"]
@@ -276,6 +277,8 @@ class IR:
             raise ValueError(f"identificatori di componente ripetuti: {', '.join(doppi)}")
         for r in self.requests:
             if isinstance(r, PortRequest):
+                if r.quantity == "equivalent_impedance" and self.domain != "ac_sinusoidal":
+                    raise ValueError("la domanda di impedenza richiede il regime AC sinusoidale")
                 for node in r.port:
                     if node not in known:
                         raise ValueError(f"{r.id}: morsetto di porta sconosciuto {node}")

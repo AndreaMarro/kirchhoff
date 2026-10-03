@@ -1,0 +1,38 @@
+{
+  "scope": "post-opening HTTP boundary checks of three frozen invalid inputs",
+  "endpoint": "http://127.0.0.1:43921/api/solve",
+  "blocked": null,
+  "passed": true,
+  "results": [
+    {
+      "case_id": "missing_port_terminal",
+      "status": 422,
+      "response": {
+        "message": "q1: morsetto di porta sconosciuto unknown"
+      },
+      "response_bytes": 56,
+      "response_sha256": "832da326e3733db164547ec700ac56a6bb98fb9e54efa7ed7b0c952596e673b8",
+      "passed": true
+    },
+    {
+      "case_id": "same_port_terminal",
+      "status": 422,
+      "response": {
+        "message": "la domanda di porta richiede due morsetti distinti"
+      },
+      "response_bytes": 65,
+      "response_sha256": "12400d9867c30094650be0157433223b239ac8feee58684803be05bd08a1e830",
+      "passed": true
+    },
+    {
+      "case_id": "zero_resistance_not_wire",
+      "status": 422,
+      "response": {
+        "message": "R1: valore non positivo per resistor (0)"
+      },
+      "response_bytes": 55,
+      "response_sha256": "e26925b16024ec8c60ce3cfdbde16d12e64d98b6dca337138b2b34f4715346b1",
+      "passed": true
+    }
+  ]
+}
