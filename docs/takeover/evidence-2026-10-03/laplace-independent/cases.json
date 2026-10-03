@@ -1,0 +1,6892 @@
+{
+  "cases": [
+    {
+      "analytic": {
+        "I[C1]": {
+          "denominator": [
+            "2/3",
+            "1"
+          ],
+          "numerator": [
+            "7/3"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "2/3",
+            "1"
+          ],
+          "numerator": [
+            "10/3",
+            "-2"
+          ]
+        }
+      },
+      "capacitor_voltages": {
+        "C1": "-2"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "e",
+          "q": "a",
+          "value": "3"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "a",
+          "q": "0",
+          "value": "1/2"
+        }
+      ],
+      "group": "rc_step",
+      "id": "rc_step/base",
+      "inductor_currents": {},
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "5"
+          ]
+        }
+      },
+      "variant": "base"
+    },
+    {
+      "analytic": {
+        "I[C1]": {
+          "denominator": [
+            "2/3",
+            "1"
+          ],
+          "numerator": [
+            "7/3"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "2/3",
+            "1"
+          ],
+          "numerator": [
+            "10/3",
+            "-2"
+          ]
+        }
+      },
+      "capacitor_voltages": {
+        "C1": "-2"
+      },
+      "components": [
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "a",
+          "q": "0",
+          "value": "1/2"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "e",
+          "q": "a",
+          "value": "3"
+        },
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        }
+      ],
+      "group": "rc_step",
+      "id": "rc_step/reordered",
+      "inductor_currents": {},
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "5"
+          ]
+        }
+      },
+      "variant": "reordered"
+    },
+    {
+      "analytic": {
+        "I[C1]": {
+          "denominator": [
+            "2/3",
+            "1"
+          ],
+          "numerator": [
+            "-7/3"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "2/3",
+            "1"
+          ],
+          "numerator": [
+            "-10/3",
+            "2"
+          ]
+        }
+      },
+      "capacitor_voltages": {
+        "C1": "2"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "0",
+          "q": "e",
+          "value": "1"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "a",
+          "q": "e",
+          "value": "3"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "0",
+          "q": "a",
+          "value": "1/2"
+        }
+      ],
+      "group": "rc_step",
+      "id": "rc_step/directions_reversed",
+      "inductor_currents": {},
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "-5"
+          ]
+        }
+      },
+      "variant": "directions_reversed"
+    },
+    {
+      "analytic": {
+        "I[C1]": {
+          "denominator": [
+            "2/3",
+            "1"
+          ],
+          "numerator": [
+            "7/3"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "2/3",
+            "1"
+          ],
+          "numerator": [
+            "10/3",
+            "-2"
+          ]
+        }
+      },
+      "capacitor_voltages": {
+        "C1": "-2"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "97/3"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "e",
+          "q": "a",
+          "value": "3"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "a",
+          "q": "0",
+          "value": "1/2"
+        }
+      ],
+      "group": "rc_step",
+      "id": "rc_step/source_metadata_changed",
+      "inductor_currents": {},
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "5"
+          ]
+        }
+      },
+      "variant": "source_metadata_changed"
+    },
+    {
+      "analytic": {
+        "I[C1]": {
+          "denominator": [
+            "2/3",
+            "1/2"
+          ],
+          "numerator": [
+            "7/6"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "1/3",
+            "1/4"
+          ],
+          "numerator": [
+            "5/3",
+            "-1/2"
+          ]
+        }
+      },
+      "capacitor_voltages": {
+        "C1": "-2"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "e",
+          "q": "a",
+          "value": "3"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "a",
+          "q": "0",
+          "value": "1/4"
+        }
+      ],
+      "group": "rc_step",
+      "id": "rc_step/time_scaled",
+      "inductor_currents": {},
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1/2"
+          ],
+          "numerator": [
+            "5/2"
+          ]
+        }
+      },
+      "variant": "time_scaled"
+    },
+    {
+      "analytic": {
+        "I[C1]": {
+          "denominator": [
+            "3/2",
+            "1"
+          ],
+          "numerator": [
+            "-2"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "3/2",
+            "1"
+          ],
+          "numerator": [
+            "0",
+            "4"
+          ]
+        }
+      },
+      "capacitor_voltages": {
+        "C1": "4"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "e",
+          "q": "a",
+          "value": "2"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "a",
+          "q": "0",
+          "value": "1/3"
+        }
+      ],
+      "group": "rc_decay",
+      "id": "rc_decay/base",
+      "inductor_currents": {},
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "0"
+          ]
+        }
+      },
+      "variant": "base"
+    },
+    {
+      "analytic": {
+        "I[C1]": {
+          "denominator": [
+            "3/2",
+            "1"
+          ],
+          "numerator": [
+            "-2"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "3/2",
+            "1"
+          ],
+          "numerator": [
+            "0",
+            "4"
+          ]
+        }
+      },
+      "capacitor_voltages": {
+        "C1": "4"
+      },
+      "components": [
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "a",
+          "q": "0",
+          "value": "1/3"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "e",
+          "q": "a",
+          "value": "2"
+        },
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        }
+      ],
+      "group": "rc_decay",
+      "id": "rc_decay/reordered",
+      "inductor_currents": {},
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "0"
+          ]
+        }
+      },
+      "variant": "reordered"
+    },
+    {
+      "analytic": {
+        "I[C1]": {
+          "denominator": [
+            "3/2",
+            "1"
+          ],
+          "numerator": [
+            "2"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "3/2",
+            "1"
+          ],
+          "numerator": [
+            "0",
+            "-4"
+          ]
+        }
+      },
+      "capacitor_voltages": {
+        "C1": "-4"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "0",
+          "q": "e",
+          "value": "1"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "a",
+          "q": "e",
+          "value": "2"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "0",
+          "q": "a",
+          "value": "1/3"
+        }
+      ],
+      "group": "rc_decay",
+      "id": "rc_decay/directions_reversed",
+      "inductor_currents": {},
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "0"
+          ]
+        }
+      },
+      "variant": "directions_reversed"
+    },
+    {
+      "analytic": {
+        "I[C1]": {
+          "denominator": [
+            "3/2",
+            "1"
+          ],
+          "numerator": [
+            "-2"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "3/2",
+            "1"
+          ],
+          "numerator": [
+            "0",
+            "4"
+          ]
+        }
+      },
+      "capacitor_voltages": {
+        "C1": "4"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "97/3"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "e",
+          "q": "a",
+          "value": "2"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "a",
+          "q": "0",
+          "value": "1/3"
+        }
+      ],
+      "group": "rc_decay",
+      "id": "rc_decay/source_metadata_changed",
+      "inductor_currents": {},
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "0"
+          ]
+        }
+      },
+      "variant": "source_metadata_changed"
+    },
+    {
+      "analytic": {
+        "I[C1]": {
+          "denominator": [
+            "3/2",
+            "1/2"
+          ],
+          "numerator": [
+            "-1"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "3/4",
+            "1/4"
+          ],
+          "numerator": [
+            "0",
+            "1"
+          ]
+        }
+      },
+      "capacitor_voltages": {
+        "C1": "4"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "e",
+          "q": "a",
+          "value": "2"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "a",
+          "q": "0",
+          "value": "1/6"
+        }
+      ],
+      "group": "rc_decay",
+      "id": "rc_decay/time_scaled",
+      "inductor_currents": {},
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1/2"
+          ],
+          "numerator": [
+            "0"
+          ]
+        }
+      },
+      "variant": "time_scaled"
+    },
+    {
+      "analytic": {
+        "I[L1]": {
+          "denominator": [
+            "0",
+            "2",
+            "1"
+          ],
+          "numerator": [
+            "3/2",
+            "-2"
+          ]
+        },
+        "V[L1]": {
+          "denominator": [
+            "2",
+            "1"
+          ],
+          "numerator": [
+            "11"
+          ]
+        }
+      },
+      "capacitor_voltages": {},
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "e",
+          "q": "a",
+          "value": "4"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "0",
+          "value": "2"
+        }
+      ],
+      "group": "rl_step",
+      "id": "rl_step/base",
+      "inductor_currents": {
+        "L1": "-2"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "3"
+          ]
+        }
+      },
+      "variant": "base"
+    },
+    {
+      "analytic": {
+        "I[L1]": {
+          "denominator": [
+            "0",
+            "2",
+            "1"
+          ],
+          "numerator": [
+            "3/2",
+            "-2"
+          ]
+        },
+        "V[L1]": {
+          "denominator": [
+            "2",
+            "1"
+          ],
+          "numerator": [
+            "11"
+          ]
+        }
+      },
+      "capacitor_voltages": {},
+      "components": [
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "0",
+          "value": "2"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "e",
+          "q": "a",
+          "value": "4"
+        },
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        }
+      ],
+      "group": "rl_step",
+      "id": "rl_step/reordered",
+      "inductor_currents": {
+        "L1": "-2"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "3"
+          ]
+        }
+      },
+      "variant": "reordered"
+    },
+    {
+      "analytic": {
+        "I[L1]": {
+          "denominator": [
+            "0",
+            "2",
+            "1"
+          ],
+          "numerator": [
+            "-3/2",
+            "2"
+          ]
+        },
+        "V[L1]": {
+          "denominator": [
+            "2",
+            "1"
+          ],
+          "numerator": [
+            "-11"
+          ]
+        }
+      },
+      "capacitor_voltages": {},
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "0",
+          "q": "e",
+          "value": "1"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "a",
+          "q": "e",
+          "value": "4"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "0",
+          "q": "a",
+          "value": "2"
+        }
+      ],
+      "group": "rl_step",
+      "id": "rl_step/directions_reversed",
+      "inductor_currents": {
+        "L1": "2"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "-3"
+          ]
+        }
+      },
+      "variant": "directions_reversed"
+    },
+    {
+      "analytic": {
+        "I[L1]": {
+          "denominator": [
+            "0",
+            "2",
+            "1"
+          ],
+          "numerator": [
+            "3/2",
+            "-2"
+          ]
+        },
+        "V[L1]": {
+          "denominator": [
+            "2",
+            "1"
+          ],
+          "numerator": [
+            "11"
+          ]
+        }
+      },
+      "capacitor_voltages": {},
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "97/3"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "e",
+          "q": "a",
+          "value": "4"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "0",
+          "value": "2"
+        }
+      ],
+      "group": "rl_step",
+      "id": "rl_step/source_metadata_changed",
+      "inductor_currents": {
+        "L1": "-2"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "3"
+          ]
+        }
+      },
+      "variant": "source_metadata_changed"
+    },
+    {
+      "analytic": {
+        "I[L1]": {
+          "denominator": [
+            "0",
+            "1",
+            "1/4"
+          ],
+          "numerator": [
+            "3/4",
+            "-1/2"
+          ]
+        },
+        "V[L1]": {
+          "denominator": [
+            "2",
+            "1/2"
+          ],
+          "numerator": [
+            "11/2"
+          ]
+        }
+      },
+      "capacitor_voltages": {},
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "e",
+          "q": "a",
+          "value": "4"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "0",
+          "value": "1"
+        }
+      ],
+      "group": "rl_step",
+      "id": "rl_step/time_scaled",
+      "inductor_currents": {
+        "L1": "-2"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1/2"
+          ],
+          "numerator": [
+            "3/2"
+          ]
+        }
+      },
+      "variant": "time_scaled"
+    },
+    {
+      "analytic": {
+        "I[L1]": {
+          "denominator": [
+            "0",
+            "6",
+            "1"
+          ],
+          "numerator": [
+            "0",
+            "5"
+          ]
+        },
+        "V[L1]": {
+          "denominator": [
+            "6",
+            "1"
+          ],
+          "numerator": [
+            "-15"
+          ]
+        }
+      },
+      "capacitor_voltages": {},
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "e",
+          "q": "a",
+          "value": "3"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "0",
+          "value": "1/2"
+        }
+      ],
+      "group": "rl_decay",
+      "id": "rl_decay/base",
+      "inductor_currents": {
+        "L1": "5"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "0"
+          ]
+        }
+      },
+      "variant": "base"
+    },
+    {
+      "analytic": {
+        "I[L1]": {
+          "denominator": [
+            "0",
+            "6",
+            "1"
+          ],
+          "numerator": [
+            "0",
+            "5"
+          ]
+        },
+        "V[L1]": {
+          "denominator": [
+            "6",
+            "1"
+          ],
+          "numerator": [
+            "-15"
+          ]
+        }
+      },
+      "capacitor_voltages": {},
+      "components": [
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "0",
+          "value": "1/2"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "e",
+          "q": "a",
+          "value": "3"
+        },
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        }
+      ],
+      "group": "rl_decay",
+      "id": "rl_decay/reordered",
+      "inductor_currents": {
+        "L1": "5"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "0"
+          ]
+        }
+      },
+      "variant": "reordered"
+    },
+    {
+      "analytic": {
+        "I[L1]": {
+          "denominator": [
+            "0",
+            "6",
+            "1"
+          ],
+          "numerator": [
+            "0",
+            "-5"
+          ]
+        },
+        "V[L1]": {
+          "denominator": [
+            "6",
+            "1"
+          ],
+          "numerator": [
+            "15"
+          ]
+        }
+      },
+      "capacitor_voltages": {},
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "0",
+          "q": "e",
+          "value": "1"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "a",
+          "q": "e",
+          "value": "3"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "0",
+          "q": "a",
+          "value": "1/2"
+        }
+      ],
+      "group": "rl_decay",
+      "id": "rl_decay/directions_reversed",
+      "inductor_currents": {
+        "L1": "-5"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "0"
+          ]
+        }
+      },
+      "variant": "directions_reversed"
+    },
+    {
+      "analytic": {
+        "I[L1]": {
+          "denominator": [
+            "0",
+            "6",
+            "1"
+          ],
+          "numerator": [
+            "0",
+            "5"
+          ]
+        },
+        "V[L1]": {
+          "denominator": [
+            "6",
+            "1"
+          ],
+          "numerator": [
+            "-15"
+          ]
+        }
+      },
+      "capacitor_voltages": {},
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "97/3"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "e",
+          "q": "a",
+          "value": "3"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "0",
+          "value": "1/2"
+        }
+      ],
+      "group": "rl_decay",
+      "id": "rl_decay/source_metadata_changed",
+      "inductor_currents": {
+        "L1": "5"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "0"
+          ]
+        }
+      },
+      "variant": "source_metadata_changed"
+    },
+    {
+      "analytic": {
+        "I[L1]": {
+          "denominator": [
+            "0",
+            "3",
+            "1/4"
+          ],
+          "numerator": [
+            "0",
+            "5/4"
+          ]
+        },
+        "V[L1]": {
+          "denominator": [
+            "6",
+            "1/2"
+          ],
+          "numerator": [
+            "-15/2"
+          ]
+        }
+      },
+      "capacitor_voltages": {},
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "e",
+          "q": "a",
+          "value": "3"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "0",
+          "value": "1/4"
+        }
+      ],
+      "group": "rl_decay",
+      "id": "rl_decay/time_scaled",
+      "inductor_currents": {
+        "L1": "5"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1/2"
+          ],
+          "numerator": [
+            "0"
+          ]
+        }
+      },
+      "variant": "time_scaled"
+    },
+    {
+      "analytic": {
+        "I[L1]": {
+          "denominator": [
+            "1",
+            "1",
+            "1"
+          ],
+          "numerator": [
+            "6",
+            "3"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "1",
+            "1",
+            "1"
+          ],
+          "numerator": [
+            "4",
+            "1",
+            "-2"
+          ]
+        },
+        "V[L1]": {
+          "denominator": [
+            "1",
+            "1",
+            "1"
+          ],
+          "numerator": [
+            "-3",
+            "3"
+          ]
+        }
+      },
+      "capacitor_voltages": {
+        "C1": "-2"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "e",
+          "q": "a",
+          "value": "1"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "b",
+          "value": "1"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "b",
+          "q": "0",
+          "value": "1"
+        }
+      ],
+      "group": "rlc_underdamped",
+      "id": "rlc_underdamped/base",
+      "inductor_currents": {
+        "L1": "3"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "4"
+          ]
+        }
+      },
+      "variant": "base"
+    },
+    {
+      "analytic": {
+        "I[L1]": {
+          "denominator": [
+            "1",
+            "1",
+            "1"
+          ],
+          "numerator": [
+            "6",
+            "3"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "1",
+            "1",
+            "1"
+          ],
+          "numerator": [
+            "4",
+            "1",
+            "-2"
+          ]
+        },
+        "V[L1]": {
+          "denominator": [
+            "1",
+            "1",
+            "1"
+          ],
+          "numerator": [
+            "-3",
+            "3"
+          ]
+        }
+      },
+      "capacitor_voltages": {
+        "C1": "-2"
+      },
+      "components": [
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "b",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "b",
+          "value": "1"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "e",
+          "q": "a",
+          "value": "1"
+        },
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        }
+      ],
+      "group": "rlc_underdamped",
+      "id": "rlc_underdamped/reordered",
+      "inductor_currents": {
+        "L1": "3"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "4"
+          ]
+        }
+      },
+      "variant": "reordered"
+    },
+    {
+      "analytic": {
+        "I[L1]": {
+          "denominator": [
+            "1",
+            "1",
+            "1"
+          ],
+          "numerator": [
+            "-6",
+            "-3"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "1",
+            "1",
+            "1"
+          ],
+          "numerator": [
+            "-4",
+            "-1",
+            "2"
+          ]
+        },
+        "V[L1]": {
+          "denominator": [
+            "1",
+            "1",
+            "1"
+          ],
+          "numerator": [
+            "3",
+            "-3"
+          ]
+        }
+      },
+      "capacitor_voltages": {
+        "C1": "2"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "0",
+          "q": "e",
+          "value": "1"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "a",
+          "q": "e",
+          "value": "1"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "b",
+          "q": "a",
+          "value": "1"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "0",
+          "q": "b",
+          "value": "1"
+        }
+      ],
+      "group": "rlc_underdamped",
+      "id": "rlc_underdamped/directions_reversed",
+      "inductor_currents": {
+        "L1": "-3"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "-4"
+          ]
+        }
+      },
+      "variant": "directions_reversed"
+    },
+    {
+      "analytic": {
+        "I[L1]": {
+          "denominator": [
+            "1",
+            "1",
+            "1"
+          ],
+          "numerator": [
+            "6",
+            "3"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "1",
+            "1",
+            "1"
+          ],
+          "numerator": [
+            "4",
+            "1",
+            "-2"
+          ]
+        },
+        "V[L1]": {
+          "denominator": [
+            "1",
+            "1",
+            "1"
+          ],
+          "numerator": [
+            "-3",
+            "3"
+          ]
+        }
+      },
+      "capacitor_voltages": {
+        "C1": "-2"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "97/3"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "e",
+          "q": "a",
+          "value": "1"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "b",
+          "value": "1"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "b",
+          "q": "0",
+          "value": "1"
+        }
+      ],
+      "group": "rlc_underdamped",
+      "id": "rlc_underdamped/source_metadata_changed",
+      "inductor_currents": {
+        "L1": "3"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "4"
+          ]
+        }
+      },
+      "variant": "source_metadata_changed"
+    },
+    {
+      "analytic": {
+        "I[L1]": {
+          "denominator": [
+            "1",
+            "1/2",
+            "1/4"
+          ],
+          "numerator": [
+            "3",
+            "3/4"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "1/2",
+            "1/4",
+            "1/8"
+          ],
+          "numerator": [
+            "2",
+            "1/4",
+            "-1/4"
+          ]
+        },
+        "V[L1]": {
+          "denominator": [
+            "1",
+            "1/2",
+            "1/4"
+          ],
+          "numerator": [
+            "-3/2",
+            "3/4"
+          ]
+        }
+      },
+      "capacitor_voltages": {
+        "C1": "-2"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "e",
+          "q": "a",
+          "value": "1"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "b",
+          "value": "1/2"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "b",
+          "q": "0",
+          "value": "1/2"
+        }
+      ],
+      "group": "rlc_underdamped",
+      "id": "rlc_underdamped/time_scaled",
+      "inductor_currents": {
+        "L1": "3"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1/2"
+          ],
+          "numerator": [
+            "2"
+          ]
+        }
+      },
+      "variant": "time_scaled"
+    },
+    {
+      "analytic": {
+        "I[L1]": {
+          "denominator": [
+            "1",
+            "2",
+            "1"
+          ],
+          "numerator": [
+            "-5",
+            "-3"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "1",
+            "2",
+            "1"
+          ],
+          "numerator": [
+            "0",
+            "7",
+            "5"
+          ]
+        },
+        "V[L1]": {
+          "denominator": [
+            "1",
+            "2",
+            "1"
+          ],
+          "numerator": [
+            "3",
+            "1"
+          ]
+        }
+      },
+      "capacitor_voltages": {
+        "C1": "5"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "e",
+          "q": "a",
+          "value": "2"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "b",
+          "value": "1"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "b",
+          "q": "0",
+          "value": "1"
+        }
+      ],
+      "group": "rlc_critical",
+      "id": "rlc_critical/base",
+      "inductor_currents": {
+        "L1": "-3"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "0"
+          ]
+        }
+      },
+      "variant": "base"
+    },
+    {
+      "analytic": {
+        "I[L1]": {
+          "denominator": [
+            "1",
+            "2",
+            "1"
+          ],
+          "numerator": [
+            "-5",
+            "-3"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "1",
+            "2",
+            "1"
+          ],
+          "numerator": [
+            "0",
+            "7",
+            "5"
+          ]
+        },
+        "V[L1]": {
+          "denominator": [
+            "1",
+            "2",
+            "1"
+          ],
+          "numerator": [
+            "3",
+            "1"
+          ]
+        }
+      },
+      "capacitor_voltages": {
+        "C1": "5"
+      },
+      "components": [
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "b",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "b",
+          "value": "1"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "e",
+          "q": "a",
+          "value": "2"
+        },
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        }
+      ],
+      "group": "rlc_critical",
+      "id": "rlc_critical/reordered",
+      "inductor_currents": {
+        "L1": "-3"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "0"
+          ]
+        }
+      },
+      "variant": "reordered"
+    },
+    {
+      "analytic": {
+        "I[L1]": {
+          "denominator": [
+            "1",
+            "2",
+            "1"
+          ],
+          "numerator": [
+            "5",
+            "3"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "1",
+            "2",
+            "1"
+          ],
+          "numerator": [
+            "0",
+            "-7",
+            "-5"
+          ]
+        },
+        "V[L1]": {
+          "denominator": [
+            "1",
+            "2",
+            "1"
+          ],
+          "numerator": [
+            "-3",
+            "-1"
+          ]
+        }
+      },
+      "capacitor_voltages": {
+        "C1": "-5"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "0",
+          "q": "e",
+          "value": "1"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "a",
+          "q": "e",
+          "value": "2"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "b",
+          "q": "a",
+          "value": "1"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "0",
+          "q": "b",
+          "value": "1"
+        }
+      ],
+      "group": "rlc_critical",
+      "id": "rlc_critical/directions_reversed",
+      "inductor_currents": {
+        "L1": "3"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "0"
+          ]
+        }
+      },
+      "variant": "directions_reversed"
+    },
+    {
+      "analytic": {
+        "I[L1]": {
+          "denominator": [
+            "1",
+            "2",
+            "1"
+          ],
+          "numerator": [
+            "-5",
+            "-3"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "1",
+            "2",
+            "1"
+          ],
+          "numerator": [
+            "0",
+            "7",
+            "5"
+          ]
+        },
+        "V[L1]": {
+          "denominator": [
+            "1",
+            "2",
+            "1"
+          ],
+          "numerator": [
+            "3",
+            "1"
+          ]
+        }
+      },
+      "capacitor_voltages": {
+        "C1": "5"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "97/3"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "e",
+          "q": "a",
+          "value": "2"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "b",
+          "value": "1"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "b",
+          "q": "0",
+          "value": "1"
+        }
+      ],
+      "group": "rlc_critical",
+      "id": "rlc_critical/source_metadata_changed",
+      "inductor_currents": {
+        "L1": "-3"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "0"
+          ]
+        }
+      },
+      "variant": "source_metadata_changed"
+    },
+    {
+      "analytic": {
+        "I[L1]": {
+          "denominator": [
+            "1",
+            "1",
+            "1/4"
+          ],
+          "numerator": [
+            "-5/2",
+            "-3/4"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "1/2",
+            "1/2",
+            "1/8"
+          ],
+          "numerator": [
+            "0",
+            "7/4",
+            "5/8"
+          ]
+        },
+        "V[L1]": {
+          "denominator": [
+            "1",
+            "1",
+            "1/4"
+          ],
+          "numerator": [
+            "3/2",
+            "1/4"
+          ]
+        }
+      },
+      "capacitor_voltages": {
+        "C1": "5"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "e",
+          "q": "a",
+          "value": "2"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "b",
+          "value": "1/2"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "b",
+          "q": "0",
+          "value": "1/2"
+        }
+      ],
+      "group": "rlc_critical",
+      "id": "rlc_critical/time_scaled",
+      "inductor_currents": {
+        "L1": "-3"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1/2"
+          ],
+          "numerator": [
+            "0"
+          ]
+        }
+      },
+      "variant": "time_scaled"
+    },
+    {
+      "analytic": {
+        "I[L1]": {
+          "denominator": [
+            "1",
+            "3",
+            "1"
+          ],
+          "numerator": [
+            "5",
+            "-1"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "1",
+            "3",
+            "1"
+          ],
+          "numerator": [
+            "7",
+            "5",
+            "2"
+          ]
+        },
+        "V[L1]": {
+          "denominator": [
+            "1",
+            "3",
+            "1"
+          ],
+          "numerator": [
+            "1",
+            "8"
+          ]
+        }
+      },
+      "capacitor_voltages": {
+        "C1": "2"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "e",
+          "q": "a",
+          "value": "3"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "b",
+          "value": "1"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "b",
+          "q": "0",
+          "value": "1"
+        }
+      ],
+      "group": "rlc_overdamped",
+      "id": "rlc_overdamped/base",
+      "inductor_currents": {
+        "L1": "-1"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "7"
+          ]
+        }
+      },
+      "variant": "base"
+    },
+    {
+      "analytic": {
+        "I[L1]": {
+          "denominator": [
+            "1",
+            "3",
+            "1"
+          ],
+          "numerator": [
+            "5",
+            "-1"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "1",
+            "3",
+            "1"
+          ],
+          "numerator": [
+            "7",
+            "5",
+            "2"
+          ]
+        },
+        "V[L1]": {
+          "denominator": [
+            "1",
+            "3",
+            "1"
+          ],
+          "numerator": [
+            "1",
+            "8"
+          ]
+        }
+      },
+      "capacitor_voltages": {
+        "C1": "2"
+      },
+      "components": [
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "b",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "b",
+          "value": "1"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "e",
+          "q": "a",
+          "value": "3"
+        },
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        }
+      ],
+      "group": "rlc_overdamped",
+      "id": "rlc_overdamped/reordered",
+      "inductor_currents": {
+        "L1": "-1"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "7"
+          ]
+        }
+      },
+      "variant": "reordered"
+    },
+    {
+      "analytic": {
+        "I[L1]": {
+          "denominator": [
+            "1",
+            "3",
+            "1"
+          ],
+          "numerator": [
+            "-5",
+            "1"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "1",
+            "3",
+            "1"
+          ],
+          "numerator": [
+            "-7",
+            "-5",
+            "-2"
+          ]
+        },
+        "V[L1]": {
+          "denominator": [
+            "1",
+            "3",
+            "1"
+          ],
+          "numerator": [
+            "-1",
+            "-8"
+          ]
+        }
+      },
+      "capacitor_voltages": {
+        "C1": "-2"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "0",
+          "q": "e",
+          "value": "1"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "a",
+          "q": "e",
+          "value": "3"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "b",
+          "q": "a",
+          "value": "1"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "0",
+          "q": "b",
+          "value": "1"
+        }
+      ],
+      "group": "rlc_overdamped",
+      "id": "rlc_overdamped/directions_reversed",
+      "inductor_currents": {
+        "L1": "1"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "-7"
+          ]
+        }
+      },
+      "variant": "directions_reversed"
+    },
+    {
+      "analytic": {
+        "I[L1]": {
+          "denominator": [
+            "1",
+            "3",
+            "1"
+          ],
+          "numerator": [
+            "5",
+            "-1"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "1",
+            "3",
+            "1"
+          ],
+          "numerator": [
+            "7",
+            "5",
+            "2"
+          ]
+        },
+        "V[L1]": {
+          "denominator": [
+            "1",
+            "3",
+            "1"
+          ],
+          "numerator": [
+            "1",
+            "8"
+          ]
+        }
+      },
+      "capacitor_voltages": {
+        "C1": "2"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "97/3"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "e",
+          "q": "a",
+          "value": "3"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "b",
+          "value": "1"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "b",
+          "q": "0",
+          "value": "1"
+        }
+      ],
+      "group": "rlc_overdamped",
+      "id": "rlc_overdamped/source_metadata_changed",
+      "inductor_currents": {
+        "L1": "-1"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "7"
+          ]
+        }
+      },
+      "variant": "source_metadata_changed"
+    },
+    {
+      "analytic": {
+        "I[L1]": {
+          "denominator": [
+            "1",
+            "3/2",
+            "1/4"
+          ],
+          "numerator": [
+            "5/2",
+            "-1/4"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "1/2",
+            "3/4",
+            "1/8"
+          ],
+          "numerator": [
+            "7/2",
+            "5/4",
+            "1/4"
+          ]
+        },
+        "V[L1]": {
+          "denominator": [
+            "1",
+            "3/2",
+            "1/4"
+          ],
+          "numerator": [
+            "1/2",
+            "2"
+          ]
+        }
+      },
+      "capacitor_voltages": {
+        "C1": "2"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "e",
+          "q": "a",
+          "value": "3"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "b",
+          "value": "1/2"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "b",
+          "q": "0",
+          "value": "1/2"
+        }
+      ],
+      "group": "rlc_overdamped",
+      "id": "rlc_overdamped/time_scaled",
+      "inductor_currents": {
+        "L1": "-1"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1/2"
+          ],
+          "numerator": [
+            "7/2"
+          ]
+        }
+      },
+      "variant": "time_scaled"
+    },
+    {
+      "analytic": {
+        "I[L1]": {
+          "denominator": [
+            "4",
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "1",
+            "3"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "4",
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "0",
+            "24",
+            "-2"
+          ]
+        },
+        "V[L1]": {
+          "denominator": [
+            "4",
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "-24",
+            "2"
+          ]
+        }
+      },
+      "capacitor_voltages": {
+        "C1": "-2"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "e",
+          "q": "b",
+          "value": "2"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "b",
+          "q": "0",
+          "value": "1/8"
+        }
+      ],
+      "group": "lc_oscillation",
+      "id": "lc_oscillation/base",
+      "inductor_currents": {
+        "L1": "3"
+      },
+      "pole_checks": [
+        {
+          "observation": "I[L1]",
+          "s": [
+            "0",
+            "2"
+          ]
+        }
+      ],
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "0"
+          ]
+        }
+      },
+      "variant": "base"
+    },
+    {
+      "analytic": {
+        "I[L1]": {
+          "denominator": [
+            "4",
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "1",
+            "3"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "4",
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "0",
+            "24",
+            "-2"
+          ]
+        },
+        "V[L1]": {
+          "denominator": [
+            "4",
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "-24",
+            "2"
+          ]
+        }
+      },
+      "capacitor_voltages": {
+        "C1": "-2"
+      },
+      "components": [
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "b",
+          "q": "0",
+          "value": "1/8"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "e",
+          "q": "b",
+          "value": "2"
+        },
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        }
+      ],
+      "group": "lc_oscillation",
+      "id": "lc_oscillation/reordered",
+      "inductor_currents": {
+        "L1": "3"
+      },
+      "pole_checks": [
+        {
+          "observation": "I[L1]",
+          "s": [
+            "0",
+            "2"
+          ]
+        }
+      ],
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "0"
+          ]
+        }
+      },
+      "variant": "reordered"
+    },
+    {
+      "analytic": {
+        "I[L1]": {
+          "denominator": [
+            "4",
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "-1",
+            "-3"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "4",
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "0",
+            "-24",
+            "2"
+          ]
+        },
+        "V[L1]": {
+          "denominator": [
+            "4",
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "24",
+            "-2"
+          ]
+        }
+      },
+      "capacitor_voltages": {
+        "C1": "2"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "0",
+          "q": "e",
+          "value": "1"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "b",
+          "q": "e",
+          "value": "2"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "0",
+          "q": "b",
+          "value": "1/8"
+        }
+      ],
+      "group": "lc_oscillation",
+      "id": "lc_oscillation/directions_reversed",
+      "inductor_currents": {
+        "L1": "-3"
+      },
+      "pole_checks": [
+        {
+          "observation": "I[L1]",
+          "s": [
+            "0",
+            "2"
+          ]
+        }
+      ],
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "0"
+          ]
+        }
+      },
+      "variant": "directions_reversed"
+    },
+    {
+      "analytic": {
+        "I[L1]": {
+          "denominator": [
+            "4",
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "1",
+            "3"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "4",
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "0",
+            "24",
+            "-2"
+          ]
+        },
+        "V[L1]": {
+          "denominator": [
+            "4",
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "-24",
+            "2"
+          ]
+        }
+      },
+      "capacitor_voltages": {
+        "C1": "-2"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "97/3"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "e",
+          "q": "b",
+          "value": "2"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "b",
+          "q": "0",
+          "value": "1/8"
+        }
+      ],
+      "group": "lc_oscillation",
+      "id": "lc_oscillation/source_metadata_changed",
+      "inductor_currents": {
+        "L1": "3"
+      },
+      "pole_checks": [
+        {
+          "observation": "I[L1]",
+          "s": [
+            "0",
+            "2"
+          ]
+        }
+      ],
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "0"
+          ]
+        }
+      },
+      "variant": "source_metadata_changed"
+    },
+    {
+      "analytic": {
+        "I[L1]": {
+          "denominator": [
+            "4",
+            "0",
+            "1/4"
+          ],
+          "numerator": [
+            "1/2",
+            "3/4"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "2",
+            "0",
+            "1/8"
+          ],
+          "numerator": [
+            "0",
+            "6",
+            "-1/4"
+          ]
+        },
+        "V[L1]": {
+          "denominator": [
+            "4",
+            "0",
+            "1/4"
+          ],
+          "numerator": [
+            "-12",
+            "1/2"
+          ]
+        }
+      },
+      "capacitor_voltages": {
+        "C1": "-2"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "e",
+          "q": "b",
+          "value": "1"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "b",
+          "q": "0",
+          "value": "1/16"
+        }
+      ],
+      "group": "lc_oscillation",
+      "id": "lc_oscillation/time_scaled",
+      "inductor_currents": {
+        "L1": "3"
+      },
+      "pole_checks": [
+        {
+          "observation": "I[L1]",
+          "s": [
+            "0",
+            "4"
+          ]
+        }
+      ],
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1/2"
+          ],
+          "numerator": [
+            "0"
+          ]
+        }
+      },
+      "variant": "time_scaled"
+    },
+    {
+      "analytic": {},
+      "capacitor_voltages": {
+        "C1": "-3"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R0",
+          "kind": "R",
+          "p": "e",
+          "q": "p",
+          "value": "2"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "p",
+          "q": "a",
+          "value": "3"
+        },
+        {
+          "id": "R2",
+          "kind": "R",
+          "p": "p",
+          "q": "b",
+          "value": "5"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "0",
+          "value": "2"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "b",
+          "q": "0",
+          "value": "1/3"
+        },
+        {
+          "id": "R3",
+          "kind": "R",
+          "p": "a",
+          "q": "b",
+          "value": "7"
+        },
+        {
+          "id": "I1",
+          "kind": "I",
+          "p": "0",
+          "q": "b",
+          "value": "1"
+        }
+      ],
+      "group": "bridge_initial",
+      "id": "bridge_initial/base",
+      "inductor_currents": {
+        "L1": "2"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "I1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "2"
+          ]
+        },
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "6"
+          ]
+        }
+      },
+      "variant": "base"
+    },
+    {
+      "analytic": {},
+      "capacitor_voltages": {
+        "C1": "-3"
+      },
+      "components": [
+        {
+          "id": "I1",
+          "kind": "I",
+          "p": "0",
+          "q": "b",
+          "value": "1"
+        },
+        {
+          "id": "R3",
+          "kind": "R",
+          "p": "a",
+          "q": "b",
+          "value": "7"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "b",
+          "q": "0",
+          "value": "1/3"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "0",
+          "value": "2"
+        },
+        {
+          "id": "R2",
+          "kind": "R",
+          "p": "p",
+          "q": "b",
+          "value": "5"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "p",
+          "q": "a",
+          "value": "3"
+        },
+        {
+          "id": "R0",
+          "kind": "R",
+          "p": "e",
+          "q": "p",
+          "value": "2"
+        },
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        }
+      ],
+      "group": "bridge_initial",
+      "id": "bridge_initial/reordered",
+      "inductor_currents": {
+        "L1": "2"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "I1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "2"
+          ]
+        },
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "6"
+          ]
+        }
+      },
+      "variant": "reordered"
+    },
+    {
+      "analytic": {},
+      "capacitor_voltages": {
+        "C1": "3"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "0",
+          "q": "e",
+          "value": "1"
+        },
+        {
+          "id": "R0",
+          "kind": "R",
+          "p": "p",
+          "q": "e",
+          "value": "2"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "a",
+          "q": "p",
+          "value": "3"
+        },
+        {
+          "id": "R2",
+          "kind": "R",
+          "p": "b",
+          "q": "p",
+          "value": "5"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "0",
+          "q": "a",
+          "value": "2"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "0",
+          "q": "b",
+          "value": "1/3"
+        },
+        {
+          "id": "R3",
+          "kind": "R",
+          "p": "b",
+          "q": "a",
+          "value": "7"
+        },
+        {
+          "id": "I1",
+          "kind": "I",
+          "p": "b",
+          "q": "0",
+          "value": "1"
+        }
+      ],
+      "group": "bridge_initial",
+      "id": "bridge_initial/directions_reversed",
+      "inductor_currents": {
+        "L1": "-2"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "I1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "-2"
+          ]
+        },
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "-6"
+          ]
+        }
+      },
+      "variant": "directions_reversed"
+    },
+    {
+      "analytic": {},
+      "capacitor_voltages": {
+        "C1": "-3"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "97/3"
+        },
+        {
+          "id": "R0",
+          "kind": "R",
+          "p": "e",
+          "q": "p",
+          "value": "2"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "p",
+          "q": "a",
+          "value": "3"
+        },
+        {
+          "id": "R2",
+          "kind": "R",
+          "p": "p",
+          "q": "b",
+          "value": "5"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "0",
+          "value": "2"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "b",
+          "q": "0",
+          "value": "1/3"
+        },
+        {
+          "id": "R3",
+          "kind": "R",
+          "p": "a",
+          "q": "b",
+          "value": "7"
+        },
+        {
+          "id": "I1",
+          "kind": "I",
+          "p": "0",
+          "q": "b",
+          "value": "97/3"
+        }
+      ],
+      "group": "bridge_initial",
+      "id": "bridge_initial/source_metadata_changed",
+      "inductor_currents": {
+        "L1": "2"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "I1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "2"
+          ]
+        },
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "6"
+          ]
+        }
+      },
+      "variant": "source_metadata_changed"
+    },
+    {
+      "analytic": {},
+      "capacitor_voltages": {
+        "C1": "-3"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R0",
+          "kind": "R",
+          "p": "e",
+          "q": "p",
+          "value": "2"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "p",
+          "q": "a",
+          "value": "3"
+        },
+        {
+          "id": "R2",
+          "kind": "R",
+          "p": "p",
+          "q": "b",
+          "value": "5"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "b",
+          "q": "0",
+          "value": "1/6"
+        },
+        {
+          "id": "R3",
+          "kind": "R",
+          "p": "a",
+          "q": "b",
+          "value": "7"
+        },
+        {
+          "id": "I1",
+          "kind": "I",
+          "p": "0",
+          "q": "b",
+          "value": "1"
+        }
+      ],
+      "group": "bridge_initial",
+      "id": "bridge_initial/time_scaled",
+      "inductor_currents": {
+        "L1": "2"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "I1": {
+          "denominator": [
+            "0",
+            "1/2"
+          ],
+          "numerator": [
+            "1"
+          ]
+        },
+        "V1": {
+          "denominator": [
+            "0",
+            "1/2"
+          ],
+          "numerator": [
+            "3"
+          ]
+        }
+      },
+      "variant": "time_scaled"
+    },
+    {
+      "analytic": {},
+      "capacitor_voltages": {
+        "C1": "0"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R0",
+          "kind": "R",
+          "p": "e",
+          "q": "p",
+          "value": "2"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "p",
+          "q": "a",
+          "value": "3"
+        },
+        {
+          "id": "R2",
+          "kind": "R",
+          "p": "p",
+          "q": "b",
+          "value": "5"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "0",
+          "value": "2"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "b",
+          "q": "0",
+          "value": "1/3"
+        },
+        {
+          "id": "R3",
+          "kind": "R",
+          "p": "a",
+          "q": "b",
+          "value": "7"
+        },
+        {
+          "id": "I1",
+          "kind": "I",
+          "p": "0",
+          "q": "b",
+          "value": "1"
+        }
+      ],
+      "group": "bridge_initial",
+      "id": "bridge_initial/forced_only",
+      "inductor_currents": {
+        "L1": "0"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "I1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "2"
+          ]
+        },
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "6"
+          ]
+        }
+      },
+      "variant": "forced_only"
+    },
+    {
+      "analytic": {},
+      "capacitor_voltages": {
+        "C1": "-3"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R0",
+          "kind": "R",
+          "p": "e",
+          "q": "p",
+          "value": "2"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "p",
+          "q": "a",
+          "value": "3"
+        },
+        {
+          "id": "R2",
+          "kind": "R",
+          "p": "p",
+          "q": "b",
+          "value": "5"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "0",
+          "value": "2"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "b",
+          "q": "0",
+          "value": "1/3"
+        },
+        {
+          "id": "R3",
+          "kind": "R",
+          "p": "a",
+          "q": "b",
+          "value": "7"
+        },
+        {
+          "id": "I1",
+          "kind": "I",
+          "p": "0",
+          "q": "b",
+          "value": "1"
+        }
+      ],
+      "group": "bridge_initial",
+      "id": "bridge_initial/initial_only",
+      "inductor_currents": {
+        "L1": "2"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "I1": {
+          "denominator": [
+            "1"
+          ],
+          "numerator": [
+            "0"
+          ]
+        },
+        "V1": {
+          "denominator": [
+            "1"
+          ],
+          "numerator": [
+            "0"
+          ]
+        }
+      },
+      "variant": "initial_only"
+    },
+    {
+      "analytic": {},
+      "capacitor_voltages": {
+        "C1": "-2"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R0",
+          "kind": "R",
+          "p": "e",
+          "q": "p",
+          "value": "6"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "p",
+          "q": "a",
+          "value": "4"
+        },
+        {
+          "id": "R2",
+          "kind": "R",
+          "p": "a",
+          "q": "b",
+          "value": "2"
+        },
+        {
+          "id": "R3",
+          "kind": "R",
+          "p": "b",
+          "q": "c",
+          "value": "2"
+        },
+        {
+          "id": "R4",
+          "kind": "R",
+          "p": "c",
+          "q": "0",
+          "value": "2"
+        },
+        {
+          "id": "R5",
+          "kind": "R",
+          "p": "p",
+          "q": "0",
+          "value": "6"
+        },
+        {
+          "id": "R6",
+          "kind": "R",
+          "p": "a",
+          "q": "c",
+          "value": "1"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "0",
+          "value": "4/3"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "p",
+          "q": "b",
+          "value": "1/7"
+        },
+        {
+          "id": "I1",
+          "kind": "I",
+          "p": "b",
+          "q": "0",
+          "value": "1"
+        }
+      ],
+      "group": "seeded_mesh_01",
+      "id": "seeded_mesh_01/base",
+      "inductor_currents": {
+        "L1": "2"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "I1": {
+          "denominator": [
+            "1"
+          ],
+          "numerator": [
+            "1"
+          ]
+        },
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "5"
+          ]
+        }
+      },
+      "variant": "base"
+    },
+    {
+      "analytic": {},
+      "capacitor_voltages": {
+        "C1": "-2"
+      },
+      "components": [
+        {
+          "id": "I1",
+          "kind": "I",
+          "p": "b",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "p",
+          "q": "b",
+          "value": "1/7"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "0",
+          "value": "4/3"
+        },
+        {
+          "id": "R6",
+          "kind": "R",
+          "p": "a",
+          "q": "c",
+          "value": "1"
+        },
+        {
+          "id": "R5",
+          "kind": "R",
+          "p": "p",
+          "q": "0",
+          "value": "6"
+        },
+        {
+          "id": "R4",
+          "kind": "R",
+          "p": "c",
+          "q": "0",
+          "value": "2"
+        },
+        {
+          "id": "R3",
+          "kind": "R",
+          "p": "b",
+          "q": "c",
+          "value": "2"
+        },
+        {
+          "id": "R2",
+          "kind": "R",
+          "p": "a",
+          "q": "b",
+          "value": "2"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "p",
+          "q": "a",
+          "value": "4"
+        },
+        {
+          "id": "R0",
+          "kind": "R",
+          "p": "e",
+          "q": "p",
+          "value": "6"
+        },
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        }
+      ],
+      "group": "seeded_mesh_01",
+      "id": "seeded_mesh_01/reordered",
+      "inductor_currents": {
+        "L1": "2"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "I1": {
+          "denominator": [
+            "1"
+          ],
+          "numerator": [
+            "1"
+          ]
+        },
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "5"
+          ]
+        }
+      },
+      "variant": "reordered"
+    },
+    {
+      "analytic": {},
+      "capacitor_voltages": {
+        "C1": "2"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "0",
+          "q": "e",
+          "value": "1"
+        },
+        {
+          "id": "R0",
+          "kind": "R",
+          "p": "p",
+          "q": "e",
+          "value": "6"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "a",
+          "q": "p",
+          "value": "4"
+        },
+        {
+          "id": "R2",
+          "kind": "R",
+          "p": "b",
+          "q": "a",
+          "value": "2"
+        },
+        {
+          "id": "R3",
+          "kind": "R",
+          "p": "c",
+          "q": "b",
+          "value": "2"
+        },
+        {
+          "id": "R4",
+          "kind": "R",
+          "p": "0",
+          "q": "c",
+          "value": "2"
+        },
+        {
+          "id": "R5",
+          "kind": "R",
+          "p": "0",
+          "q": "p",
+          "value": "6"
+        },
+        {
+          "id": "R6",
+          "kind": "R",
+          "p": "c",
+          "q": "a",
+          "value": "1"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "0",
+          "q": "a",
+          "value": "4/3"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "b",
+          "q": "p",
+          "value": "1/7"
+        },
+        {
+          "id": "I1",
+          "kind": "I",
+          "p": "0",
+          "q": "b",
+          "value": "1"
+        }
+      ],
+      "group": "seeded_mesh_01",
+      "id": "seeded_mesh_01/directions_reversed",
+      "inductor_currents": {
+        "L1": "-2"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "I1": {
+          "denominator": [
+            "1"
+          ],
+          "numerator": [
+            "-1"
+          ]
+        },
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "-5"
+          ]
+        }
+      },
+      "variant": "directions_reversed"
+    },
+    {
+      "analytic": {},
+      "capacitor_voltages": {
+        "C1": "-2"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "97/3"
+        },
+        {
+          "id": "R0",
+          "kind": "R",
+          "p": "e",
+          "q": "p",
+          "value": "6"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "p",
+          "q": "a",
+          "value": "4"
+        },
+        {
+          "id": "R2",
+          "kind": "R",
+          "p": "a",
+          "q": "b",
+          "value": "2"
+        },
+        {
+          "id": "R3",
+          "kind": "R",
+          "p": "b",
+          "q": "c",
+          "value": "2"
+        },
+        {
+          "id": "R4",
+          "kind": "R",
+          "p": "c",
+          "q": "0",
+          "value": "2"
+        },
+        {
+          "id": "R5",
+          "kind": "R",
+          "p": "p",
+          "q": "0",
+          "value": "6"
+        },
+        {
+          "id": "R6",
+          "kind": "R",
+          "p": "a",
+          "q": "c",
+          "value": "1"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "0",
+          "value": "4/3"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "p",
+          "q": "b",
+          "value": "1/7"
+        },
+        {
+          "id": "I1",
+          "kind": "I",
+          "p": "b",
+          "q": "0",
+          "value": "97/3"
+        }
+      ],
+      "group": "seeded_mesh_01",
+      "id": "seeded_mesh_01/source_metadata_changed",
+      "inductor_currents": {
+        "L1": "2"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "I1": {
+          "denominator": [
+            "1"
+          ],
+          "numerator": [
+            "1"
+          ]
+        },
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "5"
+          ]
+        }
+      },
+      "variant": "source_metadata_changed"
+    },
+    {
+      "analytic": {},
+      "capacitor_voltages": {
+        "C1": "-2"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R0",
+          "kind": "R",
+          "p": "e",
+          "q": "p",
+          "value": "6"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "p",
+          "q": "a",
+          "value": "4"
+        },
+        {
+          "id": "R2",
+          "kind": "R",
+          "p": "a",
+          "q": "b",
+          "value": "2"
+        },
+        {
+          "id": "R3",
+          "kind": "R",
+          "p": "b",
+          "q": "c",
+          "value": "2"
+        },
+        {
+          "id": "R4",
+          "kind": "R",
+          "p": "c",
+          "q": "0",
+          "value": "2"
+        },
+        {
+          "id": "R5",
+          "kind": "R",
+          "p": "p",
+          "q": "0",
+          "value": "6"
+        },
+        {
+          "id": "R6",
+          "kind": "R",
+          "p": "a",
+          "q": "c",
+          "value": "1"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "0",
+          "value": "2/3"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "p",
+          "q": "b",
+          "value": "1/14"
+        },
+        {
+          "id": "I1",
+          "kind": "I",
+          "p": "b",
+          "q": "0",
+          "value": "1"
+        }
+      ],
+      "group": "seeded_mesh_01",
+      "id": "seeded_mesh_01/time_scaled",
+      "inductor_currents": {
+        "L1": "2"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "I1": {
+          "denominator": [
+            "1"
+          ],
+          "numerator": [
+            "1/2"
+          ]
+        },
+        "V1": {
+          "denominator": [
+            "0",
+            "1/2"
+          ],
+          "numerator": [
+            "5/2"
+          ]
+        }
+      },
+      "variant": "time_scaled"
+    },
+    {
+      "analytic": {},
+      "capacitor_voltages": {
+        "C1": "0"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R0",
+          "kind": "R",
+          "p": "e",
+          "q": "p",
+          "value": "6"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "p",
+          "q": "a",
+          "value": "4"
+        },
+        {
+          "id": "R2",
+          "kind": "R",
+          "p": "a",
+          "q": "b",
+          "value": "2"
+        },
+        {
+          "id": "R3",
+          "kind": "R",
+          "p": "b",
+          "q": "c",
+          "value": "2"
+        },
+        {
+          "id": "R4",
+          "kind": "R",
+          "p": "c",
+          "q": "0",
+          "value": "2"
+        },
+        {
+          "id": "R5",
+          "kind": "R",
+          "p": "p",
+          "q": "0",
+          "value": "6"
+        },
+        {
+          "id": "R6",
+          "kind": "R",
+          "p": "a",
+          "q": "c",
+          "value": "1"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "0",
+          "value": "4/3"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "p",
+          "q": "b",
+          "value": "1/7"
+        },
+        {
+          "id": "I1",
+          "kind": "I",
+          "p": "b",
+          "q": "0",
+          "value": "1"
+        }
+      ],
+      "group": "seeded_mesh_01",
+      "id": "seeded_mesh_01/forced_only",
+      "inductor_currents": {
+        "L1": "0"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "I1": {
+          "denominator": [
+            "1"
+          ],
+          "numerator": [
+            "1"
+          ]
+        },
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "5"
+          ]
+        }
+      },
+      "variant": "forced_only"
+    },
+    {
+      "analytic": {},
+      "capacitor_voltages": {
+        "C1": "-2"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R0",
+          "kind": "R",
+          "p": "e",
+          "q": "p",
+          "value": "6"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "p",
+          "q": "a",
+          "value": "4"
+        },
+        {
+          "id": "R2",
+          "kind": "R",
+          "p": "a",
+          "q": "b",
+          "value": "2"
+        },
+        {
+          "id": "R3",
+          "kind": "R",
+          "p": "b",
+          "q": "c",
+          "value": "2"
+        },
+        {
+          "id": "R4",
+          "kind": "R",
+          "p": "c",
+          "q": "0",
+          "value": "2"
+        },
+        {
+          "id": "R5",
+          "kind": "R",
+          "p": "p",
+          "q": "0",
+          "value": "6"
+        },
+        {
+          "id": "R6",
+          "kind": "R",
+          "p": "a",
+          "q": "c",
+          "value": "1"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "0",
+          "value": "4/3"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "p",
+          "q": "b",
+          "value": "1/7"
+        },
+        {
+          "id": "I1",
+          "kind": "I",
+          "p": "b",
+          "q": "0",
+          "value": "1"
+        }
+      ],
+      "group": "seeded_mesh_01",
+      "id": "seeded_mesh_01/initial_only",
+      "inductor_currents": {
+        "L1": "2"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "I1": {
+          "denominator": [
+            "1"
+          ],
+          "numerator": [
+            "0"
+          ]
+        },
+        "V1": {
+          "denominator": [
+            "1"
+          ],
+          "numerator": [
+            "0"
+          ]
+        }
+      },
+      "variant": "initial_only"
+    },
+    {
+      "analytic": {},
+      "capacitor_voltages": {
+        "C1": "3"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R0",
+          "kind": "R",
+          "p": "e",
+          "q": "p",
+          "value": "2"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "p",
+          "q": "a",
+          "value": "4"
+        },
+        {
+          "id": "R2",
+          "kind": "R",
+          "p": "a",
+          "q": "b",
+          "value": "7"
+        },
+        {
+          "id": "R3",
+          "kind": "R",
+          "p": "b",
+          "q": "c",
+          "value": "5"
+        },
+        {
+          "id": "R4",
+          "kind": "R",
+          "p": "c",
+          "q": "0",
+          "value": "3"
+        },
+        {
+          "id": "R5",
+          "kind": "R",
+          "p": "p",
+          "q": "0",
+          "value": "4"
+        },
+        {
+          "id": "R6",
+          "kind": "R",
+          "p": "a",
+          "q": "c",
+          "value": "5"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "0",
+          "value": "1/3"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "p",
+          "q": "b",
+          "value": "4/7"
+        },
+        {
+          "id": "I1",
+          "kind": "I",
+          "p": "b",
+          "q": "0",
+          "value": "1"
+        }
+      ],
+      "group": "seeded_mesh_02",
+      "id": "seeded_mesh_02/base",
+      "inductor_currents": {
+        "L1": "-3"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "I1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "-2"
+          ]
+        },
+        "V1": {
+          "denominator": [
+            "4",
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "0",
+            "3"
+          ]
+        }
+      },
+      "variant": "base"
+    },
+    {
+      "analytic": {},
+      "capacitor_voltages": {
+        "C1": "3"
+      },
+      "components": [
+        {
+          "id": "I1",
+          "kind": "I",
+          "p": "b",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "p",
+          "q": "b",
+          "value": "4/7"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "0",
+          "value": "1/3"
+        },
+        {
+          "id": "R6",
+          "kind": "R",
+          "p": "a",
+          "q": "c",
+          "value": "5"
+        },
+        {
+          "id": "R5",
+          "kind": "R",
+          "p": "p",
+          "q": "0",
+          "value": "4"
+        },
+        {
+          "id": "R4",
+          "kind": "R",
+          "p": "c",
+          "q": "0",
+          "value": "3"
+        },
+        {
+          "id": "R3",
+          "kind": "R",
+          "p": "b",
+          "q": "c",
+          "value": "5"
+        },
+        {
+          "id": "R2",
+          "kind": "R",
+          "p": "a",
+          "q": "b",
+          "value": "7"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "p",
+          "q": "a",
+          "value": "4"
+        },
+        {
+          "id": "R0",
+          "kind": "R",
+          "p": "e",
+          "q": "p",
+          "value": "2"
+        },
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        }
+      ],
+      "group": "seeded_mesh_02",
+      "id": "seeded_mesh_02/reordered",
+      "inductor_currents": {
+        "L1": "-3"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "I1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "-2"
+          ]
+        },
+        "V1": {
+          "denominator": [
+            "4",
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "0",
+            "3"
+          ]
+        }
+      },
+      "variant": "reordered"
+    },
+    {
+      "analytic": {},
+      "capacitor_voltages": {
+        "C1": "-3"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "0",
+          "q": "e",
+          "value": "1"
+        },
+        {
+          "id": "R0",
+          "kind": "R",
+          "p": "p",
+          "q": "e",
+          "value": "2"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "a",
+          "q": "p",
+          "value": "4"
+        },
+        {
+          "id": "R2",
+          "kind": "R",
+          "p": "b",
+          "q": "a",
+          "value": "7"
+        },
+        {
+          "id": "R3",
+          "kind": "R",
+          "p": "c",
+          "q": "b",
+          "value": "5"
+        },
+        {
+          "id": "R4",
+          "kind": "R",
+          "p": "0",
+          "q": "c",
+          "value": "3"
+        },
+        {
+          "id": "R5",
+          "kind": "R",
+          "p": "0",
+          "q": "p",
+          "value": "4"
+        },
+        {
+          "id": "R6",
+          "kind": "R",
+          "p": "c",
+          "q": "a",
+          "value": "5"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "0",
+          "q": "a",
+          "value": "1/3"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "b",
+          "q": "p",
+          "value": "4/7"
+        },
+        {
+          "id": "I1",
+          "kind": "I",
+          "p": "0",
+          "q": "b",
+          "value": "1"
+        }
+      ],
+      "group": "seeded_mesh_02",
+      "id": "seeded_mesh_02/directions_reversed",
+      "inductor_currents": {
+        "L1": "3"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "I1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "2"
+          ]
+        },
+        "V1": {
+          "denominator": [
+            "4",
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "0",
+            "-3"
+          ]
+        }
+      },
+      "variant": "directions_reversed"
+    },
+    {
+      "analytic": {},
+      "capacitor_voltages": {
+        "C1": "3"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "97/3"
+        },
+        {
+          "id": "R0",
+          "kind": "R",
+          "p": "e",
+          "q": "p",
+          "value": "2"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "p",
+          "q": "a",
+          "value": "4"
+        },
+        {
+          "id": "R2",
+          "kind": "R",
+          "p": "a",
+          "q": "b",
+          "value": "7"
+        },
+        {
+          "id": "R3",
+          "kind": "R",
+          "p": "b",
+          "q": "c",
+          "value": "5"
+        },
+        {
+          "id": "R4",
+          "kind": "R",
+          "p": "c",
+          "q": "0",
+          "value": "3"
+        },
+        {
+          "id": "R5",
+          "kind": "R",
+          "p": "p",
+          "q": "0",
+          "value": "4"
+        },
+        {
+          "id": "R6",
+          "kind": "R",
+          "p": "a",
+          "q": "c",
+          "value": "5"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "0",
+          "value": "1/3"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "p",
+          "q": "b",
+          "value": "4/7"
+        },
+        {
+          "id": "I1",
+          "kind": "I",
+          "p": "b",
+          "q": "0",
+          "value": "97/3"
+        }
+      ],
+      "group": "seeded_mesh_02",
+      "id": "seeded_mesh_02/source_metadata_changed",
+      "inductor_currents": {
+        "L1": "-3"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "I1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "-2"
+          ]
+        },
+        "V1": {
+          "denominator": [
+            "4",
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "0",
+            "3"
+          ]
+        }
+      },
+      "variant": "source_metadata_changed"
+    },
+    {
+      "analytic": {},
+      "capacitor_voltages": {
+        "C1": "3"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R0",
+          "kind": "R",
+          "p": "e",
+          "q": "p",
+          "value": "2"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "p",
+          "q": "a",
+          "value": "4"
+        },
+        {
+          "id": "R2",
+          "kind": "R",
+          "p": "a",
+          "q": "b",
+          "value": "7"
+        },
+        {
+          "id": "R3",
+          "kind": "R",
+          "p": "b",
+          "q": "c",
+          "value": "5"
+        },
+        {
+          "id": "R4",
+          "kind": "R",
+          "p": "c",
+          "q": "0",
+          "value": "3"
+        },
+        {
+          "id": "R5",
+          "kind": "R",
+          "p": "p",
+          "q": "0",
+          "value": "4"
+        },
+        {
+          "id": "R6",
+          "kind": "R",
+          "p": "a",
+          "q": "c",
+          "value": "5"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "0",
+          "value": "1/6"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "p",
+          "q": "b",
+          "value": "2/7"
+        },
+        {
+          "id": "I1",
+          "kind": "I",
+          "p": "b",
+          "q": "0",
+          "value": "1"
+        }
+      ],
+      "group": "seeded_mesh_02",
+      "id": "seeded_mesh_02/time_scaled",
+      "inductor_currents": {
+        "L1": "-3"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "I1": {
+          "denominator": [
+            "0",
+            "1/2"
+          ],
+          "numerator": [
+            "-1"
+          ]
+        },
+        "V1": {
+          "denominator": [
+            "4",
+            "0",
+            "1/4"
+          ],
+          "numerator": [
+            "0",
+            "3/4"
+          ]
+        }
+      },
+      "variant": "time_scaled"
+    },
+    {
+      "analytic": {},
+      "capacitor_voltages": {
+        "C1": "0"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R0",
+          "kind": "R",
+          "p": "e",
+          "q": "p",
+          "value": "2"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "p",
+          "q": "a",
+          "value": "4"
+        },
+        {
+          "id": "R2",
+          "kind": "R",
+          "p": "a",
+          "q": "b",
+          "value": "7"
+        },
+        {
+          "id": "R3",
+          "kind": "R",
+          "p": "b",
+          "q": "c",
+          "value": "5"
+        },
+        {
+          "id": "R4",
+          "kind": "R",
+          "p": "c",
+          "q": "0",
+          "value": "3"
+        },
+        {
+          "id": "R5",
+          "kind": "R",
+          "p": "p",
+          "q": "0",
+          "value": "4"
+        },
+        {
+          "id": "R6",
+          "kind": "R",
+          "p": "a",
+          "q": "c",
+          "value": "5"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "0",
+          "value": "1/3"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "p",
+          "q": "b",
+          "value": "4/7"
+        },
+        {
+          "id": "I1",
+          "kind": "I",
+          "p": "b",
+          "q": "0",
+          "value": "1"
+        }
+      ],
+      "group": "seeded_mesh_02",
+      "id": "seeded_mesh_02/forced_only",
+      "inductor_currents": {
+        "L1": "0"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "I1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "-2"
+          ]
+        },
+        "V1": {
+          "denominator": [
+            "4",
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "0",
+            "3"
+          ]
+        }
+      },
+      "variant": "forced_only"
+    },
+    {
+      "analytic": {},
+      "capacitor_voltages": {
+        "C1": "3"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R0",
+          "kind": "R",
+          "p": "e",
+          "q": "p",
+          "value": "2"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "p",
+          "q": "a",
+          "value": "4"
+        },
+        {
+          "id": "R2",
+          "kind": "R",
+          "p": "a",
+          "q": "b",
+          "value": "7"
+        },
+        {
+          "id": "R3",
+          "kind": "R",
+          "p": "b",
+          "q": "c",
+          "value": "5"
+        },
+        {
+          "id": "R4",
+          "kind": "R",
+          "p": "c",
+          "q": "0",
+          "value": "3"
+        },
+        {
+          "id": "R5",
+          "kind": "R",
+          "p": "p",
+          "q": "0",
+          "value": "4"
+        },
+        {
+          "id": "R6",
+          "kind": "R",
+          "p": "a",
+          "q": "c",
+          "value": "5"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "0",
+          "value": "1/3"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "p",
+          "q": "b",
+          "value": "4/7"
+        },
+        {
+          "id": "I1",
+          "kind": "I",
+          "p": "b",
+          "q": "0",
+          "value": "1"
+        }
+      ],
+      "group": "seeded_mesh_02",
+      "id": "seeded_mesh_02/initial_only",
+      "inductor_currents": {
+        "L1": "-3"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "I1": {
+          "denominator": [
+            "1"
+          ],
+          "numerator": [
+            "0"
+          ]
+        },
+        "V1": {
+          "denominator": [
+            "1"
+          ],
+          "numerator": [
+            "0"
+          ]
+        }
+      },
+      "variant": "initial_only"
+    },
+    {
+      "analytic": {},
+      "capacitor_voltages": {
+        "C1": "-4"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R0",
+          "kind": "R",
+          "p": "e",
+          "q": "p",
+          "value": "6"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "p",
+          "q": "a",
+          "value": "3"
+        },
+        {
+          "id": "R2",
+          "kind": "R",
+          "p": "a",
+          "q": "b",
+          "value": "6"
+        },
+        {
+          "id": "R3",
+          "kind": "R",
+          "p": "b",
+          "q": "c",
+          "value": "7"
+        },
+        {
+          "id": "R4",
+          "kind": "R",
+          "p": "c",
+          "q": "0",
+          "value": "3"
+        },
+        {
+          "id": "R5",
+          "kind": "R",
+          "p": "p",
+          "q": "0",
+          "value": "6"
+        },
+        {
+          "id": "R6",
+          "kind": "R",
+          "p": "a",
+          "q": "c",
+          "value": "7"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "0",
+          "value": "2/3"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "p",
+          "q": "b",
+          "value": "2/7"
+        },
+        {
+          "id": "I1",
+          "kind": "I",
+          "p": "b",
+          "q": "0",
+          "value": "1"
+        }
+      ],
+      "group": "seeded_mesh_03",
+      "id": "seeded_mesh_03/base",
+      "inductor_currents": {
+        "L1": "5"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "I1": {
+          "denominator": [
+            "1",
+            "1"
+          ],
+          "numerator": [
+            "3"
+          ]
+        },
+        "V1": {
+          "denominator": [
+            "2",
+            "1"
+          ],
+          "numerator": [
+            "7"
+          ]
+        }
+      },
+      "variant": "base"
+    },
+    {
+      "analytic": {},
+      "capacitor_voltages": {
+        "C1": "-4"
+      },
+      "components": [
+        {
+          "id": "I1",
+          "kind": "I",
+          "p": "b",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "p",
+          "q": "b",
+          "value": "2/7"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "0",
+          "value": "2/3"
+        },
+        {
+          "id": "R6",
+          "kind": "R",
+          "p": "a",
+          "q": "c",
+          "value": "7"
+        },
+        {
+          "id": "R5",
+          "kind": "R",
+          "p": "p",
+          "q": "0",
+          "value": "6"
+        },
+        {
+          "id": "R4",
+          "kind": "R",
+          "p": "c",
+          "q": "0",
+          "value": "3"
+        },
+        {
+          "id": "R3",
+          "kind": "R",
+          "p": "b",
+          "q": "c",
+          "value": "7"
+        },
+        {
+          "id": "R2",
+          "kind": "R",
+          "p": "a",
+          "q": "b",
+          "value": "6"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "p",
+          "q": "a",
+          "value": "3"
+        },
+        {
+          "id": "R0",
+          "kind": "R",
+          "p": "e",
+          "q": "p",
+          "value": "6"
+        },
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        }
+      ],
+      "group": "seeded_mesh_03",
+      "id": "seeded_mesh_03/reordered",
+      "inductor_currents": {
+        "L1": "5"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "I1": {
+          "denominator": [
+            "1",
+            "1"
+          ],
+          "numerator": [
+            "3"
+          ]
+        },
+        "V1": {
+          "denominator": [
+            "2",
+            "1"
+          ],
+          "numerator": [
+            "7"
+          ]
+        }
+      },
+      "variant": "reordered"
+    },
+    {
+      "analytic": {},
+      "capacitor_voltages": {
+        "C1": "4"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "0",
+          "q": "e",
+          "value": "1"
+        },
+        {
+          "id": "R0",
+          "kind": "R",
+          "p": "p",
+          "q": "e",
+          "value": "6"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "a",
+          "q": "p",
+          "value": "3"
+        },
+        {
+          "id": "R2",
+          "kind": "R",
+          "p": "b",
+          "q": "a",
+          "value": "6"
+        },
+        {
+          "id": "R3",
+          "kind": "R",
+          "p": "c",
+          "q": "b",
+          "value": "7"
+        },
+        {
+          "id": "R4",
+          "kind": "R",
+          "p": "0",
+          "q": "c",
+          "value": "3"
+        },
+        {
+          "id": "R5",
+          "kind": "R",
+          "p": "0",
+          "q": "p",
+          "value": "6"
+        },
+        {
+          "id": "R6",
+          "kind": "R",
+          "p": "c",
+          "q": "a",
+          "value": "7"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "0",
+          "q": "a",
+          "value": "2/3"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "b",
+          "q": "p",
+          "value": "2/7"
+        },
+        {
+          "id": "I1",
+          "kind": "I",
+          "p": "0",
+          "q": "b",
+          "value": "1"
+        }
+      ],
+      "group": "seeded_mesh_03",
+      "id": "seeded_mesh_03/directions_reversed",
+      "inductor_currents": {
+        "L1": "-5"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "I1": {
+          "denominator": [
+            "1",
+            "1"
+          ],
+          "numerator": [
+            "-3"
+          ]
+        },
+        "V1": {
+          "denominator": [
+            "2",
+            "1"
+          ],
+          "numerator": [
+            "-7"
+          ]
+        }
+      },
+      "variant": "directions_reversed"
+    },
+    {
+      "analytic": {},
+      "capacitor_voltages": {
+        "C1": "-4"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "97/3"
+        },
+        {
+          "id": "R0",
+          "kind": "R",
+          "p": "e",
+          "q": "p",
+          "value": "6"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "p",
+          "q": "a",
+          "value": "3"
+        },
+        {
+          "id": "R2",
+          "kind": "R",
+          "p": "a",
+          "q": "b",
+          "value": "6"
+        },
+        {
+          "id": "R3",
+          "kind": "R",
+          "p": "b",
+          "q": "c",
+          "value": "7"
+        },
+        {
+          "id": "R4",
+          "kind": "R",
+          "p": "c",
+          "q": "0",
+          "value": "3"
+        },
+        {
+          "id": "R5",
+          "kind": "R",
+          "p": "p",
+          "q": "0",
+          "value": "6"
+        },
+        {
+          "id": "R6",
+          "kind": "R",
+          "p": "a",
+          "q": "c",
+          "value": "7"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "0",
+          "value": "2/3"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "p",
+          "q": "b",
+          "value": "2/7"
+        },
+        {
+          "id": "I1",
+          "kind": "I",
+          "p": "b",
+          "q": "0",
+          "value": "97/3"
+        }
+      ],
+      "group": "seeded_mesh_03",
+      "id": "seeded_mesh_03/source_metadata_changed",
+      "inductor_currents": {
+        "L1": "5"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "I1": {
+          "denominator": [
+            "1",
+            "1"
+          ],
+          "numerator": [
+            "3"
+          ]
+        },
+        "V1": {
+          "denominator": [
+            "2",
+            "1"
+          ],
+          "numerator": [
+            "7"
+          ]
+        }
+      },
+      "variant": "source_metadata_changed"
+    },
+    {
+      "analytic": {},
+      "capacitor_voltages": {
+        "C1": "-4"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R0",
+          "kind": "R",
+          "p": "e",
+          "q": "p",
+          "value": "6"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "p",
+          "q": "a",
+          "value": "3"
+        },
+        {
+          "id": "R2",
+          "kind": "R",
+          "p": "a",
+          "q": "b",
+          "value": "6"
+        },
+        {
+          "id": "R3",
+          "kind": "R",
+          "p": "b",
+          "q": "c",
+          "value": "7"
+        },
+        {
+          "id": "R4",
+          "kind": "R",
+          "p": "c",
+          "q": "0",
+          "value": "3"
+        },
+        {
+          "id": "R5",
+          "kind": "R",
+          "p": "p",
+          "q": "0",
+          "value": "6"
+        },
+        {
+          "id": "R6",
+          "kind": "R",
+          "p": "a",
+          "q": "c",
+          "value": "7"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "0",
+          "value": "1/3"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "p",
+          "q": "b",
+          "value": "1/7"
+        },
+        {
+          "id": "I1",
+          "kind": "I",
+          "p": "b",
+          "q": "0",
+          "value": "1"
+        }
+      ],
+      "group": "seeded_mesh_03",
+      "id": "seeded_mesh_03/time_scaled",
+      "inductor_currents": {
+        "L1": "5"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "I1": {
+          "denominator": [
+            "1",
+            "1/2"
+          ],
+          "numerator": [
+            "3/2"
+          ]
+        },
+        "V1": {
+          "denominator": [
+            "2",
+            "1/2"
+          ],
+          "numerator": [
+            "7/2"
+          ]
+        }
+      },
+      "variant": "time_scaled"
+    },
+    {
+      "analytic": {},
+      "capacitor_voltages": {
+        "C1": "0"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R0",
+          "kind": "R",
+          "p": "e",
+          "q": "p",
+          "value": "6"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "p",
+          "q": "a",
+          "value": "3"
+        },
+        {
+          "id": "R2",
+          "kind": "R",
+          "p": "a",
+          "q": "b",
+          "value": "6"
+        },
+        {
+          "id": "R3",
+          "kind": "R",
+          "p": "b",
+          "q": "c",
+          "value": "7"
+        },
+        {
+          "id": "R4",
+          "kind": "R",
+          "p": "c",
+          "q": "0",
+          "value": "3"
+        },
+        {
+          "id": "R5",
+          "kind": "R",
+          "p": "p",
+          "q": "0",
+          "value": "6"
+        },
+        {
+          "id": "R6",
+          "kind": "R",
+          "p": "a",
+          "q": "c",
+          "value": "7"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "0",
+          "value": "2/3"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "p",
+          "q": "b",
+          "value": "2/7"
+        },
+        {
+          "id": "I1",
+          "kind": "I",
+          "p": "b",
+          "q": "0",
+          "value": "1"
+        }
+      ],
+      "group": "seeded_mesh_03",
+      "id": "seeded_mesh_03/forced_only",
+      "inductor_currents": {
+        "L1": "0"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "I1": {
+          "denominator": [
+            "1",
+            "1"
+          ],
+          "numerator": [
+            "3"
+          ]
+        },
+        "V1": {
+          "denominator": [
+            "2",
+            "1"
+          ],
+          "numerator": [
+            "7"
+          ]
+        }
+      },
+      "variant": "forced_only"
+    },
+    {
+      "analytic": {},
+      "capacitor_voltages": {
+        "C1": "-4"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R0",
+          "kind": "R",
+          "p": "e",
+          "q": "p",
+          "value": "6"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "p",
+          "q": "a",
+          "value": "3"
+        },
+        {
+          "id": "R2",
+          "kind": "R",
+          "p": "a",
+          "q": "b",
+          "value": "6"
+        },
+        {
+          "id": "R3",
+          "kind": "R",
+          "p": "b",
+          "q": "c",
+          "value": "7"
+        },
+        {
+          "id": "R4",
+          "kind": "R",
+          "p": "c",
+          "q": "0",
+          "value": "3"
+        },
+        {
+          "id": "R5",
+          "kind": "R",
+          "p": "p",
+          "q": "0",
+          "value": "6"
+        },
+        {
+          "id": "R6",
+          "kind": "R",
+          "p": "a",
+          "q": "c",
+          "value": "7"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "0",
+          "value": "2/3"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "p",
+          "q": "b",
+          "value": "2/7"
+        },
+        {
+          "id": "I1",
+          "kind": "I",
+          "p": "b",
+          "q": "0",
+          "value": "1"
+        }
+      ],
+      "group": "seeded_mesh_03",
+      "id": "seeded_mesh_03/initial_only",
+      "inductor_currents": {
+        "L1": "5"
+      },
+      "require_solved": true,
+      "source_transforms": {
+        "I1": {
+          "denominator": [
+            "1"
+          ],
+          "numerator": [
+            "0"
+          ]
+        },
+        "V1": {
+          "denominator": [
+            "1"
+          ],
+          "numerator": [
+            "0"
+          ]
+        }
+      },
+      "variant": "initial_only"
+    },
+    {
+      "analytic": {},
+      "capacitor_voltages": {},
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "p",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "V2",
+          "kind": "V",
+          "p": "p",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "p",
+          "q": "0",
+          "value": "3"
+        }
+      ],
+      "expected_status": "nonunique_system",
+      "group": "special",
+      "id": "redundant_voltage_constraints",
+      "inductor_currents": {},
+      "require_solved": false,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "2"
+          ]
+        },
+        "V2": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "2"
+          ]
+        }
+      },
+      "variant": "redundant_voltage_constraints"
+    },
+    {
+      "analytic": {},
+      "capacitor_voltages": {},
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "p",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "V2",
+          "kind": "V",
+          "p": "p",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "p",
+          "q": "0",
+          "value": "3"
+        }
+      ],
+      "expected_status": "inconsistent_system",
+      "group": "special",
+      "id": "inconsistent_voltage_constraints",
+      "inductor_currents": {},
+      "require_solved": false,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "2"
+          ]
+        },
+        "V2": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "3"
+          ]
+        }
+      },
+      "variant": "inconsistent_voltage_constraints"
+    },
+    {
+      "analytic": {
+        "I[L1]": {
+          "denominator": [
+            "1"
+          ],
+          "numerator": [
+            "0"
+          ]
+        },
+        "V[L1]": {
+          "denominator": [
+            "1"
+          ],
+          "numerator": [
+            "-6"
+          ]
+        }
+      },
+      "capacitor_voltages": {},
+      "components": [
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "p",
+          "q": "0",
+          "value": "3"
+        }
+      ],
+      "expected_status": "solved",
+      "group": "special",
+      "id": "open_inductor_initial_impulse",
+      "inductor_currents": {
+        "L1": "2"
+      },
+      "require_solved": true,
+      "source_transforms": {},
+      "variant": "open_inductor_initial_impulse"
+    },
+    {
+      "analytic": {
+        "I[C1]": {
+          "denominator": [
+            "1"
+          ],
+          "numerator": [
+            "12"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "5"
+          ]
+        }
+      },
+      "capacitor_voltages": {
+        "C1": "-1"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "p",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "p",
+          "q": "0",
+          "value": "2"
+        }
+      ],
+      "expected_status": "solved",
+      "group": "special",
+      "id": "clamped_capacitor_initial_impulse",
+      "inductor_currents": {},
+      "require_solved": true,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "5"
+          ]
+        }
+      },
+      "variant": "clamped_capacitor_initial_impulse"
+    },
+    {
+      "analytic": {
+        "I[C1]": {
+          "denominator": [
+            "2/3",
+            "1"
+          ],
+          "numerator": [
+            "7/3"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "2/3",
+            "1"
+          ],
+          "numerator": [
+            "10/3",
+            "-2"
+          ]
+        }
+      },
+      "capacitor_voltages": {
+        "C1": "-2"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "e",
+          "q": "a",
+          "value": "3"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "a",
+          "q": "0",
+          "value": "1/2"
+        },
+        {
+          "id": "R9",
+          "kind": "R",
+          "p": "x",
+          "q": "y",
+          "value": "7"
+        }
+      ],
+      "expected_status": "nonunique_system",
+      "group": "special",
+      "id": "floating_island",
+      "inductor_currents": {},
+      "require_solved": false,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "5"
+          ]
+        }
+      },
+      "variant": "floating_island"
+    },
+    {
+      "analytic": {
+        "I[C1]": {
+          "denominator": [
+            "2/3",
+            "1"
+          ],
+          "numerator": [
+            "7/3"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "2/3",
+            "1"
+          ],
+          "numerator": [
+            "10/3",
+            "-2"
+          ]
+        }
+      },
+      "capacitor_voltages": {
+        "C1": "-2"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "e",
+          "q": "a",
+          "value": "0"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "a",
+          "q": "0",
+          "value": "1/2"
+        }
+      ],
+      "expected_status": "invalid_value",
+      "group": "special",
+      "id": "zero_resistance",
+      "inductor_currents": {},
+      "require_solved": false,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "5"
+          ]
+        }
+      },
+      "variant": "zero_resistance"
+    },
+    {
+      "analytic": {
+        "I[C1]": {
+          "denominator": [
+            "2/3",
+            "1"
+          ],
+          "numerator": [
+            "7/3"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "2/3",
+            "1"
+          ],
+          "numerator": [
+            "10/3",
+            "-2"
+          ]
+        }
+      },
+      "capacitor_voltages": {},
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "e",
+          "q": "a",
+          "value": "3"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "a",
+          "q": "0",
+          "value": "1/2"
+        }
+      ],
+      "expected_status": "invalid_initial_conditions",
+      "group": "special",
+      "id": "missing_capacitor_initial",
+      "inductor_currents": {},
+      "require_solved": false,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "5"
+          ]
+        }
+      },
+      "variant": "missing_capacitor_initial"
+    },
+    {
+      "analytic": {
+        "I[C1]": {
+          "denominator": [
+            "2/3",
+            "1"
+          ],
+          "numerator": [
+            "7/3"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "2/3",
+            "1"
+          ],
+          "numerator": [
+            "10/3",
+            "-2"
+          ]
+        }
+      },
+      "capacitor_voltages": {
+        "C1": "-2",
+        "C99": "0"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "e",
+          "q": "a",
+          "value": "3"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "a",
+          "q": "0",
+          "value": "1/2"
+        }
+      ],
+      "expected_status": "invalid_initial_conditions",
+      "group": "special",
+      "id": "unknown_capacitor_initial",
+      "inductor_currents": {},
+      "require_solved": false,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "5"
+          ]
+        }
+      },
+      "variant": "unknown_capacitor_initial"
+    },
+    {
+      "analytic": {
+        "I[C1]": {
+          "denominator": [
+            "2/3",
+            "1"
+          ],
+          "numerator": [
+            "7/3"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "2/3",
+            "1"
+          ],
+          "numerator": [
+            "10/3",
+            "-2"
+          ]
+        }
+      },
+      "capacitor_voltages": {
+        "C1": "-2"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "e",
+          "q": "a",
+          "value": "3"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "a",
+          "q": "0",
+          "value": "1/2"
+        }
+      ],
+      "expected_status": "invalid_source_transforms",
+      "group": "special",
+      "id": "missing_source_transform",
+      "inductor_currents": {},
+      "require_solved": false,
+      "source_transforms": {},
+      "variant": "missing_source_transform"
+    },
+    {
+      "analytic": {
+        "I[C1]": {
+          "denominator": [
+            "2/3",
+            "1"
+          ],
+          "numerator": [
+            "7/3"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "2/3",
+            "1"
+          ],
+          "numerator": [
+            "10/3",
+            "-2"
+          ]
+        }
+      },
+      "capacitor_voltages": {
+        "C1": "-2"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "e",
+          "q": "a",
+          "value": "3"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "a",
+          "q": "0",
+          "value": "1/2"
+        }
+      ],
+      "expected_status": "invalid_transform",
+      "group": "special",
+      "id": "zero_source_denominator",
+      "inductor_currents": {},
+      "require_solved": false,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0"
+          ],
+          "numerator": [
+            "1"
+          ]
+        }
+      },
+      "variant": "zero_source_denominator"
+    },
+    {
+      "analytic": {
+        "I[C1]": {
+          "denominator": [
+            "2/3",
+            "1"
+          ],
+          "numerator": [
+            "7/3"
+          ]
+        },
+        "V[C1]": {
+          "denominator": [
+            "0",
+            "2/3",
+            "1"
+          ],
+          "numerator": [
+            "10/3",
+            "-2"
+          ]
+        }
+      },
+      "capacitor_voltages": {
+        "C1": "-2"
+      },
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "e",
+          "q": "a",
+          "value": "3"
+        },
+        {
+          "id": "C1",
+          "kind": "C",
+          "p": "a",
+          "q": "0",
+          "value": "1/2"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "e",
+          "q": "a",
+          "value": "3"
+        }
+      ],
+      "expected_status": "invalid_component_id",
+      "group": "special",
+      "id": "duplicate_component_id",
+      "inductor_currents": {},
+      "require_solved": false,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "5"
+          ]
+        }
+      },
+      "variant": "duplicate_component_id"
+    },
+    {
+      "analytic": {
+        "I[L1]": {
+          "denominator": [
+            "0",
+            "2",
+            "1"
+          ],
+          "numerator": [
+            "3/2",
+            "-2"
+          ]
+        },
+        "V[L1]": {
+          "denominator": [
+            "2",
+            "1"
+          ],
+          "numerator": [
+            "11"
+          ]
+        }
+      },
+      "capacitor_voltages": {},
+      "components": [
+        {
+          "id": "V1",
+          "kind": "V",
+          "p": "e",
+          "q": "0",
+          "value": "1"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "p": "e",
+          "q": "a",
+          "value": "4"
+        },
+        {
+          "id": "L1",
+          "kind": "L",
+          "p": "a",
+          "q": "0",
+          "value": "2"
+        }
+      ],
+      "expected_status": "invalid_initial_conditions",
+      "group": "special",
+      "id": "missing_inductor_initial",
+      "inductor_currents": {},
+      "require_solved": false,
+      "source_transforms": {
+        "V1": {
+          "denominator": [
+            "0",
+            "1"
+          ],
+          "numerator": [
+            "3"
+          ]
+        }
+      },
+      "variant": "missing_inductor_initial"
+    }
+  ],
+  "conventions": {
+    "current": "p->q",
+    "initial_time": "0-",
+    "source_authority": "explicit rational transform, not component magnitude",
+    "voltage": "Vp-Vq"
+  },
+  "points": [
+    [
+      "1/4",
+      "0"
+    ],
+    [
+      "1",
+      "0"
+    ],
+    [
+      "5/2",
+      "0"
+    ],
+    [
+      "3/4",
+      "5/4"
+    ],
+    [
+      "2",
+      "-1/2"
+    ],
+    [
+      "1/10",
+      "3"
+    ]
+  ],
+  "seed": 2026100317
+}

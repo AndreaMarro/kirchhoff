@@ -34,6 +34,7 @@ ops/vista/package-lock.json
 
 # --- Proof Workbench (frontend) ------------------------------------------------
 web/node_modules/
+companion-board/node_modules/
 web/dist/
 web/test-results/
 web/playwright-report/

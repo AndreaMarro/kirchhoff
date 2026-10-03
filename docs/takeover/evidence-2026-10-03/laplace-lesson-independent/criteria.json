@@ -1,0 +1,72 @@
+{
+  "acceptance": [
+    "every step.math equation holds at all six independent tableau solutions",
+    "answer transform agrees at all six samples",
+    "IC values, units, inventory and 0- metadata match original netlist",
+    "source waveform, amplitude or impulse area, units and transform match original netlist",
+    "no canonical_proof/product_verified promotion",
+    "mutated intermediate equation and nonzero IC rejected",
+    "impulse area unit mutation rejected on impulse case"
+  ],
+  "classification": "additive post-kernel tests; blind to new served lesson responses",
+  "frozen_at": "2026-10-03T09:41:05.245982+00:00",
+  "frozen_files": {
+    "additive_cases.json": "12562faa8f6ee7972a0459fef1521e1444f2536ba6c6e370219706e1200c879f",
+    "checker.py": "ee5cf15f714428be0d5f93ffb5079bccdc7c373c5b6a9442b4e9eace2adb5827",
+    "run_product.py": "f132e337a85d4d2f61d9b14cdeb7a229077a283ad556dd73925a3cee83bec601"
+  },
+  "index_sync": "INDEX_SYNC_DEFERRED",
+  "limitations": [
+    "finite numerical samples are not a symbolic identity proof",
+    "no inverse Laplace or time-domain claims",
+    "no dimensional inference for substituted untyped numeric coefficients",
+    "no claim about all 21 families; additive mesh corpus is not the former 80-case holdout",
+    "unknown AST/symbol or missing metadata fails closed; ABI adaptation must be recorded separately"
+  ],
+  "model": "inherited/unknown",
+  "old_holdout_untouched": {
+    "cases.json": "8caa2622aa067f2063e53e7e1f59d49a276180c8a0c709089febce3083818e0f",
+    "expected.json": "3cb19330473329bdac76cd85e9f44b3d965ac9b039ace2bea41e02e7a3bbb360",
+    "oracle.py": "62b803e5a6a79bfbbb0c5f9fed30ab44912dd392eedb14c79f0f1233483b4f7a"
+  },
+  "oracle": "frozen standard-library complex branch tableau; no production solver/math imports",
+  "rollback": "outside-repo evidence only; no product changes",
+  "sample_points": [
+    [
+      "1/4",
+      "0"
+    ],
+    [
+      "1",
+      "0"
+    ],
+    [
+      "5/2",
+      "0"
+    ],
+    [
+      "3/4",
+      "5/4"
+    ],
+    [
+      "2",
+      "-1/2"
+    ],
+    [
+      "1/10",
+      "3"
+    ]
+  ],
+  "scaled_tolerance": 3e-08,
+  "schema": "independent-laplace-lesson-audit.v1",
+  "scope": "5 deterministic non-series-parallel RLC meshes, 2 C + 2 L, explicit step/impulse and 0- states",
+  "selfcheck": {
+    "analytic_self_fixture_checked": true,
+    "ast_plus_one_mutation_rejected": true,
+    "independent_branch_residual_checks": 390,
+    "initial_mapping_sensitivity": true,
+    "initial_metadata_mutant_rejected": true,
+    "intermediate_equation_mutant_rejected": true,
+    "orientation_metamorphism": true
+  }
+}

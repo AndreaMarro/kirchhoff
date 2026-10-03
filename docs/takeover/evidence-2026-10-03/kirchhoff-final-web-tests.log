@@ -1,0 +1,23 @@
+
+> kirchhoff-proof-workbench@0.1.0 test
+> vitest run --run
+
+
+ RUN  v3.2.7 /Users/andreamarro/MATJOURNEY/kirchhoff-takeover-20261002/web
+
+ ✓ tests/lesson-math.test.ts (6 tests) 22ms
+ ✓ tests/source-artifact.test.ts (5 tests) 89ms
+ ✓ tests/session-bundle.test.ts (12 tests) 95ms
+ ✓ tests/circuit-input-model.test.ts (10 tests) 55ms
+ ✓ tests/circuit-editor.test.ts (9 tests) 30ms
+ ✓ tests/stage.test.ts (8 tests) 193ms
+ ✓ tests/guards.test.ts (55 tests) 220ms
+ ✓ tests/board-protocol.test.ts (11 tests) 26ms
+ ✓ tests/lesson-presentation.test.ts (15 tests) 30ms
+ ✓ tests/document-input.test.ts (2 tests) 12ms
+ ✓ tests/board-selection.test.ts (3 tests) 11ms
+
+ Test Files  11 passed (11)
+      Tests  136 passed (136)
+   Start at  12:46:20
+   Duration  3.67s (transform 1.67s, setup 0ms, collect 3.23s, tests 782ms, environment 5ms, prepare 7.42s)

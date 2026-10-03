@@ -9,12 +9,14 @@ from __future__ import annotations
 
 import ast
 import json
+from copy import deepcopy
 from fractions import Fraction
 from pathlib import Path
 
 import pytest
 
 from kirchhoff.domain.refusal import Refusal
+from kirchhoff.domain.transform import EntityRef
 from kirchhoff.pipeline.failure import Failure
 from kirchhoff.pipeline.netlist import leggi
 from kirchhoff.pipeline.presentation import (
@@ -26,6 +28,8 @@ from kirchhoff.pipeline.presentation import (
     project_refusal,
     to_json,
 )
+from kirchhoff.pipeline.risolvi import layout_a_maglia
+from kirchhoff.render.layout import LayoutIR, Placement
 
 RADICE = Path(__file__).resolve().parent.parent
 
@@ -39,6 +43,61 @@ CHIAVI_PASSO = frozenset({
     "before_svg", "equation", "equations", "evidence_refs", "index", "kind",
     "preserved",
 })
+
+D1_100 = """\
+V1 b 0 12 volt
+R1 b a 100 ohm
+R2 a 0 220 ohm
+? current R1
+"""
+
+D1_200 = """\
+V1 b 0 12 volt
+R1 b a 200 ohm
+R2 a 0 220 ohm
+? current R1
+"""
+
+PONTE_12 = """\
+V1 c 0 12 volt
+R1 c a 10 ohm
+R2 c b 20 ohm
+R3 a 0 30 ohm
+R4 b 0 40 ohm
+Rg a b 50 ohm
+? current R4
+"""
+
+PONTE_M12 = """\
+V1 c 0 -12 volt
+R1 c a 10 ohm
+R2 c b 20 ohm
+R3 a 0 30 ohm
+R4 b 0 40 ohm
+Rg a b 50 ohm
+? current R4
+"""
+
+PIAZZAMENTI_PONTE = (
+    Placement(EntityRef("node", "0"), Fraction(200), Fraction(20)),
+    Placement(EntityRef("node", "a"), Fraction(20), Fraction(220)),
+    Placement(EntityRef("node", "b"), Fraction(380), Fraction(220)),
+    Placement(EntityRef("node", "c"), Fraction(200), Fraction(160)),
+    Placement(EntityRef("component", "V1"), Fraction(200), Fraction(90)),
+    Placement(EntityRef("component", "R1"), Fraction(110), Fraction(190)),
+    Placement(EntityRef("component", "R2"), Fraction(290), Fraction(190)),
+    Placement(EntityRef("component", "R3"), Fraction(110), Fraction(120)),
+    Placement(EntityRef("component", "R4"), Fraction(290), Fraction(120)),
+    Placement(EntityRef("component", "Rg"), Fraction(200), Fraction(220)),
+)
+
+
+def _layout_ponte(istante: int = 2, casualita: bytes | None = None) -> LayoutIR:
+    return LayoutIR.nuovo(
+        PIAZZAMENTI_PONTE,
+        istante=istante,
+        casualita=casualita or bytes(range(10, 20)),
+    )
 
 
 def _chiusa():
@@ -195,14 +254,10 @@ def _chiusura_con_run(netlist):
 def test_disposizione_incoerente_e_failure_di_render():
     from kirchhoff.pipeline.failure import Failure
     from kirchhoff.pipeline.presentation import project_closed_session
-    from kirchhoff.pipeline.risolvi import layout_a_maglia
-    chiusura_b, run_b = _chiusura_con_run(
-        "V1 c 0 12 volt\nR1 c a 10 ohm\nR2 c b 20 ohm\nR3 a 0 30 ohm\n"
-        "R4 b 0 40 ohm\nRg a b 50 ohm\n? current R4\n")
+    chiusura_b, run_b = _chiusura_con_run(PONTE_12)
     esito = project_closed_session(
         chiusura_b.session, chiusura_b.registry, run_b,
-        layout_iniziale=layout_a_maglia(leggi(
-            "V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\n? current R1\n")),
+        layout_iniziale=layout_a_maglia(leggi(D1_100)),
         istante=1, casualita=bytes(range(10)))
     assert isinstance(esito, Failure)
     assert esito.dove == "render"
@@ -211,27 +266,20 @@ def test_disposizione_incoerente_e_failure_di_render():
 def test_sessione_scambiata_con_altra_run_e_failure_di_proiezione():
     from kirchhoff.pipeline.failure import Failure
     from kirchhoff.pipeline.presentation import project_closed_session
-    from kirchhoff.pipeline.risolvi import layout_a_maglia
-    chiusura_a, run_a = _chiusura_con_run(
-        "V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\n? current R1\n")
-    chiusura_b, _ = _chiusura_con_run(
-        "V1 c 0 12 volt\nR1 c a 10 ohm\nR2 c b 20 ohm\nR3 a 0 30 ohm\n"
-        "R4 b 0 40 ohm\nRg a b 50 ohm\n? current R4\n")
+    chiusura_a, run_a = _chiusura_con_run(D1_100)
+    chiusura_b, _ = _chiusura_con_run(PONTE_12)
     esito = project_closed_session(
         chiusura_b.session, chiusura_b.registry, run_a,
-        layout_iniziale=layout_a_maglia(leggi(
-            "V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\n? current R1\n")),
+        layout_iniziale=layout_a_maglia(leggi(D1_100)),
         istante=1, casualita=bytes(range(10)))
     assert isinstance(esito, Failure)
-    assert esito.dove == "projection"
+    assert esito.dove == "publication"
 
 
 def test_difetto_del_render_nella_proiezione_e_failure(monkeypatch):
     import kirchhoff.pipeline.presentation as proiezione
     from kirchhoff.pipeline.failure import Failure
-    from kirchhoff.pipeline.risolvi import layout_a_maglia
-    chiusura, run = _chiusura_con_run(
-        "V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\n? current R1\n")
+    chiusura, run = _chiusura_con_run(D1_100)
 
     def rotto(*a, **k):
         raise ValueError("pennello rotto")
@@ -239,8 +287,530 @@ def test_difetto_del_render_nella_proiezione_e_failure(monkeypatch):
     monkeypatch.setattr(proiezione, "render", rotto)
     esito = proiezione.project_closed_session(
         chiusura.session, chiusura.registry, run,
-        layout_iniziale=layout_a_maglia(leggi(
-            "V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\n? current R1\n")),
+        layout_iniziale=layout_a_maglia(leggi(D1_100)),
         istante=1, casualita=bytes(range(10)))
     assert isinstance(esito, Failure)
     assert esito.dove == "render"
+
+
+def test_matrice_mix_serie_rigettata_prima_del_render():
+    from kirchhoff.pipeline.presentation import project_closed_session
+    ch_a, run_a = _chiusura_con_run(D1_100)
+    ch_b, run_b = _chiusura_con_run(D1_200)
+
+    assert ch_a.session.state_refs == ch_b.session.state_refs
+    assert run_a.state_ids == run_b.state_ids
+    assert ch_a.session.final_solution != ch_b.session.final_solution
+    assert Fraction(ch_a.session.final_solution.value.amount) == Fraction(3, 80)
+    assert Fraction(ch_b.session.final_solution.value.amount) == Fraction(1, 35)
+
+    layout = layout_a_maglia(leggi(D1_100))
+    esito_ok = project_closed_session(
+        ch_a.session, ch_a.registry, run_a,
+        layout_iniziale=layout, istante=1, casualita=bytes(range(10)))
+    assert not isinstance(esito_ok, Failure)
+    assert esito_ok.outcome == "closed"
+    assert esito_ok.answer.exact == "3/80"
+
+    mix = [
+        ("A/B/A", ch_a.session, run_b, ch_a.registry),
+        ("A/A/B", ch_a.session, run_a, ch_b.registry),
+        ("A/B/B", ch_a.session, run_b, ch_b.registry),
+    ]
+    for etichetta, sessione, run, registro in mix:
+        esito = project_closed_session(
+            sessione, registro, run,
+            layout_iniziale=layout, istante=1, casualita=bytes(range(10)))
+        assert isinstance(esito, Failure), etichetta
+        assert esito.dove == "publication", etichetta
+
+
+def test_matrice_mix_ponte_rigettata_prima_del_render():
+    from kirchhoff.pipeline.presentation import project_closed_session
+    ch_a, run_a = _chiusura_con_run(PONTE_12)
+    ch_b, run_b = _chiusura_con_run(PONTE_M12)
+
+    assert ch_a.session.state_refs == ch_b.session.state_refs
+    assert run_a.state_ids == run_b.state_ids
+    assert ch_a.session.final_solution != ch_b.session.final_solution
+    assert Fraction(ch_a.session.final_solution.value.amount) == Fraction(87, 425)
+    assert Fraction(ch_b.session.final_solution.value.amount) == Fraction(-87, 425)
+
+    layout = _layout_ponte()
+    esito_ok = project_closed_session(
+        ch_a.session, ch_a.registry, run_a,
+        layout_iniziale=layout, istante=1, casualita=bytes(range(10)))
+    assert not isinstance(esito_ok, Failure)
+    assert esito_ok.outcome == "closed"
+    assert esito_ok.answer.exact == "87/425"
+
+    mix = [
+        ("A/B/A", ch_a.session, run_b, ch_a.registry),
+        ("A/A/B", ch_a.session, run_a, ch_b.registry),
+        ("A/B/B", ch_a.session, run_b, ch_b.registry),
+    ]
+    for etichetta, sessione, run, registro in mix:
+        esito = project_closed_session(
+            sessione, registro, run,
+            layout_iniziale=layout, istante=1, casualita=bytes(range(10)))
+        assert isinstance(esito, Failure), etichetta
+        assert esito.dove == "publication", etichetta
+
+
+def test_d1_proiettata_domanda_originale_retARGET_e_svg():
+    from kirchhoff.pipeline.presentation import project_closed_session
+    chiusura, run = _chiusura_con_run(D1_100)
+    layout = layout_a_maglia(leggi(D1_100))
+    esito = project_closed_session(
+        chiusura.session, chiusura.registry, run,
+        layout_iniziale=layout, istante=1, casualita=bytes(range(10)))
+    assert not isinstance(esito, Failure)
+    assert esito.outcome == "closed"
+    assert esito.question.target == "R1"
+    assert esito.answer.target == "R1"
+    assert esito.answer.exact == "3/80"
+    assert esito.answer.unit == "ampere"
+    assert len(esito.states) == 2
+    assert all("<svg" in s.svg for s in esito.states)
+    assert any(s.ref == chiusura.session.initial_state_ref for s in esito.states)
+    assert esito.steps[0].kind == "transform"
+    assert esito.steps[-1].kind == "analytical"
+
+
+def test_ponte_zero_trasformazioni_proiettato():
+    from kirchhoff.pipeline.presentation import project_closed_session
+    chiusura, run = _chiusura_con_run(PONTE_12)
+    assert run.transform_executions == ()
+    layout = _layout_ponte()
+    esito = project_closed_session(
+        chiusura.session, chiusura.registry, run,
+        layout_iniziale=layout, istante=1, casualita=bytes(range(10)))
+    assert not isinstance(esito, Failure)
+    assert esito.outcome == "closed"
+    assert esito.answer.exact == "87/425"
+    assert all(p.kind == "analytical" for p in esito.steps)
+
+
+def test_deepcopy_del_solo_registro_ammesso_live():
+    from kirchhoff.pipeline.presentation import project_closed_session
+    chiusura, run = _chiusura_con_run(D1_100)
+    registro_copia = deepcopy(chiusura.registry)
+    esito = project_closed_session(
+        chiusura.session, registro_copia, run,
+        layout_iniziale=layout_a_maglia(leggi(D1_100)),
+        istante=1, casualita=bytes(range(10)))
+    assert not isinstance(esito, Failure)
+    assert esito.outcome == "closed"
+
+
+def test_deepcopy_congiunto_ammesso_live():
+    from kirchhoff.pipeline.presentation import project_closed_session
+    chiusura, run = _chiusura_con_run(D1_100)
+    sessione_copia, run_copia, registro_copia = deepcopy(
+        (chiusura.session, run, chiusura.registry))
+    esito = project_closed_session(
+        sessione_copia, registro_copia, run_copia,
+        layout_iniziale=layout_a_maglia(leggi(D1_100)),
+        istante=1, casualita=bytes(range(10)))
+    assert not isinstance(esito, Failure)
+    assert esito.outcome == "closed"
+
+
+def test_deepcopy_della_sola_sessione_rifiutata_live():
+    from kirchhoff.pipeline.presentation import project_closed_session
+    chiusura, run = _chiusura_con_run(D1_100)
+    sessione_copia = deepcopy(chiusura.session)
+    esito = project_closed_session(
+        sessione_copia, chiusura.registry, run,
+        layout_iniziale=layout_a_maglia(leggi(D1_100)),
+        istante=1, casualita=bytes(range(10)))
+    assert isinstance(esito, Failure)
+    assert esito.dove == "publication"
+
+
+def test_mix_serie_non_chiama_render(monkeypatch):
+    import kirchhoff.pipeline.presentation as proiezione
+    from kirchhoff.pipeline.failure import Failure
+    ch_a, run_a = _chiusura_con_run(D1_100)
+    _, run_b = _chiusura_con_run(D1_200)
+    layout = layout_a_maglia(leggi(D1_100))
+    chiamate: list[str] = []
+
+    def render_cattivo(*a, **k):
+        chiamate.append("render")
+        raise AssertionError("render chiamato su mix")
+
+    monkeypatch.setattr(proiezione, "render", render_cattivo)
+    esito = proiezione.project_closed_session(
+        ch_a.session, ch_a.registry, run_b,
+        layout_iniziale=layout, istante=1, casualita=bytes(range(10)))
+    assert isinstance(esito, Failure)
+    assert esito.dove == "publication"
+    assert chiamate == []
+
+
+def test_proiezione_valida_non_ricalcola_semantica(monkeypatch):
+    import kirchhoff.domain.didactic.execute as execute
+    import kirchhoff.domain.didactic.orchestrate as orchestrate
+    import kirchhoff.domain.didactic.planner as planner
+    import kirchhoff.domain.didactic.solve as solve
+    import kirchhoff.domain.independent_dc as independent_dc
+    import kirchhoff.domain.mna as mna
+    import kirchhoff.domain.transform.engine as transform_engine
+    import kirchhoff.domain.truthfulness as truthfulness
+    from kirchhoff.pipeline.presentation import project_closed_session
+    chiusura, run = _chiusura_con_run(D1_100)
+    layout = layout_a_maglia(leggi(D1_100))
+
+    def boom(*a, **k):
+        raise AssertionError("chiamata semantica durante la proiezione")
+
+    monkeypatch.setattr(planner, "pianifica", boom)
+    monkeypatch.setattr(execute, "execute_plan", boom)
+    monkeypatch.setattr(transform_engine, "transform", boom)
+    monkeypatch.setattr(solve, "solve_derivation", boom)
+    monkeypatch.setattr(mna, "solve_dc", boom)
+    monkeypatch.setattr(mna, "solve_phasor", boom)
+    monkeypatch.setattr(independent_dc, "solve_dc_tableau", boom)
+    monkeypatch.setattr(truthfulness, "truthfulness_gate", boom)
+    monkeypatch.setattr(truthfulness, "certify_execution", boom)
+    monkeypatch.setattr(orchestrate, "orchestrate_didactic_run", boom)
+
+    esito = project_closed_session(
+        chiusura.session, chiusura.registry, run,
+        layout_iniziale=layout, istante=1, casualita=bytes(range(10)))
+    assert not isinstance(esito, Failure)
+    assert esito.outcome == "closed"
+
+
+SCALA_3R = """\
+V1 b 0 12 volt
+R1 b a 100 ohm
+R2 a c 220 ohm
+R3 c 0 330 ohm
+? current R1
+"""
+
+REATTIVO_C = """\
+V1 b 0 12 volt
+R1 b a 100 ohm
+C1 a 0 1/1000 farad
+? voltage R1
+"""
+
+PIAZZAMENTI_SCALA = (
+    Placement(EntityRef("node", "b"), Fraction(0), Fraction(0)),
+    Placement(EntityRef("node", "a"), Fraction(200), Fraction(0)),
+    Placement(EntityRef("node", "c"), Fraction(400), Fraction(0)),
+    Placement(EntityRef("node", "0"), Fraction(200), Fraction(240)),
+    Placement(EntityRef("component", "V1"), Fraction(0), Fraction(120)),
+    Placement(EntityRef("component", "R1"), Fraction(100), Fraction(0)),
+    Placement(EntityRef("component", "R2"), Fraction(300), Fraction(0)),
+    Placement(EntityRef("component", "R3"), Fraction(400), Fraction(120)),
+)
+
+
+def _layout_scala(istante: int = 3, casualita: bytes | None = None) -> LayoutIR:
+    return LayoutIR.nuovo(
+        PIAZZAMENTI_SCALA,
+        istante=istante,
+        casualita=casualita or bytes(range(20, 30)),
+    )
+
+
+def _vista_chiusa_legale():
+    from kirchhoff.pipeline.presentation import project_closed_session
+    chiusura, run = _chiusura_con_run(D1_100)
+    esito = project_closed_session(
+        chiusura.session, chiusura.registry, run,
+        layout_iniziale=layout_a_maglia(leggi(D1_100)),
+        istante=1, casualita=bytes(range(10)))
+    assert not isinstance(esito, Failure)
+    assert esito.outcome == "closed"
+    return esito
+
+
+def _ricostruisci(vista):
+    return StudentSessionView(
+        schema_version=vista.schema_version, session_id=vista.session_id,
+        outcome=vista.outcome, question=vista.question, answer=vista.answer,
+        truth=vista.truth, states=vista.states, steps=vista.steps,
+        verification=vista.verification, provenance=vista.provenance,
+        refusal=vista.refusal, failure=vista.failure)
+
+
+def test_p1a_product_verified_true_respinto():
+    import dataclasses
+    vista = _vista_chiusa_legale()
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            vista, truth=dataclasses.replace(
+                vista.truth, product_verified=True)))
+
+
+def test_p1a_chiusura_backend_verificata_respinta():
+    import dataclasses
+    vista = _vista_chiusa_legale()
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            vista, truth=dataclasses.replace(
+                vista.truth, backend_closure_status="VERIFIED")))
+
+
+def test_p1a_claim_contraddittorio_respinto():
+    import dataclasses
+    vista = _vista_chiusa_legale()
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            vista, verification=dataclasses.replace(
+                vista.verification, claim_status="UNVERIFIED")))
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            vista, verification=dataclasses.replace(
+                vista.verification, session_status="VERIFIED")))
+
+
+def test_p1a_domanda_assente_respinta():
+    import dataclasses
+    vista = _vista_chiusa_legale()
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(vista, question=None))
+
+
+def test_p1a_risposta_non_coerente_con_domanda_respinta():
+    import dataclasses
+    vista = _vista_chiusa_legale()
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            vista, answer=dataclasses.replace(vista.answer, target="R999")))
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            vista, answer=dataclasses.replace(
+                vista.answer, quantity="voltage")))
+
+
+def test_p1a_unita_incompatibile_respinta():
+    import dataclasses
+    vista = _vista_chiusa_legale()
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            vista, answer=dataclasses.replace(vista.answer, unit="volt")))
+
+
+@pytest.mark.parametrize("esatto", [
+    "1/0", "5/0", "1/00", "abc", "", " ", "3.14", "1e3", "1E-3",
+    "1/2/3", "3/", "/4", "tre/80", "3 /80", "3/ 80", "50%", "0x10",
+    "NaN", "Infinity",
+])
+def test_p1a_exact_illecito_respinto(esatto):
+    import dataclasses
+    vista = _vista_chiusa_legale()
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            vista, answer=dataclasses.replace(vista.answer, exact=esatto)))
+
+
+@pytest.mark.parametrize("esatto", [
+    "3/80", "0", "5", "-3/80", "-7", "10/4", " 3/80 ",
+])
+def test_p1a_exact_lecito_accettato(esatto):
+    import dataclasses
+    vista = _vista_chiusa_legale()
+    mutata = dataclasses.replace(
+        vista, answer=dataclasses.replace(vista.answer, exact=esatto))
+    assert _ricostruisci(mutata).answer.exact == esatto
+
+
+def test_p1a_stati_vuoti_duplicati_o_pendenti_respinti():
+    import dataclasses
+    vista = _vista_chiusa_legale()
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(vista, states=()))
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            vista, states=vista.states + (vista.states[0],)))
+    passo = dataclasses.replace(vista.steps[0], before_ref="ir_pendente")
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            vista, steps=(passo,) + vista.steps[1:]))
+
+
+def test_p1a_indici_illeciti_respinti():
+    import dataclasses
+    vista = _vista_chiusa_legale()
+    for indice in (True, False, 1.5, -1, float("inf"), float("nan"), "0"):
+        passo = dataclasses.replace(vista.steps[0], index=indice)
+        with pytest.raises(ValueError):
+            _ricostruisci(dataclasses.replace(
+                vista, steps=(passo,) + vista.steps[1:]))
+    duplicato = dataclasses.replace(vista.steps[1], index=vista.steps[0].index)
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            vista, steps=(vista.steps[0], duplicato) + vista.steps[2:]))
+    spostato = dataclasses.replace(vista.steps[-1], index=99)
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            vista, steps=vista.steps[:-1] + (spostato,)))
+
+
+def test_p1a_chiusa_con_rifiuto_o_guasto_respinta():
+    import dataclasses
+    vista = _vista_chiusa_legale()
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            vista, refusal=project_refusal(
+                Refusal("unsolvable", "q1", "request", "x"),
+                QuestionView("q1", "current", "R1"),
+                source_sha="0" * 40, detail="prova").refusal))
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            vista, failure=project_failure(
+                Failure("render", "x"), QuestionView("q1", "current", "R1"),
+                source_sha="0" * 40, detail="prova").failure))
+
+
+@pytest.mark.parametrize("outcome", ["refusal", "failure"])
+def test_p1a_esiti_negativi_con_attestazioni_positive_respinti(outcome):
+    import dataclasses
+    vista = _vista_chiusa_legale()
+    if outcome == "refusal":
+        negativa = project_refusal(
+            Refusal("unsolvable", "q1", "request", "nessuna tecnica"),
+            QuestionView("q1", "voltage", "R1"),
+            source_sha="0" * 40, detail="prova")
+    else:
+        negativa = project_failure(
+            Failure("render", "filo rotto"), QuestionView("q1", "current", "R1"),
+            source_sha="0" * 40, detail="prova")
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(negativa, verification=vista.verification))
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            negativa,
+            truth=dataclasses.replace(
+                negativa.truth, electrical_claim_status="VERIFIED")))
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            negativa, answer=vista.answer))
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            negativa, states=vista.states, steps=vista.steps))
+
+
+def test_p1a_passo_analitico_con_ref_diversi_respinto():
+    import dataclasses
+    vista = _vista_chiusa_legale()
+    analitici = [p for p in vista.steps if p.kind == "analytical"]
+    assert analitici
+    refs = [s.ref for s in vista.states]
+    altro = next(r for r in refs if r != analitici[0].before_ref)
+    mutato = dataclasses.replace(analitici[0], after_ref=altro)
+    passi = tuple(mutato if p == analitici[0] else p for p in vista.steps)
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(vista, steps=passi))
+
+
+def test_p1a_evidence_ids_vuote_respinte_con_controllo_lecito_adiacente():
+    import dataclasses
+    vista = _vista_chiusa_legale()
+    assert vista.verification.evidence_ids
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            vista, verification=dataclasses.replace(
+                vista.verification, evidence_ids=())))
+    assert _ricostruisci(vista).verification.evidence_ids
+
+
+def test_p1a_kind_passo_fuori_vocabolo_respinto():
+    import dataclasses
+    vista = _vista_chiusa_legale()
+    mutato = dataclasses.replace(vista.steps[0], kind="misterioso")
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            vista, steps=(mutato,) + vista.steps[1:]))
+
+
+def test_p1a_scala_due_riduzioni_proiettata():
+    from kirchhoff.pipeline.presentation import project_closed_session
+    chiusura, run = _chiusura_con_run(SCALA_3R)
+    esito = project_closed_session(
+        chiusura.session, chiusura.registry, run,
+        layout_iniziale=_layout_scala(), istante=1,
+        casualita=bytes(range(10)))
+    assert not isinstance(esito, Failure)
+    assert esito.outcome == "closed"
+    assert esito.answer.target == "R1" == esito.question.target
+    assert _ricostruisci(esito).outcome == "closed"
+
+
+def test_p1a_ponte_negativo_proiettato():
+    from kirchhoff.pipeline.presentation import project_closed_session
+    chiusura, run = _chiusura_con_run(PONTE_M12)
+    esito = project_closed_session(
+        chiusura.session, chiusura.registry, run,
+        layout_iniziale=_layout_ponte(), istante=1,
+        casualita=bytes(range(10)))
+    assert not isinstance(esito, Failure)
+    assert esito.answer.exact == "-87/425"
+    assert _ricostruisci(esito).outcome == "closed"
+
+
+def test_p1a_rifiuto_reattivo_legale():
+    import itertools
+    from datetime import datetime, timezone
+    from kirchhoff.domain.proof.session import DOCUMENT_PROFILE
+    from kirchhoff.pipeline.proof_run import run_proof_session_con_run
+
+    class Fermo:
+        def now(self):
+            return datetime(2026, 9, 7, 12, tzinfo=timezone.utc)
+
+    conto = itertools.count(300)
+
+    def entropia():
+        return bytes(((next(conto) + j) % 256 for j in range(10)))
+
+    ir = leggi(REATTIVO_C)
+    esito = run_proof_session_con_run(
+        ir, next(iter(ir.requests)), clock=Fermo(), entropy=entropia,
+        document_profile=DOCUMENT_PROFILE, source_sha="0" * 40, detail="prova")
+    assert isinstance(esito, Refusal)
+    vista = project_refusal(
+        esito, QuestionView("q1", "voltage", "R1"),
+        source_sha="0" * 40, detail="prova")
+    assert _ricostruisci(vista).outcome == "refusal"
+
+
+def test_p1a_guasto_senza_domanda_legale():
+    vista = project_failure(
+        Failure("render", "filo rotto"), None,
+        source_sha="0" * 40, detail="prova")
+    assert vista.outcome == "failure"
+    assert _ricostruisci(vista).outcome == "failure"
+
+
+@pytest.mark.parametrize("outcome", ["refusal", "failure"])
+def test_p1a_status_non_positivo_in_esito_negativo_accettato(outcome):
+    import dataclasses
+    if outcome == "refusal":
+        negativa = project_refusal(
+            Refusal("unsolvable", "q1", "request", "nessuna tecnica"),
+            QuestionView("q1", "voltage", "R1"),
+            source_sha="0" * 40, detail="prova")
+    else:
+        negativa = project_failure(
+            Failure("render", "filo rotto"), QuestionView("q1", "current", "R1"),
+            source_sha="0" * 40, detail="prova")
+    tollerata = dataclasses.replace(
+        negativa, truth=dataclasses.replace(
+            negativa.truth, backend_closure_status="FAILURE"))
+    assert _ricostruisci(tollerata).outcome == outcome
+    for chiusura in ("CLOSED", "VERIFIED"):
+        with pytest.raises(ValueError):
+            _ricostruisci(dataclasses.replace(
+                negativa, truth=dataclasses.replace(
+                    negativa.truth, backend_closure_status=chiusura)))
+    with pytest.raises(ValueError):
+        _ricostruisci(dataclasses.replace(
+            negativa, truth=dataclasses.replace(
+                negativa.truth, electrical_claim_status="VERIFIED")))

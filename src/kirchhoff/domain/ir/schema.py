@@ -34,13 +34,16 @@ ComponentType = Literal[
     "voltage_source_dc",
     "current_source_dc",
     "voltage_source_ac",
+    "current_source_ac",
     "voltage_controlled_voltage_source",
     "voltage_controlled_current_source",
+    "ideal_opamp",
 ]
 
 Quantity = Literal[
     "voltage",
     "current",
+    "power",
     "time_constant",
     "initial_value",
     "final_value",
@@ -49,6 +52,9 @@ Quantity = Literal[
 ]
 
 QUANTITIES: frozenset[str] = frozenset(get_args(Quantity))
+
+PortQuantity = Literal["equivalent_resistance", "equivalent_impedance"]
+PORT_QUANTITIES: frozenset[str] = frozenset(get_args(PortQuantity))
 
 SourceKind = Literal["netlist", "latex", "image", "generated"]
 
@@ -73,8 +79,10 @@ EXPECTED_UNIT: dict[str, str] = {
     "voltage_source_dc": "volt",
     "voltage_source_ac": "volt",
     "current_source_dc": "ampere",
+    "current_source_ac": "ampere",
     "voltage_controlled_voltage_source": "dimensionless",
     "voltage_controlled_current_source": "siemens",
+    "ideal_opamp": "dimensionless",
 }
 
 #: Componenti il cui valore è una grandezza fisica strettamente positiva.
@@ -85,6 +93,7 @@ POSITIVE_VALUED: frozenset[str] = frozenset({"resistor", "capacitor", "inductor"
 CONTROLLED_SOURCE_TYPES: frozenset[str] = frozenset({
     "voltage_controlled_voltage_source",
     "voltage_controlled_current_source",
+    "ideal_opamp",
 })
 
 _SEMVER = re.compile(r"^\d+\.\d+\.\d+$")
@@ -154,8 +163,10 @@ class Component:
         if self.type in POSITIVE_VALUED and self.value.amount <= 0:
             raise ValueError(
                 f"{self.id}: valore non positivo per {self.type} ({self.value.amount})")
-        if self.phase_steps and self.type != "voltage_source_ac":
+        if self.phase_steps and self.type not in {"voltage_source_ac", "current_source_ac"}:
             raise ValueError(f"{self.id}: sfasamento su un {self.type}, che non ne ha uno")
+        if self.type == "ideal_opamp" and self.value.amount != 0:
+            raise ValueError(f"{self.id}: un operazionale ideale usa il marcatore dimensionless zero, senza guadagno approssimato")
         if self.type in CONTROLLED_SOURCE_TYPES:
             if self.control_nodes is None:
                 raise ValueError(
@@ -200,13 +211,32 @@ class Request:
 
 
 @dataclass(frozen=True, slots=True)
+class PortRequest:
+    """Osservazione di due morsetti orientati, senza fingere un componente."""
+
+    id: str
+    quantity: PortQuantity
+    port: tuple[str, str]
+
+    def __post_init__(self) -> None:
+        if self.quantity not in PORT_QUANTITIES:
+            raise ValueError(f"{self.id}: grandezza di porta {self.quantity!r} sconosciuta")
+        if not isinstance(self.port, tuple):
+            raise TypeError("la porta deve essere una coppia ordinata di morsetti")
+        if len(self.port) != 2 or self.port[0] == self.port[1]:
+            raise ValueError("la domanda di porta richiede due morsetti distinti")
+        if any(not isinstance(node, str) or not node for node in self.port):
+            raise TypeError("i morsetti di porta devono essere nomi non vuoti")
+
+
+@dataclass(frozen=True, slots=True)
 class IR:
     ir_version: str
     domain: str
     source_kind: SourceKind
     nodes: tuple[str, ...]
     components: tuple[Component, ...]
-    requests: tuple[Request, ...]
+    requests: tuple[Request | PortRequest, ...]
     #: Pulsazione in rad/s. Zero fuori dal regime sinusoidale.
     omega: Fraction = field(default_factory=lambda: Fraction(0))
 
@@ -246,9 +276,15 @@ class IR:
                             if c.id in visti or visti.add(c.id)})  # type: ignore[func-returns-value]
             raise ValueError(f"identificatori di componente ripetuti: {', '.join(doppi)}")
         for r in self.requests:
-            if r.target not in ids:
+            if isinstance(r, PortRequest):
+                if r.quantity == "equivalent_impedance" and self.domain != "ac_sinusoidal":
+                    raise ValueError("la domanda di impedenza richiede il regime AC sinusoidale")
+                for node in r.port:
+                    if node not in known:
+                        raise ValueError(f"{r.id}: morsetto di porta sconosciuto {node}")
+            elif r.target not in ids:
                 raise ValueError(f"{r.id}: grandezza richiesta su componente inesistente {r.target}")
-        if any(c.type == "voltage_source_ac" for c in self.components) and self.omega <= 0:
+        if any(c.type in {"voltage_source_ac", "current_source_ac"} for c in self.components) and self.omega <= 0:
             raise ValueError("regime sinusoidale senza pulsazione positiva")
 
     def component(self, cid: str) -> Component:

@@ -6,7 +6,7 @@ import { expect, test } from "@playwright/test";
 test("carico fallito poi esercizio sano: la vista sana diventa autorevole", async ({
   page,
 }) => {
-  await page.goto("/", { waitUntil: "networkidle" });
+  await page.goto("/?view=proof", { waitUntil: "networkidle" });
   await expect(page.locator(".kf-chip")).toHaveCount(4, { timeout: 10_000 });
   // Solo scala cade in trasporto; il resto resta sano.
   await page.route("**/sessions/scala-due-riduzioni.json", async (route) => {
@@ -32,7 +32,7 @@ test("carico fallito poi esercizio sano: la vista sana diventa autorevole", asyn
 test("errore tardivo della vecchia richiesta non sovrascrive la sessione sana", async ({
   page,
 }) => {
-  await page.goto("/", { waitUntil: "networkidle" });
+  await page.goto("/?view=proof", { waitUntil: "networkidle" });
   await expect(page.locator(".kf-chip")).toHaveCount(4, { timeout: 10_000 });
   // Partitore cade lentamente: il cambio rapido lo rende stantio prima
   // che il suo errore arrivi.
@@ -60,7 +60,7 @@ test("riprova dopo il guasto di trasporto, senza cambiare esercizio", async ({ p
     if (guasta) await route.abort("failed");
     else await route.continue();
   });
-  await page.goto("/", { waitUntil: "networkidle" });
+  await page.goto("/?view=proof", { waitUntil: "networkidle" });
   await expect(page.locator(".kf-notice-load h2")).toContainText(
     "Impossibile caricare la sessione",
   );

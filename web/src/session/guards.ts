@@ -38,9 +38,39 @@ function bool(v: Json, cosa: string): boolean {
   return v;
 }
 
-function num(v: Json, cosa: string): number {
+function indice(v: Json, cosa: string): number {
   if (typeof v !== "number") throw new Error(`campo ${cosa}: serve numero`);
+  if (!Number.isFinite(v)) throw new Error(`campo ${cosa}: serve numero finito`);
+  if (!Number.isInteger(v)) throw new Error(`campo ${cosa}: serve intero`);
+  if (v < 0) throw new Error(`campo ${cosa}: negativo`);
   return v;
+}
+
+/* Linguaggio lessicale razionale condiviso col confine Python:
+   le stringhe che `str(Fraction)` emette (interi, frazioni con segno,
+   zero, negativi); niente decimali/esponenziali. Mai `Number`/`float`
+   per validare l'esatto. */
+const RE_EXACT = /^[+-]?\d+(\/\d+)?$/;
+
+const UNITA_PER_QUANTITA: Record<string, Set<string>> = {
+  current: new Set(["ampere"]),
+  voltage: new Set(["volt"]),
+};
+
+function exact(v: Json, cosa: string): string {
+  const testo = str(v, cosa);
+  const pulito = testo.trim();
+  if (!RE_EXACT.test(pulito)) {
+    throw new Error(`campo ${cosa}: forma non riconosciuta`);
+  }
+  const barra = pulito.indexOf("/");
+  if (barra >= 0) {
+    const denominatore = pulito.slice(barra + 1);
+    if (/^0+$/.test(denominatore)) {
+      throw new Error(`campo ${cosa}: denominatore zero`);
+    }
+  }
+  return testo;
 }
 
 function arr(v: Json, cosa: string): Json[] {
@@ -101,7 +131,7 @@ function step(v: Json): StepView {
   const beforeSvg = v["before_svg"];
   const afterSvg = v["after_svg"];
   return {
-    index: num(v["index"], "step.index"),
+    index: indice(v["index"], "step.index"),
     kind: str(v["kind"], "step.kind"),
     before_ref: str(v["before_ref"], "step.before_ref"),
     after_ref: str(v["after_ref"], "step.after_ref"),
@@ -188,14 +218,147 @@ export function parseSession(payload: Json): StudentSessionView {
     refusal: nullable(payload["refusal"], refusal),
     failure: nullable(payload["failure"], failure),
   };
-  if (vista.outcome === "closed" && (vista.answer === null || vista.verification === null)) {
-    throw new Error("chiusura senza risposta o senza evidenza");
+  if (vista.truth.product_verified !== false) {
+    throw new Error("product_verified deve essere false in questo profilo");
   }
-  if (vista.outcome === "refusal" && (vista.refusal === null || vista.answer !== null)) {
-    throw new Error("rifiuto senza diagnosi o con risposta");
+  if (vista.outcome === "closed") {
+    if (vista.answer === null || vista.verification === null) {
+      throw new Error("chiusura senza risposta o senza evidenza");
+    }
+    if (vista.refusal !== null || vista.failure !== null) {
+      throw new Error("chiusura con rifiuto o guasto");
+    }
+    if (vista.truth.electrical_claim_status !== "VERIFIED") {
+      throw new Error("claim elettrico della closed diverso da VERIFIED");
+    }
+    if (vista.truth.backend_closure_status !== "CLOSED") {
+      throw new Error("chiusura di backend diverso da CLOSED");
+    }
+    if (vista.verification.claim_status !== "VERIFIED") {
+      throw new Error("verification.claim_status diverso da VERIFIED");
+    }
+    if (vista.verification.session_status !== "CLOSED") {
+      throw new Error("verification.session_status diverso da CLOSED");
+    }
+    if (vista.question === null) {
+      throw new Error("closed senza domanda");
+    }
+    if (vista.answer.target !== vista.question.target) {
+      throw new Error("answer.target non coincide con question.target");
+    }
+    if (vista.answer.quantity !== vista.question.quantity) {
+      throw new Error("answer.quantity non coincide con question.quantity");
+    }
+    const ammesse = UNITA_PER_QUANTITA[vista.answer.quantity];
+    if (ammesse === undefined || !ammesse.has(vista.answer.unit)) {
+      throw new Error(
+        `unita' ${vista.answer.unit} non coerente con quantity ${vista.answer.quantity}`,
+      );
+    }
+    exact(vista.answer.exact, "answer.exact");
+    if (vista.verification.evidence_ids.length === 0) {
+      throw new Error("closed senza evidenza");
+    }
+    if (vista.states.length === 0) {
+      throw new Error("closed senza stati");
+    }
+    const refs = new Set(vista.states.map((s) => s.ref));
+    if (refs.size !== vista.states.length) {
+      throw new Error("state refs duplicati");
+    }
+    if (vista.steps.length === 0) {
+      throw new Error("closed senza passi");
+    }
+    const indici = new Set<number>();
+    for (const passo of vista.steps) {
+      if (indici.has(passo.index)) {
+        throw new Error(`indice ${passo.index} duplicato`);
+      }
+      indici.add(passo.index);
+      if (!refs.has(passo.before_ref)) {
+        throw new Error(`before_ref ${passo.before_ref} non risolubile negli stati`);
+      }
+      if (!refs.has(passo.after_ref)) {
+        throw new Error(`after_ref ${passo.after_ref} non risolubile negli stati`);
+      }
+      if (passo.kind === "analytical") {
+        if (passo.before_ref !== passo.after_ref) {
+          throw new Error("passo analitico con before_ref diverso da after_ref");
+        }
+        if (
+          passo.evidence_refs.length !== 1 ||
+          passo.evidence_refs[0] !== passo.before_ref
+        ) {
+          throw new Error("evidence_refs del passo analitico non coincide con lo stato");
+        }
+      } else if (passo.kind === "transform") {
+        if (passo.before_ref === passo.after_ref) {
+          throw new Error("passo topologico con before_ref uguale ad after_ref");
+        }
+        if (
+          passo.evidence_refs.length !== 2 ||
+          passo.evidence_refs[0] !== passo.before_ref ||
+          passo.evidence_refs[1] !== passo.after_ref
+        ) {
+          throw new Error(
+            "evidence_refs del passo topologico non coincide con before_ref/after_ref",
+          );
+        }
+      } else {
+        throw new Error(`kind ${passo.kind} fuori dal vocabolario chiuso`);
+      }
+      for (const ref of passo.evidence_refs) {
+        if (!refs.has(ref)) {
+          throw new Error(`evidence_ref ${ref} non risolubile negli stati`);
+        }
+      }
+    }
+    const ordinati = [...indici].sort((a, b) => a - b);
+    for (let i = 0; i < ordinati.length; i++) {
+      if (ordinati[i] !== i) {
+        throw new Error("indici dei passi non consecutivi da zero");
+      }
+    }
   }
-  if (vista.outcome === "failure" && (vista.failure === null || vista.answer !== null)) {
-    throw new Error("guasto senza messaggio o con risposta");
+  if (vista.outcome === "refusal") {
+    if (vista.refusal === null || vista.answer !== null) {
+      throw new Error("rifiuto senza diagnosi o con risposta");
+    }
+    if (vista.verification !== null) {
+      throw new Error("rifiuto con verification");
+    }
+    if (vista.truth.electrical_claim_status === "VERIFIED") {
+      throw new Error("rifiuto con claim positivo");
+    }
+    if (
+      vista.truth.backend_closure_status === "CLOSED" ||
+      vista.truth.backend_closure_status === "VERIFIED"
+    ) {
+      throw new Error("rifiuto con prova di chiusura");
+    }
+    if (vista.states.length !== 0 || vista.steps.length !== 0) {
+      throw new Error("rifiuto con stati o passi");
+    }
+  }
+  if (vista.outcome === "failure") {
+    if (vista.failure === null || vista.answer !== null) {
+      throw new Error("guasto senza messaggio o con risposta");
+    }
+    if (vista.verification !== null) {
+      throw new Error("guasto con verification");
+    }
+    if (vista.truth.electrical_claim_status === "VERIFIED") {
+      throw new Error("guasto con claim positivo");
+    }
+    if (
+      vista.truth.backend_closure_status === "CLOSED" ||
+      vista.truth.backend_closure_status === "VERIFIED"
+    ) {
+      throw new Error("guasto con prova di chiusura");
+    }
+    if (vista.states.length !== 0 || vista.steps.length !== 0) {
+      throw new Error("guasto con stati o passi");
+    }
   }
   return vista;
 }

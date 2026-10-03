@@ -1,0 +1,513 @@
+{
+  "cases": [
+    {
+      "group": "manual_bridge",
+      "id": "manual_bridge/base",
+      "netlist": "@ac 1 rad/s\n@amplitude rms\nR1 p a 2 ohm\nL1 a 0 3 henry\nC1 p b 1/2 farad\nR2 b 0 4 ohm\nR3 a b 5 ohm\nI1 a 0 7 ampere 30deg\n? impedance p 0",
+      "require_finite_answer": true,
+      "variant": "base"
+    },
+    {
+      "group": "manual_bridge",
+      "id": "manual_bridge/port_reversed",
+      "netlist": "@ac 1 rad/s\n@amplitude rms\nR1 p a 2 ohm\nL1 a 0 3 henry\nC1 p b 1/2 farad\nR2 b 0 4 ohm\nR3 a b 5 ohm\nI1 a 0 7 ampere 30deg\n? impedance 0 p",
+      "require_finite_answer": true,
+      "variant": "port_reversed"
+    },
+    {
+      "group": "manual_bridge",
+      "id": "manual_bridge/components_reordered",
+      "netlist": "@ac 1 rad/s\n@amplitude rms\nI1 a 0 7 ampere 30deg\nR3 a b 5 ohm\nR2 b 0 4 ohm\nC1 p b 1/2 farad\nL1 a 0 3 henry\nR1 p a 2 ohm\n? impedance p 0",
+      "require_finite_answer": true,
+      "variant": "components_reordered"
+    },
+    {
+      "group": "manual_bridge",
+      "id": "manual_bridge/amplitude_peak",
+      "netlist": "@ac 1 rad/s\n@amplitude peak\nR1 p a 2 ohm\nL1 a 0 3 henry\nC1 p b 1/2 farad\nR2 b 0 4 ohm\nR3 a b 5 ohm\nI1 a 0 7 ampere 30deg\n? impedance p 0",
+      "require_finite_answer": true,
+      "variant": "amplitude_peak"
+    },
+    {
+      "group": "manual_bridge",
+      "id": "manual_bridge/source_values_and_phases",
+      "netlist": "@ac 1 rad/s\n@amplitude rms\nR1 p a 2 ohm\nL1 a 0 3 henry\nC1 p b 1/2 farad\nR2 b 0 4 ohm\nR3 a b 5 ohm\nI1 a 0 19/3 ampere -150deg\n? impedance p 0",
+      "require_finite_answer": true,
+      "variant": "source_values_and_phases"
+    },
+    {
+      "group": "manual_bridge",
+      "id": "manual_bridge/source_polarities",
+      "netlist": "@ac 1 rad/s\n@amplitude rms\nR1 p a 2 ohm\nL1 a 0 3 henry\nC1 p b 1/2 farad\nR2 b 0 4 ohm\nR3 a b 5 ohm\nI1 0 a 7 ampere 30deg\n? impedance p 0",
+      "require_finite_answer": true,
+      "variant": "source_polarities"
+    },
+    {
+      "group": "manual_floating_source",
+      "id": "manual_floating_source/base",
+      "netlist": "@ac 2 rad/s\n@amplitude rms\nR1 p a 3 ohm\nL1 p b 2 henry\nR2 a 0 5 ohm\nC1 b 0 1/12 farad\nR3 p 0 7 ohm\nV1 a b 11 volt 60deg\nI1 0 a 2 ampere -30deg\n? impedance p 0",
+      "require_finite_answer": true,
+      "variant": "base"
+    },
+    {
+      "group": "manual_floating_source",
+      "id": "manual_floating_source/port_reversed",
+      "netlist": "@ac 2 rad/s\n@amplitude rms\nR1 p a 3 ohm\nL1 p b 2 henry\nR2 a 0 5 ohm\nC1 b 0 1/12 farad\nR3 p 0 7 ohm\nV1 a b 11 volt 60deg\nI1 0 a 2 ampere -30deg\n? impedance 0 p",
+      "require_finite_answer": true,
+      "variant": "port_reversed"
+    },
+    {
+      "group": "manual_floating_source",
+      "id": "manual_floating_source/components_reordered",
+      "netlist": "@ac 2 rad/s\n@amplitude rms\nI1 0 a 2 ampere -30deg\nV1 a b 11 volt 60deg\nR3 p 0 7 ohm\nC1 b 0 1/12 farad\nR2 a 0 5 ohm\nL1 p b 2 henry\nR1 p a 3 ohm\n? impedance p 0",
+      "require_finite_answer": true,
+      "variant": "components_reordered"
+    },
+    {
+      "group": "manual_floating_source",
+      "id": "manual_floating_source/amplitude_peak",
+      "netlist": "@ac 2 rad/s\n@amplitude peak\nR1 p a 3 ohm\nL1 p b 2 henry\nR2 a 0 5 ohm\nC1 b 0 1/12 farad\nR3 p 0 7 ohm\nV1 a b 11 volt 60deg\nI1 0 a 2 ampere -30deg\n? impedance p 0",
+      "require_finite_answer": true,
+      "variant": "amplitude_peak"
+    },
+    {
+      "group": "manual_floating_source",
+      "id": "manual_floating_source/source_values_and_phases",
+      "netlist": "@ac 2 rad/s\n@amplitude rms\nR1 p a 3 ohm\nL1 p b 2 henry\nR2 a 0 5 ohm\nC1 b 0 1/12 farad\nR3 p 0 7 ohm\nV1 a b 19/3 volt -150deg\nI1 0 a 19/3 ampere -150deg\n? impedance p 0",
+      "require_finite_answer": true,
+      "variant": "source_values_and_phases"
+    },
+    {
+      "group": "manual_floating_source",
+      "id": "manual_floating_source/source_polarities",
+      "netlist": "@ac 2 rad/s\n@amplitude rms\nR1 p a 3 ohm\nL1 p b 2 henry\nR2 a 0 5 ohm\nC1 b 0 1/12 farad\nR3 p 0 7 ohm\nV1 b a 11 volt 60deg\nI1 a 0 2 ampere -30deg\n? impedance p 0",
+      "require_finite_answer": true,
+      "variant": "source_polarities"
+    },
+    {
+      "group": "seeded_mesh_01",
+      "id": "seeded_mesh_01/base",
+      "netlist": "@ac 5/2 rad/s\n@amplitude rms\nR1 p a 7 ohm\nR2 a b 4 ohm\nC1 b c 1/10 farad\nL1 c d 2 henry\nR3 d 0 3 ohm\nL2 0 p 16/5 henry\nR4 c 0 5 ohm\nC2 p c 2/5 farad\nR5 b d 9 ohm\nV1 a d 5 volt 30deg\nI1 b 0 3 ampere 120deg\n? impedance p 0",
+      "require_finite_answer": true,
+      "variant": "base"
+    },
+    {
+      "group": "seeded_mesh_01",
+      "id": "seeded_mesh_01/port_reversed",
+      "netlist": "@ac 5/2 rad/s\n@amplitude rms\nR1 p a 7 ohm\nR2 a b 4 ohm\nC1 b c 1/10 farad\nL1 c d 2 henry\nR3 d 0 3 ohm\nL2 0 p 16/5 henry\nR4 c 0 5 ohm\nC2 p c 2/5 farad\nR5 b d 9 ohm\nV1 a d 5 volt 30deg\nI1 b 0 3 ampere 120deg\n? impedance 0 p",
+      "require_finite_answer": true,
+      "variant": "port_reversed"
+    },
+    {
+      "group": "seeded_mesh_01",
+      "id": "seeded_mesh_01/components_reordered",
+      "netlist": "@ac 5/2 rad/s\n@amplitude rms\nI1 b 0 3 ampere 120deg\nV1 a d 5 volt 30deg\nR5 b d 9 ohm\nC2 p c 2/5 farad\nR4 c 0 5 ohm\nL2 0 p 16/5 henry\nR3 d 0 3 ohm\nL1 c d 2 henry\nC1 b c 1/10 farad\nR2 a b 4 ohm\nR1 p a 7 ohm\n? impedance p 0",
+      "require_finite_answer": true,
+      "variant": "components_reordered"
+    },
+    {
+      "group": "seeded_mesh_01",
+      "id": "seeded_mesh_01/amplitude_peak",
+      "netlist": "@ac 5/2 rad/s\n@amplitude peak\nR1 p a 7 ohm\nR2 a b 4 ohm\nC1 b c 1/10 farad\nL1 c d 2 henry\nR3 d 0 3 ohm\nL2 0 p 16/5 henry\nR4 c 0 5 ohm\nC2 p c 2/5 farad\nR5 b d 9 ohm\nV1 a d 5 volt 30deg\nI1 b 0 3 ampere 120deg\n? impedance p 0",
+      "require_finite_answer": true,
+      "variant": "amplitude_peak"
+    },
+    {
+      "group": "seeded_mesh_01",
+      "id": "seeded_mesh_01/source_values_and_phases",
+      "netlist": "@ac 5/2 rad/s\n@amplitude rms\nR1 p a 7 ohm\nR2 a b 4 ohm\nC1 b c 1/10 farad\nL1 c d 2 henry\nR3 d 0 3 ohm\nL2 0 p 16/5 henry\nR4 c 0 5 ohm\nC2 p c 2/5 farad\nR5 b d 9 ohm\nV1 a d 19/3 volt -150deg\nI1 b 0 19/3 ampere -150deg\n? impedance p 0",
+      "require_finite_answer": true,
+      "variant": "source_values_and_phases"
+    },
+    {
+      "group": "seeded_mesh_01",
+      "id": "seeded_mesh_01/source_polarities",
+      "netlist": "@ac 5/2 rad/s\n@amplitude rms\nR1 p a 7 ohm\nR2 a b 4 ohm\nC1 b c 1/10 farad\nL1 c d 2 henry\nR3 d 0 3 ohm\nL2 0 p 16/5 henry\nR4 c 0 5 ohm\nC2 p c 2/5 farad\nR5 b d 9 ohm\nV1 d a 5 volt 30deg\nI1 0 b 3 ampere 120deg\n? impedance p 0",
+      "require_finite_answer": true,
+      "variant": "source_polarities"
+    },
+    {
+      "group": "seeded_mesh_02",
+      "id": "seeded_mesh_02/base",
+      "netlist": "@ac 5/2 rad/s\n@amplitude rms\nR1 p a 5 ohm\nC1 a b 2/15 farad\nL1 b c 12/5 henry\nC2 c d 2/5 farad\nR2 d 0 1 ohm\nL2 0 p 16/5 henry\nL3 a d 12/5 henry\nL4 a c 14/5 henry\nL5 b 0 14/5 henry\nV1 a d 5 volt 30deg\nI1 b 0 3 ampere 120deg\n? impedance p c",
+      "require_finite_answer": true,
+      "variant": "base"
+    },
+    {
+      "group": "seeded_mesh_02",
+      "id": "seeded_mesh_02/port_reversed",
+      "netlist": "@ac 5/2 rad/s\n@amplitude rms\nR1 p a 5 ohm\nC1 a b 2/15 farad\nL1 b c 12/5 henry\nC2 c d 2/5 farad\nR2 d 0 1 ohm\nL2 0 p 16/5 henry\nL3 a d 12/5 henry\nL4 a c 14/5 henry\nL5 b 0 14/5 henry\nV1 a d 5 volt 30deg\nI1 b 0 3 ampere 120deg\n? impedance c p",
+      "require_finite_answer": true,
+      "variant": "port_reversed"
+    },
+    {
+      "group": "seeded_mesh_02",
+      "id": "seeded_mesh_02/components_reordered",
+      "netlist": "@ac 5/2 rad/s\n@amplitude rms\nI1 b 0 3 ampere 120deg\nV1 a d 5 volt 30deg\nL5 b 0 14/5 henry\nL4 a c 14/5 henry\nL3 a d 12/5 henry\nL2 0 p 16/5 henry\nR2 d 0 1 ohm\nC2 c d 2/5 farad\nL1 b c 12/5 henry\nC1 a b 2/15 farad\nR1 p a 5 ohm\n? impedance p c",
+      "require_finite_answer": true,
+      "variant": "components_reordered"
+    },
+    {
+      "group": "seeded_mesh_02",
+      "id": "seeded_mesh_02/amplitude_peak",
+      "netlist": "@ac 5/2 rad/s\n@amplitude peak\nR1 p a 5 ohm\nC1 a b 2/15 farad\nL1 b c 12/5 henry\nC2 c d 2/5 farad\nR2 d 0 1 ohm\nL2 0 p 16/5 henry\nL3 a d 12/5 henry\nL4 a c 14/5 henry\nL5 b 0 14/5 henry\nV1 a d 5 volt 30deg\nI1 b 0 3 ampere 120deg\n? impedance p c",
+      "require_finite_answer": true,
+      "variant": "amplitude_peak"
+    },
+    {
+      "group": "seeded_mesh_02",
+      "id": "seeded_mesh_02/source_values_and_phases",
+      "netlist": "@ac 5/2 rad/s\n@amplitude rms\nR1 p a 5 ohm\nC1 a b 2/15 farad\nL1 b c 12/5 henry\nC2 c d 2/5 farad\nR2 d 0 1 ohm\nL2 0 p 16/5 henry\nL3 a d 12/5 henry\nL4 a c 14/5 henry\nL5 b 0 14/5 henry\nV1 a d 19/3 volt -150deg\nI1 b 0 19/3 ampere -150deg\n? impedance p c",
+      "require_finite_answer": true,
+      "variant": "source_values_and_phases"
+    },
+    {
+      "group": "seeded_mesh_02",
+      "id": "seeded_mesh_02/source_polarities",
+      "netlist": "@ac 5/2 rad/s\n@amplitude rms\nR1 p a 5 ohm\nC1 a b 2/15 farad\nL1 b c 12/5 henry\nC2 c d 2/5 farad\nR2 d 0 1 ohm\nL2 0 p 16/5 henry\nL3 a d 12/5 henry\nL4 a c 14/5 henry\nL5 b 0 14/5 henry\nV1 d a 5 volt 30deg\nI1 0 b 3 ampere 120deg\n? impedance p c",
+      "require_finite_answer": true,
+      "variant": "source_polarities"
+    },
+    {
+      "group": "seeded_mesh_03",
+      "id": "seeded_mesh_03/base",
+      "netlist": "@ac 3 rad/s\n@amplitude rms\nR1 p a 6 ohm\nR2 a b 4 ohm\nR3 b c 4 ohm\nC1 c d 1/18 farad\nR4 d 0 7 ohm\nR5 0 p 6 ohm\nR6 a 0 6 ohm\nL1 a d 1/3 henry\nC2 a c 1/18 farad\nV1 a d 5 volt 30deg\nI1 b 0 3 ampere 120deg\n? impedance p 0",
+      "require_finite_answer": true,
+      "variant": "base"
+    },
+    {
+      "group": "seeded_mesh_03",
+      "id": "seeded_mesh_03/port_reversed",
+      "netlist": "@ac 3 rad/s\n@amplitude rms\nR1 p a 6 ohm\nR2 a b 4 ohm\nR3 b c 4 ohm\nC1 c d 1/18 farad\nR4 d 0 7 ohm\nR5 0 p 6 ohm\nR6 a 0 6 ohm\nL1 a d 1/3 henry\nC2 a c 1/18 farad\nV1 a d 5 volt 30deg\nI1 b 0 3 ampere 120deg\n? impedance 0 p",
+      "require_finite_answer": true,
+      "variant": "port_reversed"
+    },
+    {
+      "group": "seeded_mesh_03",
+      "id": "seeded_mesh_03/components_reordered",
+      "netlist": "@ac 3 rad/s\n@amplitude rms\nI1 b 0 3 ampere 120deg\nV1 a d 5 volt 30deg\nC2 a c 1/18 farad\nL1 a d 1/3 henry\nR6 a 0 6 ohm\nR5 0 p 6 ohm\nR4 d 0 7 ohm\nC1 c d 1/18 farad\nR3 b c 4 ohm\nR2 a b 4 ohm\nR1 p a 6 ohm\n? impedance p 0",
+      "require_finite_answer": true,
+      "variant": "components_reordered"
+    },
+    {
+      "group": "seeded_mesh_03",
+      "id": "seeded_mesh_03/amplitude_peak",
+      "netlist": "@ac 3 rad/s\n@amplitude peak\nR1 p a 6 ohm\nR2 a b 4 ohm\nR3 b c 4 ohm\nC1 c d 1/18 farad\nR4 d 0 7 ohm\nR5 0 p 6 ohm\nR6 a 0 6 ohm\nL1 a d 1/3 henry\nC2 a c 1/18 farad\nV1 a d 5 volt 30deg\nI1 b 0 3 ampere 120deg\n? impedance p 0",
+      "require_finite_answer": true,
+      "variant": "amplitude_peak"
+    },
+    {
+      "group": "seeded_mesh_03",
+      "id": "seeded_mesh_03/source_values_and_phases",
+      "netlist": "@ac 3 rad/s\n@amplitude rms\nR1 p a 6 ohm\nR2 a b 4 ohm\nR3 b c 4 ohm\nC1 c d 1/18 farad\nR4 d 0 7 ohm\nR5 0 p 6 ohm\nR6 a 0 6 ohm\nL1 a d 1/3 henry\nC2 a c 1/18 farad\nV1 a d 19/3 volt -150deg\nI1 b 0 19/3 ampere -150deg\n? impedance p 0",
+      "require_finite_answer": true,
+      "variant": "source_values_and_phases"
+    },
+    {
+      "group": "seeded_mesh_03",
+      "id": "seeded_mesh_03/source_polarities",
+      "netlist": "@ac 3 rad/s\n@amplitude rms\nR1 p a 6 ohm\nR2 a b 4 ohm\nR3 b c 4 ohm\nC1 c d 1/18 farad\nR4 d 0 7 ohm\nR5 0 p 6 ohm\nR6 a 0 6 ohm\nL1 a d 1/3 henry\nC2 a c 1/18 farad\nV1 d a 5 volt 30deg\nI1 0 b 3 ampere 120deg\n? impedance p 0",
+      "require_finite_answer": true,
+      "variant": "source_polarities"
+    },
+    {
+      "group": "seeded_mesh_04",
+      "id": "seeded_mesh_04/base",
+      "netlist": "@ac 5/2 rad/s\n@amplitude rms\nR1 p a 7 ohm\nR2 a b 4 ohm\nL1 b c 2/5 henry\nR3 c d 1 ohm\nR4 d 0 6 ohm\nR5 0 p 8 ohm\nR6 b d 1 ohm\nC1 p b 1/5 farad\nC2 p d 2/35 farad\nV1 a d 5 volt 30deg\nI1 b 0 3 ampere 120deg\n? impedance p c",
+      "require_finite_answer": true,
+      "variant": "base"
+    },
+    {
+      "group": "seeded_mesh_04",
+      "id": "seeded_mesh_04/port_reversed",
+      "netlist": "@ac 5/2 rad/s\n@amplitude rms\nR1 p a 7 ohm\nR2 a b 4 ohm\nL1 b c 2/5 henry\nR3 c d 1 ohm\nR4 d 0 6 ohm\nR5 0 p 8 ohm\nR6 b d 1 ohm\nC1 p b 1/5 farad\nC2 p d 2/35 farad\nV1 a d 5 volt 30deg\nI1 b 0 3 ampere 120deg\n? impedance c p",
+      "require_finite_answer": true,
+      "variant": "port_reversed"
+    },
+    {
+      "group": "seeded_mesh_04",
+      "id": "seeded_mesh_04/components_reordered",
+      "netlist": "@ac 5/2 rad/s\n@amplitude rms\nI1 b 0 3 ampere 120deg\nV1 a d 5 volt 30deg\nC2 p d 2/35 farad\nC1 p b 1/5 farad\nR6 b d 1 ohm\nR5 0 p 8 ohm\nR4 d 0 6 ohm\nR3 c d 1 ohm\nL1 b c 2/5 henry\nR2 a b 4 ohm\nR1 p a 7 ohm\n? impedance p c",
+      "require_finite_answer": true,
+      "variant": "components_reordered"
+    },
+    {
+      "group": "seeded_mesh_04",
+      "id": "seeded_mesh_04/amplitude_peak",
+      "netlist": "@ac 5/2 rad/s\n@amplitude peak\nR1 p a 7 ohm\nR2 a b 4 ohm\nL1 b c 2/5 henry\nR3 c d 1 ohm\nR4 d 0 6 ohm\nR5 0 p 8 ohm\nR6 b d 1 ohm\nC1 p b 1/5 farad\nC2 p d 2/35 farad\nV1 a d 5 volt 30deg\nI1 b 0 3 ampere 120deg\n? impedance p c",
+      "require_finite_answer": true,
+      "variant": "amplitude_peak"
+    },
+    {
+      "group": "seeded_mesh_04",
+      "id": "seeded_mesh_04/source_values_and_phases",
+      "netlist": "@ac 5/2 rad/s\n@amplitude rms\nR1 p a 7 ohm\nR2 a b 4 ohm\nL1 b c 2/5 henry\nR3 c d 1 ohm\nR4 d 0 6 ohm\nR5 0 p 8 ohm\nR6 b d 1 ohm\nC1 p b 1/5 farad\nC2 p d 2/35 farad\nV1 a d 19/3 volt -150deg\nI1 b 0 19/3 ampere -150deg\n? impedance p c",
+      "require_finite_answer": true,
+      "variant": "source_values_and_phases"
+    },
+    {
+      "group": "seeded_mesh_04",
+      "id": "seeded_mesh_04/source_polarities",
+      "netlist": "@ac 5/2 rad/s\n@amplitude rms\nR1 p a 7 ohm\nR2 a b 4 ohm\nL1 b c 2/5 henry\nR3 c d 1 ohm\nR4 d 0 6 ohm\nR5 0 p 8 ohm\nR6 b d 1 ohm\nC1 p b 1/5 farad\nC2 p d 2/35 farad\nV1 d a 5 volt 30deg\nI1 0 b 3 ampere 120deg\n? impedance p c",
+      "require_finite_answer": true,
+      "variant": "source_polarities"
+    },
+    {
+      "group": "seeded_mesh_05",
+      "id": "seeded_mesh_05/base",
+      "netlist": "@ac 5/2 rad/s\n@amplitude rms\nR1 p a 8 ohm\nR2 a b 2 ohm\nR3 b c 7 ohm\nR4 c d 5 ohm\nR5 d 0 3 ohm\nC1 0 p 1/20 farad\nL1 p b 6/5 henry\nC2 a 0 1/10 farad\nC3 b 0 2/35 farad\nV1 a d 5 volt 30deg\nI1 b 0 3 ampere 120deg\n? impedance p 0",
+      "require_finite_answer": true,
+      "variant": "base"
+    },
+    {
+      "group": "seeded_mesh_05",
+      "id": "seeded_mesh_05/port_reversed",
+      "netlist": "@ac 5/2 rad/s\n@amplitude rms\nR1 p a 8 ohm\nR2 a b 2 ohm\nR3 b c 7 ohm\nR4 c d 5 ohm\nR5 d 0 3 ohm\nC1 0 p 1/20 farad\nL1 p b 6/5 henry\nC2 a 0 1/10 farad\nC3 b 0 2/35 farad\nV1 a d 5 volt 30deg\nI1 b 0 3 ampere 120deg\n? impedance 0 p",
+      "require_finite_answer": true,
+      "variant": "port_reversed"
+    },
+    {
+      "group": "seeded_mesh_05",
+      "id": "seeded_mesh_05/components_reordered",
+      "netlist": "@ac 5/2 rad/s\n@amplitude rms\nI1 b 0 3 ampere 120deg\nV1 a d 5 volt 30deg\nC3 b 0 2/35 farad\nC2 a 0 1/10 farad\nL1 p b 6/5 henry\nC1 0 p 1/20 farad\nR5 d 0 3 ohm\nR4 c d 5 ohm\nR3 b c 7 ohm\nR2 a b 2 ohm\nR1 p a 8 ohm\n? impedance p 0",
+      "require_finite_answer": true,
+      "variant": "components_reordered"
+    },
+    {
+      "group": "seeded_mesh_05",
+      "id": "seeded_mesh_05/amplitude_peak",
+      "netlist": "@ac 5/2 rad/s\n@amplitude peak\nR1 p a 8 ohm\nR2 a b 2 ohm\nR3 b c 7 ohm\nR4 c d 5 ohm\nR5 d 0 3 ohm\nC1 0 p 1/20 farad\nL1 p b 6/5 henry\nC2 a 0 1/10 farad\nC3 b 0 2/35 farad\nV1 a d 5 volt 30deg\nI1 b 0 3 ampere 120deg\n? impedance p 0",
+      "require_finite_answer": true,
+      "variant": "amplitude_peak"
+    },
+    {
+      "group": "seeded_mesh_05",
+      "id": "seeded_mesh_05/source_values_and_phases",
+      "netlist": "@ac 5/2 rad/s\n@amplitude rms\nR1 p a 8 ohm\nR2 a b 2 ohm\nR3 b c 7 ohm\nR4 c d 5 ohm\nR5 d 0 3 ohm\nC1 0 p 1/20 farad\nL1 p b 6/5 henry\nC2 a 0 1/10 farad\nC3 b 0 2/35 farad\nV1 a d 19/3 volt -150deg\nI1 b 0 19/3 ampere -150deg\n? impedance p 0",
+      "require_finite_answer": true,
+      "variant": "source_values_and_phases"
+    },
+    {
+      "group": "seeded_mesh_05",
+      "id": "seeded_mesh_05/source_polarities",
+      "netlist": "@ac 5/2 rad/s\n@amplitude rms\nR1 p a 8 ohm\nR2 a b 2 ohm\nR3 b c 7 ohm\nR4 c d 5 ohm\nR5 d 0 3 ohm\nC1 0 p 1/20 farad\nL1 p b 6/5 henry\nC2 a 0 1/10 farad\nC3 b 0 2/35 farad\nV1 d a 5 volt 30deg\nI1 0 b 3 ampere 120deg\n? impedance p 0",
+      "require_finite_answer": true,
+      "variant": "source_polarities"
+    },
+    {
+      "group": "seeded_mesh_06",
+      "id": "seeded_mesh_06/base",
+      "netlist": "@ac 2 rad/s\n@amplitude rms\nR1 p a 7 ohm\nC1 a b 1/10 farad\nC2 b c 1/12 farad\nR2 c d 1 ohm\nR3 d 0 2 ohm\nL1 0 p 3/2 henry\nR4 b 0 7 ohm\nC3 p b 1/12 farad\nL2 c 0 2 henry\nV1 a d 5 volt 30deg\nI1 b 0 3 ampere 120deg\n? impedance p c",
+      "require_finite_answer": true,
+      "variant": "base"
+    },
+    {
+      "group": "seeded_mesh_06",
+      "id": "seeded_mesh_06/port_reversed",
+      "netlist": "@ac 2 rad/s\n@amplitude rms\nR1 p a 7 ohm\nC1 a b 1/10 farad\nC2 b c 1/12 farad\nR2 c d 1 ohm\nR3 d 0 2 ohm\nL1 0 p 3/2 henry\nR4 b 0 7 ohm\nC3 p b 1/12 farad\nL2 c 0 2 henry\nV1 a d 5 volt 30deg\nI1 b 0 3 ampere 120deg\n? impedance c p",
+      "require_finite_answer": true,
+      "variant": "port_reversed"
+    },
+    {
+      "group": "seeded_mesh_06",
+      "id": "seeded_mesh_06/components_reordered",
+      "netlist": "@ac 2 rad/s\n@amplitude rms\nI1 b 0 3 ampere 120deg\nV1 a d 5 volt 30deg\nL2 c 0 2 henry\nC3 p b 1/12 farad\nR4 b 0 7 ohm\nL1 0 p 3/2 henry\nR3 d 0 2 ohm\nR2 c d 1 ohm\nC2 b c 1/12 farad\nC1 a b 1/10 farad\nR1 p a 7 ohm\n? impedance p c",
+      "require_finite_answer": true,
+      "variant": "components_reordered"
+    },
+    {
+      "group": "seeded_mesh_06",
+      "id": "seeded_mesh_06/amplitude_peak",
+      "netlist": "@ac 2 rad/s\n@amplitude peak\nR1 p a 7 ohm\nC1 a b 1/10 farad\nC2 b c 1/12 farad\nR2 c d 1 ohm\nR3 d 0 2 ohm\nL1 0 p 3/2 henry\nR4 b 0 7 ohm\nC3 p b 1/12 farad\nL2 c 0 2 henry\nV1 a d 5 volt 30deg\nI1 b 0 3 ampere 120deg\n? impedance p c",
+      "require_finite_answer": true,
+      "variant": "amplitude_peak"
+    },
+    {
+      "group": "seeded_mesh_06",
+      "id": "seeded_mesh_06/source_values_and_phases",
+      "netlist": "@ac 2 rad/s\n@amplitude rms\nR1 p a 7 ohm\nC1 a b 1/10 farad\nC2 b c 1/12 farad\nR2 c d 1 ohm\nR3 d 0 2 ohm\nL1 0 p 3/2 henry\nR4 b 0 7 ohm\nC3 p b 1/12 farad\nL2 c 0 2 henry\nV1 a d 19/3 volt -150deg\nI1 b 0 19/3 ampere -150deg\n? impedance p c",
+      "require_finite_answer": true,
+      "variant": "source_values_and_phases"
+    },
+    {
+      "group": "seeded_mesh_06",
+      "id": "seeded_mesh_06/source_polarities",
+      "netlist": "@ac 2 rad/s\n@amplitude rms\nR1 p a 7 ohm\nC1 a b 1/10 farad\nC2 b c 1/12 farad\nR2 c d 1 ohm\nR3 d 0 2 ohm\nL1 0 p 3/2 henry\nR4 b 0 7 ohm\nC3 p b 1/12 farad\nL2 c 0 2 henry\nV1 d a 5 volt 30deg\nI1 0 b 3 ampere 120deg\n? impedance p c",
+      "require_finite_answer": true,
+      "variant": "source_polarities"
+    },
+    {
+      "group": "seeded_mesh_07",
+      "id": "seeded_mesh_07/base",
+      "netlist": "@ac 1/2 rad/s\n@amplitude rms\nR1 p a 4 ohm\nR2 a b 7 ohm\nL1 b c 12 henry\nC1 c d 2/3 farad\nR3 d 0 1 ohm\nR4 0 p 4 ohm\nR5 p b 5 ohm\nL2 a 0 2 henry\nL3 a d 10 henry\nV1 a d 5 volt 30deg\nI1 b 0 3 ampere 120deg\n? impedance p 0",
+      "require_finite_answer": true,
+      "variant": "base"
+    },
+    {
+      "group": "seeded_mesh_07",
+      "id": "seeded_mesh_07/port_reversed",
+      "netlist": "@ac 1/2 rad/s\n@amplitude rms\nR1 p a 4 ohm\nR2 a b 7 ohm\nL1 b c 12 henry\nC1 c d 2/3 farad\nR3 d 0 1 ohm\nR4 0 p 4 ohm\nR5 p b 5 ohm\nL2 a 0 2 henry\nL3 a d 10 henry\nV1 a d 5 volt 30deg\nI1 b 0 3 ampere 120deg\n? impedance 0 p",
+      "require_finite_answer": true,
+      "variant": "port_reversed"
+    },
+    {
+      "group": "seeded_mesh_07",
+      "id": "seeded_mesh_07/components_reordered",
+      "netlist": "@ac 1/2 rad/s\n@amplitude rms\nI1 b 0 3 ampere 120deg\nV1 a d 5 volt 30deg\nL3 a d 10 henry\nL2 a 0 2 henry\nR5 p b 5 ohm\nR4 0 p 4 ohm\nR3 d 0 1 ohm\nC1 c d 2/3 farad\nL1 b c 12 henry\nR2 a b 7 ohm\nR1 p a 4 ohm\n? impedance p 0",
+      "require_finite_answer": true,
+      "variant": "components_reordered"
+    },
+    {
+      "group": "seeded_mesh_07",
+      "id": "seeded_mesh_07/amplitude_peak",
+      "netlist": "@ac 1/2 rad/s\n@amplitude peak\nR1 p a 4 ohm\nR2 a b 7 ohm\nL1 b c 12 henry\nC1 c d 2/3 farad\nR3 d 0 1 ohm\nR4 0 p 4 ohm\nR5 p b 5 ohm\nL2 a 0 2 henry\nL3 a d 10 henry\nV1 a d 5 volt 30deg\nI1 b 0 3 ampere 120deg\n? impedance p 0",
+      "require_finite_answer": true,
+      "variant": "amplitude_peak"
+    },
+    {
+      "group": "seeded_mesh_07",
+      "id": "seeded_mesh_07/source_values_and_phases",
+      "netlist": "@ac 1/2 rad/s\n@amplitude rms\nR1 p a 4 ohm\nR2 a b 7 ohm\nL1 b c 12 henry\nC1 c d 2/3 farad\nR3 d 0 1 ohm\nR4 0 p 4 ohm\nR5 p b 5 ohm\nL2 a 0 2 henry\nL3 a d 10 henry\nV1 a d 19/3 volt -150deg\nI1 b 0 19/3 ampere -150deg\n? impedance p 0",
+      "require_finite_answer": true,
+      "variant": "source_values_and_phases"
+    },
+    {
+      "group": "seeded_mesh_07",
+      "id": "seeded_mesh_07/source_polarities",
+      "netlist": "@ac 1/2 rad/s\n@amplitude rms\nR1 p a 4 ohm\nR2 a b 7 ohm\nL1 b c 12 henry\nC1 c d 2/3 farad\nR3 d 0 1 ohm\nR4 0 p 4 ohm\nR5 p b 5 ohm\nL2 a 0 2 henry\nL3 a d 10 henry\nV1 d a 5 volt 30deg\nI1 0 b 3 ampere 120deg\n? impedance p 0",
+      "require_finite_answer": true,
+      "variant": "source_polarities"
+    },
+    {
+      "group": "seeded_mesh_08",
+      "id": "seeded_mesh_08/base",
+      "netlist": "@ac 1/2 rad/s\n@amplitude rms\nR1 p a 3 ohm\nR2 a b 4 ohm\nL1 b c 8 henry\nC1 c d 1/4 farad\nR3 d 0 5 ohm\nL2 0 p 16 henry\nL3 a d 12 henry\nR4 b d 5 ohm\nR5 p d 1 ohm\nV1 a d 5 volt 30deg\nI1 b 0 3 ampere 120deg\n? impedance p c",
+      "require_finite_answer": true,
+      "variant": "base"
+    },
+    {
+      "group": "seeded_mesh_08",
+      "id": "seeded_mesh_08/port_reversed",
+      "netlist": "@ac 1/2 rad/s\n@amplitude rms\nR1 p a 3 ohm\nR2 a b 4 ohm\nL1 b c 8 henry\nC1 c d 1/4 farad\nR3 d 0 5 ohm\nL2 0 p 16 henry\nL3 a d 12 henry\nR4 b d 5 ohm\nR5 p d 1 ohm\nV1 a d 5 volt 30deg\nI1 b 0 3 ampere 120deg\n? impedance c p",
+      "require_finite_answer": true,
+      "variant": "port_reversed"
+    },
+    {
+      "group": "seeded_mesh_08",
+      "id": "seeded_mesh_08/components_reordered",
+      "netlist": "@ac 1/2 rad/s\n@amplitude rms\nI1 b 0 3 ampere 120deg\nV1 a d 5 volt 30deg\nR5 p d 1 ohm\nR4 b d 5 ohm\nL3 a d 12 henry\nL2 0 p 16 henry\nR3 d 0 5 ohm\nC1 c d 1/4 farad\nL1 b c 8 henry\nR2 a b 4 ohm\nR1 p a 3 ohm\n? impedance p c",
+      "require_finite_answer": true,
+      "variant": "components_reordered"
+    },
+    {
+      "group": "seeded_mesh_08",
+      "id": "seeded_mesh_08/amplitude_peak",
+      "netlist": "@ac 1/2 rad/s\n@amplitude peak\nR1 p a 3 ohm\nR2 a b 4 ohm\nL1 b c 8 henry\nC1 c d 1/4 farad\nR3 d 0 5 ohm\nL2 0 p 16 henry\nL3 a d 12 henry\nR4 b d 5 ohm\nR5 p d 1 ohm\nV1 a d 5 volt 30deg\nI1 b 0 3 ampere 120deg\n? impedance p c",
+      "require_finite_answer": true,
+      "variant": "amplitude_peak"
+    },
+    {
+      "group": "seeded_mesh_08",
+      "id": "seeded_mesh_08/source_values_and_phases",
+      "netlist": "@ac 1/2 rad/s\n@amplitude rms\nR1 p a 3 ohm\nR2 a b 4 ohm\nL1 b c 8 henry\nC1 c d 1/4 farad\nR3 d 0 5 ohm\nL2 0 p 16 henry\nL3 a d 12 henry\nR4 b d 5 ohm\nR5 p d 1 ohm\nV1 a d 19/3 volt -150deg\nI1 b 0 19/3 ampere -150deg\n? impedance p c",
+      "require_finite_answer": true,
+      "variant": "source_values_and_phases"
+    },
+    {
+      "group": "seeded_mesh_08",
+      "id": "seeded_mesh_08/source_polarities",
+      "netlist": "@ac 1/2 rad/s\n@amplitude rms\nR1 p a 3 ohm\nR2 a b 4 ohm\nL1 b c 8 henry\nC1 c d 1/4 farad\nR3 d 0 5 ohm\nL2 0 p 16 henry\nL3 a d 12 henry\nR4 b d 5 ohm\nR5 p d 1 ohm\nV1 d a 5 volt 30deg\nI1 0 b 3 ampere 120deg\n? impedance p c",
+      "require_finite_answer": true,
+      "variant": "source_polarities"
+    },
+    {
+      "expected_class": "open_resonance",
+      "group": "degenerate",
+      "id": "parallel_lc_resonance",
+      "netlist": "@ac 2 rad/s\n@amplitude rms\nL1 p 0 1 henry\nC1 p 0 1/4 farad\n? impedance p 0",
+      "require_finite_answer": false,
+      "variant": "parallel_lc_resonance"
+    },
+    {
+      "expected_class": "finite_unique",
+      "group": "degenerate",
+      "id": "series_lc_resonance",
+      "netlist": "@ac 2 rad/s\n@amplitude rms\nL1 p a 1 henry\nC1 a 0 1/4 farad\n? impedance p 0",
+      "require_finite_answer": false,
+      "variant": "series_lc_resonance"
+    },
+    {
+      "expected_class": "finite_unique",
+      "group": "degenerate",
+      "id": "ideal_voltage_shorts_port",
+      "netlist": "@ac 1 rad/s\n@amplitude rms\nV1 p 0 9 volt 30deg\nR1 p 0 4 ohm\n? impedance p 0",
+      "require_finite_answer": false,
+      "variant": "ideal_voltage_shorts_port"
+    },
+    {
+      "expected_class": "open_disconnected",
+      "group": "degenerate",
+      "id": "disconnected_port",
+      "netlist": "@ac 1 rad/s\n@amplitude rms\nR1 p a 3 ohm\nR2 b 0 7 ohm\n? impedance p 0",
+      "require_finite_answer": false,
+      "variant": "disconnected_port"
+    },
+    {
+      "expected_class": "open_disconnected",
+      "group": "degenerate",
+      "id": "only_current_source",
+      "netlist": "@ac 1 rad/s\n@amplitude rms\nI1 p 0 2 ampere 60deg\n? impedance p 0",
+      "require_finite_answer": false,
+      "variant": "only_current_source"
+    },
+    {
+      "expected_class": "finite_with_internal_freedom",
+      "group": "degenerate",
+      "id": "redundant_voltage_constraints",
+      "netlist": "@ac 1 rad/s\n@amplitude rms\nV1 p 0 3 volt 0deg\nV2 p 0 3 volt 0deg\nR1 p 0 2 ohm\n? impedance p 0",
+      "require_finite_answer": false,
+      "variant": "redundant_voltage_constraints"
+    },
+    {
+      "expected_class": "finite_with_internal_freedom",
+      "group": "degenerate",
+      "id": "inconsistent_original_sources",
+      "netlist": "@ac 1 rad/s\n@amplitude rms\nV1 p 0 3 volt 0deg\nV2 p 0 4 volt 0deg\nR1 p 0 2 ohm\n? impedance p 0",
+      "require_finite_answer": false,
+      "variant": "inconsistent_original_sources"
+    },
+    {
+      "expected_class": "finite_with_internal_freedom",
+      "group": "degenerate",
+      "id": "irrelevant_floating_island",
+      "netlist": "@ac 1 rad/s\n@amplitude rms\nR1 p 0 3 ohm\nR2 a b 7 ohm\n? impedance p 0",
+      "require_finite_answer": false,
+      "variant": "irrelevant_floating_island"
+    },
+    {
+      "expected_class": "invalid_port",
+      "group": "degenerate",
+      "id": "missing_port_terminal",
+      "netlist": "@ac 1 rad/s\n@amplitude rms\nR1 p 0 3 ohm\n? impedance unknown 0",
+      "require_finite_answer": false,
+      "variant": "missing_port_terminal"
+    },
+    {
+      "expected_class": "invalid_port",
+      "group": "degenerate",
+      "id": "same_port_terminal",
+      "netlist": "@ac 1 rad/s\n@amplitude rms\nR1 p 0 3 ohm\n? impedance p p",
+      "require_finite_answer": false,
+      "variant": "same_port_terminal"
+    },
+    {
+      "expected_class": "invalid_value",
+      "group": "degenerate",
+      "id": "zero_resistance_not_wire",
+      "netlist": "@ac 1 rad/s\n@amplitude rms\nR1 p 0 0 ohm\n? impedance p 0",
+      "require_finite_answer": false,
+      "variant": "zero_resistance_not_wire"
+    }
+  ],
+  "seed": 2026100311
+}

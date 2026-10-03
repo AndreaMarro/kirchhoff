@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
-  await page.goto("/", { waitUntil: "networkidle" });
+  await page.goto("/?view=proof", { waitUntil: "networkidle" });
   await expect(page.locator(".kf-chip")).toHaveCount(4, { timeout: 10_000 });
 });
 

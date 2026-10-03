@@ -1,0 +1,101 @@
+import {expect,test} from '@playwright/test';
+import {execFileSync} from 'node:child_process';
+import {readFile,mkdir} from 'node:fs/promises';
+import {resolve} from 'node:path';
+
+const base=process.env.KIRCHHOFF_LIVE_BASE_URL;
+const root=resolve(process.cwd(),'..');
+const python=resolve(root,'.venv/bin/python');
+const netlist='@ac 100 rad/s\n@amplitude rms\nV1 a 0 10 volt 30deg\nR1 a b 3 ohm\nL1 b c 1/25 henry\nC1 c 0 1/100 farad\n? current R1';
+test.skip(!base,'Avvia il server Python reale e imposta KIRCHHOFF_LIVE_BASE_URL.');
+
+test('AC reale: fasori, risultato, PDF e quaderno riaperto',async({page},info)=>{
+ const errors:string[]=[];
+ page.on('pageerror',error=>errors.push(error.message));
+ await page.goto(base!);
+ await expect(page).toHaveTitle(/Kirchhoff/);
+ await page.getByRole('button',{name:/Il tuo circuito/}).click();
+ await page.getByRole('button',{name:'Componenti e collegamenti'}).click();
+ if(!await page.getByRole('textbox',{name:'Circuito da risolvere'}).isVisible())await page.getByText('Vista esperta: testo del circuito',{exact:true}).click();
+ await page.getByRole('textbox',{name:'Circuito da risolvere'}).fill(netlist);
+ await page.getByRole('button',{name:/Risolvi e spiega/}).click();
+ await expect(page.locator('.student-lesson')).toHaveAttribute('aria-busy','false');
+ await expect(page.getByRole('heading',{name:'Fissiamo regime, fase e riferimenti'})).toBeVisible();
+ await expect(page.getByText(/La netlist dichiara valori efficaci/)).toBeVisible();
+ await expect(page.getByRole('option',{name:'Fasori',exact:true})).toBeAttached();
+ await expect(page.getByRole('button',{name:'Scarica SPICE ↓'})).toBeDisabled();
+ await expect(page.getByRole('button',{name:'Scarica CircuitikZ ↓'})).toBeDisabled();
+ await page.getByRole('combobox',{name:'Scegli il metodo'}).selectOption('phasor');
+ await expect(page.locator('.student-lesson')).toHaveAttribute('aria-busy','false');
+ for(let index=0;index<64&&await page.getByRole('button',{name:'Passo successivo'}).isEnabled();index++)await page.getByRole('button',{name:'Passo successivo'}).click();
+ await expect(page.locator('.student-result math')).toBeVisible();
+ await expect(page.locator('.student-result math msqrt')).toHaveCount(2);
+ await expect(page.locator('.student-result math mfrac')).toHaveCount(4);
+ await expect(page.locator('.student-result')).toContainText('(2,2767090) + j*(-0,61004234)');
+ await page.getByText('Controllo del risultato e provenienza').click();
+ await expect(page.getByText(/La lezione completa non ha una certificazione VERIFIED/)).toBeVisible();
+ expect(await page.locator('body').evaluate(body=>body.scrollWidth<=window.innerWidth)).toBe(true);
+ const pdf=page.waitForEvent('download');
+ await page.getByRole('button',{name:'Scarica PDF ↓'}).click();
+ expect((await readFile(await (await pdf).path())).subarray(0,4).toString()).toBe('%PDF');
+ const download=page.waitForEvent('download');
+ await page.getByRole('button',{name:'Salva quaderno ↓'}).click();
+ const saved=await readFile(await (await download).path());
+ expect(JSON.parse(saved.toString()).method).toBe('phasor');
+ expect(JSON.parse(saved.toString()).answerExact).toBe('(5/6 + 5/6*sqrt(3)) + j*(5/6 - 5/6*sqrt(3))');
+ expect(JSON.parse(saved.toString()).netlist).toContain('@amplitude rms');
+ await page.reload();
+ const recalculated=page.waitForResponse(response=>response.url().endsWith('/api/solve')&&response.request().method()==='POST');
+ await page.locator('input[type=file][accept*="application/json"]').setInputFiles({name:'ac.json',mimeType:'application/json',buffer:saved});
+ expect((await (await recalculated).json()).conventions.amplitude).toBe('rms');
+ await expect(page.getByText(/Quaderno riaperto e soluzione ricalcolata/)).toBeVisible();
+ await expect(page.locator('.student-result math msqrt')).toHaveCount(2);
+ await expect(page.getByText(/La netlist dichiara valori efficaci/)).toBeVisible();
+ expect(errors).toEqual([]);
+ await mkdir('/tmp/kirchhoff-ac-evidence',{recursive:true});
+ await page.locator('.student-result').scrollIntoViewIfNeeded();
+ await page.screenshot({path:`/tmp/kirchhoff-ac-evidence/standalone-${info.project.name}.png`,fullPage:false});
+});
+
+test('MCP App effettiva: handshake SDK e chiamate al motore attraverso host locale di prova',async({page},info)=>{
+ const errors:string[]=[];
+ page.on('pageerror',error=>errors.push(error.message));
+ const html=execFileSync(python,['-c','from kirchhoff.api.mcp_server import app_html; print(app_html())'],{cwd:root,encoding:'utf8'});
+ // Host di prova: inoltra ogni tools/call al vero server MCP via Client.
+ await page.exposeFunction('callKirchhoff',async(params:{name:string;arguments?:unknown})=>{
+  const code='import asyncio,json,sys\nfrom mcp import Client\nfrom kirchhoff.api.mcp_server import build_server\nasync def run():\n async with Client(build_server()) as client:\n  params=json.loads(sys.argv[1]); result=await client.call_tool(params["name"],params.get("arguments",{})); print(json.dumps(result.model_dump(by_alias=True,exclude_none=True)))\nasyncio.run(run())';
+  return JSON.parse(execFileSync(python,['-c',code,JSON.stringify(params)],{cwd:root,encoding:'utf8'}));
+ });
+ await page.goto(base!);
+ await page.setContent('<title>Kirchhoff MCP App — host locale di prova</title><iframe title="Kirchhoff MCP App" style="width:100%;height:850px;border:0"></iframe>');
+ await page.evaluate(({html})=>{
+  const frame=document.querySelector('iframe')!;
+  window.addEventListener('message',async(event)=>{
+   if(event.source!==frame.contentWindow)return;
+   const message=event.data;
+   if(message?.jsonrpc!=='2.0'||message.id===undefined)return;
+   let result;
+   if(message.method==='ui/initialize')result={protocolVersion:message.params.protocolVersion,hostInfo:{name:'Host locale di prova',version:'1.0.0'},hostCapabilities:{serverTools:{}},hostContext:{theme:'light',displayMode:'inline'}};
+   else if(message.method==='tools/call')result=await (window as unknown as {callKirchhoff:(params:unknown)=>Promise<unknown>}).callKirchhoff(message.params);
+   else result={};
+   frame.contentWindow!.postMessage({jsonrpc:'2.0',id:message.id,result},'*');
+  });
+  frame.srcdoc=html;
+ },{html});
+ const app=page.frameLocator('iframe');
+ await expect(app.locator('#status')).toContainText('Host collegato');
+ await app.getByRole('textbox',{name:'Circuito confermato e domanda'}).fill(netlist);
+ await app.getByRole('button',{name:'Verifica e spiega'}).click();
+ await expect(app.locator('#status')).toContainText('due assemblaggi esatti indipendenti');
+ await expect(app.locator('#explanation')).toContainText('valori efficaci (RMS)');
+ await expect(app.locator('#drawing svg')).toBeVisible();
+ for(let index=0;index<64&&await app.getByRole('button',{name:'Dopo →'}).isEnabled();index++)await app.getByRole('button',{name:'Dopo →'}).click();
+ await expect(app.locator('#answer')).toContainText('(2,2767090) + j*(-0,61004234)');
+ await app.getByRole('button',{name:'← Prima'}).click();
+ await expect(app.locator('#answer')).toBeEmpty();
+ await expect(app.locator('#step-title')).toContainText('Ritroviamo tensione e corrente di R1');
+ await expect(app.locator('#equations math')).toHaveCount(4);
+ expect(errors).toEqual([]);
+ await mkdir('/tmp/kirchhoff-ac-evidence',{recursive:true});
+ await page.screenshot({path:`/tmp/kirchhoff-ac-evidence/mcp-${info.project.name}.png`,fullPage:false});
+});

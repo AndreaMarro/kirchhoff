@@ -37,7 +37,7 @@ test("il guasto si dichiara senza inventare risposte", async ({ page }) => {
   await page.route("**/sessions/guasto-sintetico.json", async (route) => {
     await route.fulfill({ json: SESSIONE_GUASTO });
   });
-  await page.goto("/", { waitUntil: "networkidle" });
+  await page.goto("/?view=proof", { waitUntil: "networkidle" });
   await expect(page.locator(".kf-chip")).toHaveCount(5, { timeout: 10_000 });
   await page.locator(".kf-chip").nth(4).click();
   await expect(page.locator(".kf-notice-failure h2")).toContainText("Guasto");

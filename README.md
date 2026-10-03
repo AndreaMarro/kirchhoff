@@ -1,15 +1,16 @@
 # Kirchhoff
 
-Risolutore di circuiti verificato. Il valore non è la risposta: è che la risposta ha superato
-cinque controlli indipendenti prima di essere mostrata.
+Risolutore di circuiti con verifiche ispezionabili. Il risultato numerico
+viene controllato insieme alle equazioni e alla derivazione; questi controlli
+non sono cinque oracoli statisticamente indipendenti.
 
 Il piano completo è in `docs/00-fonte-piano-kirchhoff.md` (decisioni **D1–D12** in testa, sono il
 contratto). Gli artefatti BMAD stanno in `_bmad-output/`.
 
 ## Stato
 
-**Kirchhoff Proof Workbench Beta 0.3** — release candidate: una radice applicativa canonica, una
-proiezione visuale certificata, una superficie studente navigabile nel browser.
+**CircuitCheck, versione locale in sviluppo** — una radice applicativa canonica,
+una lezione visuale per circuiti DC resistivi e un banco tecnico di prova.
 
 ![Il banco di dimostrazione: circuito, passi, risposta esatta](docs/img/workbench-desktop.png)
 
@@ -18,23 +19,105 @@ proiezione visuale certificata, una superficie studente navigabile nel browser.
 | Radice canonica (R3) | `run_proof_session`: ogni richiesta di prodotto passa di qui, una sola orchestrazione e una sola certificazione; `resolve` e' compatibilita' che delega |
 | Verita' visuale singola (H5) | `render/` non riesegue `transform()`: proietta `TransformExecution` certificata (0 chiamate produttive, testato) |
 | Contratto di presentazione | `StudentSessionView` (student-session.v0.1): esatto prima del decimale, Claim VERIFIED vs sessione CLOSED, mai Product Verified |
-| Superficie | React 19 + TS strict + Vite (solo react/react-dom a runtime): 3 esercizi veri + 1 rifiuto onesto, 40 casi E2E verdi (desktop + mobile) |
+| Superficie | React 19 + TS strict + Vite: lo studente apre `/`, il banco tecnico `/?view=proof`; foto automatica solo con provider configurato |
+| Lavagna e procedimento | Schema a componenti con incroci distinti dalle giunzioni; StudentTrace verifica riduzioni R, KCL topologica e valori DC sul circuito originale, lasciando senza giudizio semplificazioni incerte e metodi non rappresentati |
+| MCP | Tool stdio senza UI + risorsa MCP App interattiva; la compatibilita' con un host reale richiede ancora prova |
 | Backend storico | Epic 1 chiusa, P1-J/K/L integrati, H2.5/O0/H2.75 fusi in `main` |
 
-## Il banco in 2 comandi
+## Avvio locale dello studente
 
 ```bash
-cd web && npm install && npm run dev
+uv sync --frozen
+cd web && npm ci && npm run build && cd ..
+uv run --no-sync python scripts/serve_student.py --port 43921
 ```
 
-poi apri l'URL stampato (le viste in `web/public/sessions/` sono gia'
-versionate; si rigenerano dal kernel con
-`uv run --no-sync python scripts/generate_workbench.py` e il drift test
-`tests/test_workbench_generation.py` ne prova la byte-identita').
+Apri `http://127.0.0.1:43921/`. Il catalogo e' disponibile anche senza un
+provider foto; il server risolve circuiti nuovi nel perimetro DC dichiarato.
+La trascrizione di fotografie richiede `OPENAI_API_KEY` e
+`KIRCHHOFF_VISION_MODEL` sul server e un invio esplicito dalla pagina; il
+risultato deve essere corretto e confermato prima del calcolo. Il disegno libero
+produce un'immagine che richiede la stessa trascrizione confermata.
+Anche senza riconoscimento automatico puoi trascrivere manualmente una foto: il
+server convalida l'immagine, firma una ricevuta temporanea e lega la conferma
+all'impronta esatta del circuito. Una modifica successiva richiede una nuova
+conferma; foto e chiavi non sono salvate dal server. La ricevuta non dimostra
+la fedelta' della trascrizione e scade dopo un'ora o al riavvio del server.
+
+Per il banco tecnico statico: `cd web && npm run dev`, poi `/?view=proof`.
+Le sue sessioni versionate si rigenerano con
+`uv run --no-sync python scripts/generate_workbench.py`; il test
+`tests/test_workbench_generation.py` ne controlla il contenuto.
+
+## MCP locale
+
+```bash
+uv sync --frozen --extra mcp
+cd web && npm ci && npm run build && cd ..
+uv run --no-sync python -m kirchhoff.api.mcp_server
+```
+
+Configura il client MCP con trasporto `stdio` e l'ultimo comando come processo.
+`solve_circuit` restituisce la lezione canonica, `diagnose_steps` controlla una
+`student-trace.v1` legata allo SHA-256 della netlist, `circuit_capabilities`
+dichiara i limiti. Il tool di soluzione pubblica `_meta.ui.resourceUri` e la
+risorsa `ui://kirchhoff/circuit-lesson.html` per host MCP App compatibili. Un
+client headless usa gli stessi tool senza la vista. La verifica locale usa il
+client ufficiale in-process e via stdio; non equivale a una prova in un host
+MCP App di produzione.
+
+## SPICE DC controllato
+
+La pagina e gli strumenti MCP importano/esportano il sottoinsieme
+`kirchhoff-spice-dc.v1`: R/C/L, sorgenti V/I indipendenti DC, E/G controllate
+da tensione, `.op`, `.end` e domanda in commento `* KIRCHHOFF_REQUEST`.
+Valori e nodi sono preservati; `M` significa milli e `MEG` mega. Le frazioni
+che non hanno un decimale finito e le direttive/modelli non previsti vengono
+rifiutati esplicitamente. L'importazione non equivale al supporto didattico
+di C/L o AC. Il round trip e un punto di lavoro indipendente sono verificati
+con ngspice dove installato.
+
+## CircuitikZ a etichette di rete
+
+La pagina, l'API locale e il tool MCP `export_circuitikz` esportano un documento
+`.tex` deterministico da un circuito DC canonico. Ogni componente mostra i due
+terminali nell'ordine originale; etichette di nodo uguali indicano una
+connessione, evitando incroci grafici ambigui. Valori, unita', nodi di controllo
+E/G e domanda sono inclusi; etichette non sicure vengono rifiutate. Il file
+richiede il pacchetto LaTeX CircuitikZ per la compilazione. Il test locale di
+compilazione e' ancora bloccato: la cache TeX disponibile non include il formato
+LaTeX e non e' stato installato un runtime aggiuntivo.
+
+## Quaderno portabile locale
+
+**Salva quaderno** scarica un JSON versionato con circuito, metodo, passaggio
+selezionato, lavagna Excalidraw e passaggi scritti dallo studente. La lavagna
+viene letta nell'istante del salvataggio e deve appartenere alla revisione del
+circuito; il pulsante nella lavagna consente un'associazione esplicita. **Apri
+quaderno** richiede il server locale, convalida il file e ricalcola la lezione:
+un'impronta o un risultato diverso blocca il caricamento. La foto originale, le
+chiavi e la precedente autorizzazione fotografica non sono nel JSON. Se il
+quaderno proveniva da una foto, la riapertura mostra il circuito ricostruito
+come testo e chiede una nuova foto/conferma per ristabilire la provenienza.
+Questo file non sostituisce la persistenza di una lezione Ardesia.
+
+## Ricompilare la lavagna
+
+La lavagna Excalidraw ha un package e un lockfile propri in
+`companion-board/`. Da questo checkout, senza donor o repository privati:
+
+```sh
+npm ci --prefix companion-board
+python3 scripts/build_student_board.py
+```
+
+Il controllo dei tipi precede la build; il bundle, i font, le licenze e il
+manifest con hash delle sorgenti e del lockfile vengono scritti in
+`web/public/board/`. Excalidraw resta fissato alla versione 0.18.1.
 
 ## Cosa e' verificato e cosa no
 
-- Verificato e pubblicato: continua DC con domande esplicite, via percorso
+- Verificato nel percorso locale: continua DC con domande esplicite, via percorso
   didattico certificato (Claim elettrico VERIFIED + sessione CLOSED).
 - Verificato a livello di dominio ma NON pubblicato dal prodotto: fasori,
   sorgenti controllate, transitori (i solutori `mna`/tableau e l'eval

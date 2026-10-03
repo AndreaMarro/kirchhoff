@@ -7,6 +7,9 @@ dependencies = []
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "pytest-cov>=5"]
+mcp = [
+    "mcp==2.2.0",
+]
 
 [project.scripts]
 kirchhoff-eval = "kirchhoff.eval.cli:main"
@@ -15,6 +18,8 @@ kirchhoff = "kirchhoff.pipeline.cli:main"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.build.hooks.custom]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/kirchhoff"]

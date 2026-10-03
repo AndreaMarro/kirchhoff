@@ -22,7 +22,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from fractions import Fraction
 
-from .ir import IR, REFERENCE_NODE, Component
+from .exact import Cyc12, ZERO, zeta_pow
+from .ir import IR, REFERENCE_NODE, Component, PortRequest
 from .ir.schema import CONTROLLED_SOURCE_TYPES, EXPECTED_UNIT
 from .refusal import Refusal, SubjectKind
 
@@ -122,6 +123,12 @@ def _controlla_controllo(ir: IR) -> Refusal | None:
 def _controlla_richieste(ir: IR) -> Refusal | None:
     noti = {c.id for c in ir.components}
     for r in sorted(ir.requests, key=lambda x: x.id):
+        if isinstance(r, PortRequest):
+            for node in r.port:
+                if node not in ir.nodes:
+                    return Refusal("topology", node, "node",
+                                   f"La domanda {r.id} nomina un morsetto di porta assente.")
+            continue
         if r.target not in noti:
             return Refusal(
                 "unsolvable", r.target, "request",
@@ -147,11 +154,15 @@ def _controlla_connessione(ir: IR) -> Refusal | None:
 
 def _controlla_grado(ir: IR) -> Refusal | None:
     grado: dict[str, int] = {n: 0 for n in ir.nodes}
+    ingressi_ideali = {n for c in ir.components if c.type == "ideal_opamp"
+                      for n in c.control_nodes}
     for c in ir.components:
         for t in c.terminals:
             grado[t] += 1
     for nodo in sorted(ir.nodes):
-        if grado[nodo] == 1:
+        # Un ingresso ideale legge la tensione ma non assorbe corrente:
+        # un solo ramo fisico puo' fissarne il potenziale senza caricarlo.
+        if grado[nodo] == 1 and nodo not in ingressi_ideali:
             incidente = next(c.id for c in ir.components if nodo in c.terminals)
             return Refusal(
                 "topology", nodo, "node",
@@ -177,18 +188,27 @@ def _controlla_maglie_di_soli_generatori(ir: IR) -> Refusal | None:
 
 def _controlla_tagli_di_soli_generatori(ir: IR) -> Refusal | None:
     """Un nodo in cui incidono solo generatori di corrente viola la KCL, salvo che
-    le correnti si annullino. Questo controllo copre il taglio piu' semplice — il
-    singolo nodo — e non il caso generale a piu' nodi, che resta aperto."""
+    le correnti si annullino, come scalari DC o fasori AC. Questo controllo copre
+    il taglio piu' semplice — il singolo nodo — e non il caso generale a piu'
+    nodi, che resta aperto."""
     incidenti: dict[str, list[Component]] = {n: [] for n in ir.nodes}
     for c in ir.components:
         for t in c.terminals:
             incidenti[t].append(c)
     for nodo in sorted(ir.nodes):
         rami = incidenti[nodo]
-        if not rami or not all(c.type == "current_source_dc" for c in rami):
+        if not rami:
             continue
-        netta = sum(
-            (c.value.amount if c.terminals[1] == nodo else -c.value.amount) for c in rami)
+        if all(c.type == "current_source_dc" for c in rami):
+            netta = sum(
+                (c.value.amount if c.terminals[1] == nodo else -c.value.amount) for c in rami)
+        elif all(c.type == "current_source_ac" for c in rami):
+            netta = ZERO
+            for c in rami:
+                phasor = Cyc12.of(c.value.amount) * zeta_pow(c.phase_steps)
+                netta += phasor if c.terminals[1] == nodo else -phasor
+        else:
+            continue
         if netta != 0:
             return Refusal(
                 "topology", nodo, "node",
