@@ -12,6 +12,7 @@ import type {
   FailureView,
   StateView,
   StepView,
+  StepJustificationView,
   StudentSessionView,
   TruthView,
   VerificationView,
@@ -128,6 +129,59 @@ function entity(v: Json): EntityView {
   return { kind: str(v["kind"], "entity.kind"), id: str(v["id"], "entity.id") };
 }
 
+// Solo vocabolario strutturale di catalog.IDENTITY_ATTRIBUTES, non licenze
+// per operazione. La parita' con Python e CLI e' verificata dai test.
+export const STEP_IDENTITY_ATTRIBUTES = [
+  "type", "terminals", "value", "symbolic", "phase_steps", "control_nodes",
+] as const;
+
+function whyText(v: Json, cosa: string): string {
+  const testo = str(v, `giustificazione.${cosa}`);
+  if (!testo.trim()) throw new Error(`giustificazione: ${cosa} vuoto`);
+  return testo;
+}
+
+function whyTexts(v: Json, cosa: string): string[] {
+  const valori = arr(v, `giustificazione.${cosa}`).map(x => whyText(x, cosa));
+  if (!valori.length || new Set(valori).size !== valori.length) {
+    throw new Error(`giustificazione: ${cosa} vuoti o duplicati`);
+  }
+  return valori;
+}
+
+function whyEntity(v: Json, kind: string): EntityView {
+  if (!isRecord(v) || v["kind"] !== kind) throw new Error("giustificazione: genere entita' non valido");
+  return { kind, id: whyText(v["id"], "entity.id") };
+}
+const entityKey = (e: EntityView) => JSON.stringify([e.kind, e.id]);
+
+function justification(v: Json): StepJustificationView {
+  if (!isRecord(v)) throw new Error("giustificazione non e' un oggetto");
+  const terminals = arr(v["terminals"], "giustificazione.terminals").map(e => whyEntity(e, "node"));
+  if (!terminals.length || new Set(terminals.map(entityKey)).size !== terminals.length) {
+    throw new Error("giustificazione: terminali vuoti o duplicati");
+  }
+  const c = v["certificate"];
+  if (!isRecord(c)) throw new Error("giustificazione: certificato non e' un oggetto");
+  const attestations = arr(c["attestations"], "certificato.attestations").map(a => {
+    if (!isRecord(a)) throw new Error("attestazione non e' un oggetto");
+    const changed = whyTexts(a["changed"], "attestazione.changed");
+    if (changed.some(x => !(STEP_IDENTITY_ATTRIBUTES as readonly string[]).includes(x))) {
+      throw new Error("attestazione: attributo fuori dal vocabolario strutturale");
+    }
+    return { entity: whyEntity(a["entity"], "component"), changed };
+  });
+  if (new Set(attestations.map(a => entityKey(a.entity))).size !== attestations.length) {
+    throw new Error("certificato: soggetti attestazione duplicati");
+  }
+  return {
+    terminals, preconditions: whyTexts(v["preconditions"], "preconditions"),
+    formula: whyText(v["formula"], "formula"),
+    certificate: { operation: whyText(c["operation"], "certificate.operation"),
+      checks: whyTexts(c["checks"], "certificate.checks"), attestations },
+  };
+}
+
 function step(v: Json): StepView {
   if (!isRecord(v)) throw new Error("step non e' un oggetto");
   const beforeSvg = v["before_svg"];
@@ -149,6 +203,9 @@ function step(v: Json): StepView {
     ),
     ...(Object.hasOwn(v, "derivation_ref")
       ? { derivation_ref: strNull(v["derivation_ref"], "step.derivation_ref") }
+      : {}),
+    ...(Object.hasOwn(v, "justification")
+      ? { justification: v["justification"] === null ? null : justification(v["justification"]) }
       : {}),
     before_svg: beforeSvg === null ? null : str(beforeSvg, "step.before_svg"),
     after_svg: afterSvg === null ? null : str(afterSvg, "step.after_svg"),
@@ -281,8 +338,23 @@ export function parseSession(payload: Json): StudentSessionView {
     }
     const indici = new Set<number>();
     const esponeDerivazioni = vista.steps.some(p => Object.hasOwn(p, "derivation_ref"));
+    const esponeGiustificazioni = vista.steps.some(p => Object.hasOwn(p, "justification"));
     const derivazioni: string[] = [];
     for (const [i, passo] of vista.steps.entries()) {
+      if (esponeGiustificazioni) {
+        if (!Object.hasOwn(passo, "justification")) throw new Error("giustificazione parziale nei passi");
+        const g = passo.justification;
+        if (passo.kind === "analytical") {
+          if (g !== null) throw new Error("giustificazione topologica su passo analitico");
+        } else if (passo.kind === "transform") {
+          if (!g) throw new Error("giustificazione mancante sulla trasformazione");
+          if (g.formula !== passo.equation) throw new Error("giustificazione: formula diversa dall'equazione del passo");
+          if (g.certificate.operation !== passo.action) throw new Error("certificato: operazione diversa dall'azione del passo");
+          const preserved = new Set(passo.preserved.map(entityKey));
+          if (g.terminals.some(e => !preserved.has(entityKey(e)))) throw new Error("giustificazione: terminale non preservato nel passo");
+          if (g.certificate.attestations.some(a => !preserved.has(entityKey(a.entity)))) throw new Error("attestazione: soggetto non preservato nel passo");
+        }
+      }
       if (indici.has(passo.index)) {
         throw new Error(`indice ${passo.index} duplicato`);
       }

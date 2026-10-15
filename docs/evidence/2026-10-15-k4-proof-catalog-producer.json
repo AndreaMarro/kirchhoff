@@ -1,0 +1,1079 @@
+{
+  "observedAt": "2026-10-15T16:52:13.956814+00:00",
+  "producer": "fec4fff5fd347e899501010185edb4b0d2393175",
+  "tree": "1a6af9440a850f376a30fa33dd2ce387aed5d6db",
+  "pythonSourceCount": 108,
+  "filesystemPythonSetMatchesTracked": true,
+  "buildSourceShaResourceExists": false,
+  "cleanStart": true,
+  "scope": "Catalog generation only, full unit/build/browser/CI/main gates pending",
+  "trackedClosure": {
+    "hatch_build.py": {
+      "mode": "100644",
+      "blob": "149192f5fd15050ce62201b4dfa2de45b82441d6",
+      "sha256": "2e239ec4197dfa9b631ea806e16c623b978408a985b2ef26799ba3c2f4bc8a58"
+    },
+    "pyproject.toml": {
+      "mode": "100644",
+      "blob": "5a7053decb73b1527ae886471f334017a0bbe737",
+      "sha256": "5e2e7efe31f55df621629517a922871806b298381f05caa3ed873b36c5a615fd"
+    },
+    "scripts/generate_workbench.py": {
+      "mode": "100644",
+      "blob": "c9e653555e8a4b7096ce4ff721bdee79690d567f",
+      "sha256": "f9eb762eadf4d036605c1f580e524f0a2b7b4d1f749b298c50a1d2cc754dc80b"
+    },
+    "src/kirchhoff/__init__.py": {
+      "mode": "100644",
+      "blob": "389f75cec628acffc6e024d7b56954c68df0998f",
+      "sha256": "35da27bec14d5826bd3b409aca21a2e356b4840fd4d80942a8a174d97af8a76a"
+    },
+    "src/kirchhoff/adapters/__init__.py": {
+      "mode": "100644",
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "src/kirchhoff/api/__init__.py": {
+      "mode": "100644",
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "src/kirchhoff/api/app_resource.py": {
+      "mode": "100644",
+      "blob": "0001e35ee2ab329d5c819247024b2cc53c172c13",
+      "sha256": "b8f979b66b36df4a0d8abfd1f49f7f9bfa5a74e84ca84b0bbe646d72be2afe2c"
+    },
+    "src/kirchhoff/api/mcp_server.py": {
+      "mode": "100644",
+      "blob": "6a1cad5eed8df84d9a0518d893b94980a419219b",
+      "sha256": "e7ed11b829bdcf3b05117a9c47a3d0efcce0d0bd59ffd11c7c88d4821c21f0b7"
+    },
+    "src/kirchhoff/config.py": {
+      "mode": "100644",
+      "blob": "d2655677940538384aa5bd8b2ae981df068f6680",
+      "sha256": "478bbbfebc752ac30c295be42858a1957a0254e47043a4f1131447e0217b3b12"
+    },
+    "src/kirchhoff/domain/__init__.py": {
+      "mode": "100644",
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "src/kirchhoff/domain/didactic/__init__.py": {
+      "mode": "100644",
+      "blob": "5665994f0cfc42b7cdaeb449899b4ec6f0f05e52",
+      "sha256": "7c8f82967734bcf7a8a807f0636b0cf22cad535b3633fc804bed40e38351b3a2"
+    },
+    "src/kirchhoff/domain/didactic/analytical.py": {
+      "mode": "100644",
+      "blob": "9f9b6e18a66512f0db5b1b570ba49cfeb85acd25",
+      "sha256": "9322d5b39c27254ec3aa712de3aef8af82c6d431c3b169f7d3762d2189b7767f"
+    },
+    "src/kirchhoff/domain/didactic/capabilities.py": {
+      "mode": "100644",
+      "blob": "139a04e6c9d27bf5fb986015ff5229ddb542ffee",
+      "sha256": "461337468c8e67faf53870e6037f27400f9ed41347d168e595a7a8bba3105da0"
+    },
+    "src/kirchhoff/domain/didactic/derivation.py": {
+      "mode": "100644",
+      "blob": "a11cc396582be722dad9be1805105b80e07e48e9",
+      "sha256": "0d383214f5841cab0148de3c8faa622423e4272b3b6a8f345ff75818628b9da0"
+    },
+    "src/kirchhoff/domain/didactic/execute.py": {
+      "mode": "100644",
+      "blob": "f83703616d1e4b0040ce3c54e8aeafbf3952bc99",
+      "sha256": "90de84c35e87d29362629bf5ffc4880d3b5bd16dd2ee4798fee5c1b5fba77467"
+    },
+    "src/kirchhoff/domain/didactic/kinds.py": {
+      "mode": "100644",
+      "blob": "593b2ba7f0d073185e3012eb0a83d9f500b48507",
+      "sha256": "e29c3e85c3943b8a9143f2cdd93190c9262aae4b0220c3074d2ee71ececf3245"
+    },
+    "src/kirchhoff/domain/didactic/observation.py": {
+      "mode": "100644",
+      "blob": "f744f859e248dafc0cf16e7c355685bda6e3e3a0",
+      "sha256": "af22c72a97635791b63da42963c6f9ac7de3276726faec6e3e4810fd62fec3fd"
+    },
+    "src/kirchhoff/domain/didactic/orchestrate.py": {
+      "mode": "100644",
+      "blob": "bec04c30be14cea05c440dbd5fbfc3df866d2b94",
+      "sha256": "aad7a80247d6671ec1fb85c38bb0171aac485e8e2e6d849e2726b5f0fe4dee96"
+    },
+    "src/kirchhoff/domain/didactic/plan.py": {
+      "mode": "100644",
+      "blob": "2ec75b9873a34a53270d540c6c86a195e987eb8f",
+      "sha256": "7c1064f3819da1b9127ef6480a21ca2f5d83669e892e642b9bc5e23a7545eaf3"
+    },
+    "src/kirchhoff/domain/didactic/planner.py": {
+      "mode": "100644",
+      "blob": "53a5c9c3c8bc605ff2a2b5de6ebb78bded9797df",
+      "sha256": "9d617d3999a4926007717fe291d973bdb2685ee57d248b8f3c9700b37b001eb0"
+    },
+    "src/kirchhoff/domain/didactic/request.py": {
+      "mode": "100644",
+      "blob": "15a6f2e8a3e4ad24e76806b399f254956fe54130",
+      "sha256": "532d6a3daa0b97b43017b9d6b208ad11246fe3a0253516b132716a9083cd723e"
+    },
+    "src/kirchhoff/domain/didactic/solve.py": {
+      "mode": "100644",
+      "blob": "f95a7c4260c52c26648a8f09db230631763ebd2d",
+      "sha256": "8699edb25333511ae6ea36318cc595e766d9431a2c1e0efb65babf3202a6544c"
+    },
+    "src/kirchhoff/domain/exact.py": {
+      "mode": "100644",
+      "blob": "d76593e152223c26e956f47cc515107f43cfe448",
+      "sha256": "0e2f240a932776324f5ebee1098ff3ad24effd47b5f7fb346a6ef80f4b340530"
+    },
+    "src/kirchhoff/domain/identity.py": {
+      "mode": "100644",
+      "blob": "b46e6af8900298d22864042e04c80fb1070d316d",
+      "sha256": "4cc0b7073cb8ed248ba3558a237d7ff9741ed6e35dad0e2ea1d89ac1d0150111"
+    },
+    "src/kirchhoff/domain/independent_dc.py": {
+      "mode": "100644",
+      "blob": "c7c3b192494c94f067c4bb06b3be6c36ad080285",
+      "sha256": "b5bf72aec01ad52602b74d40474c026d6dab78df5bb5e52ede1c3306929978ae"
+    },
+    "src/kirchhoff/domain/independent_phasor.py": {
+      "mode": "100644",
+      "blob": "d76f639b54a8a30f3bfcb15cb2bf20abee01b3df",
+      "sha256": "8fada4fae431482a8bf3cbf5e0fcb680505085364cab28c19e47dd679be662a5"
+    },
+    "src/kirchhoff/domain/ir/__init__.py": {
+      "mode": "100644",
+      "blob": "5fc936ea438ce23b2ad094cc2bdb6f33d645fe5e",
+      "sha256": "099ddcfb7d3b9ed771375c70e1cfdb4a8a697934e44ac2440e823d1cce66a284"
+    },
+    "src/kirchhoff/domain/ir/canonical.py": {
+      "mode": "100644",
+      "blob": "b3812bc2940e5766fd3329f06c93e9ce23a31e5c",
+      "sha256": "ab96eb0896be154f7eb7dd735423470bc35e6d6d92252ea9d0771862b840e729"
+    },
+    "src/kirchhoff/domain/ir/schema.py": {
+      "mode": "100644",
+      "blob": "2c530eda4b5212e365b57e7ed511ae0ebc362483",
+      "sha256": "9d773dd3a423fb38c058065590c5271b0181cf12574ea2e1c3d337d5b7f92c82"
+    },
+    "src/kirchhoff/domain/laplace.py": {
+      "mode": "100644",
+      "blob": "618c948d4210fb3f6971cc3acfda473e3e85e5dd",
+      "sha256": "7373dc6967b74fad311825fe397d0dc30c316a1e64869cc48265d1b5d9a10601"
+    },
+    "src/kirchhoff/domain/laplace_rational.py": {
+      "mode": "100644",
+      "blob": "c9a74c2506bc4218bf26622615f525849b4f6f77",
+      "sha256": "e9ebdb4a9b31a8975be58877514db957a34454c62fca97ae2d4b6d623729ea6f"
+    },
+    "src/kirchhoff/domain/mna.py": {
+      "mode": "100644",
+      "blob": "940d98607d47b6d7394df2348d8c8c83bc34a74d",
+      "sha256": "6f58e4e57d120862376c957bcf18cc1e65bbdfb080a590a3521ead840caed516"
+    },
+    "src/kirchhoff/domain/port.py": {
+      "mode": "100644",
+      "blob": "80ccea95d383345105a5668eae548292f3daefb7",
+      "sha256": "914d341564500a6509ddd18019255f97758420fe9d862c4e0aefd1e98a502b9e"
+    },
+    "src/kirchhoff/domain/proof/__init__.py": {
+      "mode": "100644",
+      "blob": "263a7e5cfc61f5805f0e1a02ab25094513923260",
+      "sha256": "85e8510ee298000f15a273a4351617034f359d71d82a4a04c20a7eeef3c9830b"
+    },
+    "src/kirchhoff/domain/proof/graph.py": {
+      "mode": "100644",
+      "blob": "0a12b1e8532872b9fa47103bf586bbc721581461",
+      "sha256": "8ec9b4a1867127d8352555df8f58e94ca7fc1b2a5c56b28c8bd097db341a1708"
+    },
+    "src/kirchhoff/domain/proof/session.py": {
+      "mode": "100644",
+      "blob": "9360271290b23a47f0a6a902083ef73c6fd243c3",
+      "sha256": "5546ebe78271940a6c5ebb89c55867d918493ddc59e2a2370adbc709cbf7eac4"
+    },
+    "src/kirchhoff/domain/refusal.py": {
+      "mode": "100644",
+      "blob": "50d10a48fc87ecee06d34a91f05156a655938dc8",
+      "sha256": "fae9abb80f6e3da3aa38023a91fb705b764d48b30448f89ae9d2e9d3ce4a653d"
+    },
+    "src/kirchhoff/domain/student_trace.py": {
+      "mode": "100644",
+      "blob": "6a632a4f88682a4997ae3fa766998ddc30ec7534",
+      "sha256": "d3fc6b1716688b2bf1a21685ab0bc9d3fb9a69554c93440c7824db541eb49365"
+    },
+    "src/kirchhoff/domain/transform/__init__.py": {
+      "mode": "100644",
+      "blob": "2ed85eb5b17a247d1dcb48c1c4802d0223ac6084",
+      "sha256": "7e1a65fe2a44ed22548158f014c0e78182c394613e55fccfe74d3ec69b866a8d"
+    },
+    "src/kirchhoff/domain/transform/applicability.py": {
+      "mode": "100644",
+      "blob": "6a9cc8ee0147b451e5d695037f29a0e202698636",
+      "sha256": "763e7db6676fd060df6fc08b1f826138d8b099251223b52986cb06bcb41b03bf"
+    },
+    "src/kirchhoff/domain/transform/catalog.py": {
+      "mode": "100644",
+      "blob": "033b984df4bb0ab51b8a3372c9219fe6edcd1e51",
+      "sha256": "9ef88f50abca792d84dd797f1840bad6f20e1084564a974a1fe079a9888ae835"
+    },
+    "src/kirchhoff/domain/transform/check.py": {
+      "mode": "100644",
+      "blob": "d2ad563f40d216842c87ec027b536b33524a7953",
+      "sha256": "9ffd3bc912ab9a764bf3ab4821b46fbc47921d9a5f65928df57163a164c589e6"
+    },
+    "src/kirchhoff/domain/transform/delta.py": {
+      "mode": "100644",
+      "blob": "78517f9ca8441ad2510a2540dff144d7f58b7623",
+      "sha256": "818776088a239e6177016037d400e3f0f247015efc0f4162aad07c8ac8f8040f"
+    },
+    "src/kirchhoff/domain/transform/engine.py": {
+      "mode": "100644",
+      "blob": "dc0834187d9e0796479070479443577848e0e9f0",
+      "sha256": "a80eaef3d5a383d3a455ac676609dd0b2091f8a3bd94c56d9699aebdfadd3845"
+    },
+    "src/kirchhoff/domain/transform/primitives.py": {
+      "mode": "100644",
+      "blob": "4288d90a98acfe0ce33a06f791968a3d6bead929",
+      "sha256": "722a28fefb651aec2562f30c25d12a9226bdc20ef122cb2846ce611b849dad38"
+    },
+    "src/kirchhoff/domain/transform/result.py": {
+      "mode": "100644",
+      "blob": "ce08c367571617721651b38992bef4a7852b5dcc",
+      "sha256": "d803e3c8d4296117ba0e12638fb0accf97d0c6081a96c48eeb838b231098d833"
+    },
+    "src/kirchhoff/domain/transient.py": {
+      "mode": "100644",
+      "blob": "cb3961d46ae0e366c674932534425f4e0f76d74a",
+      "sha256": "9e1e5e28c0972f9271aa14f0190d9a41518c705e40a728fbd8af72609ee37b5c"
+    },
+    "src/kirchhoff/domain/truthfulness.py": {
+      "mode": "100644",
+      "blob": "2a8596a81ef8ee86cefc626c950b6f6aa66d9c1b",
+      "sha256": "087426dabf0229dc9472886b1bb05e662d8291869bc41d4f3be50fc3cba2e214"
+    },
+    "src/kirchhoff/domain/two_port.py": {
+      "mode": "100644",
+      "blob": "bfd48b3ebd9b984d9e0dfec82160f6b9266339db",
+      "sha256": "4cb9469eb95853adfe80a492f96daae0e6d43951cf6f9b623394315a2dea6fdd"
+    },
+    "src/kirchhoff/domain/validate.py": {
+      "mode": "100644",
+      "blob": "2301d16e8818a3371350489ec9b6f7658e2649c3",
+      "sha256": "15bea3e16278369ab48bb57740063f1ebc4c8e12391be483c1179f0b4d798fd1"
+    },
+    "src/kirchhoff/domain/verify.py": {
+      "mode": "100644",
+      "blob": "5e4fada22264fd42c695d2967396f8e64e61b80e",
+      "sha256": "e1cbc8f23e421f0390b1eb90f037d150a8cc2262a6efa5cb074656186aff5efa"
+    },
+    "src/kirchhoff/eval/__init__.py": {
+      "mode": "100644",
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "src/kirchhoff/eval/cli.py": {
+      "mode": "100644",
+      "blob": "c88320e8e73c03e0282df613cba2fe7fbaf0bb11",
+      "sha256": "32aa052c40e0a0fdd653c7c46764a4ad589eb70f3ded831953c10b1811f55b9c"
+    },
+    "src/kirchhoff/eval/generator.py": {
+      "mode": "100644",
+      "blob": "66da485b55121c241a1b02c7975492743da67e8e",
+      "sha256": "0746ab6b8e65c33f9bf57465f1f54a2aeb004d8830c50ca2e3e94d6cc6613021"
+    },
+    "src/kirchhoff/eval/generator_ac.py": {
+      "mode": "100644",
+      "blob": "e97f234a5a5d929791a908cf017ea7773c992331",
+      "sha256": "2ae756c4f53f8a9b24f1677eab4b2302f5fc62c3a04c7fce4cff5514453ed55a"
+    },
+    "src/kirchhoff/eval/generator_controlled.py": {
+      "mode": "100644",
+      "blob": "85151484c7c407ad3f20c3d99ecb5eb9a56ae143",
+      "sha256": "625ed8f0f8bcecaad313454af1e458c172d315fa57b61a2492b0eb4f1972c9c2"
+    },
+    "src/kirchhoff/eval/generator_three_phase.py": {
+      "mode": "100644",
+      "blob": "32557d1df74c479fd53ef5e2241962f1887f9d25",
+      "sha256": "48e7634ae865eb959710bef0b74a93c5c09f44c23cc9b0967dffca3d3bab46b8"
+    },
+    "src/kirchhoff/eval/generator_transient.py": {
+      "mode": "100644",
+      "blob": "ba6859ca63eabf19a2e11b31f3e3d95df0240932",
+      "sha256": "76080fef1897fe69ba5e7ffa5839572d786fd9fe4d984e59d784d4964bbd4814"
+    },
+    "src/kirchhoff/eval/metrics.py": {
+      "mode": "100644",
+      "blob": "9f970bebeb21d83b915f2cfca5486fa05206184b",
+      "sha256": "61078d2ee08abcf30d03dfee3863962180cea430a8146641f0f7881cfa8f485f"
+    },
+    "src/kirchhoff/eval/reference_set.py": {
+      "mode": "100644",
+      "blob": "bc1a605ad567a5213af6750e73f1b29527ebbd47",
+      "sha256": "93ed846c80b8d45fb008b797e762a506819f75e6c6d2654c6fcbc0b8298e5479"
+    },
+    "src/kirchhoff/eval/transformations.py": {
+      "mode": "100644",
+      "blob": "8b80b0815d3900b3102a7e5390d18a61094c8d3c",
+      "sha256": "b585116af0b568d33476496ec29a222364ad2cd5e23ca0ba604d538852ff1827"
+    },
+    "src/kirchhoff/pipeline/__init__.py": {
+      "mode": "100644",
+      "blob": "18d44623a620a2f29b763ce0a17148aed0460e66",
+      "sha256": "50e1bab960176145bbbe9a60b8ef36ae7706f033ac1d30b22b91fe1cbec397fb"
+    },
+    "src/kirchhoff/pipeline/capabilities.py": {
+      "mode": "100644",
+      "blob": "a4706b38f1d9cec989cf45ef525cc6e4576d783c",
+      "sha256": "ebc6e99bbc83a575665760574a165dac8c7be610ab0ee1c765036e230b7df292"
+    },
+    "src/kirchhoff/pipeline/circuitikz.py": {
+      "mode": "100644",
+      "blob": "233f003f4168505107bbb229f203c151aded9091",
+      "sha256": "81208a05522de89e3e021f0f19b2dcf1907c3a704253b314ee8eef82b45ce90b"
+    },
+    "src/kirchhoff/pipeline/cli.py": {
+      "mode": "100644",
+      "blob": "0ce8e4de5aacdcc88faf6eca5bcd41dbceed158b",
+      "sha256": "bcc7d28d6e733ef343eae1a1719e2ffdfa22e10378886475f014f3cf9e747d05"
+    },
+    "src/kirchhoff/pipeline/failure.py": {
+      "mode": "100644",
+      "blob": "6eb7122c80d10cfee77bad73c6bf3d43c02f2c72",
+      "sha256": "3d9b4d60751161ca20bc10ed007674ac2d23539130cf0758dc8e2af69aabe3fe"
+    },
+    "src/kirchhoff/pipeline/image_revision.py": {
+      "mode": "100644",
+      "blob": "3ecd596ea95a854f9d861f0592702c96d5ffbe3b",
+      "sha256": "be1615f06d117b132bbae1f830b91d0ddd2c89c0a322cd13ce5fdbe231d2d379"
+    },
+    "src/kirchhoff/pipeline/laplace_input.py": {
+      "mode": "100644",
+      "blob": "6d9bedc52da14e90efa0354197f7de8f9f7cb453",
+      "sha256": "1c2534b42fdcd730b36799668a77c057832479aa3c39f832fd04bb661fa7eab9"
+    },
+    "src/kirchhoff/pipeline/lesson.py": {
+      "mode": "100644",
+      "blob": "b4312689e7f98fb926ee458664cc538629836ef5",
+      "sha256": "ff79cb68b07c84ff1d8d1cc3edd27623f50ca6f6639b16e2175bb85d2da03a6d"
+    },
+    "src/kirchhoff/pipeline/lesson_ac.py": {
+      "mode": "100644",
+      "blob": "caec26e42cd6fb7b375cfac95344e32ba7b215ff",
+      "sha256": "2563630cec81165d520b466da66c2ce2daf536f473728446e570c7808fcbe544"
+    },
+    "src/kirchhoff/pipeline/lesson_ac_algebra.py": {
+      "mode": "100644",
+      "blob": "87fc7ec4a45f09ae6f516cf390ab266c9258bb7c",
+      "sha256": "992a55a5b86b404fa945986fdf980c1fc36b78a6c223e5cd6e11c3c9c65cecc1"
+    },
+    "src/kirchhoff/pipeline/lesson_ac_algebra_check.py": {
+      "mode": "100644",
+      "blob": "8632795e6ae8390ff6526d0db6bcbb4c9eb2fc85",
+      "sha256": "114978589c083302e2ea87f1cded1238cdfa82bc46d9c6c0b9b08837a0735aaa"
+    },
+    "src/kirchhoff/pipeline/lesson_ac_port.py": {
+      "mode": "100644",
+      "blob": "d54053e590e288d5f6dc1883505f6d3317c88f65",
+      "sha256": "e03309a52ef44a3f9fd4d024ac7e572d40969707e6d0ac6872aa07faf88f38d6"
+    },
+    "src/kirchhoff/pipeline/lesson_ac_power.py": {
+      "mode": "100644",
+      "blob": "6366ff57cec875ee34e8d482eea8cbde4a2ebf89",
+      "sha256": "f2966b54736e7218506878e07fd155dea9dea25ea1db8194c068b87fbd840cab"
+    },
+    "src/kirchhoff/pipeline/lesson_bridge.py": {
+      "mode": "100644",
+      "blob": "603b088d2b4e8cbd6dcab7285162b7ee51107977",
+      "sha256": "2d94ee62a1de7235019db52b779512b5f26b9e128b8938f9f6bc34fc1089e082"
+    },
+    "src/kirchhoff/pipeline/lesson_laplace.py": {
+      "mode": "100644",
+      "blob": "32b1c3825c40fabf3f9e821c883b38796aa43928",
+      "sha256": "d61148e94fdfee69223847d646d429cb502236cfba42d9e749b3c4228e927251"
+    },
+    "src/kirchhoff/pipeline/lesson_laplace_algebra.py": {
+      "mode": "100644",
+      "blob": "f7337aba9bad0622daf3a58cbe3be33b7456ee39",
+      "sha256": "89de0fed714f715d8ba3df3b75d92f0f894b3130ec0f075eeecd9f47b64f57ad"
+    },
+    "src/kirchhoff/pipeline/lesson_laplace_check.py": {
+      "mode": "100644",
+      "blob": "98f01c323d20018d2d7ba169292bb169dfd617fd",
+      "sha256": "754e1a4cc3ba565ef39b61e0737b1034a0144bb24701c63bac6c3aa6532c76f0"
+    },
+    "src/kirchhoff/pipeline/lesson_math.py": {
+      "mode": "100644",
+      "blob": "d9735caa4a70cc4432bc12725d2fa17a135f8ad7",
+      "sha256": "20a3fe9ee1a064e23cf094fa3de3c5466a0e868cb3beb2e01c7b3e88e9e15a09"
+    },
+    "src/kirchhoff/pipeline/lesson_pdf.py": {
+      "mode": "100644",
+      "blob": "9cb4e26508266cceaa4ad003e971a540d88fc2a4",
+      "sha256": "403d607751bc6dcbb508fb33a3407d1ad72b3e4de77bfe77c2abd803657b5076"
+    },
+    "src/kirchhoff/pipeline/lesson_pdf_math.py": {
+      "mode": "100644",
+      "blob": "e427ae8e52aa70f9d57405c6563b57be10a98fc5",
+      "sha256": "3ce3e4e3d03a232ff771e0a23301e876cadc5af54c75287b984f8ec1cc86b6d3"
+    },
+    "src/kirchhoff/pipeline/lesson_svg.py": {
+      "mode": "100644",
+      "blob": "3af63e6865f8c137743e1781b5a89983d5435cf7",
+      "sha256": "69d06ce076e553e66102301174f3361fdb0a2f3d32440472a654f4e4600323ba"
+    },
+    "src/kirchhoff/pipeline/netlist.py": {
+      "mode": "100644",
+      "blob": "ea56e62aaf7fbd8122d66427a5cd7b9e4e7abdc0",
+      "sha256": "19950c0f327980927e4b677908d22423ce5a9530b283a11d757fdc70568b98b2"
+    },
+    "src/kirchhoff/pipeline/presentation.py": {
+      "mode": "100644",
+      "blob": "ddc66474e44059f0fce04d34816fa5a881dafe5c",
+      "sha256": "60449a49533d7b034f397c13d4af11bba0c2837e6e46b761e91a603d5d759002"
+    },
+    "src/kirchhoff/pipeline/proof_run.py": {
+      "mode": "100644",
+      "blob": "f2683b8d4e40207a1aab1f2147c8e53fe51ae8e9",
+      "sha256": "34d58a716dfc106a88a44e0c2fcea7ed9662b7542208ec176e5f4197a77a045a"
+    },
+    "src/kirchhoff/pipeline/proof_session.py": {
+      "mode": "100644",
+      "blob": "c285ad25a8c640c5758f3557c536d74697198c18",
+      "sha256": "a825d4fe505557805c08dd5baefa432f78634fe000fa42c9f8d0a3add00fa6d4"
+    },
+    "src/kirchhoff/pipeline/resolve.py": {
+      "mode": "100644",
+      "blob": "cd1a78f938caa672d9f3a2e90f9cce072d1e1963",
+      "sha256": "ed3e66adf3639a6d49e47bac8294ee8040a3268cfb203ab1c0da5a6a219f3f32"
+    },
+    "src/kirchhoff/pipeline/risolvi.py": {
+      "mode": "100644",
+      "blob": "528f80986b5fc3ea74240a1384e82a1b826e9798",
+      "sha256": "ea4c3ece52ac4df4ec6a589da786c259b535e035793d45f68fbe4e370ba3e558"
+    },
+    "src/kirchhoff/pipeline/spice.py": {
+      "mode": "100644",
+      "blob": "33d69645895a8a5ae3c06fa71a938d08d1b37d04",
+      "sha256": "1d832a896e0287153612c33f7fb9aa2bb441c8af17566e0adaea54e61a56804c"
+    },
+    "src/kirchhoff/pipeline/state_registry.py": {
+      "mode": "100644",
+      "blob": "f022ab62be128e37d73be125f2ec8aecbc1dc53d",
+      "sha256": "9fe82a75ddc4435fffbeaf344df4d7588a717dcaf5eb7f739551e3959d3664d2"
+    },
+    "src/kirchhoff/pipeline/student_trace.py": {
+      "mode": "100644",
+      "blob": "66f7cd90f825a887eaa957ebd06790b35891f600",
+      "sha256": "ebebf0569fdb69ba54022222789a2b5787c979dba6f53644f98f215362198ff0"
+    },
+    "src/kirchhoff/pipeline/vision_response.py": {
+      "mode": "100644",
+      "blob": "ffa6043a64f3f8beed0b6beffe463c5bef476bd0",
+      "sha256": "b80e725b51542a85d814a61689c84eb9b1f28bd3d5ed67ad0c8cfc581f026fbd"
+    },
+    "src/kirchhoff/ports/__init__.py": {
+      "mode": "100644",
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "src/kirchhoff/ports/clock.py": {
+      "mode": "100644",
+      "blob": "b58a557cf227bdc32b9fda833ae6b6bea8897ba2",
+      "sha256": "10d2dda140abbbba33039e892c76c9e51b9d37dab59c2e8e64448f6aa8c25604"
+    },
+    "src/kirchhoff/render/__init__.py": {
+      "mode": "100644",
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "src/kirchhoff/render/layout/__init__.py": {
+      "mode": "100644",
+      "blob": "8f54d0da2f8b2ffcbc5d1f3b52e5052bda92d837",
+      "sha256": "b2eea3d85c0eccabdcdc0584744e1150449ad5614216ee79c372beedff7fec83"
+    },
+    "src/kirchhoff/render/layout/apply.py": {
+      "mode": "100644",
+      "blob": "8a25bf92c9e90ebf445371549b00af312b083841",
+      "sha256": "3d2b3d174f8fbc1fbcad9252a47a8803961c2aa0eb96ee363c96b9bfbfe561b4"
+    },
+    "src/kirchhoff/render/layout/connected.py": {
+      "mode": "100644",
+      "blob": "f3daef915faa0b8ed2d9e8f3082259ce0ce4dc34",
+      "sha256": "d29c9952d978ae8da95913017782238d9ea94c40e92d222980dc52b653bb7fea"
+    },
+    "src/kirchhoff/render/layout/continuity.py": {
+      "mode": "100644",
+      "blob": "e0b9ac26f24ad40007871e614222117055fbf396",
+      "sha256": "69ab99e81ce79a381e3669fe5dfe28c503961086913cf209a71d3c07d9a10364"
+    },
+    "src/kirchhoff/render/layout/schema.py": {
+      "mode": "100644",
+      "blob": "f213da863cde34ff64a45019057a4d2284ba0774",
+      "sha256": "7134bf9a1fd3430a503d0ef5bdd71c1bf9f09bc691620d688d79c67a68fc1c76"
+    },
+    "src/kirchhoff/render/layout/store.py": {
+      "mode": "100644",
+      "blob": "2f488d926d7104000448e597277368473ba38d06",
+      "sha256": "3b9c1daacb134de81ab3cd2b2e356a329bda2f467c5d10bff17f7d2ac6e8965b"
+    },
+    "src/kirchhoff/render/overlay/__init__.py": {
+      "mode": "100644",
+      "blob": "3cc1ceeab11fd5b2763c2a2512389f2eba66a0df",
+      "sha256": "71d428e27cb2ed985d9b9105697414270838d3ec39fbd1d5ad0610b63b50d7c4"
+    },
+    "src/kirchhoff/render/overlay/schema.py": {
+      "mode": "100644",
+      "blob": "2724bd077be7ac99d9e388d8e815e03937dc9a0f",
+      "sha256": "e86e92b886e9942cb51b0eeb52e18ea5010201388730ede89c2d3871c74dbb56"
+    },
+    "src/kirchhoff/render/serialize/__init__.py": {
+      "mode": "100644",
+      "blob": "bf6448299f4a5551325bed5b2cdf67af2e922c41",
+      "sha256": "c0754c2c62d28b8edafacfa8d7c25b5a2315e8154bde29f78da89642ae0b1665"
+    },
+    "src/kirchhoff/render/serialize/connectivity.py": {
+      "mode": "100644",
+      "blob": "d74b7fead49e17dfa7e7b1260b08b17091ef5502",
+      "sha256": "2c67e129ada91d3c4f720c67d9c2eb1e00914422738dd1bfe55f76df2f66ab5e"
+    },
+    "src/kirchhoff/render/serialize/geometry.py": {
+      "mode": "100644",
+      "blob": "3f313a08b6ca47ee2e821881e065faadaeb36e60",
+      "sha256": "e54d349befb3aa90512cdb3ce261ca0c44ec63bdb394aa996aa1bdbaefab751c"
+    },
+    "src/kirchhoff/render/serialize/svg.py": {
+      "mode": "100644",
+      "blob": "51b3c58024af6507969ce91b462412569105bb5a",
+      "sha256": "1cb0ec9c464b05f0fbafaf82252748672472b93db50e6fe3d7608c547fb273a5"
+    },
+    "src/kirchhoff/render/step/__init__.py": {
+      "mode": "100644",
+      "blob": "80dacc1e042c9b0b6947fa76b75e367a1187ee94",
+      "sha256": "95d91bcd2a341c3239713aefb1a6bbeac1b28d319f0a5acff55d0481f2d28a29"
+    },
+    "src/kirchhoff/render/step/compose.py": {
+      "mode": "100644",
+      "blob": "3319cad5f4d01e348f9209d8cd742e83c39e52c5",
+      "sha256": "f80f56965a86b5bcd9f2327f2f1e6e381d585c64405a8c74c4efaab5033b7325"
+    },
+    "src/kirchhoff/render/step/schema.py": {
+      "mode": "100644",
+      "blob": "5f11b4313227777ebe6461d9c3bd57029f0b6b30",
+      "sha256": "3b16b9c0ab74770ce77fb9a20ce62f746a631b936221485876260cb01ab10970"
+    },
+    "src/kirchhoff/runtime_identity.py": {
+      "mode": "100644",
+      "blob": "98f3162e5ea56baefe42ced71074accd29ae000a",
+      "sha256": "20d7064a09ce59b4de5fccb4e839db4a2d1530eb106e62e859e62d8c53d7b038"
+    },
+    "uv.lock": {
+      "mode": "100644",
+      "blob": "436575abc7933b6d463ff1328ec64e61e8507cfe",
+      "sha256": "97221b690d6ac503ed4581d2b05a7757f5fde8b284a59d2c1825d244b3215b10"
+    }
+  },
+  "generatedFiles": {
+    "due-rami-parallelo.json": "fa0a871f2d2ec221bc34f2774c49c4eff1d889524d78750230f0775812d45ce8",
+    "generatore-flottante.json": "a83b216521873953799756f2c4c4316f105aa2ab7cacfc78c715511d53b33cd3",
+    "index.json": "e733e726fe2e497fbeffb057b9de26861a0a8ef5f661b1fb545a4d8a2199b655",
+    "partitore-d1.json": "8777d3a0cee4a1897907c03487f9c2385f7464926c2489b6977bc20584f0535a",
+    "partitore-tensione.json": "a958b72a6ab644826c2b1211a92e603e02fd2e3a636337ed47ceef14a34229ad",
+    "ponte-nodale.json": "3783861dd2b26336b14e1f4d76d6c58526b907c69026223ba4e048500507c481",
+    "ramo-derivato.json": "46c4dfad4b597df72757040bce03860f4b8cb3d5b5af3d5ca5cae711c0bb2e1c",
+    "rifiuto-domanda.json": "2789f14e8e7b10951a55adfb8ffc8e0817ffd0d50b004e3b854a476a677383ac",
+    "rifiuto-reattivo.json": "ddeb7a89e92f0dbaa3e1b2d397f0d11dad0f270a31204c6885efa434c14130dc",
+    "scala-due-riduzioni.json": "ccb47b76ba1211e662b2ddc7a6928499fbd032f0a4da6761a78d5835472091b2",
+    "scala-tre-riduzioni.json": "04124383388408837da79e6454fb3c8126a9aca47f7e91b6315c6cf43764fd5e",
+    "serie-parallelo-misto.json": "2f4e381fd0a170f1977c6a3d81b2c56b789cf8695eaf309e2372d998a9199ccd"
+  },
+  "outcomes": {
+    "due-rami-parallelo.json": "closed",
+    "generatore-flottante.json": "closed",
+    "partitore-d1.json": "closed",
+    "partitore-tensione.json": "closed",
+    "ponte-nodale.json": "closed",
+    "ramo-derivato.json": "closed",
+    "rifiuto-domanda.json": "refusal",
+    "rifiuto-reattivo.json": "refusal",
+    "scala-due-riduzioni.json": "closed",
+    "scala-tre-riduzioni.json": "closed",
+    "serie-parallelo-misto.json": "closed"
+  },
+  "answers": {
+    "due-rami-parallelo.json": {
+      "decimal": "12",
+      "exact": "12",
+      "quantity": "voltage",
+      "target": "R1",
+      "unit": "volt"
+    },
+    "generatore-flottante.json": {
+      "decimal": "2.5",
+      "exact": "5/2",
+      "quantity": "voltage",
+      "target": "R1",
+      "unit": "volt"
+    },
+    "partitore-d1.json": {
+      "decimal": "0.0375",
+      "exact": "3/80",
+      "quantity": "current",
+      "target": "R1",
+      "unit": "ampere"
+    },
+    "partitore-tensione.json": {
+      "decimal": "5",
+      "exact": "5",
+      "quantity": "voltage",
+      "target": "R2",
+      "unit": "volt"
+    },
+    "ponte-nodale.json": {
+      "decimal": "0.2047",
+      "exact": "87/425",
+      "quantity": "current",
+      "target": "R4",
+      "unit": "ampere"
+    },
+    "ramo-derivato.json": {
+      "decimal": "0.06",
+      "exact": "3/50",
+      "quantity": "current",
+      "target": "R1",
+      "unit": "ampere"
+    },
+    "rifiuto-domanda.json": null,
+    "rifiuto-reattivo.json": null,
+    "scala-due-riduzioni.json": {
+      "decimal": "0.01846",
+      "exact": "6/325",
+      "quantity": "current",
+      "target": "R1",
+      "unit": "ampere"
+    },
+    "scala-tre-riduzioni.json": {
+      "decimal": "0.6667",
+      "exact": "2/3",
+      "quantity": "current",
+      "target": "R1",
+      "unit": "ampere"
+    },
+    "serie-parallelo-misto.json": {
+      "decimal": "0.05455",
+      "exact": "3/55",
+      "quantity": "current",
+      "target": "R1",
+      "unit": "ampere"
+    }
+  },
+  "justifications": {
+    "due-rami-parallelo.json": [
+      {
+        "index": 0,
+        "action": "parallelo",
+        "justification": {
+          "certificate": {
+            "attestations": [],
+            "checks": [
+              "boundary",
+              "coerenza del Delta",
+              "coerenza della LayoutPatch",
+              "contenuto del boundary",
+              "identita' dei sopravvissuti",
+              "validazione elettrica di Cₖ",
+              "validazione elettrica di Cₖ₊₁"
+            ],
+            "operation": "parallelo"
+          },
+          "formula": "R1R2eq = R1·R2 / (R1 + R2)",
+          "preconditions": [
+            "l'operazione nomina esattamente due componenti",
+            "i due componenti nominati esistono nel circuito",
+            "i due componenti sono entrambi resistori",
+            "i due componenti stanno fra gli stessi due nodi",
+            "il circuito di partenza supera la validazione elettrica"
+          ],
+          "terminals": [
+            {
+              "id": "0",
+              "kind": "node"
+            },
+            {
+              "id": "a",
+              "kind": "node"
+            }
+          ]
+        }
+      }
+    ],
+    "generatore-flottante.json": [],
+    "partitore-d1.json": [
+      {
+        "index": 0,
+        "action": "serie",
+        "justification": {
+          "certificate": {
+            "attestations": [],
+            "checks": [
+              "boundary",
+              "coerenza del Delta",
+              "coerenza della LayoutPatch",
+              "contenuto del boundary",
+              "identita' dei sopravvissuti",
+              "validazione elettrica di Cₖ",
+              "validazione elettrica di Cₖ₊₁"
+            ],
+            "operation": "serie"
+          },
+          "formula": "R1R2eq = R1 + R2",
+          "preconditions": [
+            "l'operazione nomina esattamente due componenti",
+            "i due componenti nominati esistono nel circuito",
+            "i due componenti sono entrambi resistori",
+            "i due componenti condividono esattamente un nodo",
+            "il nodo condiviso non e' il nodo di riferimento",
+            "al nodo condiviso non tocca un terzo componente",
+            "il circuito di partenza supera la validazione elettrica"
+          ],
+          "terminals": [
+            {
+              "id": "0",
+              "kind": "node"
+            },
+            {
+              "id": "b",
+              "kind": "node"
+            }
+          ]
+        }
+      }
+    ],
+    "partitore-tensione.json": [],
+    "ponte-nodale.json": [],
+    "ramo-derivato.json": [
+      {
+        "index": 0,
+        "action": "serie",
+        "justification": {
+          "certificate": {
+            "attestations": [],
+            "checks": [
+              "boundary",
+              "coerenza del Delta",
+              "coerenza della LayoutPatch",
+              "contenuto del boundary",
+              "identita' dei sopravvissuti",
+              "validazione elettrica di Cₖ",
+              "validazione elettrica di Cₖ₊₁"
+            ],
+            "operation": "serie"
+          },
+          "formula": "R1R2eq = R1 + R2",
+          "preconditions": [
+            "l'operazione nomina esattamente due componenti",
+            "i due componenti nominati esistono nel circuito",
+            "i due componenti sono entrambi resistori",
+            "i due componenti condividono esattamente un nodo",
+            "il nodo condiviso non e' il nodo di riferimento",
+            "al nodo condiviso non tocca un terzo componente",
+            "il circuito di partenza supera la validazione elettrica"
+          ],
+          "terminals": [
+            {
+              "id": "0",
+              "kind": "node"
+            },
+            {
+              "id": "a",
+              "kind": "node"
+            }
+          ]
+        }
+      }
+    ],
+    "rifiuto-domanda.json": [],
+    "rifiuto-reattivo.json": [],
+    "scala-due-riduzioni.json": [
+      {
+        "index": 0,
+        "action": "serie",
+        "justification": {
+          "certificate": {
+            "attestations": [],
+            "checks": [
+              "boundary",
+              "coerenza del Delta",
+              "coerenza della LayoutPatch",
+              "contenuto del boundary",
+              "identita' dei sopravvissuti",
+              "validazione elettrica di Cₖ",
+              "validazione elettrica di Cₖ₊₁"
+            ],
+            "operation": "serie"
+          },
+          "formula": "R1R2eq = R1 + R2",
+          "preconditions": [
+            "l'operazione nomina esattamente due componenti",
+            "i due componenti nominati esistono nel circuito",
+            "i due componenti sono entrambi resistori",
+            "i due componenti condividono esattamente un nodo",
+            "il nodo condiviso non e' il nodo di riferimento",
+            "al nodo condiviso non tocca un terzo componente",
+            "il circuito di partenza supera la validazione elettrica"
+          ],
+          "terminals": [
+            {
+              "id": "b",
+              "kind": "node"
+            },
+            {
+              "id": "c",
+              "kind": "node"
+            }
+          ]
+        }
+      },
+      {
+        "index": 1,
+        "action": "serie",
+        "justification": {
+          "certificate": {
+            "attestations": [],
+            "checks": [
+              "boundary",
+              "coerenza del Delta",
+              "coerenza della LayoutPatch",
+              "contenuto del boundary",
+              "identita' dei sopravvissuti",
+              "validazione elettrica di Cₖ",
+              "validazione elettrica di Cₖ₊₁"
+            ],
+            "operation": "serie"
+          },
+          "formula": "R1R2eqR3eq = (R1 + R2) + R3",
+          "preconditions": [
+            "l'operazione nomina esattamente due componenti",
+            "i due componenti nominati esistono nel circuito",
+            "i due componenti sono entrambi resistori",
+            "i due componenti condividono esattamente un nodo",
+            "il nodo condiviso non e' il nodo di riferimento",
+            "al nodo condiviso non tocca un terzo componente",
+            "il circuito di partenza supera la validazione elettrica"
+          ],
+          "terminals": [
+            {
+              "id": "0",
+              "kind": "node"
+            },
+            {
+              "id": "b",
+              "kind": "node"
+            }
+          ]
+        }
+      }
+    ],
+    "scala-tre-riduzioni.json": [
+      {
+        "index": 0,
+        "action": "parallelo",
+        "justification": {
+          "certificate": {
+            "attestations": [],
+            "checks": [
+              "boundary",
+              "coerenza del Delta",
+              "coerenza della LayoutPatch",
+              "contenuto del boundary",
+              "identita' dei sopravvissuti",
+              "validazione elettrica di Cₖ",
+              "validazione elettrica di Cₖ₊₁"
+            ],
+            "operation": "parallelo"
+          },
+          "formula": "R2R3eq = R2·R3 / (R2 + R3)",
+          "preconditions": [
+            "l'operazione nomina esattamente due componenti",
+            "i due componenti nominati esistono nel circuito",
+            "i due componenti sono entrambi resistori",
+            "i due componenti stanno fra gli stessi due nodi",
+            "il circuito di partenza supera la validazione elettrica"
+          ],
+          "terminals": [
+            {
+              "id": "a",
+              "kind": "node"
+            },
+            {
+              "id": "b",
+              "kind": "node"
+            }
+          ]
+        }
+      },
+      {
+        "index": 1,
+        "action": "serie",
+        "justification": {
+          "certificate": {
+            "attestations": [],
+            "checks": [
+              "boundary",
+              "coerenza del Delta",
+              "coerenza della LayoutPatch",
+              "contenuto del boundary",
+              "identita' dei sopravvissuti",
+              "validazione elettrica di Cₖ",
+              "validazione elettrica di Cₖ₊₁"
+            ],
+            "operation": "serie"
+          },
+          "formula": "R1R2R3eqeq = R1 + (R2·R3 / (R2 + R3))",
+          "preconditions": [
+            "l'operazione nomina esattamente due componenti",
+            "i due componenti nominati esistono nel circuito",
+            "i due componenti sono entrambi resistori",
+            "i due componenti condividono esattamente un nodo",
+            "il nodo condiviso non e' il nodo di riferimento",
+            "al nodo condiviso non tocca un terzo componente",
+            "il circuito di partenza supera la validazione elettrica"
+          ],
+          "terminals": [
+            {
+              "id": "b",
+              "kind": "node"
+            },
+            {
+              "id": "t",
+              "kind": "node"
+            }
+          ]
+        }
+      },
+      {
+        "index": 2,
+        "action": "serie",
+        "justification": {
+          "certificate": {
+            "attestations": [],
+            "checks": [
+              "boundary",
+              "coerenza del Delta",
+              "coerenza della LayoutPatch",
+              "contenuto del boundary",
+              "identita' dei sopravvissuti",
+              "validazione elettrica di Cₖ",
+              "validazione elettrica di Cₖ₊₁"
+            ],
+            "operation": "serie"
+          },
+          "formula": "R1R2R3eqeqR4eq = (R1 + (R2·R3 / (R2 + R3))) + R4",
+          "preconditions": [
+            "l'operazione nomina esattamente due componenti",
+            "i due componenti nominati esistono nel circuito",
+            "i due componenti sono entrambi resistori",
+            "i due componenti condividono esattamente un nodo",
+            "il nodo condiviso non e' il nodo di riferimento",
+            "al nodo condiviso non tocca un terzo componente",
+            "il circuito di partenza supera la validazione elettrica"
+          ],
+          "terminals": [
+            {
+              "id": "0",
+              "kind": "node"
+            },
+            {
+              "id": "t",
+              "kind": "node"
+            }
+          ]
+        }
+      }
+    ],
+    "serie-parallelo-misto.json": [
+      {
+        "index": 0,
+        "action": "parallelo",
+        "justification": {
+          "certificate": {
+            "attestations": [],
+            "checks": [
+              "boundary",
+              "coerenza del Delta",
+              "coerenza della LayoutPatch",
+              "contenuto del boundary",
+              "identita' dei sopravvissuti",
+              "validazione elettrica di Cₖ",
+              "validazione elettrica di Cₖ₊₁"
+            ],
+            "operation": "parallelo"
+          },
+          "formula": "R2R3eq = R2·R3 / (R2 + R3)",
+          "preconditions": [
+            "l'operazione nomina esattamente due componenti",
+            "i due componenti nominati esistono nel circuito",
+            "i due componenti sono entrambi resistori",
+            "i due componenti stanno fra gli stessi due nodi",
+            "il circuito di partenza supera la validazione elettrica"
+          ],
+          "terminals": [
+            {
+              "id": "0",
+              "kind": "node"
+            },
+            {
+              "id": "a",
+              "kind": "node"
+            }
+          ]
+        }
+      },
+      {
+        "index": 1,
+        "action": "serie",
+        "justification": {
+          "certificate": {
+            "attestations": [],
+            "checks": [
+              "boundary",
+              "coerenza del Delta",
+              "coerenza della LayoutPatch",
+              "contenuto del boundary",
+              "identita' dei sopravvissuti",
+              "validazione elettrica di Cₖ",
+              "validazione elettrica di Cₖ₊₁"
+            ],
+            "operation": "serie"
+          },
+          "formula": "R1R2R3eqeq = R1 + (R2·R3 / (R2 + R3))",
+          "preconditions": [
+            "l'operazione nomina esattamente due componenti",
+            "i due componenti nominati esistono nel circuito",
+            "i due componenti sono entrambi resistori",
+            "i due componenti condividono esattamente un nodo",
+            "il nodo condiviso non e' il nodo di riferimento",
+            "al nodo condiviso non tocca un terzo componente",
+            "il circuito di partenza supera la validazione elettrica"
+          ],
+          "terminals": [
+            {
+              "id": "0",
+              "kind": "node"
+            },
+            {
+              "id": "t",
+              "kind": "node"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "comparison": "All old fields identical after removing only justification and normalizing provenance.source_sha; index byte-identical",
+  "command": [
+    ".venv/bin/python",
+    "-B",
+    "scripts/generate_workbench.py",
+    "--out",
+    "<fresh-private-output>",
+    "--source-sha",
+    "fec4fff5fd347e899501010185edb4b0d2393175"
+  ]
+}

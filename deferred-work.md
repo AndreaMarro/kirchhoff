@@ -424,3 +424,42 @@ Fonti primarie: [mocker](https://github.com/vitest-dev/vitest/security/advisorie
 H3, report completo residui/cross-check/terminal mapping H5/K4, issue20,
 scroll349, 21 famiglie, design globale e pilot mantengono le destinazioni
 precedenti. La correzione della leggibilità della provenienza non li chiude.
+
+
+## Source-map-js — qualificazione locale differita, 15 ottobre 2026
+
+**P2, DEFERRED → WEB-DEPENDENCY-TRIAGE-2026-10-15; gate browser non soddisfatto.** Risoluzione locale1.2.1→1.2.2 limitata a tre campi del lock e guardia reale del consumer Vite/PostCSS. RED qualificato6FAIL2PASS→GREEN8PASS;235unitweb e2544Python/97.37%/domain100/type/build/boundaries PASS,923HTTPMATCH. Il primo8FAIL comprendeva anche due errori dei controlli sani, preservati e corretti prima del lock senza indebolire gli assert.
+
+Il primo defaultbrowser ha167PASS/54skip opzionali invariati/1timeout. Una non riproduzione isolata1PASS non lo promuove. La conferma e fermata con5PASS3timeout1interrotto213senza risultato; summary214skipped non sono skip eseguiti. Un caso raggiunge UI/expect prima del timeout: nessuna attribuzione collettiva al solo page setup. Cause individuali ignote, pressione del sistema osservata. Review separata DEFER dell'unita, nessun content APPROVE; approvata soltanto preservazione privata verificata. Nessun commit candidato,push,PR,CI o merge; source-map e gli altri advisory restano aperti su main. Receipt del giro conserva pin, esecuzioni e limiti.
+
+**P2 ulteriore:** la guardia sana usa SourceNode; non corregge il percorso legacy SourceMapGenerator.fromSourceMap/IndexedSourceMapConsumer.sourceRoot. Rilevanza concreta da triagiare. Audit locale ancora exit1 per Vitest/tinypool/mocker; nessun audit fix o override major applicato, nessuna chiusura di sicurezza globale.
+
+**P3 → issue20:** ritardi/affidabilita runtime e fixture, conservare trace e conteggi, senza causa dimostrata. Non aumentare budget/retry o introdurre skip per promuovere il giro. K4/H3/scroll349/21famiglie/design/pilot mantengono destinazioni precedenti. Ardesia rimane soltanto locale; nuovi timeout di lettura Git non riattestano4237 come identita corrente.
+
+
+## K4 — giustificazione del passo IN_REVIEW, 15 ottobre 2026
+
+Quattro campi gia canonici esposti dalla stessa esecuzione: terminali del
+boundary, precondizioni ordinate, formula e certificato completo. Csrc
+`fec4fff5fd347e899501010185edb4b0d2393175`; fonte e guardie provate, cataloghi rigenerati con closure
+esatta.355 unit web/2594 Python,12 browser mirati,6 viewport e2 journey reali
+PASS delimitati. Non equivale a completare K4 o autenticare la provenienza.
+
+**P2, BLOCK per promozione attuale → diagnosi CI exactcandidate e review
+finale della stessa unita.** Due full locali completi, ciascuno179PASS,
+54 skip annotati e1timeout; tutti234 identita/expected/annotazioni uguali,
+retry0. Timeout in due casi diversi, creazione pagina rispettivamente
+17.67s e25.54s; callback/UI raggiunte e assert oltre deadline, nessuna causa
+host o regressione semantica specifica dimostrata. Nessun terzo run locale,
+nessun budget/skip modificato o gate passato per somma. Una eventuale PR
+draft serve soltanto alla CI test-only su runner diverso; nessun merge o
+quorum anticipato. La receipt 20261015T173935Z conserva gli esiti.
+
+**P2, DEFERRED → prossima unita H5/K4:** residui numerici, cross-check e
+terminal mapping completi restano irrisolti. **P2 → H3:** nessuna nuova
+autenticazione. **P3, DEFERRED → issue20:** ritardi/affidabilita del runner,
+senza attribuzione causale. Scroll349 non e corretto dal probe viewport.
+Interoperabilita Ardesia NOT_CHECKED_CURRENT; solo locale, nessuna nuova
+identita corrente attestata.44 accettazioni di reader Kirchhoff precedenti
+non sono test Ardesia. Source-map/advisory,21famiglie, design globale,
+accessibilita e pilot mantengono le destinazioni gia registrate.

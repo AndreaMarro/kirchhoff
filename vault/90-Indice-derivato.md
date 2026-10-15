@@ -1,5 +1,5 @@
 ---
-sha: 4fa3912b9635f8f522b529b264ab3bcf1316870b
+sha: fec4fff5fd347e899501010185edb4b0d2393175
 tipo: indice-derivato
 ---
 
@@ -10,8 +10,8 @@ tipo: indice-derivato
 > una nota, ha torto lui — e `--verifica` lo dice, invece di lasciartelo
 > scoprire.
 
-Costruito sulla revisione `4fa3912b9635f8f522b529b264ab3bcf1316870b`.
-60 note.
+Costruito sulla revisione `fec4fff5fd347e899501010185edb4b0d2393175`.
+63 note.
 
 ## (radice)
 
@@ -98,6 +98,9 @@ Costruito sulla revisione `4fa3912b9635f8f522b529b264ab3bcf1316870b`.
 - [[20261015T104216Z-claim-derivazione-passo]] — Dal Claim alla derivazione e al passo che la produce → [[00-INDICE]]
 - [[20261015T112300Z-h5-main-verificato]] — Giro 20261015T112300Z — h5-main-verificato · `receipt-di-giro` → [[00-INDICE]]
 - [[20261015T133855Z-provenienza-dichiarata-ispezionabile]] — Giro 20261015T133855Z — provenienza-dichiarata-ispezionabile · `receipt-di-giro` → [[00-INDICE]]
+- [[20261015T143215Z-provenienza-main-verificato]] — Giro 20261015T143215Z — provenienza-main-verificato · `receipt-di-giro` → [[00-INDICE]]
+- [[20261015T155224Z-source-map-verifica-differita]] — Giro 20261015T155224Z — source-map-verifica-differita · `receipt-di-giro` → [[00-INDICE]]
+- [[20261015T173935Z-giustificazione-passo-in-review]] — Giro 20261015T173935Z — giustificazione-passo-in-review · `receipt-di-giro` → [[00-INDICE]]
 
 ## 80-Operazioni
 

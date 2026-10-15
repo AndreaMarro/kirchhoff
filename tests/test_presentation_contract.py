@@ -41,7 +41,7 @@ CHIAVI_VISTA = frozenset({
 CHIAVI_PASSO = frozenset({
     "action", "affected", "after_ref", "after_svg", "before_ref",
     "before_svg", "equation", "equations", "evidence_refs", "index", "kind",
-    "preserved", "derivation_ref",
+    "preserved", "derivation_ref", "justification",
 })
 
 D1_100 = """\
@@ -937,3 +937,256 @@ def test_h5_due_trasformazioni_scambiate_non_cambiano_la_sequenza_analitica():
     assert tuple(p.derivation_ref for p in passi if p.kind == "analytical") == vista.verification.evidence_ids
     with pytest.raises(ValueError, match="fuori ordine"):
         replace(vista, steps=tuple(passi))
+
+
+@pytest.mark.parametrize("netlist,layout", [
+    (D1_100, None), (SCALA_3R, _layout_scala), (PONTE_12, _layout_ponte),
+])
+def test_k4_la_giustificazione_esposta_proviene_dal_passo_canonico(netlist, layout, monkeypatch):
+    """UX-DR23: quattro campi del passo, senza ricomporre o inventare fatti."""
+    from dataclasses import asdict
+    import kirchhoff.pipeline.presentation as proiezione
+
+    chiusura, run = _chiusura_con_run(netlist)
+    componi_reale = proiezione.componi
+    giustificazioni = []
+
+    def cattura(*args, **kwargs):
+        passo_visuale = componi_reale(*args, **kwargs)
+        assert not isinstance(passo_visuale, Failure)
+        giustificazioni.append(passo_visuale.giustificazione)
+        return passo_visuale
+
+    monkeypatch.setattr(proiezione, "componi", cattura)
+    vista = proiezione.project_closed_session(
+        chiusura.session, chiusura.registry, run,
+        layout_iniziale=layout() if layout else layout_a_maglia(leggi(netlist)),
+        istante=1, casualita=bytes(range(10)))
+    assert not isinstance(vista, Failure)
+    assert vista.outcome == "closed"
+    assert len(giustificazioni) == len(run.transform_executions)
+    corpo = json.loads(to_json(vista))
+    trasformazioni = 0
+    for passo in corpo["steps"]:
+        assert "justification" in passo, "la vista non espone il profilo di giustificazione"
+        if passo["kind"] == "analytical":
+            assert passo["justification"] is None
+            continue
+        g = giustificazioni[trasformazioni]
+        trasformazioni += 1
+        attesa = {
+            "terminals": [asdict(e) for e in g.terminali],
+            "preconditions": list(g.precondizioni),
+            "formula": str(g.formula),
+            "certificate": json.loads(json.dumps(asdict(g.certificato))),
+        }
+        assert passo["justification"] == attesa
+        assert set(passo["justification"]) == {
+            "terminals", "preconditions", "formula", "certificate",
+        }
+        assert attesa["formula"] == passo["equation"]
+        assert attesa["certificate"]["operation"] == passo["action"]
+        assert "attestations" in attesa["certificate"]
+    assert trasformazioni == len(giustificazioni)
+    if netlist == D1_100:
+        # Attesi indipendenti dal DTO: a e' interno eliminato, V1 solo preservato.
+        prima = corpo["steps"][0]
+        assert prima["justification"]["terminals"] == [
+            {"kind": "node", "id": "0"}, {"kind": "node", "id": "b"},
+        ]
+        assert {"kind": "component", "id": "V1"} in prima["preserved"]
+        assert prima["justification"]["formula"] == "R1R2eq = R1 + R2"
+        assert prima["justification"]["certificate"]["attestations"] == []
+    assert corpo["truth"]["product_verified"] is False
+
+
+@pytest.fixture(scope="module")
+def k4_vista_legale():
+    """Fonte canonica condivisa, immutabile; ogni controesempio usa replace."""
+    return _vista_chiusa_legale()
+
+
+def _k4_giustificazione_mutata(g, caso):
+    from dataclasses import replace
+    from kirchhoff.pipeline.presentation import (
+        EntityView, StepCertificateView, StepIdentityAttestationView,
+    )
+
+    def attestazione(**kwargs):
+        return StepIdentityAttestationView(**{
+            "entity": EntityView("component", "V1"), "changed": ("value",),
+            **kwargs,
+        })
+
+    modifiche = {
+        "assente": lambda: None,
+        "oggetto_estraneo": lambda: {},
+        "terminali_vuoti": lambda: replace(g, terminals=()),
+        "terminali_non_tuple": lambda: replace(g, terminals=list(g.terminals)),
+        "terminali_duplicati": lambda: replace(g, terminals=g.terminals * 2),
+        "terminale_non_entita": lambda: replace(g, terminals=("0",)),
+        "terminale_componente": lambda: replace(g, terminals=(EntityView("component", "V1"),)),
+        "terminale_genere_ignoto": lambda: replace(g, terminals=(EntityView("altro", "0"),)),
+        "terminale_id_vuoto": lambda: replace(g, terminals=(EntityView("node", " "),)),
+        "terminale_id_non_testo": lambda: replace(g, terminals=(EntityView("node", 0),)),
+        "terminale_interno": lambda: replace(g, terminals=(EntityView("node", "a"),)),
+        "precondizioni_vuote": lambda: replace(g, preconditions=()),
+        "precondizioni_scalare": lambda: replace(g, preconditions="condizione"),
+        "precondizione_duplicata": lambda: replace(g, preconditions=("a", "a")),
+        "precondizione_vuota": lambda: replace(g, preconditions=(" ",)),
+        "precondizione_non_testo": lambda: replace(g, preconditions=(1,)),
+        "formula_diversa": lambda: replace(g, formula="R = R1 * R2"),
+        "formula_non_testo": lambda: replace(g, formula=1),
+        "certificato_estraneo": lambda: replace(g, certificate={}),
+        "operazione_diversa": lambda: replace(g, certificate=replace(g.certificate, operation="parallelo")),
+        "operazione_vuota": lambda: replace(g, certificate=replace(g.certificate, operation=" ")),
+        "operazione_non_testo": lambda: replace(g, certificate=replace(g.certificate, operation=1)),
+        "controlli_vuoti": lambda: replace(g, certificate=replace(g.certificate, checks=())),
+        "controlli_scalare": lambda: replace(g, certificate=replace(g.certificate, checks="check")),
+        "controlli_duplicati": lambda: replace(g, certificate=replace(g.certificate, checks=("a", "a"))),
+        "controllo_vuoto": lambda: replace(g, certificate=replace(g.certificate, checks=(" ",))),
+        "controllo_non_testo": lambda: replace(g, certificate=replace(g.certificate, checks=(1,))),
+        "attestazioni_non_tuple": lambda: replace(g, certificate=replace(g.certificate, attestations=[])),
+        "attestazione_estranea": lambda: replace(g, certificate=replace(g.certificate, attestations=({},))),
+        "attestazioni_soggetto_duplicato": lambda: replace(g, certificate=replace(g.certificate, attestations=(attestazione(), attestazione(changed=("type",))))),
+        "attestazione_entita_estranea": lambda: replace(g, certificate=replace(g.certificate, attestations=(attestazione(entity="V1"),))),
+        "attestazione_nodo": lambda: replace(g, certificate=replace(g.certificate, attestations=(attestazione(entity=EntityView("node", "0")),))),
+        "attestazione_id_vuoto": lambda: replace(g, certificate=replace(g.certificate, attestations=(attestazione(entity=EntityView("component", " ")),))),
+        "attestazione_non_preservata": lambda: replace(g, certificate=replace(g.certificate, attestations=(attestazione(entity=EntityView("component", "R1")),))),
+        "attributi_vuoti": lambda: replace(g, certificate=replace(g.certificate, attestations=(attestazione(changed=()),))),
+        "attributi_scalare": lambda: replace(g, certificate=replace(g.certificate, attestations=(attestazione(changed="value"),))),
+        "attributi_duplicati": lambda: replace(g, certificate=replace(g.certificate, attestations=(attestazione(changed=("value", "value")),))),
+        "attributo_non_testo": lambda: replace(g, certificate=replace(g.certificate, attestations=(attestazione(changed=(1,)),))),
+        "attributo_ignoto": lambda: replace(g, certificate=replace(g.certificate, attestations=(attestazione(changed=("provenance",)),))),
+    }
+    return modifiche[caso]()
+
+
+@pytest.mark.parametrize("caso", [
+    "assente", "oggetto_estraneo", "terminali_vuoti", "terminali_non_tuple",
+    "terminali_duplicati", "terminale_non_entita", "terminale_componente",
+    "terminale_genere_ignoto", "terminale_id_vuoto", "terminale_id_non_testo",
+    "terminale_interno", "precondizioni_vuote", "precondizioni_scalare",
+    "precondizione_duplicata", "precondizione_vuota", "precondizione_non_testo",
+    "formula_diversa", "formula_non_testo", "certificato_estraneo",
+    "operazione_diversa", "operazione_vuota", "operazione_non_testo",
+    "controlli_vuoti", "controlli_scalare", "controlli_duplicati", "controllo_vuoto",
+    "controllo_non_testo", "attestazioni_non_tuple", "attestazione_estranea",
+    "attestazioni_soggetto_duplicato", "attestazione_entita_estranea",
+    "attestazione_nodo", "attestazione_id_vuoto", "attestazione_non_preservata",
+    "attributi_vuoti", "attributi_scalare", "attributi_duplicati",
+    "attributo_non_testo", "attributo_ignoto",
+])
+def test_k4_giustificazione_incoerente_respinta(k4_vista_legale, caso):
+    from dataclasses import replace
+    vista = k4_vista_legale
+    assert _ricostruisci(vista) == vista
+    primo = vista.steps[0]
+    assert primo.kind == "transform" and primo.justification is not None
+    with pytest.raises(ValueError, match="giustificazione|certificato|attestazione"):
+        mutata = _k4_giustificazione_mutata(primo.justification, caso)
+        _ricostruisci(replace(vista, steps=(replace(primo, justification=mutata),) + vista.steps[1:]))
+
+
+def test_k4_analitico_non_accetta_giustificazione_topologica(k4_vista_legale):
+    from dataclasses import replace
+    vista = k4_vista_legale
+    assert _ricostruisci(vista) == vista
+    indice = next(i for i, p in enumerate(vista.steps) if p.kind == "analytical")
+    passi = list(vista.steps)
+    passi[indice] = replace(passi[indice], justification=passi[0].justification)
+    with pytest.raises(ValueError, match="giustificazione"):
+        _ricostruisci(replace(vista, steps=tuple(passi)))
+
+
+def test_k4_trasporto_conserva_ordine_byte_e_attestazioni_senza_verificare_licenze(k4_vista_legale):
+    """Attestazione sintetica di solo DTO: non e' una licenza del Catalogo."""
+    from dataclasses import replace
+    from kirchhoff.pipeline.presentation import EntityView, StepIdentityAttestationView
+    vista = k4_vista_legale
+    primo = vista.steps[0]
+    g = primo.justification
+    attestazione = StepIdentityAttestationView(EntityView("component", "V1"), ("value", "type"))
+    nuova = replace(g, terminals=g.terminals[:1], preconditions=(" z ", "a"),
+                    certificate=replace(g.certificate, checks=(" z ", "a"), attestations=(attestazione,)))
+    corpo = json.loads(to_json(replace(vista, steps=(replace(primo, justification=nuova),) + vista.steps[1:])))
+    esposta = corpo["steps"][0]["justification"]
+    assert esposta["terminals"] == [{"kind": "node", "id": "0"}]
+    assert esposta["preconditions"] == [" z ", "a"]
+    assert esposta["certificate"]["checks"] == [" z ", "a"]
+    assert esposta["certificate"]["attestations"] == [{"entity": {"kind": "component", "id": "V1"}, "changed": ["value", "type"]}]
+    assert corpo["truth"]["product_verified"] is False
+
+
+@pytest.mark.parametrize("id_esercizio", [
+    "partitore-d1", "scala-due-riduzioni", "due-rami-parallelo", "ponte-nodale",
+])
+def test_k4_binding_per_identita_ordine_e_formula_della_run(id_esercizio, monkeypatch):
+    """Completa l'oracolo iniziale con una fonte indipendente dalla cattura."""
+    from dataclasses import asdict, replace
+    from kirchhoff.domain.transform.catalog import preconditions_of
+    import kirchhoff.pipeline.presentation as proiezione
+
+    monkeypatch.syspath_prepend(str(RADICE / "scripts"))
+    import generate_workbench as gen
+    ex = next(e for e in gen.ESERCIZI if e.id == id_esercizio)
+    chiusura, run = _chiusura_con_run(ex.netlist)
+    attese = tuple(run.transform_executions)
+    osservate = []
+    componi_reale = proiezione.componi
+
+    def cattura(esecuzione, *args, **kwargs):
+        indice = len(osservate)
+        osservate.append(esecuzione)
+        assert indice < len(attese)
+        assert esecuzione is attese[indice]
+        visuale = componi_reale(esecuzione, *args, **kwargs)
+        assert not isinstance(visuale, Failure)
+        risultato = attese[indice].results[0]
+        assert visuale.risultato is risultato
+        g = visuale.giustificazione
+        assert g.terminali is risultato.boundary.entities
+        assert g.formula is risultato.equation
+        assert g.certificato is risultato.certificate
+        assert g.precondizioni is preconditions_of(risultato.certificate.operation)
+        return visuale
+
+    monkeypatch.setattr(proiezione, "componi", cattura)
+    vista = proiezione.project_closed_session(
+        chiusura.session, chiusura.registry, run,
+        layout_iniziale=gen._disposizione(ex.disposizione, leggi(ex.netlist), 3, bytes(range(10, 20))),
+        istante=1, casualita=bytes(range(10)))
+    assert not isinstance(vista, Failure)
+    assert len(osservate) == len(attese)
+    assert all(osservate[i] is attese[i] for i in range(len(attese)))
+    trasformazioni = [p for p in json.loads(to_json(vista))["steps"] if p["kind"] == "transform"]
+    assert len(trasformazioni) == len(attese)
+    for i, passo in enumerate(trasformazioni):
+        r = attese[i].results[0]
+        assert passo["justification"] == {
+            "terminals": [asdict(e) for e in r.boundary.entities],
+            "preconditions": list(preconditions_of(r.certificate.operation)),
+            "formula": str(r.equation),
+            "certificate": json.loads(json.dumps(asdict(r.certificate))),
+        }
+    if id_esercizio == "due-rami-parallelo":
+        assert len(trasformazioni) == 1
+        assert trasformazioni[0]["action"] == "parallelo"
+        assert trasformazioni[0]["justification"]["terminals"] == [
+            {"kind": "node", "id": "0"}, {"kind": "node", "id": "a"},
+        ]
+        assert trasformazioni[0]["justification"]["formula"] == "R1R2eq = R1·R2 / (R1 + R2)"
+        assert vista.answer.exact == "12" and vista.answer.unit == "volt"
+    if id_esercizio == "scala-due-riduzioni":
+        # Controprova del binding gia' osservato RED per formula diversa:
+        # scambiare due serie deve fallire anche con la medesima operazione.
+        assert _ricostruisci(vista) == vista
+        primi = [p for p in vista.steps if p.kind == "transform"]
+        assert len(primi) == 2 and all(p.action == "serie" for p in primi)
+        assert primi[0].justification.formula != primi[1].justification.formula
+        assert primi[0].justification.terminals != primi[1].justification.terminals
+        passi = list(vista.steps)
+        passi[0] = replace(primi[0], justification=primi[1].justification)
+        passi[1] = replace(primi[1], justification=primi[0].justification)
+        with pytest.raises(ValueError, match="giustificazione: formula"):
+            replace(vista, steps=tuple(passi))
