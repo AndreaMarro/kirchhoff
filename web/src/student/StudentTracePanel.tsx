@@ -9,7 +9,7 @@ export function StudentTracePanel({netlist,fingerprint,steps,onStepsChange}:{net
  const request=useRef(0);
  useEffect(()=>()=>{request.current++;},[]);
  function change(index:number,patch:Partial<TraceStep>){
-  request.current++;setDiagnosis(null);setError('');
+  request.current++;setBusy(false);setDiagnosis(null);setError('');
   onStepsChange(steps.map((item,i)=>i===index?{...item,...patch}:item));
  }
  async function check(){

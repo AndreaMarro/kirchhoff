@@ -10,15 +10,16 @@ contratto). Gli artefatti BMAD stanno in `_bmad-output/`.
 ## Stato
 
 **CircuitCheck, versione locale in sviluppo** — una radice applicativa canonica,
-una lezione visuale per circuiti DC resistivi e un banco tecnico di prova.
+lezioni visuali DC, AC e Laplace nei perimetri dichiarati, più un banco
+tecnico proof DC. Non è una copertura completa delle 21 famiglie.
 
 ![Il banco di dimostrazione: circuito, passi, risposta esatta](docs/img/workbench-desktop.png)
 
 | Cosa | Stato |
 |---|---|
-| Radice canonica (R3) | `run_proof_session`: ogni richiesta di prodotto passa di qui, una sola orchestrazione e una sola certificazione; `resolve` e' compatibilita' che delega |
+| Ingressi delle lezioni | HTTP e MCP usano `create_lesson`; il percorso DC certificato passa da `run_proof_session_con_run`, AC e Laplace hanno lezioni con controlli propri e senza Claim VERIFIED |
 | Verita' visuale singola (H5) | `render/` non riesegue `transform()`: proietta `TransformExecution` certificata (0 chiamate produttive, testato) |
-| Contratto di presentazione | `StudentSessionView` (student-session.v0.1): esatto prima del decimale, Claim VERIFIED vs sessione CLOSED, mai Product Verified |
+| Contratto di presentazione | Il banco proof usa `StudentSessionView` (student-session.v0.1); le lezioni studente usano `circuit-lesson.v1`. Gli stati dei controlli restano distinti; mai Product Verified |
 | Superficie | React 19 + TS strict + Vite: lo studente apre `/`, il banco tecnico `/?view=proof`; foto automatica solo con provider configurato |
 | Lavagna e procedimento | Schema a componenti con incroci distinti dalle giunzioni; StudentTrace verifica riduzioni R, KCL topologica e valori DC sul circuito originale, lasciando senza giudizio semplificazioni incerte e metodi non rappresentati |
 | MCP | Tool stdio senza UI + risorsa MCP App interattiva; la compatibilita' con un host reale richiede ancora prova |
@@ -33,7 +34,9 @@ uv run --no-sync python scripts/serve_student.py --port 43921
 ```
 
 Apri `http://127.0.0.1:43921/`. Il catalogo e' disponibile anche senza un
-provider foto; il server risolve circuiti nuovi nel perimetro DC dichiarato.
+provider foto; il server risolve circuiti nuovi nei perimetri DC, AC e Laplace
+dichiarati da `/api/capabilities`. La disponibilità del parser o del kernel
+non implica che esista una lezione per ogni circuito.
 La trascrizione di fotografie richiede `OPENAI_API_KEY` e
 `KIRCHHOFF_VISION_MODEL` sul server e un invio esplicito dalla pagina; il
 risultato deve essere corretto e confermato prima del calcolo. Il disegno libero
@@ -95,10 +98,20 @@ selezionato, lavagna Excalidraw e passaggi scritti dallo studente. La lavagna
 viene letta nell'istante del salvataggio e deve appartenere alla revisione del
 circuito; il pulsante nella lavagna consente un'associazione esplicita. **Apri
 quaderno** richiede il server locale, convalida il file e ricalcola la lezione:
-un'impronta o un risultato diverso blocca il caricamento. La foto originale, le
-chiavi e la precedente autorizzazione fotografica non sono nel JSON. Se il
-quaderno proveniva da una foto, la riapertura mostra il circuito ricostruito
-come testo e chiede una nuova foto/conferma per ristabilire la provenienza.
+un'impronta o un risultato diverso blocca il caricamento.
+
+Il quaderno v2 conserva anche la fonte associata alla lezione: se disponibile,
+il file originale foto o PDF, con nome e byte, e l'immagine preparata della
+pagina o del ritaglio usato. Per una fonte senza file originale conserva
+l'immagine usata. I contenuti della lavagna sono inclusi. La descrizione accanto
+a **Salva quaderno** dichiara la fonte corrente: condividendo il JSON si
+condividono anche questi contenuti. Le chiavi API, i token di conferma e la
+precedente autorizzazione fotografica non sono esportati.
+
+La riapertura convalida e ripristina i byte della fonte presenti nel file;
+per modificare il circuito occorre confrontare e confermare nuovamente la fonte.
+Un vecchio quaderno privo dei byte della fonte conserva il circuito e la lavagna
+salvati: il solo hash non ricostruisce una foto originale assente.
 Questo file non sostituisce la persistenza di una lezione Ardesia.
 
 ## Ricompilare la lavagna
@@ -117,11 +130,19 @@ manifest con hash delle sorgenti e del lockfile vengono scritti in
 
 ## Cosa e' verificato e cosa no
 
-- Verificato nel percorso locale: continua DC con domande esplicite, via percorso
-  didattico certificato (Claim elettrico VERIFIED + sessione CLOSED).
-- Verificato a livello di dominio ma NON pubblicato dal prodotto: fasori,
-  sorgenti controllate, transitori (i solutori `mna`/tableau e l'eval
-  restano intatti; il prodotto risponde con un `Refusal` onesto).
+- Il percorso DC applicabile espone lezioni con domande esplicite e chiusura
+  didattica certificata (Claim elettrico VERIFIED + sessione CLOSED).
+- Il server locale espone anche tensioni/correnti fasoriali RLC, potenza AC con
+  scala RMS o picco dichiarata e impedenza di porta. Usa confronti esatti fra
+  assemblaggi indipendenti; queste lezioni non dichiarano Claim VERIFIED.
+- Laplace espone funzioni razionali di s per reti RLC con sorgenti indipendenti
+  step/impulse e stati iniziali C/L espliciti, controllando identità polinomiali.
+  Non espone antitrasformata, sorgenti dipendenti o commutazione di topologie.
+- VCVS/VCCS e op-amp restano capacità del kernel dove previsto, senza una lezione
+  prodotto generale. Sintassi leggibile e disponibilità matematica non sono
+  accettazione didattica: gli ingressi fuori perimetro ricevono un rifiuto.
+- Le 21 famiglie restano incomplete; le prove locali non sono un pilot umano o
+  una pubblicazione del servizio in produzione.
 - Mai affermato: Product Verified (riservato a un gate futuro, H5 prodotto).
 - Non supportato nel disegno: autolayout generale (solo maglia singola
   calcolata + disposizioni a mano riesaminate per scala e ponte).

@@ -341,3 +341,12 @@ Smoke dinamico e verifier intera dist non sono solver o firmaH3; ogni Failure è
 **P3, prossima unità isolata UX scroll host/frame:** il caricamento mobile360×780 con scala step0after ha mosso la pagina ospite a scrollY349; la causa non è ancora isolata. La correzione CSS elimina la sovrapposizione dell'header, non questo movimento iniziale. Conservarne sorgente e metriche, verificare il focus e lo scroll interno/esterno prima di una modifica al Picker. H5/K4, design e21famiglie mantengono le destinazioni precedenti.
 
 **Deviazione nelle prove storiche:** il writer ha riusato per errore una directory Playwright del catalogo durante la controprova route; sei PNG default storici sono persi, non rigenerati come storici. Log/risultati e quattro PNG specifici catalogo separati sono conservati; nuove immagini host/viewport hanno directory nuove e pin propri. Non dichiarare preservazione completa dei vecchi screenshot.
+
+
+## Correzioni della review consolidata701 — 15 ottobre 2026
+
+C701-1 P2 (busy StudentTrace dopo edit durante controllo) e C701-2 P2 (promessa privacy del quaderno v2) sono affrontati localmente: reset sincrono del busy con guardie generazionali conservate, avviso accanto a Salva quaderno coerente con ownership e byte esportati. C701-3 P3 README è riallineato ai limiti DC/AC/Laplace reali. Quattro nuovi RED browser pertinenti, poi student-session12PASS;191unit/typecheck/build PASS. La suite completa registra timeout ancora da diagnosticare, foto/PDF live e CI del nuovo SHA sono pendenti: non dichiarare gate o main verdi. Receipt20261015T080500Z conserva prove e limiti.
+
+Il proprietario consente reviewer Codex separato al posto della seconda famiglia soltanto per questa esecuzione, con tutti gli altri gate e protezioni invariati; nessuna modifica permanente della policy. H5/K4 P2 e scroll host349 P3 mantengono le destinazioni sopra, come21famiglie/design/pilot/H3. Ardesia rimane solo locale.
+
+Seguito delle verifiche, fonte4 invariata: default140PASS/4FAIL/54SKIP, poi i quattro casi passano nella singola replica invariata. Foto/PDF reali3PASS/1FAIL, poi una replica invariata del PDFdesktop1PASS; nel primo trace solveHTTP200 impiega5890.991ms oltre attesa5000ms, body non catturato. Preservare entrambi i fallimenti; non chiamare verdi le suite originali. CI completa del nuovo SHA e gate main ancora pendenti.
