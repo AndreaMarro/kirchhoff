@@ -381,3 +381,46 @@ host/frame** già descritta sopra. Formule lunghe restano scorrevoli nel
 riquadro; non dichiarare WCAG/design globale,21famiglie complete o pilot.
 Ardesia22e5 rimane soltanto locale; probe dei18payload/roundtripJSON non è
 una nuova prova browser/IndexedDB/durabilità o fullsuite Ardesia.
+
+
+## H5/K4 — provenienza dichiarata ispezionabile (15 ottobre 2026)
+
+Stato locale: contenuto provato/revisionato, candidato/CI/main ancora PENDING.
+Il pannello espone i tre metadati completi, assenza e limite di autenticità;
+la leggibilità locale è verificata con otto casi permanenti desktop/mobile
+e due probe di scroll. Non chiude H3, residui/cross-check/terminal mapping
+H5/K4, né le 21 famiglie, design/accessibilità globali o pilot.
+La receipt del giro registra i successi e i run falliti/incompleti distinti.
+Le destinazioni preesistenti issue #20 e host/scroll349 restano aperte.
+
+## Dipendenze web esistenti — 15 ottobre 2026
+
+**P2, OPEN → unità separata `WEB-DEPENDENCY-TRIAGE-2026-10-15`.**
+Questa è una destinazione di lavoro interna, non un numero di issue GitHub.
+L'audit del lockfile SHA256
+`0dc61e1b553cfda843b68daa2822663e60b11b6be440c1a4e9c67832ac37a278`,
+byteidentico al parent `1b2ac783898ae273367e5586d6afb8942d39218e`, segnala
+quattro voci package: Vitest/tinypool critical, source-map-js high e
+@vitest/mocker moderate. La voce Vitest aggrega i transitivi: non sono
+quattro exploit indipendenti. La patch di provenienza non modifica il lock.
+
+Il triage delimitato non ha dimostrato un P0/P1 specifico della patch UI;
+non dichiara i package non sfruttabili. Restano aperti il percorso da mappe
+non fidate a PostCSS/source-map-js, le primitive di prototype pollution a
+monte dei gadget tinypool e le configurazioni/esposizioni del mocker.
+Essere dipendenze dev o avere `sourcemap: false` non chiude questi rischi.
+
+La futura unità deve verificare reachability e prerequisiti, scegliere una
+strategia compatibile, revisionare il diff del lock e ripetere i gate
+pertinenti, inclusi packaging MCP e audit esatto. Non applicare `audit fix`
+automatico, override senza analisi, nuovi skip o riduzioni delle soglie.
+Nessuna versione major suggerita dal registry è già approvata.
+
+Fonti primarie: [mocker](https://github.com/vitest-dev/vitest/security/advisories/GHSA-82fw-gwwq-j7x9),
+[tinypool worker options](https://github.com/tinylibs/tinypool/security/advisories/GHSA-5gmw-xhrv-c9v3),
+[tinypool run options](https://github.com/tinylibs/tinypool/security/advisories/GHSA-85c8-ppgw-ccpr),
+[source-map-js correzione upstream](https://github.com/7rulnik/source-map-js/pull/79).
+
+H3, report completo residui/cross-check/terminal mapping H5/K4, issue20,
+scroll349, 21 famiglie, design globale e pilot mantengono le destinazioni
+precedenti. La correzione della leggibilità della provenienza non li chiude.
