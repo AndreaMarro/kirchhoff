@@ -28,6 +28,7 @@ from kirchhoff.domain.proof.session import (
     AnalyticalProofStep,
     TransformProofStep,
 )
+from kirchhoff.domain.transform.catalog import IDENTITY_ATTRIBUTES
 from kirchhoff.pipeline.failure import Failure
 from kirchhoff.pipeline.proof_session import validate_publication
 from kirchhoff.pipeline.state_registry import StateRef
@@ -137,6 +138,79 @@ class EntityView:
     id: str
 
 
+def _testo_giustificazione(valore, campo: str) -> None:
+    if not isinstance(valore, str) or not valore.strip():
+        raise ValueError(f"giustificazione: {campo} richiede testo non vuoto")
+
+
+def _testi_giustificazione(valori, campo: str) -> None:
+    if not isinstance(valori, tuple) or not valori:
+        raise ValueError(f"giustificazione: {campo} richiede una tuple non vuota")
+    for valore in valori:
+        _testo_giustificazione(valore, campo)
+    if len(set(valori)) != len(valori):
+        raise ValueError(f"giustificazione: {campo} duplicati")
+
+
+def _entita_giustificazione(entita, genere: str) -> None:
+    if not isinstance(entita, EntityView) or entita.kind != genere:
+        raise ValueError(f"giustificazione: entita' di genere {genere} richiesta")
+    _testo_giustificazione(entita.id, "identificatore entita'")
+
+
+@dataclass(frozen=True, slots=True)
+class StepIdentityAttestationView:
+    entity: EntityView
+    changed: tuple[str, ...]
+
+    def __post_init__(self) -> None:
+        _entita_giustificazione(self.entity, "component")
+        _testi_giustificazione(self.changed, "attributi attestazione")
+        if not set(self.changed) <= set(IDENTITY_ATTRIBUTES):
+            raise ValueError("attestazione: attributo fuori dal vocabolario strutturale")
+
+
+@dataclass(frozen=True, slots=True)
+class StepCertificateView:
+    operation: str
+    checks: tuple[str, ...]
+    attestations: tuple[StepIdentityAttestationView, ...]
+
+    def __post_init__(self) -> None:
+        _testo_giustificazione(self.operation, "operazione certificato")
+        _testi_giustificazione(self.checks, "controlli certificato")
+        if not isinstance(self.attestations, tuple) or any(
+                not isinstance(a, StepIdentityAttestationView) for a in self.attestations):
+            raise ValueError("certificato: attestazioni richiede una tuple di attestazioni")
+        soggetti = [a.entity for a in self.attestations]
+        if len(set(soggetti)) != len(soggetti):
+            raise ValueError("certificato: soggetti attestazione duplicati")
+
+
+@dataclass(frozen=True, slots=True)
+class StepJustificationView:
+    """I quattro dati della giustificazione gia' prodotta dal passo visuale."""
+
+    terminals: tuple[EntityView, ...]
+    preconditions: tuple[str, ...]
+    formula: str
+    certificate: StepCertificateView
+
+    def __post_init__(self) -> None:
+        # Profilo di trasporto delle riduzioni attualmente esposte; non
+        # ridefinisce il Boundary generale ne' ne attesta la completezza.
+        if not isinstance(self.terminals, tuple) or not self.terminals:
+            raise ValueError("giustificazione: terminali richiede una tuple non vuota")
+        for entita in self.terminals:
+            _entita_giustificazione(entita, "node")
+        if len(set(self.terminals)) != len(self.terminals):
+            raise ValueError("giustificazione: terminali duplicati")
+        _testi_giustificazione(self.preconditions, "precondizioni")
+        _testo_giustificazione(self.formula, "formula")
+        if not isinstance(self.certificate, StepCertificateView):
+            raise ValueError("giustificazione: certificato di presentazione richiesto")
+
+
 @dataclass(frozen=True, slots=True)
 class StepView:
     index: int
@@ -152,6 +226,7 @@ class StepView:
     derivation_ref: str | None
     before_svg: str | None
     after_svg: str | None
+    justification: StepJustificationView | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -272,6 +347,8 @@ class StudentSessionView:
                         f"after_ref {passo.after_ref!r} non risolubile "
                         "negli stati")
                 if passo.kind == "analytical":
+                    if passo.justification is not None:
+                        raise ValueError("giustificazione topologica su passo analitico")
                     ref = passo.derivation_ref
                     if not isinstance(ref, str) or not ref.strip():
                         raise ValueError("derivation_ref del passo analitico non valido")
@@ -287,6 +364,19 @@ class StudentSessionView:
                             "evidence_refs del passo analitico non coincide "
                             "con lo stato")
                 elif passo.kind == "transform":
+                    g = passo.justification
+                    if not isinstance(g, StepJustificationView):
+                        raise ValueError("giustificazione mancante sulla trasformazione")
+                    if g.formula != passo.equation:
+                        raise ValueError("giustificazione: formula diversa dall'equazione del passo")
+                    if g.certificate.operation != passo.action:
+                        raise ValueError("certificato: operazione diversa dall'azione del passo")
+                    # Coerenza dei riferimenti esposti, senza replicare la
+                    # verifica di topologia o delle licenze del Catalogo.
+                    if any(e not in passo.preserved for e in g.terminals):
+                        raise ValueError("giustificazione: terminale non preservato nel passo")
+                    if any(a.entity not in passo.preserved for a in g.certificate.attestations):
+                        raise ValueError("attestazione: soggetto non preservato nel passo")
                     if passo.derivation_ref is not None:
                         raise ValueError("derivation_ref su trasformazione")
                     if passo.before_ref == passo.after_ref:
@@ -463,6 +553,7 @@ def _proietta(sessione, registro, run, *, layout_iniziale, istante, casualita):
     per_stato: dict[str, LayoutIR] = {sessione.initial_state_ref: layout_iniziale}
     disegno_corrente = layout_iniziale
     fotogrammi: dict[int, tuple[str, str]] = {}
+    giustificazioni: dict[int, StepJustificationView] = {}
 
     for numero, (passo, esecuzione) in enumerate(
             zip(passi_topologici, run.transform_executions)):
@@ -474,6 +565,16 @@ def _proietta(sessione, registro, run, *, layout_iniziale, istante, casualita):
             raise ValueError(f"proiezione del passo {numero}: {esito.messaggio}")
         fotogrammi[numero] = (
             esito.fotogrammi[esito.prima], esito.fotogrammi[esito.dopo])
+        g = esito.giustificazione
+        giustificazioni[numero] = StepJustificationView(
+            terminals=tuple(EntityView(e.kind, e.id) for e in g.terminali),
+            preconditions=g.precondizioni,
+            formula=str(g.formula),
+            certificate=StepCertificateView(
+                g.certificato.operation, g.certificato.checks,
+                tuple(StepIdentityAttestationView(
+                    EntityView(a.entity.kind, a.entity.id), a.changed)
+                    for a in g.certificato.attestations)))
         disegno_corrente = layouts.risolvi(esito.dopo)
         successivo = passi_topologici[numero + 1].before_state_ref \
             if numero + 1 < len(passi_topologici) else sessione.final_state_ref
@@ -508,7 +609,8 @@ def _proietta(sessione, registro, run, *, layout_iniziale, istante, casualita):
             evidence_refs=(passo.before_state_ref, passo.after_state_ref),
             derivation_ref=None,
             before_svg=fotogrammi[numero][0],
-            after_svg=fotogrammi[numero][1]))
+            after_svg=fotogrammi[numero][1],
+            justification=giustificazioni[numero]))
 
     for passo, atto in zip(passi_analitici, nodale.steps):
         ir = registro.resolve(StateRef(passo.state_ref))

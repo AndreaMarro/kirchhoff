@@ -33,6 +33,42 @@ function razionale(raw) {
   const parti = raw.trim().split("/");
   return parti.length === 1 || BigInt(parti[1]) !== 0n;
 }
+// Parita' strutturale con catalog.IDENTITY_ATTRIBUTES, senza licenze elettriche.
+export const STEP_IDENTITY_ATTRIBUTES = [
+  "type", "terminals", "value", "symbolic", "phase_steps", "control_nodes",
+];
+function giustificazioni(passi) {
+  if (!passi.some(p => Object.hasOwn(p, "justification"))) return;
+  const key = e => JSON.stringify([e.kind, e.id]);
+  const testi = v => stringhe(v) && new Set(v).size === v.length;
+  const entita = (v, kind) => oggetto(v) && v.kind === kind && testo(v.id);
+  for (const p of passi) {
+    esigi(Object.hasOwn(p, "justification"), "giustificazione parziale nei passi");
+    const g = p.justification;
+    if (p.kind === "analytical") {
+      esigi(g === null, "giustificazione topologica su passo analitico");
+      continue;
+    }
+    esigi(p.kind === "transform" && oggetto(g), "giustificazione mancante o non oggetto sulla trasformazione");
+    esigi(Array.isArray(g.terminals) && g.terminals.length > 0 && g.terminals.every(e => entita(e, "node")), "giustificazione: terminali non validi");
+    esigi(new Set(g.terminals.map(key)).size === g.terminals.length, "giustificazione: terminali duplicati");
+    esigi(testi(g.preconditions), "giustificazione: precondizioni vuote, non testo o duplicate");
+    esigi(testo(g.formula) && g.formula === p.equation, "giustificazione: formula diversa dall'equazione del passo");
+    const c = g.certificate;
+    esigi(oggetto(c) && testo(c.operation) && c.operation === p.action, "certificato: operazione diversa dall'azione del passo");
+    esigi(testi(c.checks), "certificato: controlli vuoti, non testo o duplicati");
+    esigi(Array.isArray(c.attestations), "certificato: attestazioni non array");
+    for (const a of c.attestations) {
+      esigi(oggetto(a) && entita(a.entity, "component"), "attestazione: entita' componente richiesta");
+      esigi(testi(a.changed) && a.changed.every(x => STEP_IDENTITY_ATTRIBUTES.includes(x)), "attestazione: attributi non validi");
+    }
+    esigi(new Set(c.attestations.map(a => key(a.entity))).size === c.attestations.length, "certificato: soggetti attestazione duplicati");
+    esigi(Array.isArray(p.preserved) && p.preserved.every(oggetto), "giustificazione: preservati assenti");
+    const preserved = new Set(p.preserved.map(key));
+    esigi(g.terminals.every(e => preserved.has(key(e))), "giustificazione: terminale non preservato nel passo");
+    esigi(c.attestations.every(a => preserved.has(key(a.entity))), "attestazione: soggetto non preservato nel passo");
+  }
+}
 export function validaVista(vista, voce) {
   esigi(oggetto(vista) && vista.schema_version === "student-session.v0.1", "schema vista non riconosciuto");
   esigi(vista.outcome === voce.outcome, "esito diverso dall'indice");
@@ -52,6 +88,7 @@ export function validaVista(vista, voce) {
     esigi(vista.refusal === null && vista.failure === null, "chiusura con rifiuto/guasto");
     esigi(Array.isArray(vista.states) && vista.states.length > 0 && vista.states.every(s => oggetto(s) && testo(s.ref) && testo(s.svg)), "stati/disegni assenti");
     esigi(Array.isArray(vista.steps) && vista.steps.length > 0 && vista.steps.every(oggetto), "passi assenti");
+    giustificazioni(vista.steps);
     // Il legacy omette la chiave ovunque. Null è presenza, non un ripiego legacy.
     if (vista.steps.some(p => Object.hasOwn(p, "derivation_ref"))) {
       const derivazioni = [];

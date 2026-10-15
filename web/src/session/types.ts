@@ -36,6 +36,24 @@ export interface EntityView {
   id: string;
 }
 
+export interface StepIdentityAttestationView {
+  entity: EntityView;
+  changed: string[];
+}
+
+export interface StepCertificateView {
+  operation: string;
+  checks: string[];
+  attestations: StepIdentityAttestationView[];
+}
+
+export interface StepJustificationView {
+  terminals: EntityView[];
+  preconditions: string[];
+  formula: string;
+  certificate: StepCertificateView;
+}
+
 export interface StepView {
   index: number;
   kind: string;
@@ -49,6 +67,8 @@ export interface StepView {
   evidence_refs: string[];
   // Assente solo nelle viste legacy; null nelle trasformazioni del nuovo profilo.
   derivation_ref?: string | null;
+  // Assente in tutte le viste legacy; null solo nei passi analitici nuovi.
+  justification?: StepJustificationView | null;
   before_svg: string | null;
   after_svg: string | null;
 }

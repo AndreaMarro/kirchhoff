@@ -520,6 +520,38 @@ button {
 
 /* evidenza */
 
+.kf-justification {
+  margin-top: var(--kf-space-3);
+  padding-top: var(--kf-space-3);
+  border-top: 1px solid var(--kf-border-subtle);
+  min-width: 0;
+}
+.kf-justification summary {
+  cursor: pointer;
+  min-height: var(--kf-touch-min);
+  align-content: center;
+  font-weight: var(--kf-weight-medium);
+}
+.kf-justification .kf-kv {
+  grid-template-columns: minmax(0, 1fr);
+}
+.kf-justification dd {
+  margin-bottom: var(--kf-space-2);
+}
+.kf-justification ul,
+.kf-justification ol {
+  margin: 0;
+  padding-left: var(--kf-space-4);
+}
+.kf-justification li,
+.kf-justification code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.kf-justification p {
+  margin: var(--kf-space-1) 0;
+}
+
 .kf-evidence summary {
   min-height: var(--kf-touch-min);
   display: flex;
