@@ -84,9 +84,11 @@ function truth(v: Json): TruthView {
 
 function state(v: Json): StateView {
   if (!isRecord(v)) throw new Error("state non e' un oggetto");
+  const svg = str(v["svg"], "state.svg");
+  if (!svg.trim()) throw new Error("stato visuale senza disegno");
   return {
     ref: str(v["ref"], "state.ref"),
-    svg: str(v["svg"], "state.svg"),
+    svg,
     description: str(v["description"], "state.description"),
   };
 }

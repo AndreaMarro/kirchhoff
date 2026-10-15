@@ -94,4 +94,9 @@ describe("guards sul confine", () => {
     const steps = vista.steps.map((s) => s.kind === "analytical" ? { ...s, after_ref: vista.states[0].ref } : s);
     expect(() => parseSession({ ...vista, steps })).toThrow();
   });
+
+  it.each(["", " \n "])("non mostra come verificata una sessione nodale senza disegno: %j", (svg) => {
+    const vista = parseSession(load("ponte-nodale"));
+    expect(() => parseSession({ ...vista, states: vista.states.map((s) => ({ ...s, svg })) })).toThrow();
+  });
 });
