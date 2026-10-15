@@ -1,5 +1,5 @@
 ---
-sha: 4fa3912b9635f8f522b529b264ab3bcf1316870b
+sha: e2c0a40d6f5358d8623dce091251f0c2c9a317b8
 tipo: indice-derivato
 ---
 
@@ -10,8 +10,8 @@ tipo: indice-derivato
 > una nota, ha torto lui — e `--verifica` lo dice, invece di lasciartelo
 > scoprire.
 
-Costruito sulla revisione `4fa3912b9635f8f522b529b264ab3bcf1316870b`.
-60 note.
+Costruito sulla revisione `e2c0a40d6f5358d8623dce091251f0c2c9a317b8`.
+61 note.
 
 ## (radice)
 
@@ -98,6 +98,7 @@ Costruito sulla revisione `4fa3912b9635f8f522b529b264ab3bcf1316870b`.
 - [[20261015T104216Z-claim-derivazione-passo]] — Dal Claim alla derivazione e al passo che la produce → [[00-INDICE]]
 - [[20261015T112300Z-h5-main-verificato]] — Giro 20261015T112300Z — h5-main-verificato · `receipt-di-giro` → [[00-INDICE]]
 - [[20261015T133855Z-provenienza-dichiarata-ispezionabile]] — Giro 20261015T133855Z — provenienza-dichiarata-ispezionabile · `receipt-di-giro` → [[00-INDICE]]
+- [[20261015T143215Z-provenienza-main-verificato]] — Giro 20261015T143215Z — provenienza-main-verificato · `receipt-di-giro` → [[00-INDICE]]
 
 ## 80-Operazioni
 
