@@ -51,6 +51,21 @@ export function validaVista(vista, voce) {
     esigi(oggetto(verifica) && verifica.claim_status === "VERIFIED" && verifica.session_status === "CLOSED" && testo(verifica.claim_verifier) && testo(verifica.claim_version) && stringhe(verifica.evidence_ids) && stringhe(verifica.claim_subjects), "evidenza della chiusura assente");
     esigi(vista.refusal === null && vista.failure === null, "chiusura con rifiuto/guasto");
     esigi(Array.isArray(vista.states) && vista.states.length > 0 && vista.states.every(s => oggetto(s) && testo(s.ref) && testo(s.svg)), "stati/disegni assenti");
+    esigi(Array.isArray(vista.steps) && vista.steps.length > 0 && vista.steps.every(oggetto), "passi assenti");
+    // Il legacy omette la chiave ovunque. Null è presenza, non un ripiego legacy.
+    if (vista.steps.some(p => Object.hasOwn(p, "derivation_ref"))) {
+      const derivazioni = [];
+      for (const [i, passo] of vista.steps.entries()) {
+        esigi(Object.hasOwn(passo, "derivation_ref"), "mapping derivazione-passo parziale");
+        esigi(passo.index === i && ["transform", "analytical"].includes(passo.kind), "ordine/tipo del passo incoerente");
+        if (passo.kind === "transform") esigi(passo.derivation_ref === null, "derivation_ref su trasformazione");
+        else {
+          esigi(testo(passo.derivation_ref) && !derivazioni.includes(passo.derivation_ref), "derivation_ref analitico assente o duplicato");
+          derivazioni.push(passo.derivation_ref);
+        }
+      }
+      esigi(derivazioni.length === verifica.evidence_ids.length && derivazioni.every((ref, i) => ref === verifica.evidence_ids[i]), "derivazioni diverse dalle evidenze del Claim");
+    }
   } else {
     esigi(vista.answer === null && vista.verification === null && vista.truth.electrical_claim_status !== "VERIFIED" && !["CLOSED", "VERIFIED"].includes(vista.truth.backend_closure_status), "rifiuto con risposta o attestazione positiva");
     esigi([vista.truth.electrical_claim_status, vista.truth.backend_closure_status].every(v => v === null || testo(v)), "truth del rifiuto non nullo/stringa");

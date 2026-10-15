@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CircuitStage } from "../../components/CircuitStage.tsx";
 import type { StageEntity } from "../../components/CircuitStage.tsx";
 import { EntityInspector } from "../../components/EntityInspector.tsx";
@@ -31,6 +31,27 @@ export function Workbench(s: WorkbenchProps): React.JSX.Element {
   }
   if (session.outcome === "failure" && session.failure) {
     return <FailureView failure={session.failure} />;
+  }
+  return <ClosedWorkbench {...s} />;
+}
+
+function ClosedWorkbench(s: WorkbenchProps): React.JSX.Element {
+  const { session } = s;
+  const detail = useRef<HTMLElement>(null);
+  const pendingFocus = useRef<number | null>(null);
+  const [focusRequest, setFocusRequest] = useState(0);
+  // Una nuova vista è un nuovo contesto anche se riusa lo stesso session_id.
+  useEffect(() => { pendingFocus.current = null; }, [session]);
+  useEffect(() => {
+    if (pendingFocus.current !== s.step || !detail.current) return;
+    pendingFocus.current = null;
+    detail.current.focus({ preventScroll: true });
+    detail.current.scrollIntoView({ block: "nearest" });
+  }, [focusRequest, s.step]);
+  function inspectEvidence(index: number): void {
+    pendingFocus.current = index;
+    s.onStep(index); // App normalizza il frame disponibile con un solo aggiornamento.
+    setFocusRequest(n => n + 1); // Vale anche se il passo è già selezionato.
   }
   const current = s.step >= 0 ? session.steps[s.step] : null;
   const svg = current
@@ -91,7 +112,7 @@ export function Workbench(s: WorkbenchProps): React.JSX.Element {
       </div>
       <div className="kf-inspector">
         {session.answer ? <ExactAnswer answer={session.answer} /> : null}
-        {current ? <StepInspector step={current} /> : null}
+        {current ? <StepInspector step={current} focusRef={detail} /> : null}
         {current ? (
           <EntityInspector
             affected={current.affected}
@@ -110,7 +131,8 @@ export function Workbench(s: WorkbenchProps): React.JSX.Element {
           />
         )}
         {session.verification ? (
-          <EvidencePanel verification={session.verification} provenance={session.provenance} />
+          <EvidencePanel verification={session.verification} provenance={session.provenance}
+            steps={session.steps} onStep={inspectEvidence} />
         ) : null}
       </div>
       <StepControls

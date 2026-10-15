@@ -47,6 +47,8 @@ export interface StepView {
   affected: EntityView[];
   preserved: EntityView[];
   evidence_refs: string[];
+  // Assente solo nelle viste legacy; null nelle trasformazioni del nuovo profilo.
+  derivation_ref?: string | null;
   before_svg: string | null;
   after_svg: string | null;
 }

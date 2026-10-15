@@ -1,9 +1,12 @@
 import { kindLabel } from "../session/labels.ts";
 import type { StepView } from "../session/types.ts";
 
-export function StepInspector({ step }: { step: StepView }): React.JSX.Element {
+export function StepInspector({ step, focusRef }: {
+  step: StepView;
+  focusRef?: React.Ref<HTMLElement>;
+}): React.JSX.Element {
   return (
-    <section className="kf-card" aria-label="Dettaglio del passo">
+    <section ref={focusRef} tabIndex={-1} className="kf-card" aria-label="Dettaglio del passo">
       <p className="kf-card-title-micro">
         {step.kind === "transform" ? "Trasformazione" : "Passo analitico"} {step.index + 1}
       </p>

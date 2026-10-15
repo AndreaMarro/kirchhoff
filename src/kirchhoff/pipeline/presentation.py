@@ -149,6 +149,7 @@ class StepView:
     affected: tuple[EntityView, ...]
     preserved: tuple[EntityView, ...]
     evidence_refs: tuple[str, ...]
+    derivation_ref: str | None
     before_svg: str | None
     after_svg: str | None
 
@@ -248,7 +249,8 @@ class StudentSessionView:
             if not self.steps:
                 raise ValueError("closed senza passi")
             indici: set[int] = set()
-            for passo in self.steps:
+            derivazioni: list[str] = []
+            for posizione, passo in enumerate(self.steps):
                 if isinstance(passo.index, bool) or not isinstance(passo.index, int):
                     raise ValueError(
                         f"indice {passo.index!r}: serve un intero")
@@ -258,6 +260,8 @@ class StudentSessionView:
                 if passo.index in indici:
                     raise ValueError(
                         f"indice {passo.index} duplicato")
+                if passo.index != posizione:
+                    raise ValueError("passi fuori ordine rispetto agli indici")
                 indici.add(passo.index)
                 if passo.before_ref not in refs:
                     raise ValueError(
@@ -268,6 +272,12 @@ class StudentSessionView:
                         f"after_ref {passo.after_ref!r} non risolubile "
                         "negli stati")
                 if passo.kind == "analytical":
+                    ref = passo.derivation_ref
+                    if not isinstance(ref, str) or not ref.strip():
+                        raise ValueError("derivation_ref del passo analitico non valido")
+                    if ref in derivazioni:
+                        raise ValueError("derivation_ref duplicato")
+                    derivazioni.append(ref)
                     if passo.before_ref != passo.after_ref:
                         raise ValueError(
                             "passo analitico con before_ref diverso da after_ref")
@@ -277,6 +287,8 @@ class StudentSessionView:
                             "evidence_refs del passo analitico non coincide "
                             "con lo stato")
                 elif passo.kind == "transform":
+                    if passo.derivation_ref is not None:
+                        raise ValueError("derivation_ref su trasformazione")
                     if passo.before_ref == passo.after_ref:
                         raise ValueError(
                             "passo topologico con before_ref uguale ad after_ref")
@@ -295,6 +307,9 @@ class StudentSessionView:
             if sorted(indici) != list(range(len(self.steps))):
                 raise ValueError(
                     "indici dei passi non consecutivi da zero")
+            if tuple(derivazioni) != self.verification.evidence_ids:
+                raise ValueError(
+                    "derivazioni dei passi diverse dalle evidenze del Claim")
         elif self.outcome == "refusal":
             if self.refusal is None or self.answer is not None:
                 raise ValueError("rifiuto senza diagnosi o con risposta")
@@ -491,6 +506,7 @@ def _proietta(sessione, registro, run, *, layout_iniziale, istante, casualita):
             preserved=tuple(
                 EntityView(e.kind, e.id) for e in sorted(risultato.preserve)),
             evidence_refs=(passo.before_state_ref, passo.after_state_ref),
+            derivation_ref=None,
             before_svg=fotogrammi[numero][0],
             after_svg=fotogrammi[numero][1]))
 
@@ -508,6 +524,7 @@ def _proietta(sessione, registro, run, *, layout_iniziale, istante, casualita):
             affected=tuple(_entita(ir, nome) for nome in atto.focused_entities),
             preserved=(),
             evidence_refs=(passo.state_ref,),
+            derivation_ref=passo.derivation_after,
             before_svg=None,
             after_svg=None))
 
