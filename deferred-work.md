@@ -322,3 +322,11 @@ restano byte-invariati. Review tecnica separata APPROVE sullo hash17cf86d2;
 pin futuro del commit ancora pendente nella receipt. Il precedente22/2
 rimane una misura storica. Questo chiude localmente il debito dell'oracolo,
 non certifica main/quorum, ogni transitorio o le altre unità16/H5/K4.
+
+## Recupero catalogo PR16 — 2026-10-15
+
+La slice catalogo/provenienza recupera tredici sorgenti/test e dodici JSON: undici viste, nove chiusure e due rifiuti. Produttore committed 4a93e24c2cfea75c8d1038e68a0c4126ec49a27f; closure112 invariata e pin reale su tutti gli artifact. Non amplia automaticamente le famiglie StudentApp e non chiude H3.
+
+La PR16 e il parent bfa restano parzialmente recuperati, non assorbiti in main. Restano sette finding FIX_REQUIRED nella prossima unità parent/host/operazioni: ingresso proof esplicito; smoke dinamico su tutti i corpi; verifier dei nuovi JSON; verifier degli asset effettivamente indicati nellHTML remoto; promessa CTA dopo navigazione; playbook manuale senza eliminare branch; delimitazione di brief e misure storiche. Preservare originali e genealogia nel recupero conservativo finale. I due falsi verdi del verifier e il fumo4vs11 non sono gate utilizzabili per dichiarare completo il catalogo. H5/K4 mantiene la destinazione prodotto separata, design e21famiglie restano aperti. Nessuna riduzione di soglie, skip, Verified o altri confini.
+
+Receipt: 20261015T060236Z-catalogo-proof-undici-provenienza.md; review tecnica Codex precommit SHA256 35070c780b9137d004bb499a35a6ee0cfb128b6b1fae7974e68f7d1d6826c99a. Non equivale al quorum formale non-Codex, CI remota del nuovo candidato o approvazione main/deploy.
