@@ -50,7 +50,14 @@ export function parseHash(hash: string): Partial<WorkbenchHash> {
   const h = hash.startsWith("#") ? hash.slice(1) : hash;
   for (const part of h.split("&")) {
     const [k, v] = part.split("=");
-    if (k === "exercise" && v) out.exercise = decodeURIComponent(v);
+    if (k === "exercise" && v) {
+      try {
+        out.exercise = decodeURIComponent(v);
+      } catch {
+        // Un link troncato non rende il banco inutilizzabile: si conserva
+        // il resto dello stato e si usa l'esercizio di ripiego.
+      }
+    }
     if (k === "step" && v && /^\d+$/.test(v)) out.step = Number(v);
     if (k === "frame" && (v === "before" || v === "after")) out.frame = v;
   }

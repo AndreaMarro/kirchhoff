@@ -191,6 +191,31 @@ export function parseSession(payload: Json): StudentSessionView {
   if (vista.outcome === "closed" && (vista.answer === null || vista.verification === null)) {
     throw new Error("chiusura senza risposta o senza evidenza");
   }
+  if (vista.outcome === "closed") {
+    const prova = vista.verification!;
+    if (vista.truth.electrical_claim_status !== "VERIFIED"
+      || vista.truth.backend_closure_status !== "CLOSED"
+      || prova.claim_status !== "VERIFIED" || prova.session_status !== "CLOSED"
+      || !prova.claim_verifier?.trim() || !prova.claim_version?.trim()
+      || prova.evidence_ids.length === 0 || prova.claim_subjects.length === 0
+      || vista.states.length === 0) {
+      throw new Error("chiusura senza prova certificata o stato visuale");
+    }
+    const refs = new Set(vista.states.map((s) => s.ref));
+    if (refs.size !== vista.states.length) throw new Error("riferimenti di stato duplicati");
+    for (const [i, passo] of vista.steps.entries()) {
+      if (passo.index !== i || !refs.has(passo.before_ref) || !refs.has(passo.after_ref)) {
+        throw new Error("passo fuori sequenza o con stato assente");
+      }
+      if (passo.kind === "transform") {
+        if (passo.before_ref === passo.after_ref || !passo.before_svg?.trim() || !passo.after_svg?.trim()) {
+          throw new Error("trasformazione senza due stati visuali");
+        }
+      } else if (passo.kind !== "analytical" || passo.before_ref !== passo.after_ref) {
+        throw new Error("passo analitico incoerente o tipo sconosciuto");
+      }
+    }
+  }
   if (vista.outcome === "refusal" && (vista.refusal === null || vista.answer !== null)) {
     throw new Error("rifiuto senza diagnosi o con risposta");
   }

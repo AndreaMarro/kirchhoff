@@ -2,13 +2,9 @@ name: deploy-workbench
 
 # Beta pubblica statica: la build Vite di web/ su GitHub Pages.
 # Nessun backend, nessun segreto, nessuna scrittura oltre Pages.
-# Si attiva solo da main (merge di PR), mai dalle PR stesse.
+# Pubblicazione esplicita: push e merge eseguono soltanto i workflow di test.
+# Avviare manualmente questo workflow richiede autorizzazione al deploy.
 on:
-  push:
-    branches: [main]
-    paths:
-      - "web/**"
-      - ".github/workflows/deploy-workbench.yml"
   workflow_dispatch:
 
 permissions:

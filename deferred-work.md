@@ -275,3 +275,17 @@ Story 1.5 (recinto 4 di AD-21, in backlog) non ha alcun controllo di confine. No
 un difetto da riparare qui — il recinto 4 e' dichiarato fuori ambito dalla spec —
 ma una tabella di oracoli che presenti quel verde come copertura del codice nuovo
 dice piu' di quel che il controllo misura, ed e' gia' successo una volta.
+
+## Review di convergenza 2026-10-15 — H5/K4: navigazione delle evidenze
+
+**P2, differito alla prima unita' di prodotto H5/K4.** Il Claim di una sessione
+chiusa cita identificatori di derivazione (per esempio `D1`, `D2`), mentre i
+`StepView.evidence_refs` dei passi analitici espongono solo il riferimento allo
+stato circuitale. `EvidencePanel` mostra status, verificatore, soggetti e
+provenienza, ma non offre un collegamento dall'evidenza del Claim al passo che
+la produce. Non dichiarare completa l'ispezione di residui e cross-check.
+
+**Esito richiesto:** conservare il legame derivazione-passo nella proiezione e
+renderlo navigabile dalla prova, senza nuova risoluzione nel browser o renderer.
+Un test deve seguire un'evidenza della risposta fino al passo corrispondente.
+Fonte: review avversaria separata del candidato PR #15 `a98d37a`.
