@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { parseIndex, parseSession } from "../src/session/guards.ts";
+import type { TruthView, VerificationView } from "../src/session/types.ts";
 
 const dir = join(import.meta.dirname, "..", "public", "sessions");
 
@@ -44,6 +45,59 @@ describe("guards sul confine", () => {
   it("una chiusura senza risposta non entra", () => {
     const vista = load("partitore-d1") as Record<string, unknown>;
     expect(() => parseSession({ ...vista, answer: null })).toThrow();
+  });
+
+  it.each<[string, { truth?: Partial<TruthView>; verification?: Partial<VerificationView>; states?: never[] }]>([
+    ["claim non verificato", { truth: { electrical_claim_status: "UNVERIFIED", backend_closure_status: "CLOSED", product_verified: false } }],
+    ["sessione non chiusa", { truth: { electrical_claim_status: "VERIFIED", backend_closure_status: "DRAFT", product_verified: false } }],
+    ["prova respinta", { verification: { claim_status: "REJECTED" } }],
+    ["prova non chiusa", { verification: { session_status: "DRAFT" } }],
+    ["verificatore assente", { verification: { claim_verifier: null } }],
+    ["versione assente", { verification: { claim_version: "" } }],
+    ["evidenze assenti", { verification: { evidence_ids: [] } }],
+    ["soggetti assenti", { verification: { claim_subjects: [] } }],
+    ["stati visuali assenti", { states: [] }],
+  ])("non presenta come verificata una chiusura con %s", (_name, override) => {
+    const original = parseSession(load("partitore-d1"));
+    const payload = {
+      ...original,
+      ...override,
+      truth: { ...original.truth, ...override.truth },
+      verification: { ...original.verification, ...override.verification },
+    };
+    expect(() => parseSession(payload)).toThrow();
+  });
+
+  it.each([
+    ["riferimento prima assente", { before_ref: "ir_assente" }],
+    ["riferimento dopo assente", { after_ref: "ir_assente" }],
+    ["tipo sconosciuto", { kind: "futuro" }],
+    ["indice frazionario", { index: 0.5 }],
+    ["indice fuori sequenza", { index: 4 }],
+    ["prima senza disegno", { before_svg: null }],
+    ["dopo senza disegno", { after_svg: "" }],
+    ["trasformazione senza cambio di stato", { after_ref: "same" }],
+  ])("rifiuta un passo incoerente: %s", (_name, override) => {
+    const vista = parseSession(load("partitore-d1"));
+    const first = { ...vista.steps[0], ...override };
+    if (first.after_ref === "same") first.after_ref = first.before_ref;
+    expect(() => parseSession({ ...vista, steps: [first, ...vista.steps.slice(1)] })).toThrow();
+  });
+
+  it("rifiuta riferimenti di stato duplicati", () => {
+    const vista = parseSession(load("partitore-d1"));
+    expect(() => parseSession({ ...vista, states: [vista.states[0], vista.states[0]] })).toThrow();
+  });
+
+  it("un passo analitico resta ancorato allo stesso stato", () => {
+    const vista = parseSession(load("partitore-d1"));
+    const steps = vista.steps.map((s) => s.kind === "analytical" ? { ...s, after_ref: vista.states[0].ref } : s);
+    expect(() => parseSession({ ...vista, steps })).toThrow();
+  });
+
+  it.each(["", " \n "])("non mostra come verificata una sessione nodale senza disegno: %j", (svg) => {
+    const vista = parseSession(load("ponte-nodale"));
+    expect(() => parseSession({ ...vista, states: vista.states.map((s) => ({ ...s, svg })) })).toThrow();
   });
 });
 
@@ -322,4 +376,11 @@ describe("contratto P1-A: contraddizioni respinte", () => {
     });
     expect(guasto.outcome).toBe("failure");
   });
+});
+
+// Il payload e' una sequenza, non un insieme di indici corretti riordinabile.
+it("rifiuta passi fuori ordine anche con indici completi", () => {
+  const vista = parseSession(load("partitore-d1"));
+  expect(vista.steps.length).toBeGreaterThan(1);
+  expect(() => parseSession({ ...vista, steps: [...vista.steps].reverse() })).toThrow(/ordine/);
 });

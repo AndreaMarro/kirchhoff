@@ -275,3 +275,37 @@ Story 1.5 (recinto 4 di AD-21, in backlog) non ha alcun controllo di confine. No
 un difetto da riparare qui — il recinto 4 e' dichiarato fuori ambito dalla spec —
 ma una tabella di oracoli che presenti quel verde come copertura del codice nuovo
 dice piu' di quel che il controllo misura, ed e' gia' successo una volta.
+
+## Review di convergenza 2026-10-15 — H5/K4: navigazione delle evidenze
+
+**P2, differito alla prima unita' di prodotto H5/K4.** Il Claim di una sessione
+chiusa cita identificatori di derivazione (per esempio `D1`, `D2`), mentre i
+`StepView.evidence_refs` dei passi analitici espongono solo il riferimento allo
+stato circuitale. `EvidencePanel` mostra status, verificatore, soggetti e
+provenienza, ma non offre un collegamento dall'evidenza del Claim al passo che
+la produce. Non dichiarare completa l'ispezione di residui e cross-check.
+
+**Esito richiesto:** conservare il legame derivazione-passo nella proiezione e
+renderlo navigabile dalla prova, senza nuova risoluzione nel browser o renderer.
+Un test deve seguire un'evidenza della risposta fino al passo corrispondente.
+Fonte: review avversaria separata del candidato PR #15 `a98d37a`.
+
+## Riconciliazione15→17 — oracolo live capabilities precedente a Laplace
+
+**P2, preesistente in17; manutenzione separata prima della promozione.** La
+spec `student-session-live.spec.ts`, test «il perimetro visibile coincide»,
+pretende `transients=false` prima di navigare la pagina. La basea6b1e8f ha
+già `product_capabilities` e test Laplace/MCP che richiedono `transients=true`
+con risposta trasformata, step/impulse, nessuna antitrasformata o commutazione
+di topologie e `certified_lesson=false`. La prova live corrente ha22PASS/2FAIL
+(desktop/mobile su quella assert); non è24verdi né prova della paritàUI nel
+test abortito. Il modulo capabilities esattoHEAD e HTTP reale concordano;
+capabilities, server, StudentApp e vecchia spec sono byte-invariati rispetto
+alla base. Non è una nuova suite browser baseline.
+
+**Esito richiesto:** riallineare l'oracolo al contratto Laplace esistente,
+conservando i limiti granulari e il confronto del testoUI col server. Il solo
+cambio false→true non copre quei limiti. Nessun cambio di API, supporto
+generico a tutti i transitori, Claim VERIFIED, soglie o skip è autorizzato
+dalla classificazione. La nuova unione parser15→17 resta verificata nel suo
+perimetro locale; nessuna promozione/main/quorum ne deriva.

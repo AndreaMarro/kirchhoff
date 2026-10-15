@@ -1,5 +1,5 @@
 ---
-sha: a63483c5da35c02a26b1db01711261bdffdf89c5
+sha: a6b1e8f95682d89f1ee42fc840fe5f33901437c7
 tipo: indice-derivato
 ---
 
@@ -10,8 +10,8 @@ tipo: indice-derivato
 > una nota, ha torto lui — e `--verifica` lo dice, invece di lasciartelo
 > scoprire.
 
-Costruito sulla revisione `a63483c5da35c02a26b1db01711261bdffdf89c5`.
-50 note.
+Costruito sulla revisione `a6b1e8f95682d89f1ee42fc840fe5f33901437c7`.
+52 note.
 
 ## (radice)
 
@@ -87,7 +87,9 @@ Costruito sulla revisione `a63483c5da35c02a26b1db01711261bdffdf89c5`.
 
 - [[20260826T075916Z-1-3-un-layoutir-recuperabile-per-ogni-stato-visuale]] — Giro 20260826T075916Z — 1-3-un-layoutir-recuperabile-per-ogni-stato-visuale · `receipt-di-giro` → [[00-INDICE]]
 - [[20260826T125812Z-1-4-serializzatore-svg-semantico-deterministico-su-una-fixtu]] — Giro 20260826T125812Z — 1-4-serializzatore-svg-semantico-deterministico-su-una-fixture-a · `receipt-di-giro` → [[00-INDICE]]
+- [[20261015T014105Z-convergenza-pr15]] — Giro 20261015T014105Z — convergenza-pr15 · `receipt-di-giro` → [[00-INDICE]]
 - [[20261015T023429Z-fix-quaderno-19]] — Giro 20261015T023429Z — fix-quaderno-19 · `receipt-di-giro` → [[00-INDICE]]
+- [[20261015T052628Z-integrazione-15-in-17]] — Giro 20261015T052628Z — integrazione-15-in-17 · `receipt-di-giro` → [[00-INDICE]]
 
 ## 80-Operazioni
 

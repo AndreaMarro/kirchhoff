@@ -814,3 +814,39 @@ def test_p1a_status_non_positivo_in_esito_negativo_accettato(outcome):
         _ricostruisci(dataclasses.replace(
             negativa, truth=dataclasses.replace(
                 negativa.truth, electrical_claim_status="VERIFIED")))
+
+
+@pytest.mark.parametrize("volt", [12, 24])
+def test_la_run_di_un_altra_chiusura_non_presta_i_suoi_disegni(volt):
+    from kirchhoff.pipeline.presentation import project_closed_session
+    from kirchhoff.pipeline.risolvi import layout_a_maglia
+    netlist = "V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\n? current R1\n"
+    chiusura, _ = _chiusura_con_run(netlist)
+    _, altra_run = _chiusura_con_run(netlist.replace("12 volt", f"{volt} volt"))
+    esito = project_closed_session(
+        chiusura.session, chiusura.registry, altra_run,
+        layout_iniziale=layout_a_maglia(leggi(netlist)),
+        istante=1, casualita=bytes(range(10)))
+    assert isinstance(esito, Failure)
+    assert esito.dove == "publication"
+    if volt == 12:
+        assert esito.messaggio == "l'effetto del passo 0 non e' l'oggetto certificato della run"
+    else:
+        assert esito.messaggio == (
+            "gli stati del registro non coincidono con gli stati operativi della run")
+
+
+def test_il_registro_di_un_altro_circuito_non_presta_i_suoi_stati():
+    from kirchhoff.pipeline.presentation import project_closed_session
+    from kirchhoff.pipeline.risolvi import layout_a_maglia
+    netlist = "V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\n? current R1\n"
+    chiusura, run = _chiusura_con_run(netlist)
+    altra_chiusura, _ = _chiusura_con_run(netlist.replace("12 volt", "24 volt"))
+    esito = project_closed_session(
+        chiusura.session, altra_chiusura.registry, run,
+        layout_iniziale=layout_a_maglia(leggi(netlist)),
+        istante=1, casualita=bytes(range(10)))
+    assert isinstance(esito, Failure)
+    assert esito.dove == "publication"
+    assert esito.messaggio == (
+        "gli stati del registro non coincidono con gli stati operativi della run")

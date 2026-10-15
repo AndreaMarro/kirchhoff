@@ -114,9 +114,11 @@ function truth(v: Json): TruthView {
 
 function state(v: Json): StateView {
   if (!isRecord(v)) throw new Error("state non e' un oggetto");
+  const svg = str(v["svg"], "state.svg");
+  if (!svg.trim()) throw new Error("stato visuale senza disegno");
   return {
     ref: str(v["ref"], "state.ref"),
-    svg: str(v["svg"], "state.svg"),
+    svg,
     description: str(v["description"], "state.description"),
   };
 }
@@ -240,6 +242,11 @@ export function parseSession(payload: Json): StudentSessionView {
     if (vista.verification.session_status !== "CLOSED") {
       throw new Error("verification.session_status diverso da CLOSED");
     }
+    if (!vista.verification.claim_verifier?.trim()
+      || !vista.verification.claim_version?.trim()
+      || vista.verification.claim_subjects.length === 0) {
+      throw new Error("closed senza verificatore, versione o soggetti del claim");
+    }
     if (vista.question === null) {
       throw new Error("closed senza domanda");
     }
@@ -270,9 +277,12 @@ export function parseSession(payload: Json): StudentSessionView {
       throw new Error("closed senza passi");
     }
     const indici = new Set<number>();
-    for (const passo of vista.steps) {
+    for (const [i, passo] of vista.steps.entries()) {
       if (indici.has(passo.index)) {
         throw new Error(`indice ${passo.index} duplicato`);
+      }
+      if (passo.index !== i) {
+        throw new Error("passo fuori ordine o indici non consecutivi da zero");
       }
       indici.add(passo.index);
       if (!refs.has(passo.before_ref)) {
@@ -292,6 +302,9 @@ export function parseSession(payload: Json): StudentSessionView {
           throw new Error("evidence_refs del passo analitico non coincide con lo stato");
         }
       } else if (passo.kind === "transform") {
+        if (!passo.before_svg?.trim() || !passo.after_svg?.trim()) {
+          throw new Error("trasformazione senza due stati visuali");
+        }
         if (passo.before_ref === passo.after_ref) {
           throw new Error("passo topologico con before_ref uguale ad after_ref");
         }
@@ -311,12 +324,6 @@ export function parseSession(payload: Json): StudentSessionView {
         if (!refs.has(ref)) {
           throw new Error(`evidence_ref ${ref} non risolubile negli stati`);
         }
-      }
-    }
-    const ordinati = [...indici].sort((a, b) => a - b);
-    for (let i = 0; i < ordinati.length; i++) {
-      if (ordinati[i] !== i) {
-        throw new Error("indici dei passi non consecutivi da zero");
       }
     }
   }

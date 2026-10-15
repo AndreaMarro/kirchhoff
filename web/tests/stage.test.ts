@@ -57,6 +57,13 @@ describe("hash di stato", () => {
     expect(parseHash("#step=xx&frame=prima")).toEqual({});
     expect(parseHash("")).toEqual({});
   });
+
+  it.each(["%", "%E0%A4%A", "%FF"])("ignora l'esercizio con codifica URI malformata: %s", (exercise) => {
+    expect(parseHash(`#exercise=${exercise}&step=2&frame=after`)).toEqual({
+      step: 2,
+      frame: "after",
+    });
+  });
 });
 
 describe("labels", () => {
