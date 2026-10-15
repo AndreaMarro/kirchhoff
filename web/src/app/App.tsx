@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { loadIndex, loadSession } from "../session/source.ts";
 import type { ExerciseIndexEntry, StudentSessionView } from "../session/types.ts";
 import { ExercisePicker } from "../features/exercise-picker/ExercisePicker.tsx";
@@ -28,7 +28,19 @@ export function App(): React.JSX.Element {
   }, [contesto]);
 
   useEffect(() => {
-    loadIndex().then(setIndex).catch((e: unknown) => setError(String(e)));
+    // Il nuovo tentativo invalida anche la sessione del vecchio catalogo.
+    // La sessione parte soltanto dopo l'indice corrente, mai in parallelo
+    // al suo refresh. La cleanup esclude anche risposte d'indice obsolete.
+    let viva = true;
+    setIndex(null);
+    setSession(null);
+    setEntity(null);
+    setError(null);
+    loadIndex().then(
+      (entries) => { if (viva) setIndex(entries); },
+      (e: unknown) => { if (viva) setError(String(e)); },
+    );
+    return () => { viva = false; };
   }, [tentativo]);
 
   useEffect(() => {
@@ -60,7 +72,7 @@ export function App(): React.JSX.Element {
     return () => {
       viva = false;
     };
-  }, [index, selection.exercise, setSelection, tentativo]);
+  }, [index, selection.exercise, setSelection]);
 
   const stepCount = session?.steps.length ?? 0;
   const step = session && (selection.step < -1 || selection.step >= stepCount) ? -1 : selection.step;
@@ -108,7 +120,7 @@ export function App(): React.JSX.Element {
         </div>
         <div className="kf-bar-title">{session ? exerciseTitle(index, selection.exercise) : ""}</div>
         {session ? <StatusPill outcome={session.outcome} /> : null}
-        <CopyLink />
+        <CopyLink key={`${contesto}#${selection.frame}`} />
         <button type="button" className="kf-theme-toggle" onClick={toggleTheme} aria-label="Cambia tema">
           {theme === "dark" ? "Tema chiaro" : "Tema scuro"}
         </button>
@@ -175,24 +187,58 @@ function exerciseTitle(index: ExerciseIndexEntry[] | null, id: string): string {
 
 function CopyLink(): React.JSX.Element {
   const [copiato, setCopiato] = useState(false);
+  const [copiando, setCopiando] = useState(false);
+  const [manuale, setManuale] = useState<string | null>(null);
+  const richiesta = useRef(0);
+  const timer = useRef<number | undefined>(undefined);
+  useEffect(() => () => {
+    richiesta.current++;
+    window.clearTimeout(timer.current);
+  }, []);
+
+  async function copia(): Promise<void> {
+    const corrente = ++richiesta.current;
+    const href = window.location.href;
+    window.clearTimeout(timer.current);
+    setCopiato(false);
+    setManuale(null);
+    setCopiando(true);
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error("Clipboard non disponibile");
+      await navigator.clipboard.writeText(href);
+      if (richiesta.current !== corrente) return;
+      setCopiato(true);
+      timer.current = window.setTimeout(() => setCopiato(false), 2000);
+    } catch {
+      if (richiesta.current === corrente) setManuale(href);
+    } finally {
+      if (richiesta.current === corrente) setCopiando(false);
+    }
+  }
+
   return (
-    <button
-      type="button"
-      className="kf-theme-toggle"
-      aria-label="Copia il link a questo passo"
-      aria-live="polite"
-      onClick={() => {
-        const href = window.location.href;
-        const done = (): void => {
-          setCopiato(true);
-          window.setTimeout(() => setCopiato(false), 2000);
-        };
-        if (navigator.clipboard?.writeText) {
-          navigator.clipboard.writeText(href).then(done, () => undefined);
-        }
-      }}
-    >
-      {copiato ? "Copiato" : "Copia link"}
-    </button>
+    <div className="kf-copy-link">
+      <button
+        type="button"
+        className="kf-theme-toggle"
+        aria-label="Copia il link a questo passo"
+        aria-live="polite"
+        disabled={copiando}
+        onClick={() => { void copia(); }}
+      >
+        {copiando ? "Copia in corso…" : copiato ? "Copiato" : "Copia link"}
+      </button>
+      {manuale !== null ? (
+        <div className="kf-copy-fallback">
+          <p role="status">Copia non riuscita. Seleziona e copia questo link.</p>
+          <input
+            aria-label="Link da copiare manualmente"
+            value={manuale}
+            readOnly
+            onFocus={(event) => event.currentTarget.select()}
+          />
+        </div>
+      ) : null}
+    </div>
   );
 }

@@ -100,6 +100,29 @@ button {
   color: var(--kf-ink-primary);
 }
 
+.kf-copy-link {
+  min-width: 0;
+}
+
+.kf-copy-fallback {
+  max-width: 100%;
+  font-size: var(--kf-type-small);
+}
+
+.kf-copy-fallback p {
+  margin: var(--kf-space-2) 0;
+}
+
+.kf-copy-fallback input {
+  width: 100%;
+  min-height: var(--kf-touch-min);
+  border: 1px solid var(--kf-border-strong);
+  border-radius: var(--kf-radius-sm);
+  background: var(--kf-surface-base);
+  color: var(--kf-ink-primary);
+  font: inherit;
+}
+
 /* --- pillole di stato: mai solo colore --- */
 
 .kf-pill {
