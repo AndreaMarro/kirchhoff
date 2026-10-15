@@ -1,5 +1,5 @@
 ---
-sha: 0fa9f653803bce5b01929eaac265af49b41cbe78
+sha: a98d37a6ef33a1bbb1f2b9bd1d01d0b78b171889
 tipo: indice-derivato
 ---
 
@@ -10,8 +10,8 @@ tipo: indice-derivato
 > una nota, ha torto lui — e `--verifica` lo dice, invece di lasciartelo
 > scoprire.
 
-Costruito sulla revisione `0fa9f653803bce5b01929eaac265af49b41cbe78`.
-49 note.
+Costruito sulla revisione `a98d37a6ef33a1bbb1f2b9bd1d01d0b78b171889`.
+50 note.
 
 ## (radice)
 
@@ -87,6 +87,7 @@ Costruito sulla revisione `0fa9f653803bce5b01929eaac265af49b41cbe78`.
 
 - [[20260826T075916Z-1-3-un-layoutir-recuperabile-per-ogni-stato-visuale]] — Giro 20260826T075916Z — 1-3-un-layoutir-recuperabile-per-ogni-stato-visuale · `receipt-di-giro` → [[00-INDICE]]
 - [[20260826T125812Z-1-4-serializzatore-svg-semantico-deterministico-su-una-fixtu]] — Giro 20260826T125812Z — 1-4-serializzatore-svg-semantico-deterministico-su-una-fixture-a · `receipt-di-giro` → [[00-INDICE]]
+- [[20261015T014105Z-convergenza-pr15]] — Giro 20261015T014105Z — convergenza-pr15 · `receipt-di-giro` → [[00-INDICE]]
 
 ## 80-Operazioni
 
