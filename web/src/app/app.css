@@ -548,10 +548,27 @@ button {
   flex: none;
 }
 
-.kf-evidence-steps {
+.kf-evidence-steps,
+.kf-evidence-provenance {
   margin-top: var(--kf-space-3);
   padding-top: var(--kf-space-3);
   border-top: 1px solid var(--kf-border-subtle);
+}
+
+.kf-evidence-provenance dl {
+  display: grid;
+  gap: var(--kf-space-1);
+  font-size: var(--kf-type-small);
+}
+
+.kf-evidence-provenance dt {
+  color: var(--kf-ink-secondary);
+}
+
+.kf-evidence-provenance dd {
+  margin: 0 0 var(--kf-space-2);
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .kf-evidence-links {

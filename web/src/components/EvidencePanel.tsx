@@ -43,16 +43,22 @@ export function EvidencePanel({ verification, provenance, steps, onStep }: Props
           Soggetti: <code>{verification.claim_subjects.join(", ")}</code>
         </span>
       </div>
-      {provenance ? (
-        <div className="kf-evidence-row">
-          <span className="kf-check" aria-hidden="true">
-            ✓
-          </span>
-          <span>
-            revisione <code>{provenance.source_sha.slice(0, 12)}</code> · {provenance.detail}
-          </span>
-        </div>
-      ) : null}
+      <section className="kf-evidence-provenance" aria-label="Provenienza dichiarata">
+        <h3 className="kf-card-title-micro">Provenienza dichiarata</h3>
+        {provenance ? <>
+          <dl>
+            <dt>Produttore</dt>
+            <dd><code>{provenance.producer.trim() ? provenance.producer : "Non dichiarato"}</code></dd>
+            <dt>Revisione sorgente</dt>
+            <dd><code>{provenance.source_sha.trim() ? provenance.source_sha : "Non dichiarata"}</code></dd>
+            <dt>Contesto</dt>
+            <dd>{provenance.detail.trim() ? provenance.detail : "Non dichiarato"}</dd>
+          </dl>
+          <p className="kf-evidence-unavailable">
+            Questi metadati sono dichiarati dal produttore; non attestano l’autenticità della sessione.
+          </p>
+        </> : <p className="kf-evidence-unavailable">Provenienza non disponibile per questa sessione.</p>}
+      </section>
       <div className="kf-evidence-steps">
         <p className="kf-card-title-micro">Derivazioni del Claim</p>
         {!linked ? <p className="kf-evidence-unavailable">
