@@ -1,0 +1,165 @@
+<!doctype html>
+<!-- Guscio dimostrativo d'integrazione sito per Kirchhoff Proof Workbench.
+     Pagina ospite di produzione verosimile: intestazione del sito, copia
+     d'ingresso per lo studente, area Kirchhoff incorniciata, invito ad
+     aprire a schermo intero, vincoli reattivi. NESSUNA logica elettrica:
+     l'unico contratto con il banco e' l'URL con deep link nell'iframe.
+     Uso locale:  ?workbench=http://localhost:4173/#exercise=... (build di
+     produzione reale). Default: URL canonico pubblico. -->
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Kirchhoff (beta): guarda come si risolve un circuito in continua, passo per passo, con risposta esatta certificata." />
+  <title>Kirchhoff — laboratorio di circuiti verificati (beta) · Andrea Marro</title>
+  <link rel="stylesheet" href="./host.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="site-brand" href="#">Andrea Marro <span>· Ripetizioni scientifiche</span></a>
+      <nav class="site-nav" aria-label="Navigazione del sito">
+        <a href="#">Fisica</a>
+        <a href="#" aria-current="page">Laboratori</a>
+        <a href="#">Contatti</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="site-main">
+    <nav class="crumbs" aria-label="Percorso">
+      <a href="#">Home</a> <span aria-hidden="true">/</span>
+      <a href="#">Laboratori</a> <span aria-hidden="true">/</span>
+      <span aria-current="page">Kirchhoff (beta)</span>
+    </nav>
+
+    <h1>Circuiti in continua, risolti davanti ai tuoi occhi</h1>
+    <p class="lede">
+      Kirchhoff mostra la soluzione di un circuito in corrente continua
+      <strong>passo per passo</strong>, con la risposta in frazione esatta.
+      Ogni passo dichiara cosa fa e perché è lecito; se un circuito esce
+      dall'ambito supportato, il banco lo dice invece di inventare.
+    </p>
+    <ol class="how">
+      <li><strong>Scegli un esempio</strong> qui sotto.</li>
+      <li><strong>Premi Avanti</strong> per seguire i passi della dimostrazione.</li>
+      <li><strong>Confronta Prima/Dopo</strong> per vedere cosa cambia a ogni passo.</li>
+      <li><strong>Leggi la risposta esatta</strong> e, se vuoi, apri <em>Perché fidarsi</em>.</li>
+    </ol>
+    <p class="scope">
+      Questo banco dimostrativo mostra undici esempi guidati in continua,
+      passo per passo, con risposta esatta o rifiuto fuori ambito.
+      Qui esplori il catalogo: non inserisci circuiti liberi, lezioni AC o transitori.
+      <span class="badge">Beta</span>
+    </p>
+
+    <section class="kf-embed" id="kirchhoff" aria-label="Laboratorio Kirchhoff incorporato">
+      <div class="kf-embed-bar">
+        <span class="kf-embed-title">Prova Kirchhoff qui — oppure</span>
+        <button type="button" class="kf-embed-fullscreen" id="kf-fullscreen" aria-pressed="false">
+          Apri Kirchhoff a schermo intero
+        </button>
+        <a class="kf-embed-open" id="kf-open" href="https://andreamarro.github.io/kirchhoff/?view=proof" target="_blank" rel="noopener">
+          Apri il link iniziale in una pagina ↗
+        </a>
+      </div>
+      <div class="kf-embed-frame" id="kf-frame-wrap">
+        <iframe id="kf-frame" title="Kirchhoff Proof Workbench"
+          src="https://andreamarro.github.io/kirchhoff/?view=proof#exercise=partitore-d1&amp;step=-1&amp;frame=before"
+          loading="lazy" allow="clipboard-read; clipboard-write"></iframe>
+      </div>
+      <p class="kf-embed-note" id="kf-open-note" aria-live="polite">
+        Lo schermo intero, quando disponibile, conserva il passo attuale.
+        Il link qui sopra e l'alternativa allo schermo intero aprono il link iniziale.
+        Per portare in un'altra pagina il passo su cui sei, usa «Copia link» nel banco.
+      </p>
+    </section>
+
+    <section class="faq" aria-label="Cosa significa verificato">
+      <h2>Cosa significa «verificato», in pratica?</h2>
+      <dl>
+        <div>
+          <dt>Risposta esatta</dt>
+          <dd>Una frazione (p.es. 3/80 A), non un decimale arrotondato: non perde cifre per strada.</dd>
+        </div>
+        <div>
+          <dt>Passi leciti</dt>
+          <dd>Serie, parallelo e analisi nodale applicate solo quando le condizioni ci sono davvero.</dd>
+        </div>
+        <div>
+          <dt>Rifiuto onesto</dt>
+          <dd>Negli esempi fuori ambito di questo catalogo il banco dichiara
+          «non certificata» invece di mostrare un numero plausibile.</dd>
+        </div>
+      </dl>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <span>Andrea Marro · Ripetizioni scientifiche</span>
+      <span>Kirchhoff Proof Workbench — beta verticale a scopo didattico.</span>
+    </div>
+  </footer>
+
+  <script>
+    // Solo idraulica dell'ospite: risoluzione dell'URL del banco, invito
+    // schermo intero e link iniziale dedicato. Nessun calcolo circuitale,
+    // nessuna ispezione del DOM della cornice: l'unico contratto e' l'URL.
+    (function () {
+      "use strict";
+      var CANONICO = "https://andreamarro.github.io/kirchhoff/";
+      var frame = document.getElementById("kf-frame");
+      var open = document.getElementById("kf-open");
+      var full = document.getElementById("kf-fullscreen");
+      var wrap = document.getElementById("kf-frame-wrap");
+
+      var note = document.getElementById("kf-open-note");
+      function bancoDaQuery() {
+        var iniziale = "#exercise=partitore-d1&step=-1&frame=before";
+        try {
+          var query = new URLSearchParams(window.location.search);
+          var url = new URL(query.get("workbench") || CANONICO);
+          if (url.protocol !== "http:" && url.protocol !== "https:") throw new Error("URL non supportato");
+          url.searchParams.set("view", "proof");
+          if (!url.hash) url.hash = iniziale;
+          return url.toString();
+        } catch (error) {
+          var canonico = new URL(CANONICO);
+          canonico.searchParams.set("view", "proof");
+          canonico.hash = iniziale;
+          return canonico.toString();
+        }
+      }
+      // Questo URL iniziale è l'unico dato condiviso: il genitore non legge
+      // il DOM o la cronologia del figlio, anche se è della stessa origine.
+      var src = bancoDaQuery();
+      frame.setAttribute("src", src);
+      open.setAttribute("href", src);
+      function apriIniziale() {
+        note.textContent = "Schermo intero non disponibile. Puoi aprire il link iniziale qui sopra; per il passo attuale usa Copia link nel banco.";
+        window.open(src, "_blank", "noopener");
+      }
+      function erroreUscita() {
+        note.textContent = "Non riesco a uscire dallo schermo intero. Puoi usare il comando del browser per uscire.";
+      }
+      full.addEventListener("click", function () {
+        var uscita = document.fullscreenElement === wrap;
+        try {
+          if (uscita) Promise.resolve(document.exitFullscreen()).catch(erroreUscita);
+          else if (typeof wrap.requestFullscreen === "function") Promise.resolve(wrap.requestFullscreen()).catch(apriIniziale);
+          else apriIniziale();
+        } catch (error) {
+          if (uscita) erroreUscita();
+          else apriIniziale();
+        }
+      });
+      document.addEventListener("fullscreenchange", function () {
+        var attivo = document.fullscreenElement === wrap;
+        full.setAttribute("aria-pressed", String(attivo));
+        full.textContent = attivo ? "Esci dallo schermo intero" : "Apri Kirchhoff a schermo intero";
+      });
+    })();
+  </script>
+</body>
+</html>

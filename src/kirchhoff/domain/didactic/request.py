@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from fractions import Fraction
 
-from ..ir import IR, REFERENCE_NODE, Component, Magnitude, Request
+from ..ir import DC_DOMAINS, IR, REFERENCE_NODE, Component, Magnitude, Request
 from .solve import DerivationSolution
 
 _RESOLVABLE_QUANTITIES: frozenset[str] = frozenset({"voltage", "current"})
@@ -88,7 +88,7 @@ def _validare_contesto(
     request: Request,
     solution: DerivationSolution,
 ) -> None:
-    if ir.domain != "dc":
+    if ir.domain not in DC_DOMAINS:
         raise ValueError(
             f"dominio {ir.domain!r}: resolve_request opera solo in continua")
     try:

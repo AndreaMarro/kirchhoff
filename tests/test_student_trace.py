@@ -1,0 +1,316 @@
+from hashlib import sha256
+from fractions import Fraction
+from http.server import ThreadingHTTPServer
+from pathlib import Path
+from threading import Thread
+from urllib.error import HTTPError
+from urllib.request import Request, urlopen
+import importlib.util
+import json
+
+import pytest
+
+from kirchhoff.domain.student_trace import StudentStep, StudentTrace, diagnose
+from kirchhoff.domain.refusal import Refusal
+from kirchhoff.pipeline.netlist import leggi
+
+
+SERIES = "V1 a 0 12 volt\nR1 a b 100 ohm\nR2 b 0 200 ohm\n? current R2"
+BRANCH = "V1 a 0 12 volt\nR1 a b 100 ohm\nR2 b 0 200 ohm\nR3 b 0 300 ohm\n? current R2"
+
+
+def trace(text, *steps):
+    return StudentTrace(sha256(text.encode()).hexdigest(), steps)
+
+
+def test_first_invalid_topology_precedes_later_result():
+    steps = (StudentStep("R1 e R2 in serie", "serie", "R1", "R2", "300"),
+             StudentStep("R2 e R3 in serie", "serie", "R2", "R3", "500"))
+    result = diagnose(leggi(BRANCH), trace(BRANCH, *steps), BRANCH)
+    assert (result["outcome"], result["step"], result["category"]) == ("first_invalid", 1, "topology")
+    assert "grado 3" in result["message"]
+
+
+def test_valid_series_and_wrong_arithmetic_are_distinct():
+    valid = diagnose(leggi(SERIES), trace(SERIES, StudentStep("R1+R2", "serie", "R1", "R2", "300")), SERIES)
+    assert valid["outcome"] == "valid_so_far"
+    wrong = diagnose(leggi(SERIES), trace(SERIES, StudentStep("R1+R2", "serie", "R1", "R2", "200")), SERIES)
+    assert (wrong["outcome"], wrong["category"]) == ("first_invalid", "algebra")
+
+
+def test_different_method_and_uncertain_reading_are_not_accused():
+    for step in (StudentStep("KCL al nodo b", "kcl", "b", "", None),
+                 StudentStep("Metodo simbolico", "altro", "", "", None),
+                 StudentStep("?", "serie", "R1", "R2", None, "ambiguous")):
+        result = diagnose(leggi(BRANCH), trace(BRANCH, step), BRANCH)
+        assert result["outcome"] == "not_assessable"
+
+
+def test_numeric_observations_are_checked_independently_of_the_students_method():
+    steps = (StudentStep("KCL al nodo b: I_R2 = 9/275 A", "corrente", "R2", "", "9/275"),
+             StudentStep("V_R2 = 72/11 V", "tensione", "R2", "", "72/11"))
+    assert diagnose(leggi(BRANCH), trace(BRANCH, *steps), BRANCH)["outcome"] == "valid_so_far"
+    wrong = steps[:1] + (StudentStep("V_R2 = -72/11 V", "tensione", "R2", "", "-72/11"),)
+    result = diagnose(leggi(BRANCH), trace(BRANCH, *wrong), BRANCH)
+    assert (result["outcome"], result["step"], result["category"], result["focus"]) == (
+        "first_invalid", 2, "value", ["R2"])
+
+
+@pytest.mark.parametrize("operation,component,orientation,accepted,wrong", [
+    ("corrente", "R1", "b,a", "-1/25", "1/25"),
+    ("tensione", "R2", "0,b", "-8", "8"),
+])
+def test_numeric_observation_accepts_the_students_reversed_reference(
+    operation, component, orientation, accepted, wrong,
+):
+    correct = StudentStep("verso dichiarato", operation, component, orientation, accepted)
+    assert diagnose(leggi(SERIES), trace(SERIES, correct), SERIES)["outcome"] == "valid_so_far"
+    incorrect = StudentStep("segno errato nel verso dichiarato", operation, component, orientation, wrong)
+    result = diagnose(leggi(SERIES), trace(SERIES, incorrect), SERIES)
+    assert (result["outcome"], result["category"]) == ("first_invalid", "value")
+    assert orientation.replace(",", " → ") in result["message"]
+
+
+def test_numeric_observation_accepts_explicit_component_reference():
+    step = StudentStep("verso esplicito", "corrente", "R1", "a,b", "1/25")
+    assert diagnose(leggi(SERIES), trace(SERIES, step), SERIES)["outcome"] == "valid_so_far"
+
+
+@pytest.mark.parametrize("orientation", ["a,0", "b", "b,b", "b,0,a"])
+def test_numeric_observation_abstains_when_declared_reference_is_not_the_component(orientation):
+    step = StudentStep("verso non chiaro", "tensione", "R2", orientation, "-8")
+    result = diagnose(leggi(SERIES), trace(SERIES, step), SERIES)
+    assert (result["outcome"], result["category"]) == ("not_assessable", "orientation")
+
+
+def test_numeric_observation_requires_readable_value_and_known_original_component():
+    for step, category in (
+        (StudentStep("I_R2 = ?", "corrente", "R2", ""), "transcription"),
+        (StudentStep("I_R2 = due", "corrente", "R2", "", "due"), "transcription"),
+        (StudentStep("I_RX = 1", "corrente", "RX", "", "1"), "identifier"),
+    ):
+        result = diagnose(leggi(BRANCH), trace(BRANCH, step), BRANCH)
+        assert (result["outcome"], result["category"]) == ("not_assessable", category)
+
+
+def test_numeric_observation_never_accuses_on_solver_path_disagreement(monkeypatch):
+    import kirchhoff.domain.student_trace as module
+    from fractions import Fraction
+    original = module.solve_dc_tableau
+
+    def damaged(ir):
+        solution = original(ir)
+        solution["R2"]["current"] += Fraction(1, 100)
+        return solution
+
+    monkeypatch.setattr(module, "solve_dc_tableau", damaged)
+    step = StudentStep("I_R2 = 9/275 A", "corrente", "R2", "", "9/275")
+    result = diagnose(leggi(BRANCH), trace(BRANCH, step), BRANCH)
+    assert (result["outcome"], result["category"]) == ("not_assessable", "proof")
+
+
+def test_numeric_observation_after_reduction_is_bound_to_original_component():
+    steps = (StudentStep("R1 + R2 = 300 ohm", "serie", "R1", "R2", "300"),
+             StudentStep("I_R2 = 1/25 A", "corrente", "R2", "", "1/25"))
+    assert diagnose(leggi(SERIES), trace(SERIES, *steps), SERIES)["outcome"] == "valid_so_far"
+
+
+def test_kcl_accepts_either_orientation_and_order_of_all_incident_currents():
+    for terms in ("-R1,+R2,+R3", "+R3,-R1,+R2", "+R1,-R2,-R3"):
+        step = StudentStep(f"KCL al nodo b: {terms}=0", "kcl", "b", terms)
+        result = diagnose(leggi(BRANCH), trace(BRANCH, step), BRANCH)
+        assert result["outcome"] == "valid_so_far"
+
+
+def test_kcl_wrong_sign_or_missing_nonzero_branch_is_first_invalid():
+    prior = StudentStep("I_R2 = 9/275 A", "corrente", "R2", "", "9/275")
+    for terms in ("+R1,+R2,+R3", "-R1,+R2"):
+        step = StudentStep(f"KCL al nodo b: {terms}=0", "kcl", "b", terms)
+        result = diagnose(leggi(BRANCH), trace(BRANCH, prior, step), BRANCH)
+        assert (result["outcome"], result["step"], result["category"]) == (
+            "first_invalid", 2, "kcl")
+
+
+def test_kcl_incomplete_or_ambiguous_syntax_is_not_accused():
+    for first, terms, category in (("not-a-node", "-R1,+R2,+R3", "identifier"),
+                                    ("b", "I_R1+I_R2+I_R3", "transcription"),
+                                    ("b", "-R1,+RX,+R3", "identifier"),
+                                    ("b", "-R1,+R2,+R2,+R3", "transcription")):
+        result = diagnose(leggi(BRANCH), trace(BRANCH, StudentStep("KCL", "kcl", first, terms)), BRANCH)
+        assert (result["outcome"], result["category"]) == ("not_assessable", category)
+
+
+def test_kcl_does_not_accuse_a_valid_zero_current_simplification():
+    text = "V1 a 0 12 volt\nR1 a b 100 ohm\nR2 b 0 200 ohm\nI0 b 0 0 ampere\n? current R2"
+    step = StudentStep("KCL senza ramo a corrente nulla", "kcl", "b", "-R1,+R2")
+    result = diagnose(leggi(text), trace(text, step), text)
+    assert result["outcome"] != "first_invalid"
+
+
+def test_kcl_abstains_when_the_independent_paths_disagree(monkeypatch):
+    import kirchhoff.domain.student_trace as module
+    original = module.solve_dc_tableau
+
+    def damaged(ir):
+        solution = original(ir)
+        solution["R2"]["current"] += Fraction(1, 100)
+        return solution
+
+    monkeypatch.setattr(module, "solve_dc_tableau", damaged)
+    step = StudentStep("KCL con un ramo omesso", "kcl", "b", "-R1,+R2")
+    result = diagnose(leggi(BRANCH), trace(BRANCH, step), BRANCH)
+    assert (result["outcome"], result["category"]) == ("not_assessable", "proof")
+
+
+def test_kvl_accepts_closed_voltage_walk_in_any_term_order():
+    for terms in ("+R1,+R2,-V1", "+V1,-R2,-R1", "+R2,-V1,+R1"):
+        step = StudentStep("KVL alla maglia", "kvl", "a", terms)
+        assert diagnose(leggi(SERIES), trace(SERIES, step), SERIES)["outcome"] == "valid_so_far"
+    prior = StudentStep("I_R1 = 1/25 A", "corrente", "R1", "", "1/25")
+    loop = StudentStep("KVL alla maglia", "kvl", "a", "+R1,+R2,-V1")
+    assert diagnose(leggi(SERIES), trace(SERIES, prior, loop), SERIES)["outcome"] == "valid_so_far"
+
+
+def test_kvl_rejects_a_false_zero_with_first_invalid_evidence():
+    prior = StudentStep("R1 e R2 in serie", "serie", "R1", "R2", "300")
+    step = StudentStep("V_R1 + V_R2 + V1 = 0", "kvl", "a", "+R1,+R2,+V1")
+    result = diagnose(leggi(SERIES), trace(SERIES, prior, step), SERIES)
+    assert (result["outcome"], result["step"], result["category"]) == ("first_invalid", 2, "kvl")
+    assert result["focus"] == ["a", "R1", "R2", "V1"]
+
+
+def test_kvl_abstains_on_unreadable_or_accidental_zero():
+    zero = "V1 a 0 0 volt\nR1 a 0 3 ohm\n? current R1"
+    for net, first, terms, category in (
+        (SERIES, "a", "R1+R2-V1", "transcription"),
+        (SERIES, "a", "+R1,+RX,-V1", "identifier"),
+        (SERIES, "missing", "+R1,+R2,-V1", "identifier"),
+        (SERIES, "a", "+R1,+R1,-V1", "transcription"),
+        (zero, "a", "+R1", "simplification"),
+    ):
+        result = diagnose(leggi(net), trace(net, StudentStep("KVL", "kvl", first, terms)), net)
+        assert (result["outcome"], result["category"]) == ("not_assessable", category)
+
+
+def test_kvl_does_not_promote_two_disconnected_loops_as_one_maglia():
+    net = ("V1 a b 12 volt\nR1 a b 3 ohm\nV2 c d 6 volt\nR2 c d 2 ohm\n"
+           "Rb b 0 5 ohm\nRc c 0 5 ohm\n? current R1")
+    step = StudentStep("due maglie sommate", "kvl", "a", "+R1,-V1,+R2,-V2")
+    result = diagnose(leggi(net), trace(net, step), net)
+    assert (result["outcome"], result["category"]) == ("not_assessable", "simplification")
+
+
+def test_kvl_abstains_when_independent_solvers_disagree(monkeypatch):
+    import kirchhoff.domain.student_trace as module
+    original = module.solve_dc_tableau
+
+    def damaged(ir):
+        solution = original(ir)
+        solution["R1"]["voltage"] += Fraction(1)
+        return solution
+
+    monkeypatch.setattr(module, "solve_dc_tableau", damaged)
+    step = StudentStep("KVL errata", "kvl", "a", "+R1,+R2,+V1")
+    result = diagnose(leggi(SERIES), trace(SERIES, step), SERIES)
+    assert (result["outcome"], result["category"]) == ("not_assessable", "proof")
+
+
+def test_numeric_observation_abstains_for_unsupported_dc_element():
+    text = "V1 a 0 12 volt\nC1 a 0 1 farad\n? voltage C1"
+    step = StudentStep("V_C1", "tensione", "C1", "", "12")
+    result = diagnose(leggi(text), trace(text, step), text)
+    assert (result["outcome"], result["category"]) == ("not_assessable", "proof")
+
+
+def test_trace_is_bound_to_exact_circuit_revision():
+    old = trace(SERIES, StudentStep("R1+R2", "serie", "R1", "R2"))
+    with pytest.raises(ValueError, match="circuito è cambiato"):
+        diagnose(leggi(BRANCH), old, BRANCH)
+
+
+def test_image_cannot_be_a_semantic_step():
+    with pytest.raises((TypeError, ValueError)):
+        StudentTrace(sha256(SERIES.encode()).hexdigest(), (b"image/png",))
+
+
+@pytest.mark.parametrize("step,error", [
+    (dict(transcription="?", operation="serie", first="R1", second="R2", reading="maybe"), ValueError),
+    (dict(transcription=42, operation="serie", first="R1", second="R2"), TypeError),
+    (dict(transcription="R1+R2", operation="serie", first="R1", second="R2", claimed_value=300), TypeError),
+    (dict(transcription="x"*501, operation="serie", first="R1", second="R2"), ValueError),
+    (dict(transcription="R1+R2", operation="serie", first="R1", second="R2", claimed_value="1"*101), ValueError),
+])
+def test_untrusted_step_fields_are_rejected(step, error):
+    with pytest.raises(error):
+        StudentStep(**step)
+
+
+def test_trace_contract_rejects_bad_version_hash_and_length():
+    fingerprint = sha256(SERIES.encode()).hexdigest()
+    step = StudentStep("R1+R2", "serie", "R1", "R2")
+    for args in ((fingerprint, (step,), "student-trace.v0"),
+                 ("short", (step,), "student-trace.v1"),
+                 (fingerprint, (), "student-trace.v1"),
+                 (fingerprint, (step,)*33, "student-trace.v1")):
+        with pytest.raises(ValueError):
+            StudentTrace(*args)
+
+
+def test_unknown_or_nonresistor_is_not_called_an_error():
+    for step in (StudentStep("R1 + RX", "serie", "R1", "RX"),
+                 StudentStep("R1 + R1", "serie", "R1", "R1"),
+                 StudentStep("V1 + R1", "serie", "V1", "R1")):
+        assert diagnose(leggi(SERIES), trace(SERIES, step), SERIES)["outcome"] == "not_assessable"
+
+
+def test_parallel_topology_and_value_are_checked():
+    text = "I1 0 a 2 ampere\nR1 a 0 3 ohm\nR2 a 0 6 ohm\n? current R2"
+    correct = StudentStep("R1||R2", "parallelo", "R1", "R2", "2")
+    assert diagnose(leggi(text), trace(text, correct), text)["outcome"] == "valid_so_far"
+    unknown_value = StudentStep("R1||R2", "parallelo", "R1", "R2")
+    assert diagnose(leggi(text), trace(text, unknown_value), text)["outcome"] == "valid_so_far"
+    unreadable_value = StudentStep("R1||R2", "parallelo", "R1", "R2", "due")
+    assert diagnose(leggi(text), trace(text, unreadable_value), text)["category"] == "transcription"
+    assert diagnose(leggi(SERIES), trace(SERIES, StudentStep("R1||R2", "parallelo", "R1", "R2")), SERIES)["category"] == "topology"
+
+
+def test_proof_refusal_or_unavailable_transform_is_not_a_student_error(monkeypatch):
+    import kirchhoff.domain.student_trace as module
+    valid = trace(SERIES, StudentStep("R1+R2", "serie", "R1", "R2"))
+    def unavailable(*_args):
+        raise NotImplementedError("test-only unavailable")
+    monkeypatch.setattr(module, "transform", unavailable)
+    assert diagnose(leggi(SERIES), valid, SERIES)["outcome"] == "not_assessable"
+    monkeypatch.setattr(module, "transform", lambda *_args: Refusal("topology", "R1", "component", "test-only refusal"))
+    assert diagnose(leggi(SERIES), valid, SERIES)["outcome"] == "not_assessable"
+
+
+def test_live_http_contract_diagnoses_and_rejects_stale_revision():
+    path = Path(__file__).resolve().parents[1] / "scripts/serve_student.py"
+    spec = importlib.util.spec_from_file_location("serve_student_test", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    server = ThreadingHTTPServer(("127.0.0.1", 0), module.Handler)
+    thread = Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        for fingerprint, status in ((sha256(BRANCH.encode()).hexdigest(), 200),
+                                    (sha256(SERIES.encode()).hexdigest(), 422)):
+            payload = dict(netlist=BRANCH, trace=dict(schema="student-trace.v1",
+                circuit_fingerprint=fingerprint, steps=[dict(transcription="R1+R2",
+                    operation="serie", first="R1", second="R2", claimed_value="300", reading="clear")]))
+            request = Request(f"http://127.0.0.1:{server.server_port}/api/diagnose",
+                              data=json.dumps(payload).encode(), headers={"Content-Type": "application/json"})
+            if status == 200:
+                with urlopen(request) as response:
+                    assert response.status == 200
+                    assert json.load(response)["category"] == "topology"
+            else:
+                with pytest.raises(HTTPError) as error:
+                    urlopen(request)
+                assert error.value.code == 422
+                assert "circuito è cambiato" in error.value.read().decode()
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)

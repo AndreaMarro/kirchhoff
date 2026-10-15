@@ -1,0 +1,23 @@
+[WebServer] (node:5788) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 8 tests using 1 worker
+
+(node:5793) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:5793) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop] › tests-e2e/student-laplace-live.spec.ts:17:29 › rc-step: componenti, stato iniziale, algebra, PDF e quaderno riaperto (11.5s)
+  ✓  2 [desktop] › tests-e2e/student-laplace-live.spec.ts:17:29 › rc-impulse: componenti, stato iniziale, algebra, PDF e quaderno riaperto (11.1s)
+  ✓  3 [desktop] › tests-e2e/student-laplace-live.spec.ts:17:29 › rl-free: componenti, stato iniziale, algebra, PDF e quaderno riaperto (8.6s)
+  ✓  4 [desktop] › tests-e2e/student-laplace-live.spec.ts:80:1 › Laplace nella MCP App con SDK reale e host locale di prova (11.3s)
+(node:5984) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:5984) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  5 [mobile] › tests-e2e/student-laplace-live.spec.ts:17:29 › rc-step: componenti, stato iniziale, algebra, PDF e quaderno riaperto (10.4s)
+  ✓  6 [mobile] › tests-e2e/student-laplace-live.spec.ts:17:29 › rc-impulse: componenti, stato iniziale, algebra, PDF e quaderno riaperto (5.8s)
+  ✓  7 [mobile] › tests-e2e/student-laplace-live.spec.ts:17:29 › rl-free: componenti, stato iniziale, algebra, PDF e quaderno riaperto (4.6s)
+  ✓  8 [mobile] › tests-e2e/student-laplace-live.spec.ts:80:1 › Laplace nella MCP App con SDK reale e host locale di prova (9.2s)
+
+  8 passed (1.6m)

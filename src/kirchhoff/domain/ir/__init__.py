@@ -3,9 +3,11 @@
 from .canonical import SYMMETRIC, canonicalize, orienta
 from .schema import (
     CONTROLLED_SOURCE_TYPES,
+    DC_DOMAINS,
     EXPECTED_UNIT,
     IR,
     POSITIVE_VALUED,
+    PORT_QUANTITIES,
     QUANTITIES,
     REFERENCE_NODE,
     SOURCE_KINDS,
@@ -13,6 +15,8 @@ from .schema import (
     ComponentType,
     Magnitude,
     Provenance,
+    PortQuantity,
+    PortRequest,
     Quantity,
     Request,
     SourceKind,
@@ -20,9 +24,11 @@ from .schema import (
 
 __all__ = [
     "CONTROLLED_SOURCE_TYPES",
+    "DC_DOMAINS",
     "EXPECTED_UNIT",
     "IR",
     "POSITIVE_VALUED",
+    "PORT_QUANTITIES",
     "QUANTITIES",
     "REFERENCE_NODE",
     "SOURCE_KINDS",
@@ -31,6 +37,8 @@ __all__ = [
     "ComponentType",
     "Magnitude",
     "Provenance",
+    "PortQuantity",
+    "PortRequest",
     "Quantity",
     "Request",
     "SourceKind",

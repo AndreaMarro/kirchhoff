@@ -1,0 +1,198 @@
+{
+  "schema": "generated-catalog-receipt.v1",
+  "producer_commit": "ae10ecbe03b4e3d9f058360496f66bd62bdaa630",
+  "source_method": "scripts/serve_student.py --export",
+  "records": 18,
+  "examples": 4,
+  "checks": {
+    "canonical_entrypoint_test": "PASS",
+    "web_build": "PASS"
+  },
+  "files": [
+    {
+      "path": "web/public/lessons/corrente-paralleli-auto.json",
+      "sha256": "8863ec9c944ab37eeaf653e7b8278bb790e500e53f1932cfee89b68de55dd900",
+      "bytes": 25286
+    },
+    {
+      "path": "web/public/lessons/corrente-paralleli-auto.pdf",
+      "sha256": "a05cc24f792f0065124a7f2c97d0f6d5dfb51e2b94c98021807f1dfbc6531dff",
+      "bytes": 48962
+    },
+    {
+      "path": "web/public/lessons/corrente-paralleli-millman.json",
+      "sha256": "4db4ba127fa8ee84541abef83cf4b7d0fca29bf85c46a87bf2b30fbe86dc60d1",
+      "bytes": 25294
+    },
+    {
+      "path": "web/public/lessons/corrente-paralleli-millman.pdf",
+      "sha256": "898846d794d8789791b5b1b97c91f6079ea5ff7d050f58f00ddbb139b78d5684",
+      "bytes": 49019
+    },
+    {
+      "path": "web/public/lessons/corrente-paralleli-nodal.json",
+      "sha256": "6c35a65521deb0c15798bb501786bc59bad64460c2b2a5c827c6ec03457d279d",
+      "bytes": 29609
+    },
+    {
+      "path": "web/public/lessons/corrente-paralleli-nodal.pdf",
+      "sha256": "87efa997a1f95e918df6628a5729daefb66f1d1dca02670850c49f227553cbf3",
+      "bytes": 57106
+    },
+    {
+      "path": "web/public/lessons/corrente-paralleli-superposition.json",
+      "sha256": "670045d72b859a13dbd8ad32d9b40653cd2ac665f29360e6e1708240f3aaad87",
+      "bytes": 24011
+    },
+    {
+      "path": "web/public/lessons/corrente-paralleli-superposition.pdf",
+      "sha256": "a8b4fb2c056a194e2db068c7f2822c002ae5d49c7a0ec0a400bc77b6b5eba2ee",
+      "bytes": 46778
+    },
+    {
+      "path": "web/public/lessons/corrente-paralleli-thevenin.json",
+      "sha256": "a70f56427b04456d79bb740aab2a8177661cca785d066011f763fbf47407c6a2",
+      "bytes": 24557
+    },
+    {
+      "path": "web/public/lessons/corrente-paralleli-thevenin.pdf",
+      "sha256": "47c7f2995e94266de88a0d1c23483168fd58598294dccb07c2b40f3b29ba983c",
+      "bytes": 49296
+    },
+    {
+      "path": "web/public/lessons/due-generatori-auto.json",
+      "sha256": "3d0e608729c1f2a849b5f20de8816c0e586366152c5e9e5e36f199a7c8899f52",
+      "bytes": 38107
+    },
+    {
+      "path": "web/public/lessons/due-generatori-auto.pdf",
+      "sha256": "69e46ced8c0930afebc03f9601bf9488359a9d6b14706913663643ad78e84638",
+      "bytes": 72024
+    },
+    {
+      "path": "web/public/lessons/due-generatori-millman.json",
+      "sha256": "3d0e608729c1f2a849b5f20de8816c0e586366152c5e9e5e36f199a7c8899f52",
+      "bytes": 38107
+    },
+    {
+      "path": "web/public/lessons/due-generatori-millman.pdf",
+      "sha256": "69e46ced8c0930afebc03f9601bf9488359a9d6b14706913663643ad78e84638",
+      "bytes": 72024
+    },
+    {
+      "path": "web/public/lessons/due-generatori-nodal.json",
+      "sha256": "fa3b03480157cce8b31dd4f5f602986a153b6e1a049a7ca647a83ed3694decef",
+      "bytes": 44842
+    },
+    {
+      "path": "web/public/lessons/due-generatori-nodal.pdf",
+      "sha256": "4ed52bdb2f394c6868bb71b6cb43ecd1f8e96cbcf391f1e62daa56e6daa13f70",
+      "bytes": 84513
+    },
+    {
+      "path": "web/public/lessons/due-generatori-norton.json",
+      "sha256": "cf1ba8fd6ac1e3135dec36505142861c73d4908b5a830535e9749c54dd301aa2",
+      "bytes": 48818
+    },
+    {
+      "path": "web/public/lessons/due-generatori-norton.pdf",
+      "sha256": "41d31e1a9da23ea2e4f73c5a568229eb1d75f441567aca864c5ccbd94ba5feeb",
+      "bytes": 90455
+    },
+    {
+      "path": "web/public/lessons/due-generatori-superposition.json",
+      "sha256": "33fb76c5ea26fd475ff5bb2f4613922204a1c9150c84b26db4f8add4ac86d5ca",
+      "bytes": 40447
+    },
+    {
+      "path": "web/public/lessons/due-generatori-superposition.pdf",
+      "sha256": "da2749651fc0fe4af27ad1e311ac572914ec5d7b6f04fbfa1143951788bfcfd1",
+      "bytes": 77012
+    },
+    {
+      "path": "web/public/lessons/due-generatori-thevenin.json",
+      "sha256": "c6ef7d61f2ab81bc353136e5564ad7b842c7f27281a0838aa33e0e1259bf0238",
+      "bytes": 34945
+    },
+    {
+      "path": "web/public/lessons/due-generatori-thevenin.pdf",
+      "sha256": "3f3149befbf33cee3e5c277706e83769ceb95da8a5739b0459cd73a049c41490",
+      "bytes": 68039
+    },
+    {
+      "path": "web/public/lessons/index.json",
+      "sha256": "d39513a8dc07351058ace1fdb9b7b741c112e09f65ec0515899a100125af3ed0",
+      "bytes": 1385
+    },
+    {
+      "path": "web/public/lessons/partitore-d1-auto.json",
+      "sha256": "5613fc3e7f8918473674957b68a4a28db7cf08db8001257e95a873dec9e7fa86",
+      "bytes": 25434
+    },
+    {
+      "path": "web/public/lessons/partitore-d1-auto.pdf",
+      "sha256": "0e746d112881ec54d02f8ffccee6f07c7d5cd602a75b65af633703e4a6e95cfc",
+      "bytes": 49458
+    },
+    {
+      "path": "web/public/lessons/partitore-d1-millman.json",
+      "sha256": "df33b2257e156c4c492a62a938cf2f2cd45aa00eaab8513d7636a57c749bb8db",
+      "bytes": 27375
+    },
+    {
+      "path": "web/public/lessons/partitore-d1-millman.pdf",
+      "sha256": "c35fb421dac513660c64af3a965c6f75629b968e36078cf5a6e79ecb86c37e73",
+      "bytes": 52633
+    },
+    {
+      "path": "web/public/lessons/partitore-d1-nodal.json",
+      "sha256": "36febf07387afcfcc7faef23ba6551a6e29d4629b21d9c48919fa78c47b5f417",
+      "bytes": 29248
+    },
+    {
+      "path": "web/public/lessons/partitore-d1-nodal.pdf",
+      "sha256": "66a8332e3cdb530b00b5c9064efa1626f58c1fd16974b470b84732a00d99653c",
+      "bytes": 55418
+    },
+    {
+      "path": "web/public/lessons/partitore-d1-superposition.json",
+      "sha256": "5aa8647f5f117eee8c7a64303f47aa54a63de9d8dfbfad52d5e88952e8c30b5c",
+      "bytes": 26147
+    },
+    {
+      "path": "web/public/lessons/partitore-d1-superposition.pdf",
+      "sha256": "7430ccf8864e766c2fbdc49b44dee7900e56387b6f6ac43712c625738b81fb46",
+      "bytes": 50694
+    },
+    {
+      "path": "web/public/lessons/ponte-nodale-auto.json",
+      "sha256": "d2c157301e62ed6115047ad864e0650be472b8ae842b4f0d49c0e65d7dc52e39",
+      "bytes": 48821
+    },
+    {
+      "path": "web/public/lessons/ponte-nodale-auto.pdf",
+      "sha256": "b1742db8033b2f1d69e28407ebe21079c4cf51152030d13a08d32d251c701bc3",
+      "bytes": 91819
+    },
+    {
+      "path": "web/public/lessons/ponte-nodale-nodal.json",
+      "sha256": "c8cff343d04ef16828f5adb7e636f297ae0f51c1c98a6747654eacc0b4fc16f3",
+      "bytes": 59521
+    },
+    {
+      "path": "web/public/lessons/ponte-nodale-nodal.pdf",
+      "sha256": "1b20e7894880d891716582d0919bd3c3d454cc360ee8fbcb82535af71e03c7e5",
+      "bytes": 111660
+    },
+    {
+      "path": "web/public/lessons/ponte-nodale-star_delta.json",
+      "sha256": "d2c157301e62ed6115047ad864e0650be472b8ae842b4f0d49c0e65d7dc52e39",
+      "bytes": 48821
+    },
+    {
+      "path": "web/public/lessons/ponte-nodale-star_delta.pdf",
+      "sha256": "b1742db8033b2f1d69e28407ebe21079c4cf51152030d13a08d32d251c701bc3",
+      "bytes": 91819
+    }
+  ]
+}

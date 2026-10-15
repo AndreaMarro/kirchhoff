@@ -275,3 +275,78 @@ Story 1.5 (recinto 4 di AD-21, in backlog) non ha alcun controllo di confine. No
 un difetto da riparare qui — il recinto 4 e' dichiarato fuori ambito dalla spec —
 ma una tabella di oracoli che presenti quel verde come copertura del codice nuovo
 dice piu' di quel che il controllo misura, ed e' gia' successo una volta.
+
+## Review di convergenza 2026-10-15 — H5/K4: navigazione delle evidenze
+
+**P2, differito alla prima unita' di prodotto H5/K4.** Il Claim di una sessione
+chiusa cita identificatori di derivazione (per esempio `D1`, `D2`), mentre i
+`StepView.evidence_refs` dei passi analitici espongono solo il riferimento allo
+stato circuitale. `EvidencePanel` mostra status, verificatore, soggetti e
+provenienza, ma non offre un collegamento dall'evidenza del Claim al passo che
+la produce. Non dichiarare completa l'ispezione di residui e cross-check.
+
+**Esito richiesto:** conservare il legame derivazione-passo nella proiezione e
+renderlo navigabile dalla prova, senza nuova risoluzione nel browser o renderer.
+Un test deve seguire un'evidenza della risposta fino al passo corrispondente.
+Fonte: review avversaria separata del candidato PR #15 `a98d37a`.
+
+## Riconciliazione15→17 — oracolo live capabilities precedente a Laplace
+
+**P2, preesistente in17; manutenzione separata prima della promozione.** La
+spec `student-session-live.spec.ts`, test «il perimetro visibile coincide»,
+pretende `transients=false` prima di navigare la pagina. La basea6b1e8f ha
+già `product_capabilities` e test Laplace/MCP che richiedono `transients=true`
+con risposta trasformata, step/impulse, nessuna antitrasformata o commutazione
+di topologie e `certified_lesson=false`. La prova live corrente ha22PASS/2FAIL
+(desktop/mobile su quella assert); non è24verdi né prova della paritàUI nel
+test abortito. Il modulo capabilities esattoHEAD e HTTP reale concordano;
+capabilities, server, StudentApp e vecchia spec sono byte-invariati rispetto
+alla base. Non è una nuova suite browser baseline.
+
+**Esito richiesto:** riallineare l'oracolo al contratto Laplace esistente,
+conservando i limiti granulari e il confronto del testoUI col server. Il solo
+cambio false→true non copre quei limiti. Nessun cambio di API, supporto
+generico a tutti i transitori, Claim VERIFIED, soglie o skip è autorizzato
+dalla classificazione. La nuova unione parser15→17 resta verificata nel suo
+perimetro locale; nessuna promozione/main/quorum ne deriva.
+
+### Seguito locale — oracolo capabilities/UI/Laplace, 15 ottobre 2026
+
+L'oracolo sopra è stato riallineato in un'unità separata sulla base71aa0cf:
+HTTP/schema/flags e limiti Laplace granulari, scope non vuoto e primo paragrafoUI
+uguale al server. Live24PASS/0FAIL, comprese le due prove prima abortite;
+14 mutanti del vero callback respinti prima di goto e controllo sano;
+overlay separato browser-only del testo scope osservato in desktop/mobile.
+Nessun prodotto/API/schema/Verified/skip cambiato, gli altri sei callback
+restano byte-invariati. Review tecnica separata APPROVE sullo hash17cf86d2;
+pin futuro del commit ancora pendente nella receipt. Il precedente22/2
+rimane una misura storica. Questo chiude localmente il debito dell'oracolo,
+non certifica main/quorum, ogni transitorio o le altre unità16/H5/K4.
+
+## Recupero catalogo PR16 — 2026-10-15
+
+La slice catalogo/provenienza recupera tredici sorgenti/test e dodici JSON: undici viste, nove chiusure e due rifiuti. Produttore committed 4a93e24c2cfea75c8d1038e68a0c4126ec49a27f; closure112 invariata e pin reale su tutti gli artifact. Non amplia automaticamente le famiglie StudentApp e non chiude H3.
+
+La PR16 e il parent bfa restano parzialmente recuperati, non assorbiti in main. Restano sette finding FIX_REQUIRED nella prossima unità parent/host/operazioni: ingresso proof esplicito; smoke dinamico su tutti i corpi; verifier dei nuovi JSON; verifier degli asset effettivamente indicati nellHTML remoto; promessa CTA dopo navigazione; playbook manuale senza eliminare branch; delimitazione di brief e misure storiche. Preservare originali e genealogia nel recupero conservativo finale. I due falsi verdi del verifier e il fumo4vs11 non sono gate utilizzabili per dichiarare completo il catalogo. H5/K4 mantiene la destinazione prodotto separata, design e21famiglie restano aperti. Nessuna riduzione di soglie, skip, Verified o altri confini.
+
+Receipt: 20261015T060236Z-catalogo-proof-undici-provenienza.md; review tecnica Codex precommit SHA256 35070c780b9137d004bb499a35a6ee0cfb128b6b1fae7974e68f7d1d6826c99a. Non equivale al quorum formale non-Codex, CI remota del nuovo candidato o approvazione main/deploy.
+
+
+## Recupero locale host/operazioni PR16 — 15 ottobre 2026
+
+Seguito della slice catalogo: recuperati guscio, guida, strumenti, test e documenti del parent bfa tramite merge conservativo proposto con head originale0adc. I sette finding F1–F6/F8 sono affrontati localmente e approvati nella review tecnica separata; F7 resta corretto dal produttore reale4a93 con closure112 e catalogo25 invariati. Non è prova di assorbimento in main, quorum formale, deploy o chiusura16. La receipt di questo giro contiene SHA, controprove, attribuzione dei run e limiti.
+
+Smoke dinamico e verifier intera dist non sono solver o firmaH3; ogni Failure è intenzionalmente guasto per il profilo operativo, senza cambiare il vero schema/UI. Corrette le attestazioni positive nei rifiuti e la divergenza lessicale del razionale; mantenuti controlli sani. Fullscreen conserva iframe, link/fallback iniziali dichiarati, popup non millantato. Header mobile scorre via entro480px: RED discriminante2FAIL e intero host26PASS dopo correzione, due setup precedenti non discriminanti conservati. Il vecchio oracolo tastiera è riallineato agli action già esistenti, non al prodotto cambiato.
+
+**P3, prossima unità isolata UX scroll host/frame:** il caricamento mobile360×780 con scala step0after ha mosso la pagina ospite a scrollY349; la causa non è ancora isolata. La correzione CSS elimina la sovrapposizione dell'header, non questo movimento iniziale. Conservarne sorgente e metriche, verificare il focus e lo scroll interno/esterno prima di una modifica al Picker. H5/K4, design e21famiglie mantengono le destinazioni precedenti.
+
+**Deviazione nelle prove storiche:** il writer ha riusato per errore una directory Playwright del catalogo durante la controprova route; sei PNG default storici sono persi, non rigenerati come storici. Log/risultati e quattro PNG specifici catalogo separati sono conservati; nuove immagini host/viewport hanno directory nuove e pin propri. Non dichiarare preservazione completa dei vecchi screenshot.
+
+
+## Correzioni della review consolidata701 — 15 ottobre 2026
+
+C701-1 P2 (busy StudentTrace dopo edit durante controllo) e C701-2 P2 (promessa privacy del quaderno v2) sono affrontati localmente: reset sincrono del busy con guardie generazionali conservate, avviso accanto a Salva quaderno coerente con ownership e byte esportati. C701-3 P3 README è riallineato ai limiti DC/AC/Laplace reali. Quattro nuovi RED browser pertinenti, poi student-session12PASS;191unit/typecheck/build PASS. La suite completa registra timeout ancora da diagnosticare, foto/PDF live e CI del nuovo SHA sono pendenti: non dichiarare gate o main verdi. Receipt20261015T080500Z conserva prove e limiti.
+
+Il proprietario consente reviewer Codex separato al posto della seconda famiglia soltanto per questa esecuzione, con tutti gli altri gate e protezioni invariati; nessuna modifica permanente della policy. H5/K4 P2 e scroll host349 P3 mantengono le destinazioni sopra, come21famiglie/design/pilot/H3. Ardesia rimane solo locale.
+
+Seguito delle verifiche, fonte4 invariata: default140PASS/4FAIL/54SKIP, poi i quattro casi passano nella singola replica invariata. Foto/PDF reali3PASS/1FAIL, poi una replica invariata del PDFdesktop1PASS; nel primo trace solveHTTP200 impiega5890.991ms oltre attesa5000ms, body non catturato. Preservare entrambi i fallimenti; non chiamare verdi le suite originali. CI completa del nuovo SHA e gate main ancora pendenti.

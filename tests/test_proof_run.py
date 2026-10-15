@@ -503,3 +503,26 @@ def test_p_supply_stati_limitata_e_valida(monkeypatch):
     assert len(set(viste["state_ids"])) == attesa
     for sid in viste["state_ids"]:
         verifica(sid, "ir")
+
+
+def test_m_chiave_mancante_nomina_orchestrate_e_non_attraversa(monkeypatch):
+    """P2 CodeRabbit su PR11: KeyError/AssertionError restano Failure nominati."""
+    import kirchhoff.pipeline.proof_run as confine
+
+    def _senza_chiave(*args, **kwargs):
+        raise KeyError("stato fantasma")
+
+    monkeypatch.setattr(confine, "orchestrate_didactic_run", _senza_chiave)
+    esito = _chiusura_d1()
+    assert type(esito) is Failure
+    assert esito.dove == "orchestrate"
+    assert not isinstance(esito, Refusal)
+
+    def _asserzione(*args, **kwargs):
+        raise AssertionError("invariante rotta")
+
+    monkeypatch.setattr(confine, "orchestrate_didactic_run", _asserzione)
+    esito = _chiusura_d1()
+    assert type(esito) is Failure
+    assert esito.dove == "orchestrate"
+    assert not isinstance(esito, Refusal)

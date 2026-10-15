@@ -1,0 +1,5475 @@
+{
+  "model": "inherited/unknown",
+  "seed": 2026100311,
+  "case_count": 71,
+  "cases_sha256": "c6deeae0b704457dee2ad15fad0d6dae556bef84e69c477746124446434a39e9",
+  "oracle_sha256": "8a05bb74435ece4ea67cac4835767b62c52d47f44691e96620431a97e3ad9b1b",
+  "expected_sha256": "bc43a121da3de1b48363a1e75e7a86277ac599e0f740ff1fc55d6b5976ab5222",
+  "runner_sha256": "3c9ced6c06f8eda8a43be510ba38a3c2447175e34d24581862c742162867a6f5",
+  "source_manifest_before": {
+    "sha256": "20907b75112794f0ebac404716433e9265b534b8432a88baad1467ba70940726",
+    "files": [
+      {
+        "path": "src/kirchhoff/__init__.py",
+        "bytes": 144,
+        "sha256": "35da27bec14d5826bd3b409aca21a2e356b4840fd4d80942a8a174d97af8a76a"
+      },
+      {
+        "path": "src/kirchhoff/adapters/__init__.py",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "src/kirchhoff/api/__init__.py",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "src/kirchhoff/api/app_resource.py",
+        "bytes": 4047,
+        "sha256": "b8f979b66b36df4a0d8abfd1f49f7f9bfa5a74e84ca84b0bbe646d72be2afe2c"
+      },
+      {
+        "path": "src/kirchhoff/api/mcp_server.py",
+        "bytes": 3190,
+        "sha256": "e7ed11b829bdcf3b05117a9c47a3d0efcce0d0bd59ffd11c7c88d4821c21f0b7"
+      },
+      {
+        "path": "src/kirchhoff/config.py",
+        "bytes": 5289,
+        "sha256": "478bbbfebc752ac30c295be42858a1957a0254e47043a4f1131447e0217b3b12"
+      },
+      {
+        "path": "src/kirchhoff/domain/__init__.py",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/__init__.py",
+        "bytes": 3063,
+        "sha256": "7c8f82967734bcf7a8a807f0636b0cf22cad535b3633fc804bed40e38351b3a2"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/analytical.py",
+        "bytes": 23788,
+        "sha256": "9322d5b39c27254ec3aa712de3aef8af82c6d431c3b169f7d3762d2189b7767f"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/capabilities.py",
+        "bytes": 4981,
+        "sha256": "461337468c8e67faf53870e6037f27400f9ed41347d168e595a7a8bba3105da0"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/derivation.py",
+        "bytes": 8755,
+        "sha256": "0d383214f5841cab0148de3c8faa622423e4272b3b6a8f345ff75818628b9da0"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/execute.py",
+        "bytes": 13189,
+        "sha256": "90de84c35e87d29362629bf5ffc4880d3b5bd16dd2ee4798fee5c1b5fba77467"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/kinds.py",
+        "bytes": 880,
+        "sha256": "e29c3e85c3943b8a9143f2cdd93190c9262aae4b0220c3074d2ee71ececf3245"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/observation.py",
+        "bytes": 9665,
+        "sha256": "af22c72a97635791b63da42963c6f9ac7de3276726faec6e3e4810fd62fec3fd"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/orchestrate.py",
+        "bytes": 15215,
+        "sha256": "aad7a80247d6671ec1fb85c38bb0171aac485e8e2e6d849e2726b5f0fe4dee96"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/plan.py",
+        "bytes": 3609,
+        "sha256": "7c1064f3819da1b9127ef6480a21ca2f5d83669e892e642b9bc5e23a7545eaf3"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/planner.py",
+        "bytes": 3569,
+        "sha256": "9d617d3999a4926007717fe291d973bdb2685ee57d248b8f3c9700b37b001eb0"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/request.py",
+        "bytes": 7644,
+        "sha256": "532d6a3daa0b97b43017b9d6b208ad11246fe3a0253516b132716a9083cd723e"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/solve.py",
+        "bytes": 10713,
+        "sha256": "8699edb25333511ae6ea36318cc595e766d9431a2c1e0efb65babf3202a6544c"
+      },
+      {
+        "path": "src/kirchhoff/domain/exact.py",
+        "bytes": 4577,
+        "sha256": "0e2f240a932776324f5ebee1098ff3ad24effd47b5f7fb346a6ef80f4b340530"
+      },
+      {
+        "path": "src/kirchhoff/domain/identity.py",
+        "bytes": 10435,
+        "sha256": "4cc0b7073cb8ed248ba3558a237d7ff9741ed6e35dad0e2ea1d89ac1d0150111"
+      },
+      {
+        "path": "src/kirchhoff/domain/independent_dc.py",
+        "bytes": 10550,
+        "sha256": "b5bf72aec01ad52602b74d40474c026d6dab78df5bb5e52ede1c3306929978ae"
+      },
+      {
+        "path": "src/kirchhoff/domain/independent_phasor.py",
+        "bytes": 5561,
+        "sha256": "8fada4fae431482a8bf3cbf5e0fcb680505085364cab28c19e47dd679be662a5"
+      },
+      {
+        "path": "src/kirchhoff/domain/ir/__init__.py",
+        "bytes": 900,
+        "sha256": "099ddcfb7d3b9ed771375c70e1cfdb4a8a697934e44ac2440e823d1cce66a284"
+      },
+      {
+        "path": "src/kirchhoff/domain/ir/canonical.py",
+        "bytes": 2478,
+        "sha256": "ab96eb0896be154f7eb7dd735423470bc35e6d6d92252ea9d0771862b840e729"
+      },
+      {
+        "path": "src/kirchhoff/domain/ir/schema.py",
+        "bytes": 11906,
+        "sha256": "9d773dd3a423fb38c058065590c5271b0181cf12574ea2e1c3d337d5b7f92c82"
+      },
+      {
+        "path": "src/kirchhoff/domain/mna.py",
+        "bytes": 8596,
+        "sha256": "6f58e4e57d120862376c957bcf18cc1e65bbdfb080a590a3521ead840caed516"
+      },
+      {
+        "path": "src/kirchhoff/domain/port.py",
+        "bytes": 8144,
+        "sha256": "914d341564500a6509ddd18019255f97758420fe9d862c4e0aefd1e98a502b9e"
+      },
+      {
+        "path": "src/kirchhoff/domain/proof/__init__.py",
+        "bytes": 769,
+        "sha256": "85e8510ee298000f15a273a4351617034f359d71d82a4a04c20a7eeef3c9830b"
+      },
+      {
+        "path": "src/kirchhoff/domain/proof/graph.py",
+        "bytes": 14041,
+        "sha256": "8ec9b4a1867127d8352555df8f58e94ca7fc1b2a5c56b28c8bd097db341a1708"
+      },
+      {
+        "path": "src/kirchhoff/domain/proof/session.py",
+        "bytes": 22491,
+        "sha256": "5546ebe78271940a6c5ebb89c55867d918493ddc59e2a2370adbc709cbf7eac4"
+      },
+      {
+        "path": "src/kirchhoff/domain/refusal.py",
+        "bytes": 2416,
+        "sha256": "fae9abb80f6e3da3aa38023a91fb705b764d48b30448f89ae9d2e9d3ce4a653d"
+      },
+      {
+        "path": "src/kirchhoff/domain/student_trace.py",
+        "bytes": 16134,
+        "sha256": "d3fc6b1716688b2bf1a21685ab0bc9d3fb9a69554c93440c7824db541eb49365"
+      },
+      {
+        "path": "src/kirchhoff/domain/transform/__init__.py",
+        "bytes": 2048,
+        "sha256": "7e1a65fe2a44ed22548158f014c0e78182c394613e55fccfe74d3ec69b866a8d"
+      },
+      {
+        "path": "src/kirchhoff/domain/transform/applicability.py",
+        "bytes": 3461,
+        "sha256": "763e7db6676fd060df6fc08b1f826138d8b099251223b52986cb06bcb41b03bf"
+      },
+      {
+        "path": "src/kirchhoff/domain/transform/catalog.py",
+        "bytes": 35089,
+        "sha256": "9ef88f50abca792d84dd797f1840bad6f20e1084564a974a1fe079a9888ae835"
+      },
+      {
+        "path": "src/kirchhoff/domain/transform/check.py",
+        "bytes": 37720,
+        "sha256": "9ffd3bc912ab9a764bf3ab4821b46fbc47921d9a5f65928df57163a164c589e6"
+      },
+      {
+        "path": "src/kirchhoff/domain/transform/delta.py",
+        "bytes": 14041,
+        "sha256": "818776088a239e6177016037d400e3f0f247015efc0f4162aad07c8ac8f8040f"
+      },
+      {
+        "path": "src/kirchhoff/domain/transform/engine.py",
+        "bytes": 33819,
+        "sha256": "a80eaef3d5a383d3a455ac676609dd0b2091f8a3bd94c56d9699aebdfadd3845"
+      },
+      {
+        "path": "src/kirchhoff/domain/transform/primitives.py",
+        "bytes": 12247,
+        "sha256": "722a28fefb651aec2562f30c25d12a9226bdc20ef122cb2846ce611b849dad38"
+      },
+      {
+        "path": "src/kirchhoff/domain/transform/result.py",
+        "bytes": 26061,
+        "sha256": "d803e3c8d4296117ba0e12638fb0accf97d0c6081a96c48eeb838b231098d833"
+      },
+      {
+        "path": "src/kirchhoff/domain/transient.py",
+        "bytes": 2989,
+        "sha256": "9e1e5e28c0972f9271aa14f0190d9a41518c705e40a728fbd8af72609ee37b5c"
+      },
+      {
+        "path": "src/kirchhoff/domain/truthfulness.py",
+        "bytes": 9742,
+        "sha256": "087426dabf0229dc9472886b1bb05e662d8291869bc41d4f3be50fc3cba2e214"
+      },
+      {
+        "path": "src/kirchhoff/domain/two_port.py",
+        "bytes": 6763,
+        "sha256": "4cb9469eb95853adfe80a492f96daae0e6d43951cf6f9b623394315a2dea6fdd"
+      },
+      {
+        "path": "src/kirchhoff/domain/validate.py",
+        "bytes": 9982,
+        "sha256": "15bea3e16278369ab48bb57740063f1ebc4c8e12391be483c1179f0b4d798fd1"
+      },
+      {
+        "path": "src/kirchhoff/domain/verify.py",
+        "bytes": 10770,
+        "sha256": "e1cbc8f23e421f0390b1eb90f037d150a8cc2262a6efa5cb074656186aff5efa"
+      },
+      {
+        "path": "src/kirchhoff/eval/__init__.py",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "src/kirchhoff/eval/cli.py",
+        "bytes": 2857,
+        "sha256": "32aa052c40e0a0fdd653c7c46764a4ad589eb70f3ded831953c10b1811f55b9c"
+      },
+      {
+        "path": "src/kirchhoff/eval/generator.py",
+        "bytes": 4844,
+        "sha256": "0746ab6b8e65c33f9bf57465f1f54a2aeb004d8830c50ca2e3e94d6cc6613021"
+      },
+      {
+        "path": "src/kirchhoff/eval/generator_ac.py",
+        "bytes": 5396,
+        "sha256": "2ae756c4f53f8a9b24f1677eab4b2302f5fc62c3a04c7fce4cff5514453ed55a"
+      },
+      {
+        "path": "src/kirchhoff/eval/generator_controlled.py",
+        "bytes": 8334,
+        "sha256": "625ed8f0f8bcecaad313454af1e458c172d315fa57b61a2492b0eb4f1972c9c2"
+      },
+      {
+        "path": "src/kirchhoff/eval/generator_three_phase.py",
+        "bytes": 5767,
+        "sha256": "48e7634ae865eb959710bef0b74a93c5c09f44c23cc9b0967dffca3d3bab46b8"
+      },
+      {
+        "path": "src/kirchhoff/eval/generator_transient.py",
+        "bytes": 7371,
+        "sha256": "76080fef1897fe69ba5e7ffa5839572d786fd9fe4d984e59d784d4964bbd4814"
+      },
+      {
+        "path": "src/kirchhoff/eval/metrics.py",
+        "bytes": 6178,
+        "sha256": "61078d2ee08abcf30d03dfee3863962180cea430a8146641f0f7881cfa8f485f"
+      },
+      {
+        "path": "src/kirchhoff/eval/reference_set.py",
+        "bytes": 12216,
+        "sha256": "93ed846c80b8d45fb008b797e762a506819f75e6c6d2654c6fcbc0b8298e5479"
+      },
+      {
+        "path": "src/kirchhoff/eval/transformations.py",
+        "bytes": 2168,
+        "sha256": "b585116af0b568d33476496ec29a222364ad2cd5e23ca0ba604d538852ff1827"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/__init__.py",
+        "bytes": 666,
+        "sha256": "50e1bab960176145bbbe9a60b8ef36ae7706f033ac1d30b22b91fe1cbec397fb"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/capabilities.py",
+        "bytes": 4588,
+        "sha256": "d74e68b19daa003269199f0e67a433abc2fc36675ca2f66c3133d194330f13ce"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/circuitikz.py",
+        "bytes": 4855,
+        "sha256": "81208a05522de89e3e021f0f19b2dcf1907c3a704253b314ee8eef82b45ce90b"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/cli.py",
+        "bytes": 4996,
+        "sha256": "bcc7d28d6e733ef343eae1a1719e2ffdfa22e10378886475f014f3cf9e747d05"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/failure.py",
+        "bytes": 995,
+        "sha256": "3d9b4d60751161ca20bc10ed007674ac2d23539130cf0758dc8e2af69aabe3fe"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/image_revision.py",
+        "bytes": 5875,
+        "sha256": "be1615f06d117b132bbae1f830b91d0ddd2c89c0a322cd13ce5fdbe231d2d379"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson.py",
+        "bytes": 41510,
+        "sha256": "0cb19142cc9bbaa78d2387a12369606be303bf604b699795696d2a4439b90b87"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_ac.py",
+        "bytes": 25278,
+        "sha256": "2563630cec81165d520b466da66c2ce2daf536f473728446e570c7808fcbe544"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_ac_algebra.py",
+        "bytes": 6953,
+        "sha256": "992a55a5b86b404fa945986fdf980c1fc36b78a6c223e5cd6e11c3c9c65cecc1"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_ac_algebra_check.py",
+        "bytes": 11973,
+        "sha256": "114978589c083302e2ea87f1cded1238cdfa82bc46d9c6c0b9b08837a0735aaa"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_ac_port.py",
+        "bytes": 11893,
+        "sha256": "e03309a52ef44a3f9fd4d024ac7e572d40969707e6d0ac6872aa07faf88f38d6"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_ac_power.py",
+        "bytes": 2708,
+        "sha256": "f2966b54736e7218506878e07fd155dea9dea25ea1db8194c068b87fbd840cab"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_bridge.py",
+        "bytes": 7941,
+        "sha256": "2d94ee62a1de7235019db52b779512b5f26b9e128b8938f9f6bc34fc1089e082"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_math.py",
+        "bytes": 4539,
+        "sha256": "20a3fe9ee1a064e23cf094fa3de3c5466a0e868cb3beb2e01c7b3e88e9e15a09"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_pdf.py",
+        "bytes": 10071,
+        "sha256": "aa95089f23450167974e5b87f12b27761aefaa633fe703de52ace4f80a81f32c"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_pdf_math.py",
+        "bytes": 8645,
+        "sha256": "3ce3e4e3d03a232ff771e0a23301e876cadc5af54c75287b984f8ec1cc86b6d3"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_svg.py",
+        "bytes": 13467,
+        "sha256": "1a8bc3d74041c5ae4ed653975b5a4a7a27fe7fb5efeaa526aabf75bbac6e3651"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/netlist.py",
+        "bytes": 11388,
+        "sha256": "6fcbd1212592e027fa1f29c9fc905862ac8af896feff99226a5e0b4d2b8d50ce"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/presentation.py",
+        "bytes": 21069,
+        "sha256": "f2752690009a35e550e3b7fcd76f42d51f65d37d5bb4ac7ab1ad45a117388d3a"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/proof_run.py",
+        "bytes": 11738,
+        "sha256": "34d58a716dfc106a88a44e0c2fcea7ed9662b7542208ec176e5f4197a77a045a"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/proof_session.py",
+        "bytes": 13334,
+        "sha256": "a825d4fe505557805c08dd5baefa432f78634fe000fa42c9f8d0a3add00fa6d4"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/resolve.py",
+        "bytes": 8591,
+        "sha256": "ed3e66adf3639a6d49e47bac8294ee8040a3268cfb203ab1c0da5a6a219f3f32"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/risolvi.py",
+        "bytes": 4054,
+        "sha256": "ea4c3ece52ac4df4ec6a589da786c259b535e035793d45f68fbe4e370ba3e558"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/spice.py",
+        "bytes": 8242,
+        "sha256": "1d832a896e0287153612c33f7fb9aa2bb441c8af17566e0adaea54e61a56804c"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/state_registry.py",
+        "bytes": 10452,
+        "sha256": "9fe82a75ddc4435fffbeaf344df4d7588a717dcaf5eb7f739551e3959d3664d2"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/student_trace.py",
+        "bytes": 1124,
+        "sha256": "ebebf0569fdb69ba54022222789a2b5787c979dba6f53644f98f215362198ff0"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/vision_response.py",
+        "bytes": 5678,
+        "sha256": "b80e725b51542a85d814a61689c84eb9b1f28bd3d5ed67ad0c8cfc581f026fbd"
+      },
+      {
+        "path": "src/kirchhoff/ports/__init__.py",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "src/kirchhoff/ports/clock.py",
+        "bytes": 760,
+        "sha256": "10d2dda140abbbba33039e892c76c9e51b9d37dab59c2e8e64448f6aa8c25604"
+      },
+      {
+        "path": "src/kirchhoff/render/__init__.py",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "src/kirchhoff/render/layout/__init__.py",
+        "bytes": 3098,
+        "sha256": "b2eea3d85c0eccabdcdc0584744e1150449ad5614216ee79c372beedff7fec83"
+      },
+      {
+        "path": "src/kirchhoff/render/layout/apply.py",
+        "bytes": 13301,
+        "sha256": "3d2b3d174f8fbc1fbcad9252a47a8803961c2aa0eb96ee363c96b9bfbfe561b4"
+      },
+      {
+        "path": "src/kirchhoff/render/layout/connected.py",
+        "bytes": 4236,
+        "sha256": "d29c9952d978ae8da95913017782238d9ea94c40e92d222980dc52b653bb7fea"
+      },
+      {
+        "path": "src/kirchhoff/render/layout/continuity.py",
+        "bytes": 5590,
+        "sha256": "69ab99e81ce79a381e3669fe5dfe28c503961086913cf209a71d3c07d9a10364"
+      },
+      {
+        "path": "src/kirchhoff/render/layout/schema.py",
+        "bytes": 7378,
+        "sha256": "7134bf9a1fd3430a503d0ef5bdd71c1bf9f09bc691620d688d79c67a68fc1c76"
+      },
+      {
+        "path": "src/kirchhoff/render/layout/store.py",
+        "bytes": 10242,
+        "sha256": "3b9c1daacb134de81ab3cd2b2e356a329bda2f467c5d10bff17f7d2ac6e8965b"
+      },
+      {
+        "path": "src/kirchhoff/render/overlay/__init__.py",
+        "bytes": 711,
+        "sha256": "71d428e27cb2ed985d9b9105697414270838d3ec39fbd1d5ad0610b63b50d7c4"
+      },
+      {
+        "path": "src/kirchhoff/render/overlay/schema.py",
+        "bytes": 11364,
+        "sha256": "e86e92b886e9942cb51b0eeb52e18ea5010201388730ede89c2d3871c74dbb56"
+      },
+      {
+        "path": "src/kirchhoff/render/serialize/__init__.py",
+        "bytes": 641,
+        "sha256": "c0754c2c62d28b8edafacfa8d7c25b5a2315e8154bde29f78da89642ae0b1665"
+      },
+      {
+        "path": "src/kirchhoff/render/serialize/connectivity.py",
+        "bytes": 12380,
+        "sha256": "2c67e129ada91d3c4f720c67d9c2eb1e00914422738dd1bfe55f76df2f66ab5e"
+      },
+      {
+        "path": "src/kirchhoff/render/serialize/geometry.py",
+        "bytes": 27280,
+        "sha256": "e54d349befb3aa90512cdb3ce261ca0c44ec63bdb394aa996aa1bdbaefab751c"
+      },
+      {
+        "path": "src/kirchhoff/render/serialize/svg.py",
+        "bytes": 52171,
+        "sha256": "1cb0ec9c464b05f0fbafaf82252748672472b93db50e6fe3d7608c547fb273a5"
+      },
+      {
+        "path": "src/kirchhoff/render/step/__init__.py",
+        "bytes": 1308,
+        "sha256": "95d91bcd2a341c3239713aefb1a6bbeac1b28d319f0a5acff55d0481f2d28a29"
+      },
+      {
+        "path": "src/kirchhoff/render/step/compose.py",
+        "bytes": 5484,
+        "sha256": "f80f56965a86b5bcd9f2327f2f1e6e381d585c64405a8c74c4efaab5033b7325"
+      },
+      {
+        "path": "src/kirchhoff/render/step/schema.py",
+        "bytes": 29932,
+        "sha256": "3b16b9c0ab74770ce77fb9a20ce62f746a631b936221485876260cb01ab10970"
+      },
+      {
+        "path": "src/kirchhoff/runtime_identity.py",
+        "bytes": 3405,
+        "sha256": "20d7064a09ce59b4de5fccb4e839db4a2d1530eb106e62e859e62d8c53d7b038"
+      },
+      {
+        "path": "pyproject.toml",
+        "bytes": 1222,
+        "sha256": "5e2e7efe31f55df621629517a922871806b298381f05caa3ed873b36c5a615fd"
+      }
+    ]
+  },
+  "source_manifest_after": {
+    "sha256": "20907b75112794f0ebac404716433e9265b534b8432a88baad1467ba70940726",
+    "files": [
+      {
+        "path": "src/kirchhoff/__init__.py",
+        "bytes": 144,
+        "sha256": "35da27bec14d5826bd3b409aca21a2e356b4840fd4d80942a8a174d97af8a76a"
+      },
+      {
+        "path": "src/kirchhoff/adapters/__init__.py",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "src/kirchhoff/api/__init__.py",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "src/kirchhoff/api/app_resource.py",
+        "bytes": 4047,
+        "sha256": "b8f979b66b36df4a0d8abfd1f49f7f9bfa5a74e84ca84b0bbe646d72be2afe2c"
+      },
+      {
+        "path": "src/kirchhoff/api/mcp_server.py",
+        "bytes": 3190,
+        "sha256": "e7ed11b829bdcf3b05117a9c47a3d0efcce0d0bd59ffd11c7c88d4821c21f0b7"
+      },
+      {
+        "path": "src/kirchhoff/config.py",
+        "bytes": 5289,
+        "sha256": "478bbbfebc752ac30c295be42858a1957a0254e47043a4f1131447e0217b3b12"
+      },
+      {
+        "path": "src/kirchhoff/domain/__init__.py",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/__init__.py",
+        "bytes": 3063,
+        "sha256": "7c8f82967734bcf7a8a807f0636b0cf22cad535b3633fc804bed40e38351b3a2"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/analytical.py",
+        "bytes": 23788,
+        "sha256": "9322d5b39c27254ec3aa712de3aef8af82c6d431c3b169f7d3762d2189b7767f"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/capabilities.py",
+        "bytes": 4981,
+        "sha256": "461337468c8e67faf53870e6037f27400f9ed41347d168e595a7a8bba3105da0"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/derivation.py",
+        "bytes": 8755,
+        "sha256": "0d383214f5841cab0148de3c8faa622423e4272b3b6a8f345ff75818628b9da0"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/execute.py",
+        "bytes": 13189,
+        "sha256": "90de84c35e87d29362629bf5ffc4880d3b5bd16dd2ee4798fee5c1b5fba77467"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/kinds.py",
+        "bytes": 880,
+        "sha256": "e29c3e85c3943b8a9143f2cdd93190c9262aae4b0220c3074d2ee71ececf3245"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/observation.py",
+        "bytes": 9665,
+        "sha256": "af22c72a97635791b63da42963c6f9ac7de3276726faec6e3e4810fd62fec3fd"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/orchestrate.py",
+        "bytes": 15215,
+        "sha256": "aad7a80247d6671ec1fb85c38bb0171aac485e8e2e6d849e2726b5f0fe4dee96"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/plan.py",
+        "bytes": 3609,
+        "sha256": "7c1064f3819da1b9127ef6480a21ca2f5d83669e892e642b9bc5e23a7545eaf3"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/planner.py",
+        "bytes": 3569,
+        "sha256": "9d617d3999a4926007717fe291d973bdb2685ee57d248b8f3c9700b37b001eb0"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/request.py",
+        "bytes": 7644,
+        "sha256": "532d6a3daa0b97b43017b9d6b208ad11246fe3a0253516b132716a9083cd723e"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/solve.py",
+        "bytes": 10713,
+        "sha256": "8699edb25333511ae6ea36318cc595e766d9431a2c1e0efb65babf3202a6544c"
+      },
+      {
+        "path": "src/kirchhoff/domain/exact.py",
+        "bytes": 4577,
+        "sha256": "0e2f240a932776324f5ebee1098ff3ad24effd47b5f7fb346a6ef80f4b340530"
+      },
+      {
+        "path": "src/kirchhoff/domain/identity.py",
+        "bytes": 10435,
+        "sha256": "4cc0b7073cb8ed248ba3558a237d7ff9741ed6e35dad0e2ea1d89ac1d0150111"
+      },
+      {
+        "path": "src/kirchhoff/domain/independent_dc.py",
+        "bytes": 10550,
+        "sha256": "b5bf72aec01ad52602b74d40474c026d6dab78df5bb5e52ede1c3306929978ae"
+      },
+      {
+        "path": "src/kirchhoff/domain/independent_phasor.py",
+        "bytes": 5561,
+        "sha256": "8fada4fae431482a8bf3cbf5e0fcb680505085364cab28c19e47dd679be662a5"
+      },
+      {
+        "path": "src/kirchhoff/domain/ir/__init__.py",
+        "bytes": 900,
+        "sha256": "099ddcfb7d3b9ed771375c70e1cfdb4a8a697934e44ac2440e823d1cce66a284"
+      },
+      {
+        "path": "src/kirchhoff/domain/ir/canonical.py",
+        "bytes": 2478,
+        "sha256": "ab96eb0896be154f7eb7dd735423470bc35e6d6d92252ea9d0771862b840e729"
+      },
+      {
+        "path": "src/kirchhoff/domain/ir/schema.py",
+        "bytes": 11906,
+        "sha256": "9d773dd3a423fb38c058065590c5271b0181cf12574ea2e1c3d337d5b7f92c82"
+      },
+      {
+        "path": "src/kirchhoff/domain/mna.py",
+        "bytes": 8596,
+        "sha256": "6f58e4e57d120862376c957bcf18cc1e65bbdfb080a590a3521ead840caed516"
+      },
+      {
+        "path": "src/kirchhoff/domain/port.py",
+        "bytes": 8144,
+        "sha256": "914d341564500a6509ddd18019255f97758420fe9d862c4e0aefd1e98a502b9e"
+      },
+      {
+        "path": "src/kirchhoff/domain/proof/__init__.py",
+        "bytes": 769,
+        "sha256": "85e8510ee298000f15a273a4351617034f359d71d82a4a04c20a7eeef3c9830b"
+      },
+      {
+        "path": "src/kirchhoff/domain/proof/graph.py",
+        "bytes": 14041,
+        "sha256": "8ec9b4a1867127d8352555df8f58e94ca7fc1b2a5c56b28c8bd097db341a1708"
+      },
+      {
+        "path": "src/kirchhoff/domain/proof/session.py",
+        "bytes": 22491,
+        "sha256": "5546ebe78271940a6c5ebb89c55867d918493ddc59e2a2370adbc709cbf7eac4"
+      },
+      {
+        "path": "src/kirchhoff/domain/refusal.py",
+        "bytes": 2416,
+        "sha256": "fae9abb80f6e3da3aa38023a91fb705b764d48b30448f89ae9d2e9d3ce4a653d"
+      },
+      {
+        "path": "src/kirchhoff/domain/student_trace.py",
+        "bytes": 16134,
+        "sha256": "d3fc6b1716688b2bf1a21685ab0bc9d3fb9a69554c93440c7824db541eb49365"
+      },
+      {
+        "path": "src/kirchhoff/domain/transform/__init__.py",
+        "bytes": 2048,
+        "sha256": "7e1a65fe2a44ed22548158f014c0e78182c394613e55fccfe74d3ec69b866a8d"
+      },
+      {
+        "path": "src/kirchhoff/domain/transform/applicability.py",
+        "bytes": 3461,
+        "sha256": "763e7db6676fd060df6fc08b1f826138d8b099251223b52986cb06bcb41b03bf"
+      },
+      {
+        "path": "src/kirchhoff/domain/transform/catalog.py",
+        "bytes": 35089,
+        "sha256": "9ef88f50abca792d84dd797f1840bad6f20e1084564a974a1fe079a9888ae835"
+      },
+      {
+        "path": "src/kirchhoff/domain/transform/check.py",
+        "bytes": 37720,
+        "sha256": "9ffd3bc912ab9a764bf3ab4821b46fbc47921d9a5f65928df57163a164c589e6"
+      },
+      {
+        "path": "src/kirchhoff/domain/transform/delta.py",
+        "bytes": 14041,
+        "sha256": "818776088a239e6177016037d400e3f0f247015efc0f4162aad07c8ac8f8040f"
+      },
+      {
+        "path": "src/kirchhoff/domain/transform/engine.py",
+        "bytes": 33819,
+        "sha256": "a80eaef3d5a383d3a455ac676609dd0b2091f8a3bd94c56d9699aebdfadd3845"
+      },
+      {
+        "path": "src/kirchhoff/domain/transform/primitives.py",
+        "bytes": 12247,
+        "sha256": "722a28fefb651aec2562f30c25d12a9226bdc20ef122cb2846ce611b849dad38"
+      },
+      {
+        "path": "src/kirchhoff/domain/transform/result.py",
+        "bytes": 26061,
+        "sha256": "d803e3c8d4296117ba0e12638fb0accf97d0c6081a96c48eeb838b231098d833"
+      },
+      {
+        "path": "src/kirchhoff/domain/transient.py",
+        "bytes": 2989,
+        "sha256": "9e1e5e28c0972f9271aa14f0190d9a41518c705e40a728fbd8af72609ee37b5c"
+      },
+      {
+        "path": "src/kirchhoff/domain/truthfulness.py",
+        "bytes": 9742,
+        "sha256": "087426dabf0229dc9472886b1bb05e662d8291869bc41d4f3be50fc3cba2e214"
+      },
+      {
+        "path": "src/kirchhoff/domain/two_port.py",
+        "bytes": 6763,
+        "sha256": "4cb9469eb95853adfe80a492f96daae0e6d43951cf6f9b623394315a2dea6fdd"
+      },
+      {
+        "path": "src/kirchhoff/domain/validate.py",
+        "bytes": 9982,
+        "sha256": "15bea3e16278369ab48bb57740063f1ebc4c8e12391be483c1179f0b4d798fd1"
+      },
+      {
+        "path": "src/kirchhoff/domain/verify.py",
+        "bytes": 10770,
+        "sha256": "e1cbc8f23e421f0390b1eb90f037d150a8cc2262a6efa5cb074656186aff5efa"
+      },
+      {
+        "path": "src/kirchhoff/eval/__init__.py",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "src/kirchhoff/eval/cli.py",
+        "bytes": 2857,
+        "sha256": "32aa052c40e0a0fdd653c7c46764a4ad589eb70f3ded831953c10b1811f55b9c"
+      },
+      {
+        "path": "src/kirchhoff/eval/generator.py",
+        "bytes": 4844,
+        "sha256": "0746ab6b8e65c33f9bf57465f1f54a2aeb004d8830c50ca2e3e94d6cc6613021"
+      },
+      {
+        "path": "src/kirchhoff/eval/generator_ac.py",
+        "bytes": 5396,
+        "sha256": "2ae756c4f53f8a9b24f1677eab4b2302f5fc62c3a04c7fce4cff5514453ed55a"
+      },
+      {
+        "path": "src/kirchhoff/eval/generator_controlled.py",
+        "bytes": 8334,
+        "sha256": "625ed8f0f8bcecaad313454af1e458c172d315fa57b61a2492b0eb4f1972c9c2"
+      },
+      {
+        "path": "src/kirchhoff/eval/generator_three_phase.py",
+        "bytes": 5767,
+        "sha256": "48e7634ae865eb959710bef0b74a93c5c09f44c23cc9b0967dffca3d3bab46b8"
+      },
+      {
+        "path": "src/kirchhoff/eval/generator_transient.py",
+        "bytes": 7371,
+        "sha256": "76080fef1897fe69ba5e7ffa5839572d786fd9fe4d984e59d784d4964bbd4814"
+      },
+      {
+        "path": "src/kirchhoff/eval/metrics.py",
+        "bytes": 6178,
+        "sha256": "61078d2ee08abcf30d03dfee3863962180cea430a8146641f0f7881cfa8f485f"
+      },
+      {
+        "path": "src/kirchhoff/eval/reference_set.py",
+        "bytes": 12216,
+        "sha256": "93ed846c80b8d45fb008b797e762a506819f75e6c6d2654c6fcbc0b8298e5479"
+      },
+      {
+        "path": "src/kirchhoff/eval/transformations.py",
+        "bytes": 2168,
+        "sha256": "b585116af0b568d33476496ec29a222364ad2cd5e23ca0ba604d538852ff1827"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/__init__.py",
+        "bytes": 666,
+        "sha256": "50e1bab960176145bbbe9a60b8ef36ae7706f033ac1d30b22b91fe1cbec397fb"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/capabilities.py",
+        "bytes": 4588,
+        "sha256": "d74e68b19daa003269199f0e67a433abc2fc36675ca2f66c3133d194330f13ce"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/circuitikz.py",
+        "bytes": 4855,
+        "sha256": "81208a05522de89e3e021f0f19b2dcf1907c3a704253b314ee8eef82b45ce90b"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/cli.py",
+        "bytes": 4996,
+        "sha256": "bcc7d28d6e733ef343eae1a1719e2ffdfa22e10378886475f014f3cf9e747d05"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/failure.py",
+        "bytes": 995,
+        "sha256": "3d9b4d60751161ca20bc10ed007674ac2d23539130cf0758dc8e2af69aabe3fe"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/image_revision.py",
+        "bytes": 5875,
+        "sha256": "be1615f06d117b132bbae1f830b91d0ddd2c89c0a322cd13ce5fdbe231d2d379"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson.py",
+        "bytes": 41510,
+        "sha256": "0cb19142cc9bbaa78d2387a12369606be303bf604b699795696d2a4439b90b87"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_ac.py",
+        "bytes": 25278,
+        "sha256": "2563630cec81165d520b466da66c2ce2daf536f473728446e570c7808fcbe544"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_ac_algebra.py",
+        "bytes": 6953,
+        "sha256": "992a55a5b86b404fa945986fdf980c1fc36b78a6c223e5cd6e11c3c9c65cecc1"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_ac_algebra_check.py",
+        "bytes": 11973,
+        "sha256": "114978589c083302e2ea87f1cded1238cdfa82bc46d9c6c0b9b08837a0735aaa"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_ac_port.py",
+        "bytes": 11893,
+        "sha256": "e03309a52ef44a3f9fd4d024ac7e572d40969707e6d0ac6872aa07faf88f38d6"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_ac_power.py",
+        "bytes": 2708,
+        "sha256": "f2966b54736e7218506878e07fd155dea9dea25ea1db8194c068b87fbd840cab"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_bridge.py",
+        "bytes": 7941,
+        "sha256": "2d94ee62a1de7235019db52b779512b5f26b9e128b8938f9f6bc34fc1089e082"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_math.py",
+        "bytes": 4539,
+        "sha256": "20a3fe9ee1a064e23cf094fa3de3c5466a0e868cb3beb2e01c7b3e88e9e15a09"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_pdf.py",
+        "bytes": 10071,
+        "sha256": "aa95089f23450167974e5b87f12b27761aefaa633fe703de52ace4f80a81f32c"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_pdf_math.py",
+        "bytes": 8645,
+        "sha256": "3ce3e4e3d03a232ff771e0a23301e876cadc5af54c75287b984f8ec1cc86b6d3"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_svg.py",
+        "bytes": 13467,
+        "sha256": "1a8bc3d74041c5ae4ed653975b5a4a7a27fe7fb5efeaa526aabf75bbac6e3651"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/netlist.py",
+        "bytes": 11388,
+        "sha256": "6fcbd1212592e027fa1f29c9fc905862ac8af896feff99226a5e0b4d2b8d50ce"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/presentation.py",
+        "bytes": 21069,
+        "sha256": "f2752690009a35e550e3b7fcd76f42d51f65d37d5bb4ac7ab1ad45a117388d3a"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/proof_run.py",
+        "bytes": 11738,
+        "sha256": "34d58a716dfc106a88a44e0c2fcea7ed9662b7542208ec176e5f4197a77a045a"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/proof_session.py",
+        "bytes": 13334,
+        "sha256": "a825d4fe505557805c08dd5baefa432f78634fe000fa42c9f8d0a3add00fa6d4"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/resolve.py",
+        "bytes": 8591,
+        "sha256": "ed3e66adf3639a6d49e47bac8294ee8040a3268cfb203ab1c0da5a6a219f3f32"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/risolvi.py",
+        "bytes": 4054,
+        "sha256": "ea4c3ece52ac4df4ec6a589da786c259b535e035793d45f68fbe4e370ba3e558"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/spice.py",
+        "bytes": 8242,
+        "sha256": "1d832a896e0287153612c33f7fb9aa2bb441c8af17566e0adaea54e61a56804c"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/state_registry.py",
+        "bytes": 10452,
+        "sha256": "9fe82a75ddc4435fffbeaf344df4d7588a717dcaf5eb7f739551e3959d3664d2"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/student_trace.py",
+        "bytes": 1124,
+        "sha256": "ebebf0569fdb69ba54022222789a2b5787c979dba6f53644f98f215362198ff0"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/vision_response.py",
+        "bytes": 5678,
+        "sha256": "b80e725b51542a85d814a61689c84eb9b1f28bd3d5ed67ad0c8cfc581f026fbd"
+      },
+      {
+        "path": "src/kirchhoff/ports/__init__.py",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "src/kirchhoff/ports/clock.py",
+        "bytes": 760,
+        "sha256": "10d2dda140abbbba33039e892c76c9e51b9d37dab59c2e8e64448f6aa8c25604"
+      },
+      {
+        "path": "src/kirchhoff/render/__init__.py",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "src/kirchhoff/render/layout/__init__.py",
+        "bytes": 3098,
+        "sha256": "b2eea3d85c0eccabdcdc0584744e1150449ad5614216ee79c372beedff7fec83"
+      },
+      {
+        "path": "src/kirchhoff/render/layout/apply.py",
+        "bytes": 13301,
+        "sha256": "3d2b3d174f8fbc1fbcad9252a47a8803961c2aa0eb96ee363c96b9bfbfe561b4"
+      },
+      {
+        "path": "src/kirchhoff/render/layout/connected.py",
+        "bytes": 4236,
+        "sha256": "d29c9952d978ae8da95913017782238d9ea94c40e92d222980dc52b653bb7fea"
+      },
+      {
+        "path": "src/kirchhoff/render/layout/continuity.py",
+        "bytes": 5590,
+        "sha256": "69ab99e81ce79a381e3669fe5dfe28c503961086913cf209a71d3c07d9a10364"
+      },
+      {
+        "path": "src/kirchhoff/render/layout/schema.py",
+        "bytes": 7378,
+        "sha256": "7134bf9a1fd3430a503d0ef5bdd71c1bf9f09bc691620d688d79c67a68fc1c76"
+      },
+      {
+        "path": "src/kirchhoff/render/layout/store.py",
+        "bytes": 10242,
+        "sha256": "3b9c1daacb134de81ab3cd2b2e356a329bda2f467c5d10bff17f7d2ac6e8965b"
+      },
+      {
+        "path": "src/kirchhoff/render/overlay/__init__.py",
+        "bytes": 711,
+        "sha256": "71d428e27cb2ed985d9b9105697414270838d3ec39fbd1d5ad0610b63b50d7c4"
+      },
+      {
+        "path": "src/kirchhoff/render/overlay/schema.py",
+        "bytes": 11364,
+        "sha256": "e86e92b886e9942cb51b0eeb52e18ea5010201388730ede89c2d3871c74dbb56"
+      },
+      {
+        "path": "src/kirchhoff/render/serialize/__init__.py",
+        "bytes": 641,
+        "sha256": "c0754c2c62d28b8edafacfa8d7c25b5a2315e8154bde29f78da89642ae0b1665"
+      },
+      {
+        "path": "src/kirchhoff/render/serialize/connectivity.py",
+        "bytes": 12380,
+        "sha256": "2c67e129ada91d3c4f720c67d9c2eb1e00914422738dd1bfe55f76df2f66ab5e"
+      },
+      {
+        "path": "src/kirchhoff/render/serialize/geometry.py",
+        "bytes": 27280,
+        "sha256": "e54d349befb3aa90512cdb3ce261ca0c44ec63bdb394aa996aa1bdbaefab751c"
+      },
+      {
+        "path": "src/kirchhoff/render/serialize/svg.py",
+        "bytes": 52171,
+        "sha256": "1cb0ec9c464b05f0fbafaf82252748672472b93db50e6fe3d7608c547fb273a5"
+      },
+      {
+        "path": "src/kirchhoff/render/step/__init__.py",
+        "bytes": 1308,
+        "sha256": "95d91bcd2a341c3239713aefb1a6bbeac1b28d319f0a5acff55d0481f2d28a29"
+      },
+      {
+        "path": "src/kirchhoff/render/step/compose.py",
+        "bytes": 5484,
+        "sha256": "f80f56965a86b5bcd9f2327f2f1e6e381d585c64405a8c74c4efaab5033b7325"
+      },
+      {
+        "path": "src/kirchhoff/render/step/schema.py",
+        "bytes": 29932,
+        "sha256": "3b16b9c0ab74770ce77fb9a20ce62f746a631b936221485876260cb01ab10970"
+      },
+      {
+        "path": "src/kirchhoff/runtime_identity.py",
+        "bytes": 3405,
+        "sha256": "20d7064a09ce59b4de5fccb4e839db4a2d1530eb106e62e859e62d8c53d7b038"
+      },
+      {
+        "path": "pyproject.toml",
+        "bytes": 1222,
+        "sha256": "5e2e7efe31f55df621629517a922871806b298381f05caa3ed873b36c5a615fd"
+      }
+    ]
+  },
+  "source_unchanged": true,
+  "lessons_jsonl_sha256": "7031a7303a451feb80935c591f748395793f2cce6823e5e7d86fff8eecfcd36b",
+  "lesson_build": "cc7b7a226ec312374df6d3bb8f60da4a1d8722a247e9b6bf864a0973fea159ee",
+  "failures": 3,
+  "documented_refusals": 6,
+  "regression_after_first_product_run": true,
+  "results": [
+    {
+      "id": "manual_bridge/base",
+      "expected": {
+        "imaginary": 0.9223650385604115,
+        "manual_exact_imaginary": "1794/1945",
+        "manual_exact_real": "4808/1945",
+        "max_equation_residual": 2.482534153247273e-16,
+        "rank": 3,
+        "real": 2.4719794344473005,
+        "reference": "p -> 0",
+        "status": "finite_unique",
+        "unknowns": 3
+      },
+      "status": "passed",
+      "lesson_json_bytes": 216605,
+      "lesson_json_sha256": "383318962f3281fa2e6f5d22e2310bac3c92d7a88358022360ce3e879d1e76ff",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 1.881809680394078e-16,
+      "answer": {
+        "exact": "(4808/1945) + j*(1794/1945)",
+        "decimal": "(2.4719794) + j*(0.92236504)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → 0",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "4808/1945",
+            "0",
+            "0",
+            "1794/1945"
+          ],
+          "real_exact": "4808/1945",
+          "imaginary_exact": "1794/1945",
+          "real_decimal": "2.4719794",
+          "imaginary_decimal": "0.92236504",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "4808/1945",
+            "0",
+            "0",
+            "1794/1945"
+          ]
+        },
+        "display_exact": "4808/1945 + j(1794/1945)"
+      }
+    },
+    {
+      "id": "manual_bridge/port_reversed",
+      "expected": {
+        "imaginary": 0.9223650385604116,
+        "manual_exact_imaginary": "1794/1945",
+        "manual_exact_real": "4808/1945",
+        "max_equation_residual": 2.237726045655905e-16,
+        "rank": 3,
+        "real": 2.4719794344473014,
+        "reference": "0 -> p",
+        "status": "finite_unique",
+        "unknowns": 3
+      },
+      "status": "passed",
+      "lesson_json_bytes": 216709,
+      "lesson_json_sha256": "4510afde666203a599044d25ed9aa6ab405f863d6b71b574da274dff9c4d6f39",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 2.103927183039155e-16,
+      "answer": {
+        "exact": "(4808/1945) + j*(1794/1945)",
+        "decimal": "(2.4719794) + j*(0.92236504)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "0 → p",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "4808/1945",
+            "0",
+            "0",
+            "1794/1945"
+          ],
+          "real_exact": "4808/1945",
+          "imaginary_exact": "1794/1945",
+          "real_decimal": "2.4719794",
+          "imaginary_decimal": "0.92236504",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "4808/1945",
+            "0",
+            "0",
+            "1794/1945"
+          ]
+        },
+        "display_exact": "4808/1945 + j(1794/1945)"
+      }
+    },
+    {
+      "id": "manual_bridge/components_reordered",
+      "expected": {
+        "imaginary": 0.9223650385604115,
+        "manual_exact_imaginary": "1794/1945",
+        "manual_exact_real": "4808/1945",
+        "max_equation_residual": 2.482534153247273e-16,
+        "rank": 3,
+        "real": 2.4719794344473005,
+        "reference": "p -> 0",
+        "status": "finite_unique",
+        "unknowns": 3
+      },
+      "status": "passed",
+      "lesson_json_bytes": 216619,
+      "lesson_json_sha256": "6605b4aa4725fa89a43629b63e18d1919233c62efef0cf7f1aa404ae60fce575",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 1.881809680394078e-16,
+      "answer": {
+        "exact": "(4808/1945) + j*(1794/1945)",
+        "decimal": "(2.4719794) + j*(0.92236504)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → 0",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "4808/1945",
+            "0",
+            "0",
+            "1794/1945"
+          ],
+          "real_exact": "4808/1945",
+          "imaginary_exact": "1794/1945",
+          "real_decimal": "2.4719794",
+          "imaginary_decimal": "0.92236504",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "4808/1945",
+            "0",
+            "0",
+            "1794/1945"
+          ]
+        },
+        "display_exact": "4808/1945 + j(1794/1945)"
+      }
+    },
+    {
+      "id": "manual_bridge/amplitude_peak",
+      "expected": {
+        "imaginary": 0.9223650385604115,
+        "manual_exact_imaginary": "1794/1945",
+        "manual_exact_real": "4808/1945",
+        "max_equation_residual": 2.482534153247273e-16,
+        "rank": 3,
+        "real": 2.4719794344473005,
+        "reference": "p -> 0",
+        "status": "finite_unique",
+        "unknowns": 3
+      },
+      "status": "passed",
+      "lesson_json_bytes": 216611,
+      "lesson_json_sha256": "d73ea6de65e98d746ffb909267e301f5ed3d252f752b3d0c8f3d282133fbc55e",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 1.881809680394078e-16,
+      "answer": {
+        "exact": "(4808/1945) + j*(1794/1945)",
+        "decimal": "(2.4719794) + j*(0.92236504)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → 0",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "4808/1945",
+            "0",
+            "0",
+            "1794/1945"
+          ],
+          "real_exact": "4808/1945",
+          "imaginary_exact": "1794/1945",
+          "real_decimal": "2.4719794",
+          "imaginary_decimal": "0.92236504",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "4808/1945",
+            "0",
+            "0",
+            "1794/1945"
+          ]
+        },
+        "display_exact": "4808/1945 + j(1794/1945)"
+      }
+    },
+    {
+      "id": "manual_bridge/source_values_and_phases",
+      "expected": {
+        "imaginary": 0.9223650385604115,
+        "manual_exact_imaginary": "1794/1945",
+        "manual_exact_real": "4808/1945",
+        "max_equation_residual": 2.482534153247273e-16,
+        "rank": 3,
+        "real": 2.4719794344473005,
+        "reference": "p -> 0",
+        "status": "finite_unique",
+        "unknowns": 3
+      },
+      "status": "passed",
+      "lesson_json_bytes": 216705,
+      "lesson_json_sha256": "6af0e15a69bf6c5b7ee8cfdc738a89b0c80f9a4608e70aaf16df33f212da3249",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 1.881809680394078e-16,
+      "answer": {
+        "exact": "(4808/1945) + j*(1794/1945)",
+        "decimal": "(2.4719794) + j*(0.92236504)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → 0",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "4808/1945",
+            "0",
+            "0",
+            "1794/1945"
+          ],
+          "real_exact": "4808/1945",
+          "imaginary_exact": "1794/1945",
+          "real_decimal": "2.4719794",
+          "imaginary_decimal": "0.92236504",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "4808/1945",
+            "0",
+            "0",
+            "1794/1945"
+          ]
+        },
+        "display_exact": "4808/1945 + j(1794/1945)"
+      }
+    },
+    {
+      "id": "manual_bridge/source_polarities",
+      "expected": {
+        "imaginary": 0.9223650385604115,
+        "manual_exact_imaginary": "1794/1945",
+        "manual_exact_real": "4808/1945",
+        "max_equation_residual": 2.482534153247273e-16,
+        "rank": 3,
+        "real": 2.4719794344473005,
+        "reference": "p -> 0",
+        "status": "finite_unique",
+        "unknowns": 3
+      },
+      "status": "passed",
+      "lesson_json_bytes": 216625,
+      "lesson_json_sha256": "2342247d45b2b5d678d277d24592265e758fc7eb80979800a510d9725764b35c",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 1.881809680394078e-16,
+      "answer": {
+        "exact": "(4808/1945) + j*(1794/1945)",
+        "decimal": "(2.4719794) + j*(0.92236504)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → 0",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "4808/1945",
+            "0",
+            "0",
+            "1794/1945"
+          ],
+          "real_exact": "4808/1945",
+          "imaginary_exact": "1794/1945",
+          "real_decimal": "2.4719794",
+          "imaginary_decimal": "0.92236504",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "4808/1945",
+            "0",
+            "0",
+            "1794/1945"
+          ]
+        },
+        "display_exact": "4808/1945 + j(1794/1945)"
+      }
+    },
+    {
+      "id": "manual_floating_source/base",
+      "expected": {
+        "imaginary": -0.35174449489793536,
+        "manual_exact_imaginary": "-76146/216481",
+        "manual_exact_real": "628320/216481",
+        "max_equation_residual": 1.7235854893846466e-16,
+        "rank": 4,
+        "real": 2.9024256170287464,
+        "reference": "p -> 0",
+        "status": "finite_unique",
+        "unknowns": 4
+      },
+      "status": "passed",
+      "lesson_json_bytes": 277581,
+      "lesson_json_sha256": "7490ed69be2edcbad07fc3c3aa6e8a3e124fce0c1c48049c4888df4fe6831324",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 9.493428780904883e-17,
+      "answer": {
+        "exact": "(628320/216481) + j*(-76146/216481)",
+        "decimal": "(2.9024256) + j*(-0.35174449)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → 0",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "628320/216481",
+            "0",
+            "0",
+            "-76146/216481"
+          ],
+          "real_exact": "628320/216481",
+          "imaginary_exact": "-76146/216481",
+          "real_decimal": "2.9024256",
+          "imaginary_decimal": "-0.35174449",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "628320/216481",
+            "0",
+            "0",
+            "-76146/216481"
+          ]
+        },
+        "display_exact": "628320/216481 − j(76146/216481)"
+      }
+    },
+    {
+      "id": "manual_floating_source/port_reversed",
+      "expected": {
+        "imaginary": -0.35174449489793536,
+        "manual_exact_imaginary": "-76146/216481",
+        "manual_exact_real": "628320/216481",
+        "max_equation_residual": 1.1295700899707568e-16,
+        "rank": 4,
+        "real": 2.9024256170287464,
+        "reference": "0 -> p",
+        "status": "finite_unique",
+        "unknowns": 4
+      },
+      "status": "passed",
+      "lesson_json_bytes": 277552,
+      "lesson_json_sha256": "3c0c6bfccf2970cd94dd346d63a9163a2f541f86b169341035b85c5deddec529",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 9.493428780904883e-17,
+      "answer": {
+        "exact": "(628320/216481) + j*(-76146/216481)",
+        "decimal": "(2.9024256) + j*(-0.35174449)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "0 → p",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "628320/216481",
+            "0",
+            "0",
+            "-76146/216481"
+          ],
+          "real_exact": "628320/216481",
+          "imaginary_exact": "-76146/216481",
+          "real_decimal": "2.9024256",
+          "imaginary_decimal": "-0.35174449",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "628320/216481",
+            "0",
+            "0",
+            "-76146/216481"
+          ]
+        },
+        "display_exact": "628320/216481 − j(76146/216481)"
+      }
+    },
+    {
+      "id": "manual_floating_source/components_reordered",
+      "expected": {
+        "imaginary": -0.35174449489793536,
+        "manual_exact_imaginary": "-76146/216481",
+        "manual_exact_real": "628320/216481",
+        "max_equation_residual": 1.7235854893846466e-16,
+        "rank": 4,
+        "real": 2.9024256170287464,
+        "reference": "p -> 0",
+        "status": "finite_unique",
+        "unknowns": 4
+      },
+      "status": "passed",
+      "lesson_json_bytes": 277597,
+      "lesson_json_sha256": "450950d3e4d195089a78b778be595d4478dc77f8980185b1e7f9a740d6ca8a11",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 9.493428780904883e-17,
+      "answer": {
+        "exact": "(628320/216481) + j*(-76146/216481)",
+        "decimal": "(2.9024256) + j*(-0.35174449)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → 0",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "628320/216481",
+            "0",
+            "0",
+            "-76146/216481"
+          ],
+          "real_exact": "628320/216481",
+          "imaginary_exact": "-76146/216481",
+          "real_decimal": "2.9024256",
+          "imaginary_decimal": "-0.35174449",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "628320/216481",
+            "0",
+            "0",
+            "-76146/216481"
+          ]
+        },
+        "display_exact": "628320/216481 − j(76146/216481)"
+      }
+    },
+    {
+      "id": "manual_floating_source/amplitude_peak",
+      "expected": {
+        "imaginary": -0.35174449489793536,
+        "manual_exact_imaginary": "-76146/216481",
+        "manual_exact_real": "628320/216481",
+        "max_equation_residual": 1.7235854893846466e-16,
+        "rank": 4,
+        "real": 2.9024256170287464,
+        "reference": "p -> 0",
+        "status": "finite_unique",
+        "unknowns": 4
+      },
+      "status": "passed",
+      "lesson_json_bytes": 277587,
+      "lesson_json_sha256": "8d2ab9e0b7188299e7b3f1fb31e39a92f0ac28ea911365e1e72db3785c24b542",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 9.493428780904883e-17,
+      "answer": {
+        "exact": "(628320/216481) + j*(-76146/216481)",
+        "decimal": "(2.9024256) + j*(-0.35174449)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → 0",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "628320/216481",
+            "0",
+            "0",
+            "-76146/216481"
+          ],
+          "real_exact": "628320/216481",
+          "imaginary_exact": "-76146/216481",
+          "real_decimal": "2.9024256",
+          "imaginary_decimal": "-0.35174449",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "628320/216481",
+            "0",
+            "0",
+            "-76146/216481"
+          ]
+        },
+        "display_exact": "628320/216481 − j(76146/216481)"
+      }
+    },
+    {
+      "id": "manual_floating_source/source_values_and_phases",
+      "expected": {
+        "imaginary": -0.35174449489793536,
+        "manual_exact_imaginary": "-76146/216481",
+        "manual_exact_real": "628320/216481",
+        "max_equation_residual": 1.7235854893846466e-16,
+        "rank": 4,
+        "real": 2.9024256170287464,
+        "reference": "p -> 0",
+        "status": "finite_unique",
+        "unknowns": 4
+      },
+      "status": "passed",
+      "lesson_json_bytes": 277633,
+      "lesson_json_sha256": "d344538df9626d12e535e9153f459f05a5b4bbc171a4ddce0acd735552732a81",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 9.493428780904883e-17,
+      "answer": {
+        "exact": "(628320/216481) + j*(-76146/216481)",
+        "decimal": "(2.9024256) + j*(-0.35174449)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → 0",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "628320/216481",
+            "0",
+            "0",
+            "-76146/216481"
+          ],
+          "real_exact": "628320/216481",
+          "imaginary_exact": "-76146/216481",
+          "real_decimal": "2.9024256",
+          "imaginary_decimal": "-0.35174449",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "628320/216481",
+            "0",
+            "0",
+            "-76146/216481"
+          ]
+        },
+        "display_exact": "628320/216481 − j(76146/216481)"
+      }
+    },
+    {
+      "id": "manual_floating_source/source_polarities",
+      "expected": {
+        "imaginary": -0.35174449489793536,
+        "manual_exact_imaginary": "-76146/216481",
+        "manual_exact_real": "628320/216481",
+        "max_equation_residual": 1.7235854893846466e-16,
+        "rank": 4,
+        "real": 2.9024256170287464,
+        "reference": "p -> 0",
+        "status": "finite_unique",
+        "unknowns": 4
+      },
+      "status": "passed",
+      "lesson_json_bytes": 279030,
+      "lesson_json_sha256": "19b6000355557eac920f9260e861248665196290febb17b34b0390a507412db8",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 9.493428780904883e-17,
+      "answer": {
+        "exact": "(628320/216481) + j*(-76146/216481)",
+        "decimal": "(2.9024256) + j*(-0.35174449)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → 0",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "628320/216481",
+            "0",
+            "0",
+            "-76146/216481"
+          ],
+          "real_exact": "628320/216481",
+          "imaginary_exact": "-76146/216481",
+          "real_decimal": "2.9024256",
+          "imaginary_decimal": "-0.35174449",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "628320/216481",
+            "0",
+            "0",
+            "-76146/216481"
+          ]
+        },
+        "display_exact": "628320/216481 − j(76146/216481)"
+      }
+    },
+    {
+      "id": "seeded_mesh_01/base",
+      "expected": {
+        "imaginary": 0.5742160119807593,
+        "max_equation_residual": 8.95090418262362e-16,
+        "rank": 6,
+        "real": 2.883741758367713,
+        "reference": "p -> 0",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 502599,
+      "lesson_json_sha256": "39f393ff97db0cf4679c31aac2aed66d1493d2d695b7e58e19243136432d1450",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 3.775812206323621e-16,
+      "answer": {
+        "exact": "(869891328/301653685) + j*(173214376/301653685)",
+        "decimal": "(2.8837418) + j*(0.57421601)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → 0",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "869891328/301653685",
+            "0",
+            "0",
+            "173214376/301653685"
+          ],
+          "real_exact": "869891328/301653685",
+          "imaginary_exact": "173214376/301653685",
+          "real_decimal": "2.8837418",
+          "imaginary_decimal": "0.57421601",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "869891328/301653685",
+            "0",
+            "0",
+            "173214376/301653685"
+          ]
+        },
+        "display_exact": "869891328/301653685 + j(173214376/301653685)"
+      }
+    },
+    {
+      "id": "seeded_mesh_01/port_reversed",
+      "expected": {
+        "imaginary": 0.5742160119807589,
+        "max_equation_residual": 2.0206364052201326e-16,
+        "rank": 6,
+        "real": 2.883741758367712,
+        "reference": "0 -> p",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 502841,
+      "lesson_json_sha256": "1ce754de5c8a92fb9286e7d3fca9bf22ebc639f4e8144b35bff115576ed0cfee",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 1.6885945527226163e-16,
+      "answer": {
+        "exact": "(869891328/301653685) + j*(173214376/301653685)",
+        "decimal": "(2.8837418) + j*(0.57421601)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "0 → p",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "869891328/301653685",
+            "0",
+            "0",
+            "173214376/301653685"
+          ],
+          "real_exact": "869891328/301653685",
+          "imaginary_exact": "173214376/301653685",
+          "real_decimal": "2.8837418",
+          "imaginary_decimal": "0.57421601",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "869891328/301653685",
+            "0",
+            "0",
+            "173214376/301653685"
+          ]
+        },
+        "display_exact": "869891328/301653685 + j(173214376/301653685)"
+      }
+    },
+    {
+      "id": "seeded_mesh_01/components_reordered",
+      "expected": {
+        "imaginary": 0.5742160119807593,
+        "max_equation_residual": 8.95090418262362e-16,
+        "rank": 6,
+        "real": 2.883741758367713,
+        "reference": "p -> 0",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 502611,
+      "lesson_json_sha256": "fad09b0a132a150b0e9411bddc8229165434db674e7c25e6cfcab3a221f6232e",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 3.775812206323621e-16,
+      "answer": {
+        "exact": "(869891328/301653685) + j*(173214376/301653685)",
+        "decimal": "(2.8837418) + j*(0.57421601)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → 0",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "869891328/301653685",
+            "0",
+            "0",
+            "173214376/301653685"
+          ],
+          "real_exact": "869891328/301653685",
+          "imaginary_exact": "173214376/301653685",
+          "real_decimal": "2.8837418",
+          "imaginary_decimal": "0.57421601",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "869891328/301653685",
+            "0",
+            "0",
+            "173214376/301653685"
+          ]
+        },
+        "display_exact": "869891328/301653685 + j(173214376/301653685)"
+      }
+    },
+    {
+      "id": "seeded_mesh_01/amplitude_peak",
+      "expected": {
+        "imaginary": 0.5742160119807593,
+        "max_equation_residual": 8.95090418262362e-16,
+        "rank": 6,
+        "real": 2.883741758367713,
+        "reference": "p -> 0",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 502605,
+      "lesson_json_sha256": "c897f797cd4ad90d4431749dc44425c1cd2d380b27ebe786034222504c628cfd",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 3.775812206323621e-16,
+      "answer": {
+        "exact": "(869891328/301653685) + j*(173214376/301653685)",
+        "decimal": "(2.8837418) + j*(0.57421601)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → 0",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "869891328/301653685",
+            "0",
+            "0",
+            "173214376/301653685"
+          ],
+          "real_exact": "869891328/301653685",
+          "imaginary_exact": "173214376/301653685",
+          "real_decimal": "2.8837418",
+          "imaginary_decimal": "0.57421601",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "869891328/301653685",
+            "0",
+            "0",
+            "173214376/301653685"
+          ]
+        },
+        "display_exact": "869891328/301653685 + j(173214376/301653685)"
+      }
+    },
+    {
+      "id": "seeded_mesh_01/source_values_and_phases",
+      "expected": {
+        "imaginary": 0.5742160119807593,
+        "max_equation_residual": 8.95090418262362e-16,
+        "rank": 6,
+        "real": 2.883741758367713,
+        "reference": "p -> 0",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 502658,
+      "lesson_json_sha256": "b046787152e57f70a072cb50ca0a9da7189982ce165bb06961719cd4ded8ec93",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 3.775812206323621e-16,
+      "answer": {
+        "exact": "(869891328/301653685) + j*(173214376/301653685)",
+        "decimal": "(2.8837418) + j*(0.57421601)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → 0",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "869891328/301653685",
+            "0",
+            "0",
+            "173214376/301653685"
+          ],
+          "real_exact": "869891328/301653685",
+          "imaginary_exact": "173214376/301653685",
+          "real_decimal": "2.8837418",
+          "imaginary_decimal": "0.57421601",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "869891328/301653685",
+            "0",
+            "0",
+            "173214376/301653685"
+          ]
+        },
+        "display_exact": "869891328/301653685 + j(173214376/301653685)"
+      }
+    },
+    {
+      "id": "seeded_mesh_01/source_polarities",
+      "expected": {
+        "imaginary": 0.5742160119807593,
+        "max_equation_residual": 8.95090418262362e-16,
+        "rank": 6,
+        "real": 2.883741758367713,
+        "reference": "p -> 0",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 494645,
+      "lesson_json_sha256": "bcfb43ec4a1afceecf6e165aade2a71b637897e7c6c255224c39cced6035af64",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 3.775812206323621e-16,
+      "answer": {
+        "exact": "(869891328/301653685) + j*(173214376/301653685)",
+        "decimal": "(2.8837418) + j*(0.57421601)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → 0",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "869891328/301653685",
+            "0",
+            "0",
+            "173214376/301653685"
+          ],
+          "real_exact": "869891328/301653685",
+          "imaginary_exact": "173214376/301653685",
+          "real_decimal": "2.8837418",
+          "imaginary_decimal": "0.57421601",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "869891328/301653685",
+            "0",
+            "0",
+            "173214376/301653685"
+          ]
+        },
+        "display_exact": "869891328/301653685 + j(173214376/301653685)"
+      }
+    },
+    {
+      "id": "seeded_mesh_02/base",
+      "expected": {
+        "imaginary": 0.703508864222209,
+        "max_equation_residual": 1.170021796579212e-15,
+        "rank": 6,
+        "real": 5.2866536903572,
+        "reference": "p -> c",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 503414,
+      "lesson_json_sha256": "6a140cecdf3ebd4b20926c242dda912ce696df7c69f799ec52b33af64765b67c",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 3.1775739395297705e-16,
+      "answer": {
+        "exact": "(100494/19009) + j*(13373/19009)",
+        "decimal": "(5.2866537) + j*(0.70350886)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → c",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "100494/19009",
+            "0",
+            "0",
+            "13373/19009"
+          ],
+          "real_exact": "100494/19009",
+          "imaginary_exact": "13373/19009",
+          "real_decimal": "5.2866537",
+          "imaginary_decimal": "0.70350886",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "100494/19009",
+            "0",
+            "0",
+            "13373/19009"
+          ]
+        },
+        "display_exact": "100494/19009 + j(13373/19009)"
+      }
+    },
+    {
+      "id": "seeded_mesh_02/port_reversed",
+      "expected": {
+        "imaginary": 0.7035088642222145,
+        "max_equation_residual": 1.1102230246251565e-15,
+        "rank": 6,
+        "real": 5.2866536903571975,
+        "reference": "c -> p",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 503529,
+      "lesson_json_sha256": "b3f851b37b6024e35bea6b544493b64d42db8bfdfffc1d205c95a1d9c46d51cf",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 8.200938649068868e-16,
+      "answer": {
+        "exact": "(100494/19009) + j*(13373/19009)",
+        "decimal": "(5.2866537) + j*(0.70350886)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "c → p",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "100494/19009",
+            "0",
+            "0",
+            "13373/19009"
+          ],
+          "real_exact": "100494/19009",
+          "imaginary_exact": "13373/19009",
+          "real_decimal": "5.2866537",
+          "imaginary_decimal": "0.70350886",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "100494/19009",
+            "0",
+            "0",
+            "13373/19009"
+          ]
+        },
+        "display_exact": "100494/19009 + j(13373/19009)"
+      }
+    },
+    {
+      "id": "seeded_mesh_02/components_reordered",
+      "expected": {
+        "imaginary": 0.7035088642222111,
+        "max_equation_residual": 1.0179146870343963e-15,
+        "rank": 6,
+        "real": 5.286653690357198,
+        "reference": "p -> c",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 503428,
+      "lesson_json_sha256": "2b02044b2987939712d906051d09a863fd62cd602317fc135cfae40af107a025",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 2.0816979019570392e-16,
+      "answer": {
+        "exact": "(100494/19009) + j*(13373/19009)",
+        "decimal": "(5.2866537) + j*(0.70350886)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → c",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "100494/19009",
+            "0",
+            "0",
+            "13373/19009"
+          ],
+          "real_exact": "100494/19009",
+          "imaginary_exact": "13373/19009",
+          "real_decimal": "5.2866537",
+          "imaginary_decimal": "0.70350886",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "100494/19009",
+            "0",
+            "0",
+            "13373/19009"
+          ]
+        },
+        "display_exact": "100494/19009 + j(13373/19009)"
+      }
+    },
+    {
+      "id": "seeded_mesh_02/amplitude_peak",
+      "expected": {
+        "imaginary": 0.703508864222209,
+        "max_equation_residual": 1.170021796579212e-15,
+        "rank": 6,
+        "real": 5.2866536903572,
+        "reference": "p -> c",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 503420,
+      "lesson_json_sha256": "8ad608d08a98e7d085214f7c546bd6a3454e2e79f0954c94f3eb076c3e245cc9",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 3.1775739395297705e-16,
+      "answer": {
+        "exact": "(100494/19009) + j*(13373/19009)",
+        "decimal": "(5.2866537) + j*(0.70350886)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → c",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "100494/19009",
+            "0",
+            "0",
+            "13373/19009"
+          ],
+          "real_exact": "100494/19009",
+          "imaginary_exact": "13373/19009",
+          "real_decimal": "5.2866537",
+          "imaginary_decimal": "0.70350886",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "100494/19009",
+            "0",
+            "0",
+            "13373/19009"
+          ]
+        },
+        "display_exact": "100494/19009 + j(13373/19009)"
+      }
+    },
+    {
+      "id": "seeded_mesh_02/source_values_and_phases",
+      "expected": {
+        "imaginary": 0.703508864222209,
+        "max_equation_residual": 1.170021796579212e-15,
+        "rank": 6,
+        "real": 5.2866536903572,
+        "reference": "p -> c",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 503476,
+      "lesson_json_sha256": "ee2ad12bfe4bdd5bd0913f636e4a3227d9f22d20da45312faa334f4ed326e3c2",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 3.1775739395297705e-16,
+      "answer": {
+        "exact": "(100494/19009) + j*(13373/19009)",
+        "decimal": "(5.2866537) + j*(0.70350886)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → c",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "100494/19009",
+            "0",
+            "0",
+            "13373/19009"
+          ],
+          "real_exact": "100494/19009",
+          "imaginary_exact": "13373/19009",
+          "real_decimal": "5.2866537",
+          "imaginary_decimal": "0.70350886",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "100494/19009",
+            "0",
+            "0",
+            "13373/19009"
+          ]
+        },
+        "display_exact": "100494/19009 + j(13373/19009)"
+      }
+    },
+    {
+      "id": "seeded_mesh_02/source_polarities",
+      "expected": {
+        "imaginary": 0.703508864222209,
+        "max_equation_residual": 1.170021796579212e-15,
+        "rank": 6,
+        "real": 5.2866536903572,
+        "reference": "p -> c",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 494266,
+      "lesson_json_sha256": "00e17cac78148c093bf3038c06b8b9dfcc93ef169cb327f4aecd4eedcbff08a1",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 3.1775739395297705e-16,
+      "answer": {
+        "exact": "(100494/19009) + j*(13373/19009)",
+        "decimal": "(5.2866537) + j*(0.70350886)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → c",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "100494/19009",
+            "0",
+            "0",
+            "13373/19009"
+          ],
+          "real_exact": "100494/19009",
+          "imaginary_exact": "13373/19009",
+          "real_decimal": "5.2866537",
+          "imaginary_decimal": "0.70350886",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "100494/19009",
+            "0",
+            "0",
+            "13373/19009"
+          ]
+        },
+        "display_exact": "100494/19009 + j(13373/19009)"
+      }
+    },
+    {
+      "id": "seeded_mesh_03/base",
+      "expected": {
+        "imaginary": -1.3877787807814457e-16,
+        "max_equation_residual": 5.083642999925921e-16,
+        "rank": 6,
+        "real": 3.6363636363636362,
+        "reference": "p -> 0",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 486835,
+      "lesson_json_sha256": "fe3b1f25d8411d22b4db438aeef19148edc1a4bddede54920ff14a52cad9309f",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 3.8163916471489756e-17,
+      "answer": {
+        "exact": "(40/11) + j*(0)",
+        "decimal": "(3.6363636) + j*(0)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → 0",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "40/11",
+            "0",
+            "0",
+            "0"
+          ],
+          "real_exact": "40/11",
+          "imaginary_exact": "0",
+          "real_decimal": "3.6363636",
+          "imaginary_decimal": "0",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "40/11",
+            "0",
+            "0",
+            "0"
+          ]
+        },
+        "display_exact": "40/11"
+      }
+    },
+    {
+      "id": "seeded_mesh_03/port_reversed",
+      "expected": {
+        "imaginary": 7.632783294297951e-17,
+        "max_equation_residual": 7.400599882195397e-16,
+        "rank": 6,
+        "real": 3.6363636363636362,
+        "reference": "0 -> p",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 486917,
+      "lesson_json_sha256": "e84ab683c2bfb208ac5c09119331485a934e3c03424403ca70cc94d3a5909d95",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 2.0990154059319365e-17,
+      "answer": {
+        "exact": "(40/11) + j*(0)",
+        "decimal": "(3.6363636) + j*(0)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "0 → p",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "40/11",
+            "0",
+            "0",
+            "0"
+          ],
+          "real_exact": "40/11",
+          "imaginary_exact": "0",
+          "real_decimal": "3.6363636",
+          "imaginary_decimal": "0",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "40/11",
+            "0",
+            "0",
+            "0"
+          ]
+        },
+        "display_exact": "40/11"
+      }
+    },
+    {
+      "id": "seeded_mesh_03/components_reordered",
+      "expected": {
+        "imaginary": -1.3877787807814457e-16,
+        "max_equation_residual": 5.083642999925921e-16,
+        "rank": 6,
+        "real": 3.6363636363636362,
+        "reference": "p -> 0",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 486849,
+      "lesson_json_sha256": "c0002c71d1efdeb6956484a2de4c8dbffd97d2481a5d6fff5d828bd27d102906",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 3.8163916471489756e-17,
+      "answer": {
+        "exact": "(40/11) + j*(0)",
+        "decimal": "(3.6363636) + j*(0)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → 0",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "40/11",
+            "0",
+            "0",
+            "0"
+          ],
+          "real_exact": "40/11",
+          "imaginary_exact": "0",
+          "real_decimal": "3.6363636",
+          "imaginary_decimal": "0",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "40/11",
+            "0",
+            "0",
+            "0"
+          ]
+        },
+        "display_exact": "40/11"
+      }
+    },
+    {
+      "id": "seeded_mesh_03/amplitude_peak",
+      "expected": {
+        "imaginary": -1.3877787807814457e-16,
+        "max_equation_residual": 5.083642999925921e-16,
+        "rank": 6,
+        "real": 3.6363636363636362,
+        "reference": "p -> 0",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 486841,
+      "lesson_json_sha256": "848c9d005929742094022fbde574ab7bac7590c55b69c437a62b3b2237abc19b",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 3.8163916471489756e-17,
+      "answer": {
+        "exact": "(40/11) + j*(0)",
+        "decimal": "(3.6363636) + j*(0)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → 0",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "40/11",
+            "0",
+            "0",
+            "0"
+          ],
+          "real_exact": "40/11",
+          "imaginary_exact": "0",
+          "real_decimal": "3.6363636",
+          "imaginary_decimal": "0",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "40/11",
+            "0",
+            "0",
+            "0"
+          ]
+        },
+        "display_exact": "40/11"
+      }
+    },
+    {
+      "id": "seeded_mesh_03/source_values_and_phases",
+      "expected": {
+        "imaginary": -1.3877787807814457e-16,
+        "max_equation_residual": 5.083642999925921e-16,
+        "rank": 6,
+        "real": 3.6363636363636362,
+        "reference": "p -> 0",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 486897,
+      "lesson_json_sha256": "bc1955ca5a8dd8555b31014fc5e10439d8483194efbf04136053b3dd34626ca0",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 3.8163916471489756e-17,
+      "answer": {
+        "exact": "(40/11) + j*(0)",
+        "decimal": "(3.6363636) + j*(0)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → 0",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "40/11",
+            "0",
+            "0",
+            "0"
+          ],
+          "real_exact": "40/11",
+          "imaginary_exact": "0",
+          "real_decimal": "3.6363636",
+          "imaginary_decimal": "0",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "40/11",
+            "0",
+            "0",
+            "0"
+          ]
+        },
+        "display_exact": "40/11"
+      }
+    },
+    {
+      "id": "seeded_mesh_03/source_polarities",
+      "expected": {
+        "imaginary": -1.3877787807814457e-16,
+        "max_equation_residual": 5.083642999925921e-16,
+        "rank": 6,
+        "real": 3.6363636363636362,
+        "reference": "p -> 0",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 481053,
+      "lesson_json_sha256": "f27a8e74b32b210e0ac7cc4a3edeb3764ef3e8c57bcb62e99dd944843ae723e0",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 3.8163916471489756e-17,
+      "answer": {
+        "exact": "(40/11) + j*(0)",
+        "decimal": "(3.6363636) + j*(0)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → 0",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "40/11",
+            "0",
+            "0",
+            "0"
+          ],
+          "real_exact": "40/11",
+          "imaginary_exact": "0",
+          "real_decimal": "3.6363636",
+          "imaginary_decimal": "0",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "40/11",
+            "0",
+            "0",
+            "0"
+          ]
+        },
+        "display_exact": "40/11"
+      }
+    },
+    {
+      "id": "seeded_mesh_04/base",
+      "expected": {
+        "imaginary": -0.7964959568733154,
+        "max_equation_residual": 2.237726045655905e-16,
+        "rank": 6,
+        "real": 0.6805929919137468,
+        "reference": "p -> c",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 498848,
+      "lesson_json_sha256": "275b80f46cc4e54c3ed5d4ecfc360cd56583ffad857da2946fecf6ea800f6702",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 1.4986515934227121e-16,
+      "answer": {
+        "exact": "(505/742) + j*(-591/742)",
+        "decimal": "(0.68059299) + j*(-0.79649596)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → c",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "505/742",
+            "0",
+            "0",
+            "-591/742"
+          ],
+          "real_exact": "505/742",
+          "imaginary_exact": "-591/742",
+          "real_decimal": "0.68059299",
+          "imaginary_decimal": "-0.79649596",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "505/742",
+            "0",
+            "0",
+            "-591/742"
+          ]
+        },
+        "display_exact": "505/742 − j(591/742)"
+      }
+    },
+    {
+      "id": "seeded_mesh_04/port_reversed",
+      "expected": {
+        "imaginary": -0.7964959568733154,
+        "max_equation_residual": 2.482534153247273e-16,
+        "rank": 6,
+        "real": 0.6805929919137463,
+        "reference": "c -> p",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 498856,
+      "lesson_json_sha256": "7db715a83eb80c345f00aee82252249e5d5165fa4e9576d6576f76efd6038db0",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 3.3510868374815626e-16,
+      "answer": {
+        "exact": "(505/742) + j*(-591/742)",
+        "decimal": "(0.68059299) + j*(-0.79649596)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "c → p",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "505/742",
+            "0",
+            "0",
+            "-591/742"
+          ],
+          "real_exact": "505/742",
+          "imaginary_exact": "-591/742",
+          "real_decimal": "0.68059299",
+          "imaginary_decimal": "-0.79649596",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "505/742",
+            "0",
+            "0",
+            "-591/742"
+          ]
+        },
+        "display_exact": "505/742 − j(591/742)"
+      }
+    },
+    {
+      "id": "seeded_mesh_04/components_reordered",
+      "expected": {
+        "imaginary": -0.7964959568733154,
+        "max_equation_residual": 2.237726045655905e-16,
+        "rank": 6,
+        "real": 0.6805929919137468,
+        "reference": "p -> c",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 498858,
+      "lesson_json_sha256": "90818e4ff2d7c2e21d0c7a90dc1896396e64df8b1a54547323718eb38c9e7a2e",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 1.4986515934227121e-16,
+      "answer": {
+        "exact": "(505/742) + j*(-591/742)",
+        "decimal": "(0.68059299) + j*(-0.79649596)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → c",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "505/742",
+            "0",
+            "0",
+            "-591/742"
+          ],
+          "real_exact": "505/742",
+          "imaginary_exact": "-591/742",
+          "real_decimal": "0.68059299",
+          "imaginary_decimal": "-0.79649596",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "505/742",
+            "0",
+            "0",
+            "-591/742"
+          ]
+        },
+        "display_exact": "505/742 − j(591/742)"
+      }
+    },
+    {
+      "id": "seeded_mesh_04/amplitude_peak",
+      "expected": {
+        "imaginary": -0.7964959568733154,
+        "max_equation_residual": 2.237726045655905e-16,
+        "rank": 6,
+        "real": 0.6805929919137468,
+        "reference": "p -> c",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 498854,
+      "lesson_json_sha256": "1765bdb7bb6e9db8be0d6a0cad4bca62fc8ca34ad5a426b53e4332e38945aad0",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 1.4986515934227121e-16,
+      "answer": {
+        "exact": "(505/742) + j*(-591/742)",
+        "decimal": "(0.68059299) + j*(-0.79649596)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → c",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "505/742",
+            "0",
+            "0",
+            "-591/742"
+          ],
+          "real_exact": "505/742",
+          "imaginary_exact": "-591/742",
+          "real_decimal": "0.68059299",
+          "imaginary_decimal": "-0.79649596",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "505/742",
+            "0",
+            "0",
+            "-591/742"
+          ]
+        },
+        "display_exact": "505/742 − j(591/742)"
+      }
+    },
+    {
+      "id": "seeded_mesh_04/source_values_and_phases",
+      "expected": {
+        "imaginary": -0.7964959568733154,
+        "max_equation_residual": 2.237726045655905e-16,
+        "rank": 6,
+        "real": 0.6805929919137468,
+        "reference": "p -> c",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 498910,
+      "lesson_json_sha256": "ab7d4886af5fdbdb4667b86451c98721aa4ae5b741a805e6334dd93daf22fe5d",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 1.4986515934227121e-16,
+      "answer": {
+        "exact": "(505/742) + j*(-591/742)",
+        "decimal": "(0.68059299) + j*(-0.79649596)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → c",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "505/742",
+            "0",
+            "0",
+            "-591/742"
+          ],
+          "real_exact": "505/742",
+          "imaginary_exact": "-591/742",
+          "real_decimal": "0.68059299",
+          "imaginary_decimal": "-0.79649596",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "505/742",
+            "0",
+            "0",
+            "-591/742"
+          ]
+        },
+        "display_exact": "505/742 − j(591/742)"
+      }
+    },
+    {
+      "id": "seeded_mesh_04/source_polarities",
+      "expected": {
+        "imaginary": -0.7964959568733154,
+        "max_equation_residual": 2.237726045655905e-16,
+        "rank": 6,
+        "real": 0.6805929919137468,
+        "reference": "p -> c",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 497505,
+      "lesson_json_sha256": "2be6f39437c0811d649961c9867f3e10528c77693903f2c81f503d76648a93aa",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 1.4986515934227121e-16,
+      "answer": {
+        "exact": "(505/742) + j*(-591/742)",
+        "decimal": "(0.68059299) + j*(-0.79649596)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → c",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "505/742",
+            "0",
+            "0",
+            "-591/742"
+          ],
+          "real_exact": "505/742",
+          "imaginary_exact": "-591/742",
+          "real_decimal": "0.68059299",
+          "imaginary_decimal": "-0.79649596",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "505/742",
+            "0",
+            "0",
+            "-591/742"
+          ]
+        },
+        "display_exact": "505/742 − j(591/742)"
+      }
+    },
+    {
+      "id": "seeded_mesh_05/base",
+      "expected": {
+        "imaginary": -0.511771818114189,
+        "max_equation_residual": 5.79553433516819e-16,
+        "rank": 6,
+        "real": 2.305236482876397,
+        "reference": "p -> 0",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 500910,
+      "lesson_json_sha256": "3f2587ca563f1c05a4298b14fad9ec340d7081afd41ed70ba131a943c5d4c616",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 9.403247010653962e-17,
+      "answer": {
+        "exact": "(98695392/42813565) + j*(-21910776/42813565)",
+        "decimal": "(2.3052365) + j*(-0.51177182)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → 0",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "98695392/42813565",
+            "0",
+            "0",
+            "-21910776/42813565"
+          ],
+          "real_exact": "98695392/42813565",
+          "imaginary_exact": "-21910776/42813565",
+          "real_decimal": "2.3052365",
+          "imaginary_decimal": "-0.51177182",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "98695392/42813565",
+            "0",
+            "0",
+            "-21910776/42813565"
+          ]
+        },
+        "display_exact": "98695392/42813565 − j(21910776/42813565)"
+      }
+    },
+    {
+      "id": "seeded_mesh_05/port_reversed",
+      "expected": {
+        "imaginary": -0.5117718181141884,
+        "max_equation_residual": 3.6506759942727966e-16,
+        "rank": 6,
+        "real": 2.3052364828763974,
+        "reference": "0 -> p",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 500901,
+      "lesson_json_sha256": "c41f20dae3b5bb271ac43d0b7933150ed503ad3a519d5d6e79c7869f7afea841",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 2.659639890562219e-16,
+      "answer": {
+        "exact": "(98695392/42813565) + j*(-21910776/42813565)",
+        "decimal": "(2.3052365) + j*(-0.51177182)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "0 → p",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "98695392/42813565",
+            "0",
+            "0",
+            "-21910776/42813565"
+          ],
+          "real_exact": "98695392/42813565",
+          "imaginary_exact": "-21910776/42813565",
+          "real_decimal": "2.3052365",
+          "imaginary_decimal": "-0.51177182",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "98695392/42813565",
+            "0",
+            "0",
+            "-21910776/42813565"
+          ]
+        },
+        "display_exact": "98695392/42813565 − j(21910776/42813565)"
+      }
+    },
+    {
+      "id": "seeded_mesh_05/components_reordered",
+      "expected": {
+        "imaginary": -0.511771818114189,
+        "max_equation_residual": 5.79553433516819e-16,
+        "rank": 6,
+        "real": 2.305236482876397,
+        "reference": "p -> 0",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 500920,
+      "lesson_json_sha256": "020df018775ebcebc5b4ac4f789bf4da515c3f77820b6ef180d3b5824310dcf8",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 9.403247010653962e-17,
+      "answer": {
+        "exact": "(98695392/42813565) + j*(-21910776/42813565)",
+        "decimal": "(2.3052365) + j*(-0.51177182)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → 0",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "98695392/42813565",
+            "0",
+            "0",
+            "-21910776/42813565"
+          ],
+          "real_exact": "98695392/42813565",
+          "imaginary_exact": "-21910776/42813565",
+          "real_decimal": "2.3052365",
+          "imaginary_decimal": "-0.51177182",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "98695392/42813565",
+            "0",
+            "0",
+            "-21910776/42813565"
+          ]
+        },
+        "display_exact": "98695392/42813565 − j(21910776/42813565)"
+      }
+    },
+    {
+      "id": "seeded_mesh_05/amplitude_peak",
+      "expected": {
+        "imaginary": -0.511771818114189,
+        "max_equation_residual": 5.79553433516819e-16,
+        "rank": 6,
+        "real": 2.305236482876397,
+        "reference": "p -> 0",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 500916,
+      "lesson_json_sha256": "b5267ad5697b4a60d0dcd98e39ebb1d7566017507b9ef79e98b76bfb5fa5e8c5",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 9.403247010653962e-17,
+      "answer": {
+        "exact": "(98695392/42813565) + j*(-21910776/42813565)",
+        "decimal": "(2.3052365) + j*(-0.51177182)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → 0",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "98695392/42813565",
+            "0",
+            "0",
+            "-21910776/42813565"
+          ],
+          "real_exact": "98695392/42813565",
+          "imaginary_exact": "-21910776/42813565",
+          "real_decimal": "2.3052365",
+          "imaginary_decimal": "-0.51177182",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "98695392/42813565",
+            "0",
+            "0",
+            "-21910776/42813565"
+          ]
+        },
+        "display_exact": "98695392/42813565 − j(21910776/42813565)"
+      }
+    },
+    {
+      "id": "seeded_mesh_05/source_values_and_phases",
+      "expected": {
+        "imaginary": -0.511771818114189,
+        "max_equation_residual": 5.79553433516819e-16,
+        "rank": 6,
+        "real": 2.305236482876397,
+        "reference": "p -> 0",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 500972,
+      "lesson_json_sha256": "7ee80db16258e96878191c5dad030b22b765283ff18490b153cb7b607b46510e",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 9.403247010653962e-17,
+      "answer": {
+        "exact": "(98695392/42813565) + j*(-21910776/42813565)",
+        "decimal": "(2.3052365) + j*(-0.51177182)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → 0",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "98695392/42813565",
+            "0",
+            "0",
+            "-21910776/42813565"
+          ],
+          "real_exact": "98695392/42813565",
+          "imaginary_exact": "-21910776/42813565",
+          "real_decimal": "2.3052365",
+          "imaginary_decimal": "-0.51177182",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "98695392/42813565",
+            "0",
+            "0",
+            "-21910776/42813565"
+          ]
+        },
+        "display_exact": "98695392/42813565 − j(21910776/42813565)"
+      }
+    },
+    {
+      "id": "seeded_mesh_05/source_polarities",
+      "expected": {
+        "imaginary": -0.511771818114189,
+        "max_equation_residual": 5.79553433516819e-16,
+        "rank": 6,
+        "real": 2.305236482876397,
+        "reference": "p -> 0",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 488596,
+      "lesson_json_sha256": "df76efde9c033c62bb8eb807166d6395d8b39da15460c165ac483f0580f409f6",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 9.403247010653962e-17,
+      "answer": {
+        "exact": "(98695392/42813565) + j*(-21910776/42813565)",
+        "decimal": "(2.3052365) + j*(-0.51177182)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → 0",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "98695392/42813565",
+            "0",
+            "0",
+            "-21910776/42813565"
+          ],
+          "real_exact": "98695392/42813565",
+          "imaginary_exact": "-21910776/42813565",
+          "real_decimal": "2.3052365",
+          "imaginary_decimal": "-0.51177182",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "98695392/42813565",
+            "0",
+            "0",
+            "-21910776/42813565"
+          ]
+        },
+        "display_exact": "98695392/42813565 − j(21910776/42813565)"
+      }
+    },
+    {
+      "id": "seeded_mesh_06/base",
+      "expected": {
+        "imaginary": 2.336619944545286,
+        "max_equation_residual": 4.002966042486721e-16,
+        "rank": 6,
+        "real": 4.760467802125335,
+        "reference": "p -> c",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 503658,
+      "lesson_json_sha256": "b07dc36dcce21d3250460b151dc1c15a0120f952eb7cc127e8b10eaf291a3a0e",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 2.5122887841067656e-16,
+      "answer": {
+        "exact": "(3199969476/672196433) + j*(1570667592/672196433)",
+        "decimal": "(4.7604678) + j*(2.3366199)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → c",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "3199969476/672196433",
+            "0",
+            "0",
+            "1570667592/672196433"
+          ],
+          "real_exact": "3199969476/672196433",
+          "imaginary_exact": "1570667592/672196433",
+          "real_decimal": "4.7604678",
+          "imaginary_decimal": "2.3366199",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "3199969476/672196433",
+            "0",
+            "0",
+            "1570667592/672196433"
+          ]
+        },
+        "display_exact": "3199969476/672196433 + j(1570667592/672196433)"
+      }
+    },
+    {
+      "id": "seeded_mesh_06/port_reversed",
+      "expected": {
+        "imaginary": 2.336619944545292,
+        "max_equation_residual": 1.3322676295501878e-15,
+        "rank": 6,
+        "real": 4.7604678021253415,
+        "reference": "c -> p",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 503645,
+      "lesson_json_sha256": "1b364bcf08695c45eca0f6019edd41b519e4c98cc01e48a68f18054af5b39c89",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 1.4407683523752932e-15,
+      "answer": {
+        "exact": "(3199969476/672196433) + j*(1570667592/672196433)",
+        "decimal": "(4.7604678) + j*(2.3366199)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "c → p",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "3199969476/672196433",
+            "0",
+            "0",
+            "1570667592/672196433"
+          ],
+          "real_exact": "3199969476/672196433",
+          "imaginary_exact": "1570667592/672196433",
+          "real_decimal": "4.7604678",
+          "imaginary_decimal": "2.3366199",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "3199969476/672196433",
+            "0",
+            "0",
+            "1570667592/672196433"
+          ]
+        },
+        "display_exact": "3199969476/672196433 + j(1570667592/672196433)"
+      }
+    },
+    {
+      "id": "seeded_mesh_06/components_reordered",
+      "expected": {
+        "imaginary": 2.336619944545286,
+        "max_equation_residual": 4.002966042486721e-16,
+        "rank": 6,
+        "real": 4.760467802125335,
+        "reference": "p -> c",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 503668,
+      "lesson_json_sha256": "14f7f1b41c2ec28a26857cd307381718237d617b8a9ab4fb6466ead8f89c28d4",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 2.5122887841067656e-16,
+      "answer": {
+        "exact": "(3199969476/672196433) + j*(1570667592/672196433)",
+        "decimal": "(4.7604678) + j*(2.3366199)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → c",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "3199969476/672196433",
+            "0",
+            "0",
+            "1570667592/672196433"
+          ],
+          "real_exact": "3199969476/672196433",
+          "imaginary_exact": "1570667592/672196433",
+          "real_decimal": "4.7604678",
+          "imaginary_decimal": "2.3366199",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "3199969476/672196433",
+            "0",
+            "0",
+            "1570667592/672196433"
+          ]
+        },
+        "display_exact": "3199969476/672196433 + j(1570667592/672196433)"
+      }
+    },
+    {
+      "id": "seeded_mesh_06/amplitude_peak",
+      "expected": {
+        "imaginary": 2.336619944545286,
+        "max_equation_residual": 4.002966042486721e-16,
+        "rank": 6,
+        "real": 4.760467802125335,
+        "reference": "p -> c",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 503664,
+      "lesson_json_sha256": "5f760d00ca3d2b1062facc9fb309c24ae286595cc93e2042d502c22bad9b0216",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 2.5122887841067656e-16,
+      "answer": {
+        "exact": "(3199969476/672196433) + j*(1570667592/672196433)",
+        "decimal": "(4.7604678) + j*(2.3366199)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → c",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "3199969476/672196433",
+            "0",
+            "0",
+            "1570667592/672196433"
+          ],
+          "real_exact": "3199969476/672196433",
+          "imaginary_exact": "1570667592/672196433",
+          "real_decimal": "4.7604678",
+          "imaginary_decimal": "2.3366199",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "3199969476/672196433",
+            "0",
+            "0",
+            "1570667592/672196433"
+          ]
+        },
+        "display_exact": "3199969476/672196433 + j(1570667592/672196433)"
+      }
+    },
+    {
+      "id": "seeded_mesh_06/source_values_and_phases",
+      "expected": {
+        "imaginary": 2.336619944545286,
+        "max_equation_residual": 4.002966042486721e-16,
+        "rank": 6,
+        "real": 4.760467802125335,
+        "reference": "p -> c",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 503726,
+      "lesson_json_sha256": "b00d59e8478c536343edf3c296ef6c8be4a34bdf5624c46a8a1ae74af726cafb",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 2.5122887841067656e-16,
+      "answer": {
+        "exact": "(3199969476/672196433) + j*(1570667592/672196433)",
+        "decimal": "(4.7604678) + j*(2.3366199)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → c",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "3199969476/672196433",
+            "0",
+            "0",
+            "1570667592/672196433"
+          ],
+          "real_exact": "3199969476/672196433",
+          "imaginary_exact": "1570667592/672196433",
+          "real_decimal": "4.7604678",
+          "imaginary_decimal": "2.3366199",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "3199969476/672196433",
+            "0",
+            "0",
+            "1570667592/672196433"
+          ]
+        },
+        "display_exact": "3199969476/672196433 + j(1570667592/672196433)"
+      }
+    },
+    {
+      "id": "seeded_mesh_06/source_polarities",
+      "expected": {
+        "imaginary": 2.336619944545286,
+        "max_equation_residual": 4.002966042486721e-16,
+        "rank": 6,
+        "real": 4.760467802125335,
+        "reference": "p -> c",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 502104,
+      "lesson_json_sha256": "47ad71a5eb0dd2fb85213c5c76c57426a98ce5084121e19b800244b371d9ef61",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 2.5122887841067656e-16,
+      "answer": {
+        "exact": "(3199969476/672196433) + j*(1570667592/672196433)",
+        "decimal": "(4.7604678) + j*(2.3366199)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → c",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "3199969476/672196433",
+            "0",
+            "0",
+            "1570667592/672196433"
+          ],
+          "real_exact": "3199969476/672196433",
+          "imaginary_exact": "1570667592/672196433",
+          "real_decimal": "4.7604678",
+          "imaginary_decimal": "2.3366199",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "3199969476/672196433",
+            "0",
+            "0",
+            "1570667592/672196433"
+          ]
+        },
+        "display_exact": "3199969476/672196433 + j(1570667592/672196433)"
+      }
+    },
+    {
+      "id": "seeded_mesh_07/base",
+      "expected": {
+        "imaginary": 0.280676633452924,
+        "max_equation_residual": 1.4946834900704541e-16,
+        "rank": 6,
+        "real": 1.7519021326578719,
+        "reference": "p -> 0",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 503036,
+      "lesson_json_sha256": "127dfbb17b625b5748afdacf672b9b1580524658a181e66908dd50ac460f270d",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 6.257444053853771e-17,
+      "answer": {
+        "exact": "(1096244/625745) + j*(175632/625745)",
+        "decimal": "(1.7519021) + j*(0.28067663)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → 0",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "1096244/625745",
+            "0",
+            "0",
+            "175632/625745"
+          ],
+          "real_exact": "1096244/625745",
+          "imaginary_exact": "175632/625745",
+          "real_decimal": "1.7519021",
+          "imaginary_decimal": "0.28067663",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "1096244/625745",
+            "0",
+            "0",
+            "175632/625745"
+          ]
+        },
+        "display_exact": "1096244/625745 + j(175632/625745)"
+      }
+    },
+    {
+      "id": "seeded_mesh_07/port_reversed",
+      "expected": {
+        "imaginary": 0.2806766334529239,
+        "max_equation_residual": 5.266250202865052e-16,
+        "rank": 6,
+        "real": 1.751902132657872,
+        "reference": "0 -> p",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 503177,
+      "lesson_json_sha256": "fe0e770965b1422c6f2a8bd1794adee8ac69719fa98013c62935031204b05015",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 1.7698724493501768e-16,
+      "answer": {
+        "exact": "(1096244/625745) + j*(175632/625745)",
+        "decimal": "(1.7519021) + j*(0.28067663)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "0 → p",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "1096244/625745",
+            "0",
+            "0",
+            "175632/625745"
+          ],
+          "real_exact": "1096244/625745",
+          "imaginary_exact": "175632/625745",
+          "real_decimal": "1.7519021",
+          "imaginary_decimal": "0.28067663",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "1096244/625745",
+            "0",
+            "0",
+            "175632/625745"
+          ]
+        },
+        "display_exact": "1096244/625745 + j(175632/625745)"
+      }
+    },
+    {
+      "id": "seeded_mesh_07/components_reordered",
+      "expected": {
+        "imaginary": 0.280676633452924,
+        "max_equation_residual": 1.4946834900704541e-16,
+        "rank": 6,
+        "real": 1.7519021326578719,
+        "reference": "p -> 0",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 503046,
+      "lesson_json_sha256": "33738aa1220f10149f66573f9d908f40e1cc43a326cc7b91b95d8332960d9723",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 6.257444053853771e-17,
+      "answer": {
+        "exact": "(1096244/625745) + j*(175632/625745)",
+        "decimal": "(1.7519021) + j*(0.28067663)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → 0",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "1096244/625745",
+            "0",
+            "0",
+            "175632/625745"
+          ],
+          "real_exact": "1096244/625745",
+          "imaginary_exact": "175632/625745",
+          "real_decimal": "1.7519021",
+          "imaginary_decimal": "0.28067663",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "1096244/625745",
+            "0",
+            "0",
+            "175632/625745"
+          ]
+        },
+        "display_exact": "1096244/625745 + j(175632/625745)"
+      }
+    },
+    {
+      "id": "seeded_mesh_07/amplitude_peak",
+      "expected": {
+        "imaginary": 0.280676633452924,
+        "max_equation_residual": 1.4946834900704541e-16,
+        "rank": 6,
+        "real": 1.7519021326578719,
+        "reference": "p -> 0",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 503042,
+      "lesson_json_sha256": "ddb23df25bb9f69816495c6411e7a7b1ebebeebd5394c782480c553dfb13709d",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 6.257444053853771e-17,
+      "answer": {
+        "exact": "(1096244/625745) + j*(175632/625745)",
+        "decimal": "(1.7519021) + j*(0.28067663)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → 0",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "1096244/625745",
+            "0",
+            "0",
+            "175632/625745"
+          ],
+          "real_exact": "1096244/625745",
+          "imaginary_exact": "175632/625745",
+          "real_decimal": "1.7519021",
+          "imaginary_decimal": "0.28067663",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "1096244/625745",
+            "0",
+            "0",
+            "175632/625745"
+          ]
+        },
+        "display_exact": "1096244/625745 + j(175632/625745)"
+      }
+    },
+    {
+      "id": "seeded_mesh_07/source_values_and_phases",
+      "expected": {
+        "imaginary": 0.280676633452924,
+        "max_equation_residual": 1.4946834900704541e-16,
+        "rank": 6,
+        "real": 1.7519021326578719,
+        "reference": "p -> 0",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 503098,
+      "lesson_json_sha256": "59a0e32d47dd8c898db1805d02e7e3885d48cc28f9870e6676aa224768609014",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 6.257444053853771e-17,
+      "answer": {
+        "exact": "(1096244/625745) + j*(175632/625745)",
+        "decimal": "(1.7519021) + j*(0.28067663)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → 0",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "1096244/625745",
+            "0",
+            "0",
+            "175632/625745"
+          ],
+          "real_exact": "1096244/625745",
+          "imaginary_exact": "175632/625745",
+          "real_decimal": "1.7519021",
+          "imaginary_decimal": "0.28067663",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "1096244/625745",
+            "0",
+            "0",
+            "175632/625745"
+          ]
+        },
+        "display_exact": "1096244/625745 + j(175632/625745)"
+      }
+    },
+    {
+      "id": "seeded_mesh_07/source_polarities",
+      "expected": {
+        "imaginary": 0.280676633452924,
+        "max_equation_residual": 1.4946834900704541e-16,
+        "rank": 6,
+        "real": 1.7519021326578719,
+        "reference": "p -> 0",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 489412,
+      "lesson_json_sha256": "cb6426f700800a193c63cf403cba88ce54372c9ce4195fb38f511a71688a5f07",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 6.257444053853771e-17,
+      "answer": {
+        "exact": "(1096244/625745) + j*(175632/625745)",
+        "decimal": "(1.7519021) + j*(0.28067663)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → 0",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "1096244/625745",
+            "0",
+            "0",
+            "175632/625745"
+          ],
+          "real_exact": "1096244/625745",
+          "imaginary_exact": "175632/625745",
+          "real_decimal": "1.7519021",
+          "imaginary_decimal": "0.28067663",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "1096244/625745",
+            "0",
+            "0",
+            "175632/625745"
+          ]
+        },
+        "display_exact": "1096244/625745 + j(175632/625745)"
+      }
+    },
+    {
+      "id": "seeded_mesh_08/base",
+      "expected": {
+        "imaginary": 4.272776974571442,
+        "max_equation_residual": 1.1226435567921847e-15,
+        "rank": 6,
+        "real": 7.509130228772072,
+        "reference": "p -> c",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 497856,
+      "lesson_json_sha256": "43cf3abf65a95ca7c3bab3292cc741ba5cb74e1c4fad5a6dc168cf2b86d91f63",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 1.3403808513090714e-15,
+      "answer": {
+        "exact": "(618069/82309) + j*(351688/82309)",
+        "decimal": "(7.5091302) + j*(4.2727770)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → c",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "618069/82309",
+            "0",
+            "0",
+            "351688/82309"
+          ],
+          "real_exact": "618069/82309",
+          "imaginary_exact": "351688/82309",
+          "real_decimal": "7.5091302",
+          "imaginary_decimal": "4.2727770",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "618069/82309",
+            "0",
+            "0",
+            "351688/82309"
+          ]
+        },
+        "display_exact": "618069/82309 + j(351688/82309)"
+      }
+    },
+    {
+      "id": "seeded_mesh_08/port_reversed",
+      "expected": {
+        "imaginary": 4.272776974571432,
+        "max_equation_residual": 5.287492929713006e-16,
+        "rank": 6,
+        "real": 7.509130228772066,
+        "reference": "c -> p",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 497825,
+      "lesson_json_sha256": "3384cd2f8f2572a8ae5197853191534436fbd43b15a9062cd5a52cfbaf9558ed",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 0.0,
+      "answer": {
+        "exact": "(618069/82309) + j*(351688/82309)",
+        "decimal": "(7.5091302) + j*(4.2727770)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "c → p",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "618069/82309",
+            "0",
+            "0",
+            "351688/82309"
+          ],
+          "real_exact": "618069/82309",
+          "imaginary_exact": "351688/82309",
+          "real_decimal": "7.5091302",
+          "imaginary_decimal": "4.2727770",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "618069/82309",
+            "0",
+            "0",
+            "351688/82309"
+          ]
+        },
+        "display_exact": "618069/82309 + j(351688/82309)"
+      }
+    },
+    {
+      "id": "seeded_mesh_08/components_reordered",
+      "expected": {
+        "imaginary": 4.272776974571442,
+        "max_equation_residual": 1.1226435567921847e-15,
+        "rank": 6,
+        "real": 7.509130228772072,
+        "reference": "p -> c",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 497866,
+      "lesson_json_sha256": "d0526c9e79d51c145b1e4917f68b6355b2d608c7cf2febe25ef805bedf9dd03f",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 1.3403808513090714e-15,
+      "answer": {
+        "exact": "(618069/82309) + j*(351688/82309)",
+        "decimal": "(7.5091302) + j*(4.2727770)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → c",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "618069/82309",
+            "0",
+            "0",
+            "351688/82309"
+          ],
+          "real_exact": "618069/82309",
+          "imaginary_exact": "351688/82309",
+          "real_decimal": "7.5091302",
+          "imaginary_decimal": "4.2727770",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "618069/82309",
+            "0",
+            "0",
+            "351688/82309"
+          ]
+        },
+        "display_exact": "618069/82309 + j(351688/82309)"
+      }
+    },
+    {
+      "id": "seeded_mesh_08/amplitude_peak",
+      "expected": {
+        "imaginary": 4.272776974571442,
+        "max_equation_residual": 1.1226435567921847e-15,
+        "rank": 6,
+        "real": 7.509130228772072,
+        "reference": "p -> c",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 497862,
+      "lesson_json_sha256": "1187b53326fe867288be9cb7a5e1f75e3e84e72cc27b9eb7ecf9a3256a225aaf",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 1.3403808513090714e-15,
+      "answer": {
+        "exact": "(618069/82309) + j*(351688/82309)",
+        "decimal": "(7.5091302) + j*(4.2727770)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → c",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "618069/82309",
+            "0",
+            "0",
+            "351688/82309"
+          ],
+          "real_exact": "618069/82309",
+          "imaginary_exact": "351688/82309",
+          "real_decimal": "7.5091302",
+          "imaginary_decimal": "4.2727770",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "618069/82309",
+            "0",
+            "0",
+            "351688/82309"
+          ]
+        },
+        "display_exact": "618069/82309 + j(351688/82309)"
+      }
+    },
+    {
+      "id": "seeded_mesh_08/source_values_and_phases",
+      "expected": {
+        "imaginary": 4.272776974571442,
+        "max_equation_residual": 1.1226435567921847e-15,
+        "rank": 6,
+        "real": 7.509130228772072,
+        "reference": "p -> c",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 497924,
+      "lesson_json_sha256": "3e49a0a8fb7c755cfb9b1c2aea3712a01b308e52db73e096773643914e4ad9d8",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 1.3403808513090714e-15,
+      "answer": {
+        "exact": "(618069/82309) + j*(351688/82309)",
+        "decimal": "(7.5091302) + j*(4.2727770)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → c",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "618069/82309",
+            "0",
+            "0",
+            "351688/82309"
+          ],
+          "real_exact": "618069/82309",
+          "imaginary_exact": "351688/82309",
+          "real_decimal": "7.5091302",
+          "imaginary_decimal": "4.2727770",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "618069/82309",
+            "0",
+            "0",
+            "351688/82309"
+          ]
+        },
+        "display_exact": "618069/82309 + j(351688/82309)"
+      }
+    },
+    {
+      "id": "seeded_mesh_08/source_polarities",
+      "expected": {
+        "imaginary": 4.272776974571442,
+        "max_equation_residual": 1.1226435567921847e-15,
+        "rank": 6,
+        "real": 7.509130228772072,
+        "reference": "p -> c",
+        "status": "finite_unique",
+        "unknowns": 6
+      },
+      "status": "passed",
+      "lesson_json_bytes": 495281,
+      "lesson_json_sha256": "22035bd3c3b1afeb8eaf5068105527c75eb053dda0d366e542de8f093cacb0ed",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 1.3403808513090714e-15,
+      "answer": {
+        "exact": "(618069/82309) + j*(351688/82309)",
+        "decimal": "(7.5091302) + j*(4.2727770)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → c",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "618069/82309",
+            "0",
+            "0",
+            "351688/82309"
+          ],
+          "real_exact": "618069/82309",
+          "imaginary_exact": "351688/82309",
+          "real_decimal": "7.5091302",
+          "imaginary_decimal": "4.2727770",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "618069/82309",
+            "0",
+            "0",
+            "351688/82309"
+          ]
+        },
+        "display_exact": "618069/82309 + j(351688/82309)"
+      }
+    },
+    {
+      "id": "parallel_lc_resonance",
+      "expected": {
+        "rank": 0,
+        "status": "open_resonance",
+        "unknowns": 1
+      },
+      "status": "documented_refusal",
+      "lesson_json_bytes": 174,
+      "lesson_json_sha256": "1ef5a05644a46a3e1aaf4a60c2704b3aab234a94ab9b2bcb795fd081e8a9425c",
+      "outcome": "refusal",
+      "cause": "unsolvable",
+      "verification": null
+    },
+    {
+      "id": "series_lc_resonance",
+      "expected": {
+        "imaginary": 0.0,
+        "max_equation_residual": 0.0,
+        "rank": 2,
+        "real": 0.0,
+        "reference": "p -> 0",
+        "status": "finite_unique",
+        "unknowns": 2
+      },
+      "status": "passed",
+      "lesson_json_bytes": 94458,
+      "lesson_json_sha256": "5323bff14e84111448fadbe8b494e70230475ad7040e0ba362663dcb18cff21a",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 0.0,
+      "answer": {
+        "exact": "(0) + j*(0)",
+        "decimal": "(0) + j*(0)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → 0",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "0",
+            "0",
+            "0",
+            "0"
+          ],
+          "real_exact": "0",
+          "imaginary_exact": "0",
+          "real_decimal": "0",
+          "imaginary_decimal": "0",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "0",
+            "0",
+            "0",
+            "0"
+          ]
+        },
+        "display_exact": "0"
+      }
+    },
+    {
+      "id": "ideal_voltage_shorts_port",
+      "expected": {
+        "imaginary": 0.0,
+        "max_equation_residual": 0.0,
+        "rank": 2,
+        "real": 0.0,
+        "reference": "p -> 0",
+        "status": "finite_unique",
+        "unknowns": 2
+      },
+      "status": "passed",
+      "lesson_json_bytes": 87372,
+      "lesson_json_sha256": "f622e46be47683c73b40ff76337f57a8c725eec45a63165d3dfcb3b6aab320c4",
+      "outcome": "solved",
+      "cause": null,
+      "verification": {
+        "electrical_claim": "PHASOR_PORT_PATHS_CROSSCHECKED",
+        "backend": "PHASOR_PORT_RESIDUALS_CHECKED",
+        "lesson": "phasor-port-crosscheck",
+        "product_verified": false,
+        "checks": [
+          "legge dei nodi",
+          "legge delle maglie",
+          "identità di Tellegen",
+          "leggi costitutive di tutti i componenti",
+          "sorgenti indipendenti spente e corrente di prova orientata",
+          "impedenza di porta: rapporto tensione/corrente",
+          "misura di porta confrontata con il kernel"
+        ]
+      },
+      "scaled_error": 0.0,
+      "answer": {
+        "exact": "(0) + j*(0)",
+        "decimal": "(0) + j*(0)",
+        "quantity": "equivalent_impedance",
+        "unit": "Ω",
+        "reference": "p → 0",
+        "complex_impedance": {
+          "basis": "1,zeta12,zeta12^2,zeta12^3",
+          "coefficients": [
+            "0",
+            "0",
+            "0",
+            "0"
+          ],
+          "real_exact": "0",
+          "imaginary_exact": "0",
+          "real_decimal": "0",
+          "imaginary_decimal": "0",
+          "decimal_precision": {
+            "real": 8,
+            "imaginary": 8,
+            "significant_digits": 8,
+            "method": "exact-rational-sqrt3-bounds"
+          }
+        },
+        "math": {
+          "kind": "number",
+          "coefficients": [
+            "0",
+            "0",
+            "0",
+            "0"
+          ]
+        },
+        "display_exact": "0"
+      }
+    },
+    {
+      "id": "disconnected_port",
+      "expected": {
+        "status": "open_disconnected"
+      },
+      "status": "documented_refusal",
+      "lesson_json_bytes": 201,
+      "lesson_json_sha256": "1e73ae262dbc86de931952ff7384be1402a68282e5c10458caedb0de27372119",
+      "outcome": "refusal",
+      "cause": "topology",
+      "verification": null
+    },
+    {
+      "id": "only_current_source",
+      "expected": {
+        "status": "open_disconnected"
+      },
+      "status": "documented_refusal",
+      "lesson_json_bytes": 354,
+      "lesson_json_sha256": "9e8ffc1b3c5eb7e9ba3ebad0c02014432111a4363d7df71cf1a1d1ceaf1c8e73",
+      "outcome": "refusal",
+      "cause": "topology",
+      "verification": null
+    },
+    {
+      "id": "redundant_voltage_constraints",
+      "expected": {
+        "imaginary": 0.0,
+        "max_equation_residual": 0.0,
+        "rank": 2,
+        "real": 0.0,
+        "reference": "p -> 0",
+        "status": "finite_with_internal_freedom",
+        "unknowns": 3
+      },
+      "status": "documented_refusal",
+      "lesson_json_bytes": 245,
+      "lesson_json_sha256": "e0c88d91ee9cc6dd095b6cb367c22f153e51b6e223406d0cd4389fa599fcd5b8",
+      "outcome": "refusal",
+      "cause": "topology",
+      "verification": null
+    },
+    {
+      "id": "inconsistent_original_sources",
+      "expected": {
+        "imaginary": 0.0,
+        "max_equation_residual": 0.0,
+        "rank": 2,
+        "real": 0.0,
+        "reference": "p -> 0",
+        "status": "finite_with_internal_freedom",
+        "unknowns": 3
+      },
+      "status": "documented_refusal",
+      "lesson_json_bytes": 245,
+      "lesson_json_sha256": "0a6eb2ed91d6274c40ba812023605a6e6554f08f2fe5f43a31502e8dd26653ab",
+      "outcome": "refusal",
+      "cause": "topology",
+      "verification": null
+    },
+    {
+      "id": "irrelevant_floating_island",
+      "expected": {
+        "imaginary": 0.0,
+        "max_equation_residual": 0.0,
+        "rank": 2,
+        "real": 3.0,
+        "reference": "p -> 0",
+        "status": "finite_with_internal_freedom",
+        "unknowns": 3
+      },
+      "status": "documented_refusal",
+      "lesson_json_bytes": 213,
+      "lesson_json_sha256": "fe53709c8b2ea834c209ecb9cc87bc5d41f58d3bb3d82094d2f7721e7c2998da",
+      "outcome": "refusal",
+      "cause": "topology",
+      "verification": null
+    },
+    {
+      "id": "missing_port_terminal",
+      "expected": {
+        "status": "invalid_port"
+      },
+      "status": "failed",
+      "error": "ValueError: q1: morsetto di porta sconosciuto unknown"
+    },
+    {
+      "id": "same_port_terminal",
+      "expected": {
+        "status": "invalid_port"
+      },
+      "status": "failed",
+      "error": "ValueError: la domanda di porta richiede due morsetti distinti"
+    },
+    {
+      "id": "zero_resistance_not_wire",
+      "expected": {
+        "status": "invalid_value"
+      },
+      "status": "failed",
+      "error": "ValueError: R1: valore non positivo per resistor (0)"
+    }
+  ]
+}

@@ -1,0 +1,393 @@
+{
+  "schema": "delivery-content-manifest.v1",
+  "as_of": "2026-10-03",
+  "base_commit": "60c72bb46ee2bdf22fa888c94dfaf2a9d0fa06ae",
+  "scope": "Modified and added source/test files, before delivery commit; generated catalog and append-only ledgers excluded",
+  "files": [
+    {
+      "path": "hatch_build.py",
+      "bytes": 3411,
+      "sha256": "2e239ec4197dfa9b631ea806e16c623b978408a985b2ef26799ba3c2f4bc8a58"
+    },
+    {
+      "path": "scripts/serve_student.py",
+      "bytes": 14729,
+      "sha256": "ddb6161ebef87704341d8a0eb0db21544d46689d08dc4a73a5c32fa6b9034ce8"
+    },
+    {
+      "path": "src/kirchhoff/__init__.py",
+      "bytes": 144,
+      "sha256": "35da27bec14d5826bd3b409aca21a2e356b4840fd4d80942a8a174d97af8a76a"
+    },
+    {
+      "path": "src/kirchhoff/api/app_resource.py",
+      "bytes": 4047,
+      "sha256": "b8f979b66b36df4a0d8abfd1f49f7f9bfa5a74e84ca84b0bbe646d72be2afe2c"
+    },
+    {
+      "path": "src/kirchhoff/api/mcp_server.py",
+      "bytes": 3190,
+      "sha256": "e7ed11b829bdcf3b05117a9c47a3d0efcce0d0bd59ffd11c7c88d4821c21f0b7"
+    },
+    {
+      "path": "src/kirchhoff/domain/ir/schema.py",
+      "bytes": 11906,
+      "sha256": "9d773dd3a423fb38c058065590c5271b0181cf12574ea2e1c3d337d5b7f92c82"
+    },
+    {
+      "path": "src/kirchhoff/domain/laplace.py",
+      "bytes": 11214,
+      "sha256": "7373dc6967b74fad311825fe397d0dc30c316a1e64869cc48265d1b5d9a10601"
+    },
+    {
+      "path": "src/kirchhoff/domain/laplace_rational.py",
+      "bytes": 7931,
+      "sha256": "e9ebdb4a9b31a8975be58877514db957a34454c62fca97ae2d4b6d623729ea6f"
+    },
+    {
+      "path": "src/kirchhoff/pipeline/capabilities.py",
+      "bytes": 5707,
+      "sha256": "ebc6e99bbc83a575665760574a165dac8c7be610ab0ee1c765036e230b7df292"
+    },
+    {
+      "path": "src/kirchhoff/pipeline/laplace_input.py",
+      "bytes": 6665,
+      "sha256": "1c2534b42fdcd730b36799668a77c057832479aa3c39f832fd04bb661fa7eab9"
+    },
+    {
+      "path": "src/kirchhoff/pipeline/lesson.py",
+      "bytes": 41798,
+      "sha256": "ff79cb68b07c84ff1d8d1cc3edd27623f50ca6f6639b16e2175bb85d2da03a6d"
+    },
+    {
+      "path": "src/kirchhoff/pipeline/lesson_ac.py",
+      "bytes": 25278,
+      "sha256": "2563630cec81165d520b466da66c2ce2daf536f473728446e570c7808fcbe544"
+    },
+    {
+      "path": "src/kirchhoff/pipeline/lesson_ac_algebra.py",
+      "bytes": 6953,
+      "sha256": "992a55a5b86b404fa945986fdf980c1fc36b78a6c223e5cd6e11c3c9c65cecc1"
+    },
+    {
+      "path": "src/kirchhoff/pipeline/lesson_ac_algebra_check.py",
+      "bytes": 11973,
+      "sha256": "114978589c083302e2ea87f1cded1238cdfa82bc46d9c6c0b9b08837a0735aaa"
+    },
+    {
+      "path": "src/kirchhoff/pipeline/lesson_ac_port.py",
+      "bytes": 11893,
+      "sha256": "e03309a52ef44a3f9fd4d024ac7e572d40969707e6d0ac6872aa07faf88f38d6"
+    },
+    {
+      "path": "src/kirchhoff/pipeline/lesson_ac_power.py",
+      "bytes": 2708,
+      "sha256": "f2966b54736e7218506878e07fd155dea9dea25ea1db8194c068b87fbd840cab"
+    },
+    {
+      "path": "src/kirchhoff/pipeline/lesson_laplace.py",
+      "bytes": 8127,
+      "sha256": "d61148e94fdfee69223847d646d429cb502236cfba42d9e749b3c4228e927251"
+    },
+    {
+      "path": "src/kirchhoff/pipeline/lesson_laplace_algebra.py",
+      "bytes": 6831,
+      "sha256": "89de0fed714f715d8ba3df3b75d92f0f894b3130ec0f075eeecd9f47b64f57ad"
+    },
+    {
+      "path": "src/kirchhoff/pipeline/lesson_laplace_check.py",
+      "bytes": 16835,
+      "sha256": "754e1a4cc3ba565ef39b61e0737b1034a0144bb24701c63bac6c3aa6532c76f0"
+    },
+    {
+      "path": "src/kirchhoff/pipeline/lesson_math.py",
+      "bytes": 4539,
+      "sha256": "20a3fe9ee1a064e23cf094fa3de3c5466a0e868cb3beb2e01c7b3e88e9e15a09"
+    },
+    {
+      "path": "src/kirchhoff/pipeline/lesson_pdf.py",
+      "bytes": 10085,
+      "sha256": "403d607751bc6dcbb508fb33a3407d1ad72b3e4de77bfe77c2abd803657b5076"
+    },
+    {
+      "path": "src/kirchhoff/pipeline/lesson_pdf_math.py",
+      "bytes": 8645,
+      "sha256": "3ce3e4e3d03a232ff771e0a23301e876cadc5af54c75287b984f8ec1cc86b6d3"
+    },
+    {
+      "path": "src/kirchhoff/pipeline/lesson_svg.py",
+      "bytes": 14254,
+      "sha256": "69d06ce076e553e66102301174f3361fdb0a2f3d32440472a654f4e4600323ba"
+    },
+    {
+      "path": "src/kirchhoff/pipeline/netlist.py",
+      "bytes": 11603,
+      "sha256": "19950c0f327980927e4b677908d22423ce5a9530b283a11d757fdc70568b98b2"
+    },
+    {
+      "path": "src/kirchhoff/render/layout/connected.py",
+      "bytes": 4236,
+      "sha256": "d29c9952d978ae8da95913017782238d9ea94c40e92d222980dc52b653bb7fea"
+    },
+    {
+      "path": "src/kirchhoff/render/serialize/connectivity.py",
+      "bytes": 12380,
+      "sha256": "2c67e129ada91d3c4f720c67d9c2eb1e00914422738dd1bfe55f76df2f66ab5e"
+    },
+    {
+      "path": "src/kirchhoff/runtime_identity.py",
+      "bytes": 3405,
+      "sha256": "20d7064a09ce59b4de5fccb4e839db4a2d1530eb106e62e859e62d8c53d7b038"
+    },
+    {
+      "path": "tests/test_ac_algebra.py",
+      "bytes": 7470,
+      "sha256": "06d82e78e1472963f5817144a814a294902e9a8ce9e2f0c9ecf7205592ef59c9"
+    },
+    {
+      "path": "tests/test_ac_lesson.py",
+      "bytes": 15320,
+      "sha256": "4d786894669f9906be9bc0940cda10fe87c56bb2e1c5b94a388197cf251834fc"
+    },
+    {
+      "path": "tests/test_ac_netlist.py",
+      "bytes": 3524,
+      "sha256": "94f728cc2b99d1c2ab0b6c7c5f0e71d546b49a73a5a8d93c7c0e933a3c25afee"
+    },
+    {
+      "path": "tests/test_ac_port_capabilities.py",
+      "bytes": 1029,
+      "sha256": "a53c3fc5b1864ee636a4efc546a8e986db3470add0cfd6e2cfe3404c380375c4"
+    },
+    {
+      "path": "tests/test_ac_port_lesson.py",
+      "bytes": 12066,
+      "sha256": "72048e02d70187efa8c41e9fa7d71486de9dc91bfec68393acf0919658847adb"
+    },
+    {
+      "path": "tests/test_ac_power_lesson.py",
+      "bytes": 9365,
+      "sha256": "838877a3d2e890e6c200f52d75d2e195466e5cc01e898dcdb870aec24245ccc5"
+    },
+    {
+      "path": "tests/test_connected_schematic.py",
+      "bytes": 8812,
+      "sha256": "67c269ba39484209cbb4bcc90cbeb456dd219d96488cc894525837e5a6603b75"
+    },
+    {
+      "path": "tests/test_laplace.py",
+      "bytes": 10587,
+      "sha256": "6d0999068b5276b78415733e2a2d76f6ccfb95587f32e7d445a8d7acd7eb19e1"
+    },
+    {
+      "path": "tests/test_laplace_algebra.py",
+      "bytes": 6452,
+      "sha256": "1eff8011a62b51f801d0b3411762d22d8ec8db83f7118716237102ea369a0c7b"
+    },
+    {
+      "path": "tests/test_laplace_input.py",
+      "bytes": 4742,
+      "sha256": "b577df6be8d91597d97c66fdee34cf82b10e2dd2ebbd3e2e93daee85b6987ba5"
+    },
+    {
+      "path": "tests/test_laplace_lesson.py",
+      "bytes": 7861,
+      "sha256": "0ee6d9c08c1fc00d7569ebe3d304e4efceaa25a4c96d721818b4ecbb02a4abed"
+    },
+    {
+      "path": "tests/test_laplace_rational.py",
+      "bytes": 4512,
+      "sha256": "04e9e5aa2c083a87298d0e96ffbc23bae464075db88bd80db6604724b98b3a2b"
+    },
+    {
+      "path": "tests/test_lesson_math_pdf.py",
+      "bytes": 4716,
+      "sha256": "5cb34e7ce8626dc4a03051b0089265762471124e25ccfaaa5ea0df634a9ea2b4"
+    },
+    {
+      "path": "tests/test_lesson_svg_reactive.py",
+      "bytes": 3462,
+      "sha256": "59577af3d0f202e605ba6a89404f3d60a39ba54513ccdcdf5216ef05c0e3ac5c"
+    },
+    {
+      "path": "tests/test_local_origins.py",
+      "bytes": 2952,
+      "sha256": "a57ad885efce0d6e3dc2de223ba63ea99ba8e56b096432e841a3f3e11ba00428"
+    },
+    {
+      "path": "tests/test_mcp_packaging.py",
+      "bytes": 6399,
+      "sha256": "224cd2879eb602be6750390fc54c4140a77b3f2bce9baea4af6ad227663a5c88"
+    },
+    {
+      "path": "tests/test_mcp_server.py",
+      "bytes": 5645,
+      "sha256": "e293aaf695529fda8b7ae5434dd9b0e7212ff0d51701a89291685accd06a6c51"
+    },
+    {
+      "path": "tests/test_runtime_identity.py",
+      "bytes": 8881,
+      "sha256": "cbe27e61afa646c6c92f22653cdfe6c475db4808c11be376b338e155330415f5"
+    },
+    {
+      "path": "tests/test_student_lesson.py",
+      "bytes": 23244,
+      "sha256": "2862e320ff1aac50df5a8c7b957cc95e8548e8e4e9574c0c5a27b5dd9da076f3"
+    },
+    {
+      "path": "web/mcp-app-template.html",
+      "bytes": 3003,
+      "sha256": "ec30b6f7ad53e452e8e7eabeef66a6da9a7012fbd3322296bd8e62a8614e4d99"
+    },
+    {
+      "path": "web/package-lock.json",
+      "bytes": 71767,
+      "sha256": "0dc61e1b553cfda843b68daa2822663e60b11b6be440c1a4e9c67832ac37a278"
+    },
+    {
+      "path": "web/package.json",
+      "bytes": 850,
+      "sha256": "283263b9838b942c2e2e1a90c08222cc19f4532af86d1ad0f0c28f8aa5131c95"
+    },
+    {
+      "path": "web/src/mcp-app.ts",
+      "bytes": 5692,
+      "sha256": "bd4f5fccf3170fef853c5795797b7458356b085614f94d19138474f9eef403ae"
+    },
+    {
+      "path": "web/src/student/CircuitInputEditor.tsx",
+      "bytes": 8099,
+      "sha256": "c8e930f109b6ebea542dedb1a0c096985fa438faae0da6058b8132a214b74853"
+    },
+    {
+      "path": "web/src/student/CircuitInterpretation.tsx",
+      "bytes": 1735,
+      "sha256": "c18625813d187c12654d1b60e72a523178bfd208d4c0f8ea1a2c33050a5d25c8"
+    },
+    {
+      "path": "web/src/student/SourcePagePicker.tsx",
+      "bytes": 4888,
+      "sha256": "7f2f8c44f52bc424fca35545e74165828a32f38c152b55fe3248fd69986af118"
+    },
+    {
+      "path": "web/src/student/StudentApp.tsx",
+      "bytes": 44837,
+      "sha256": "7d5e0f85d7fe1c45971393d8dbd3d04d61c94a9991719ebabab7c31222569549"
+    },
+    {
+      "path": "web/src/student/circuitInputModel.ts",
+      "bytes": 9993,
+      "sha256": "ccce7e8fd1d320f43ff91553547d3ac24fdaab7c4384bed54ef52dbd2ee46926"
+    },
+    {
+      "path": "web/src/student/documentInput.ts",
+      "bytes": 2523,
+      "sha256": "8210b73bb951a1013a0c16f4e4a880be4c0b6472da199679553261676a6c1445"
+    },
+    {
+      "path": "web/src/student/lessonMath.ts",
+      "bytes": 5787,
+      "sha256": "55a043cd03bb64a6f1f55bafd1652452aec56c1df82e4744c24ba29da2438977"
+    },
+    {
+      "path": "web/src/student/lessonPresentation.ts",
+      "bytes": 3724,
+      "sha256": "900f602fb6698a6d66d02c2a056176da0d218be2370e06737fcb81219ac25390"
+    },
+    {
+      "path": "web/src/student/sessionBundle.ts",
+      "bytes": 5666,
+      "sha256": "de79e1dfd416c65878c850657fb867ae8eb84e76219ca81495baccab356cf06e"
+    },
+    {
+      "path": "web/src/student/sourceArtifact.ts",
+      "bytes": 5584,
+      "sha256": "a7e45cfd4030caa0d2746973924361f2fbf733682b5e7751d592c93e0feaaf0f"
+    },
+    {
+      "path": "web/src/student/student.css",
+      "bytes": 18064,
+      "sha256": "8bb2a923c4eff5660ff92455a493c743ef2598860d235c04d6bb14695fe6b460"
+    },
+    {
+      "path": "web/tests-e2e/student-ac-live.spec.ts",
+      "bytes": 7383,
+      "sha256": "4b5e538b0b306a060fb3f6d02d7e8ebe67ef04cf93ef69daf93fcb00ccd9527d"
+    },
+    {
+      "path": "web/tests-e2e/student-ac-port-live.spec.ts",
+      "bytes": 7524,
+      "sha256": "2e39eda78ac10196d6e87bba6ad29370aaa407a8541f61ef66ab8d813bda32cf"
+    },
+    {
+      "path": "web/tests-e2e/student-ac-power-live.spec.ts",
+      "bytes": 8555,
+      "sha256": "0799eae73286d3d521514a5f7493c9e8f7f41451bb5812b1375a5529af9f94ce"
+    },
+    {
+      "path": "web/tests-e2e/student-board.spec.ts",
+      "bytes": 2633,
+      "sha256": "1e47774a23bba3611ac76bfd92e2ed6488b179d37f67e860d4a9c9b9816caf51"
+    },
+    {
+      "path": "web/tests-e2e/student-laplace-live.spec.ts",
+      "bytes": 8387,
+      "sha256": "451ecf47ea57523d6822d24edfcd9f2d7e1d5b73285a78ae43032492cf2d8251"
+    },
+    {
+      "path": "web/tests-e2e/student-pdf-input-live.spec.ts",
+      "bytes": 3602,
+      "sha256": "4b07936b3194a102d96f10001326455cb79697a48d6af855da8f76f7ceff1de5"
+    },
+    {
+      "path": "web/tests-e2e/student-photo.spec.ts",
+      "bytes": 6278,
+      "sha256": "f0f1b414092879513c1c343fa2785404524b0d80dd1a9e64fecc15c6bf4dd411"
+    },
+    {
+      "path": "web/tests-e2e/student-session-live.spec.ts",
+      "bytes": 13774,
+      "sha256": "30890f364f3482b8832d90d2c32060a06ce646c10595ea25fbb49d05c6570f17"
+    },
+    {
+      "path": "web/tests-e2e/student-visual-input-live.spec.ts",
+      "bytes": 5319,
+      "sha256": "120e1371a2f45c7143b1f4c0dfe27ee50cf7eedbfb8d8e70fe3440ad09793189"
+    },
+    {
+      "path": "web/tests/circuit-input-model.test.ts",
+      "bytes": 4562,
+      "sha256": "c93ef1f578e660afff26855652a3ab3ee0475cf1144d6971d307e0815a78b21c"
+    },
+    {
+      "path": "web/tests/document-input.test.ts",
+      "bytes": 611,
+      "sha256": "92da1f20a5246376ad106757e29f375c95f6ea8ca4aa844c4ff37fbc47c2098b"
+    },
+    {
+      "path": "web/tests/lesson-math.test.ts",
+      "bytes": 3074,
+      "sha256": "943564d032225595c8c5586ee18303b9e1cfa12ccfe5ee10df26562b389d00aa"
+    },
+    {
+      "path": "web/tests/lesson-presentation.test.ts",
+      "bytes": 5082,
+      "sha256": "aebb23503650c72df2d06889c4858401c9f05374efb9e9227830738ea1ae31e6"
+    },
+    {
+      "path": "web/tests/session-bundle.test.ts",
+      "bytes": 6416,
+      "sha256": "782d078b9e91121ec5b044e3c1b881d7dc476acad34b3fb1bd8d2cdf807754a5"
+    },
+    {
+      "path": "web/tests/source-artifact.test.ts",
+      "bytes": 3111,
+      "sha256": "f6791a74870bcfdd012a77e70f3f434158df7fffa6b5f777fcc69cfeb91e98fe"
+    },
+    {
+      "path": "web/vite.mcp.config.ts",
+      "bytes": 1423,
+      "sha256": "d302ee16f8db8650cd19191560ebbb3e089ecc28fedc87e447659a4501a6062e"
+    }
+  ]
+}

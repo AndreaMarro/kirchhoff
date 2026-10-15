@@ -1,46 +1,52 @@
-"""`componi` — la sequenza che K-0 chiede, dentro `src/`.
+"""`componi` — la proiezione visuale dell'evidenza certificata, dentro `src/`.
 
 > *«Un passo senza disegno non e' un passo»* — K-0.
 
-Prima di questa storia i cinque atti che fanno un passo esistevano tutti e cinque
-e nessuno li metteva in fila fuori da un file di test: `annota` non aveva un solo
-chiamante in `src/`, e `deferred-work.md` lo registra come rilievo aperto della
-Story 1.7. Non era un difetto di quella storia — `pipeline/`, `api/` e `adapters/`
-erano gia' vuoti prima — ma **questa** storia non e' scrivibile senza chiuderlo:
-percorrere avanti e indietro un passaggio richiede che il passaggio sia un
-oggetto, e un oggetto lo costruisce qualcuno.
+Il motore didattico ha gia' prodotto `TransformExecution` — before, after e
+results sono fatti certificati a monte. Questa funzione li proietta in un
+`VisualStep` e non decide piu' nulla di elettrico: non quale trasformazione
+e' avvenuta, non con quali operandi, non qual e' il dopo, non che cosa dice
+l'equazione, non quali entita' sono preservate. Tutto questo arriva dentro
+l'esecuzione; qui si legge, si dispone, si annota, si deposita, si disegna.
 
-## I cinque atti, e perche' in quest'ordine
+## I quattro atti, e perche' in quest'ordine
 
-    transform  →  applica  →  annota  →  deposita  →  render ×2
-    (dominio)     (layout)    (ruoli)   (registri)   (byte)
+    proietta  →  annota  →  deposita  →  render ×2
+    (certificato) (ruoli)   (registri)   (byte)
 
-1. **`transform`** produce `Cₖ₊₁` e il prodotto. E' puro e non sa cosa sia una
-   posizione (AD-18): tutto cio' che segue e' fuori dal dominio.
+1. **proietta**: `after` e' `esecuzione.after`, il prodotto e'
+   `esecuzione.results[0]`, l'operazione e' quella del piano certificato.
+   Nessuna riesecuzione di `transform` (H5): se il dominio esplodesse ora,
+   la proiezione riuscirebbe comunque, perche' non ne ha bisogno.
 2. **`applica`** costruisce `LayoutIR_{k+1}` conservando i piazzamenti dei
    sopravvissuti. Non muta `LayoutIR_k`, che resta risolvibile — senza quel verso
    `p_k(x)` non esiste piu' nel momento in cui servirebbe misurarlo (CV6).
 3. **`annota`** copia i ruoli dal prodotto. Un solo overlay per i due stati:
    e' lo stesso passo annotato su due disegni.
-4. **`deposita`** conia il `patch_` e registra i due `lay_`. Da qui il passo e'
-   una proiezione **per riferimento**: gli identificatori sono risolvibili.
-5. **`render`** emette i due SVG. Due chiamate a una funzione pura, fatte una
-   volta sola — vedi il docstring di `schema.py` sul perche' una volta sola.
+4. **`render ×2 + deposita`**: i due SVG nascono prima del deposito, cosi' un
+   difetto del disegno non lascia mezzo passo nei registri. Due chiamate a una
+   funzione pura, fatte una volta sola — vedi il docstring di `schema.py` sul
+   perche' una volta sola. Il `patch_` nasce al deposito e non nel dominio:
+   `transform` e' pura per AD-2, quindi non ha l'orologio che il conio richiede.
 
 ## Dove finisce questa funzione
 
-Non decide **quale** trasformazione applicare: quello e' il Piano didattico, ed e'
-Epic 2. Non pubblica: `publish()` e i suoi otto controlli sono AD-5, e nessun
-criterio di questa storia li nomina. Non marca la provenienza: e' FR-18/FR-19.
-Compone un passo e restituisce l'oggetto che lo rappresenta — e se la
-Trasformazione rifiuta, restituisce il `Refusal` senza costruire niente.
+Non decide **quale** trasformazione applicare: quello e' il Piano didattico.
+Non pubblica, non marca la provenienza, non certifica: il `Certificate` che il
+passo porta e' lo stesso oggetto della run, per riferimento. Non crea `Claim`:
+un difetto di proiezione diventa `Failure("render", ...)` e non tocca mai un
+affermazione elettrica — non ce n'e' nessuna qui da cambiare.
+
+`layout` e' lo stato visuale di `Cₖ` e **non viene depositato qui se gia' c'e'**:
+lo stesso `LayoutIR` puo' essere il *dopo* di un passo e il *prima* del
+successivo, e il registro e' append-only — ridepositarlo solleverebbe su una
+catena di due passi, che e' il caso ordinario e non un difetto.
 """
 
 from __future__ import annotations
 
-from ...domain.ir import IR
-from ...domain.refusal import Refusal
-from ...domain.transform import TransformationKind, transform
+from ...domain.didactic.execute import TransformExecution
+from ...pipeline.failure import Failure
 from ..layout import LayoutIR, LayoutStore, PatchStore, applica
 from ..overlay import annota
 from ..serialize import render
@@ -48,50 +54,50 @@ from .schema import VisualStep
 
 
 def componi(
-    circuito: IR,
-    operazione: TransformationKind,
-    *operandi: str,
+    esecuzione: TransformExecution,
+    *,
     layout: LayoutIR,
     layouts: LayoutStore,
     patches: PatchStore,
     istante: int,
     casualita: bytes,
-) -> VisualStep | Refusal:
-    """Il passo intero, da `Cₖ` e dal suo stato visuale. `Refusal` se non si puo'.
+) -> VisualStep | Failure:
+    """Il passo intero, dall'esecuzione certificata e dal suo stato visuale.
 
     `istante` e `casualita` entrano **dalla firma** e non si leggono qui: AD-17,
     *«il tempo si inietta»*. Servono a due conii — il `patch_` della `LayoutPatch`
     e il `lay_` dello stato visuale nuovo — e nessuno dei due puo' nascere nel
     dominio, che di orologi non ne ha.
 
-    `layout` e' lo stato visuale di `Cₖ` e **non viene depositato qui se gia' c'e'**:
-    lo stesso `LayoutIR` puo' essere il *dopo* di un passo e il *prima* del
-    successivo, e il registro e' append-only — ridepositarlo solleverebbe su una
-    catena di due passi, che e' il caso ordinario e non un difetto.
-
-    **Il `Refusal` si restituisce, non si solleva** (AD-13): e' un esito di dominio.
-    Chi riceve un `Refusal` non ha un passo, e non e' un guasto — e' il sistema che
-    dice di non poter certificare. Un `ValueError` da `transform` e' invece un'altra
-    cosa: una precondizione violata da chi chiama, e sale.
+    Un difetto di proiezione (disposizione, annotazione, rendering, deposito)
+    diventa `Failure("render", ...)` con la causa conservata: e' un guasto
+    visuale, mai un Claim cambiato (H5-6).
     """
-    esito = transform(circuito, operazione, *operandi)
-    if isinstance(esito, Refusal):
-        return esito
-    dopo_circuito, risultato = esito
+    if not isinstance(esecuzione, TransformExecution):
+        return Failure(
+            "render",
+            f"proiezione di {type(esecuzione).__name__} invece di "
+            "TransformExecution: la via visuale consuma evidenza certificata")
+    risultato = esecuzione.results[0]
+    operazione = esecuzione.plan.actions[0].kind
+    try:
+        dopo_layout = applica(
+            layout, risultato.layout_patch, risultato.delta,
+            istante=istante, casualita=casualita)
+        overlay = annota(risultato)
+        prima_svg = render(esecuzione.before, layout, overlay)
+        dopo_svg = render(esecuzione.after, dopo_layout, overlay)
 
-    dopo_layout = applica(
-        layout, risultato.layout_patch, risultato.delta,
-        istante=istante, casualita=casualita)
-    overlay = annota(risultato)
-
-    # Il `patch_` nasce al deposito e non nel dominio: `transform` e' pura per
-    # AD-2, quindi non ha l'orologio che il conio richiede. Ne segue la proprieta'
-    # che SM-14 vuole — un `patch_` identifica **un passo**, non un contenuto.
-    patch = patches.deposita(
-        risultato.layout_patch, istante=istante, casualita=casualita)
-    if layout.identifier not in layouts:
-        layouts.deposita(layout)
-    layouts.deposita(dopo_layout)
+        # Il `patch_` nasce al deposito e non nel dominio: `transform` e' pura per
+        # AD-2, quindi non ha l'orologio che il conio richiede. Ne segue la proprieta'
+        # che SM-14 vuole — un `patch_` identifica **un passo**, non un contenuto.
+        patch = patches.deposita(
+            risultato.layout_patch, istante=istante, casualita=casualita)
+        if layout.identifier not in layouts:
+            layouts.deposita(layout)
+        layouts.deposita(dopo_layout)
+    except Exception as e:
+        return Failure("render", f"{type(e).__name__}: {e}")
 
     return VisualStep(
         operation=operazione,
@@ -105,7 +111,7 @@ def componi(
         # altre non le piazza. La sequenza di `EXPERIENCE.md` accende `R1` e `R2`
         # su `Cₖ` e mostra l'equivalente su `Cₖ₊₁`: un passo, due fotogrammi.
         fotogrammi={
-            layout.identifier: render(circuito, layout, overlay),
-            dopo_layout.identifier: render(dopo_circuito, dopo_layout, overlay),
+            layout.identifier: prima_svg,
+            dopo_layout.identifier: dopo_svg,
         },
     )

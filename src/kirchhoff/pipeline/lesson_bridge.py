@@ -1,0 +1,141 @@
+"""Stella→triangolo per il ponte resistivo, con osservazione esterna preservata.
+
+Derivazione didattica, non apertura del catalogo dei certificati. Il chiamante
+confronta il risultato con la chiusura canonica sul circuito originale.
+"""
+from dataclasses import replace
+from fractions import Fraction as F
+from kirchhoff.domain.independent_dc import solve_dc_tableau
+from kirchhoff.domain.ir import Component
+from kirchhoff.pipeline.lesson_svg import schematic
+
+
+def _verifica_passo(passo, svg, equazioni, focus=()):
+    """Blocca una proiezione alterata prima che diventi materiale di lezione."""
+    if (passo.get('svg') != svg or passo.get('equations') != list(equazioni)
+            or passo.get('focus') != list(focus)):
+        raise ValueError('Il passaggio intermedio non coincide con la derivazione: lezione non esposta.')
+
+
+def _verifica_tre_morsetti(legs, external, delta):
+    """Confronta la risposta della stella e del triangolo su tre basi esatte.
+
+    Per ogni eccitazione unitaria ai morsetti esterni, la stella elimina il
+    potenziale interno con KCL; il triangolo somma le correnti dei lati. Il
+    confronto riguarda tutti i morsetti, non la sola risposta finale.
+    """
+    conductance = {node: 1/legs[node].value.amount for node in external}
+    total = sum(conductance.values(), F(0))
+    for driven in external:
+        potential = {node: F(node == driven) for node in external}
+        center = sum((conductance[node]*potential[node] for node in external), F(0))/total
+        for node in external:
+            star_current = conductance[node]*(potential[node]-center)
+            delta_current = sum(((potential[node]-potential[next(n for n in c.terminals if n != node)])
+                                 /c.value.amount for c in delta if node in c.terminals), F(0))
+            if star_current != delta_current:
+                raise ValueError('Il passaggio intermedio stella-triangolo non conserva i tre morsetti.')
+
+
+def bridge_lesson(ir):
+    from kirchhoff.pipeline.lesson import branches, potential, _step
+    sources=[c for c in ir.components if c.type=='voltage_source_dc']
+    if len(ir.nodes)!=4 or len(ir.components)!=6 or len(sources)!=1:
+        return None
+    source=sources[0];p,q=source.terminals
+    middle=sorted(n for n in ir.nodes if n not in (p,q))
+    req=ir.requests[0];target=ir.component(req.target)
+    if target.type not in {'resistor','voltage_source_dc'}:
+        return None
+    pairs=[(p,middle[0]),(middle[0],q),(p,middle[1]),(middle[1],q),tuple(middle)]
+    if any(sum(c.type=='resistor' and set(c.terminals)==set(pair) for c in ir.components)!=1 for pair in pairs):
+        return None
+    center=next((n for n in middle if n not in target.terminals and n!='0'),None)
+    if center is None:
+        return None  # Non cancellare la grandezza interna che lo studente cerca.
+    star=[c for c in ir.components if center in c.terminals]
+    legs={next(n for n in c.terminals if n!=center):c for c in star}
+    external=sorted(legs)
+    product_sum=sum((legs[external[i]].value.amount*legs[external[j]].value.amount for i,j in ((0,1),(0,2),(1,2))),F(0))
+    remaining=[c for c in ir.components if c not in star]
+    equations=[];new=[]
+    def fresh(prefix):
+        existing={c.id for c in ir.components}|{c.id for c in new}
+        name=prefix
+        while name in existing:name+='x'
+        return name
+    for i,j in ((0,1),(0,2),(1,2)):
+        a,b=external[i],external[j];opposite=next(n for n in external if n not in (a,b))
+        val=product_sum/legs[opposite].value.amount
+        c=Component.of(fresh(f'Rdelta{i}{j}'),'resistor',(a,b),val,'Rdelta')
+        new.append(c)
+        equations.append(f'{c.id} ({a}–{b}) = (Ra×Rb + Rb×Rc + Rc×Ra) / R opposta = {val} Ω')
+    _verifica_tre_morsetti(legs, external, new)
+    transformed=replace(ir,nodes=tuple(n for n in ir.nodes if n!=center),components=tuple(remaining+new))
+    first_svg=schematic(transformed)
+    first_equations=tuple(equations)
+    first_focus=tuple(c.id for c in star)
+    first=_step('Trasformiamo la stella in un triangolo',
+        f'Nel nodo {center} si incontrano soltanto tre resistori: '+', '.join(c.id for c in star)+'. '
+        f'La domanda su {target.id} riguarda l’esterno di questa stella. Possiamo sostituirla con un triangolo che conserva il comportamento ai tre morsetti. '
+        'Ogni lato del triangolo è la somma dei tre prodotti a coppie divisa per la resistenza della stella opposta a quel lato. '
+        'Il nodo centrale scompare; gli altri morsetti restano gli stessi.',
+        first_svg,equations,list(first_focus))
+    _verifica_passo(first,first_svg,first_equations,first_focus)
+    result=[first]
+    groups={}
+    for c in transformed.components:
+        if c.type=='resistor':groups.setdefault(tuple(sorted(c.terminals)),[]).append(c)
+    merged=[source];eq=[]
+    for pair, group in groups.items():
+        if len(group)==1:merged+=group;continue
+        value=1/sum((1/c.value.amount for c in group),F(0))
+        name=fresh('Req'+str(len(merged)))
+        equivalent=Component.of(name,'resistor',pair,value,name)
+        if 1/equivalent.value.amount != sum((1/c.value.amount for c in group),F(0)):
+            raise ValueError('Il passaggio intermedio parallelo non conserva la conduttanza.')
+        merged.append(equivalent)
+        eq.append(f'{name} = '+' || '.join(c.id for c in group)+f' = {value} Ω')
+    # I target delle viste intermedie sono osservazioni originali: la nuova IR
+    # non dichiara richieste su componenti consumati. La relazione si ricostruisce.
+    reduced=replace(transformed,components=tuple(merged),requests=())
+    topology=branches(reduced)
+    if topology is None:return None
+    second_svg=schematic(reduced,topology)
+    second_equations=tuple(eq)
+    second=_step('Riconosciamo i paralleli comparsi',
+        'Ogni coppia evidenziata dalle formule collega gli stessi due nodi. Le tensioni sono uguali: sommiamo le conduttanze. '
+        f'Se {target.id} entra in un parallelo, la sua tensione è quella dell’equivalente; la sua corrente andrà recuperata con la resistenza originale.',
+        second_svg,eq)
+    _verifica_passo(second,second_svg,second_equations)
+    result.append(second)
+    top,bottom,bs=topology
+    u, currents=potential(bs)
+    voltages={top:u,bottom:F(0)}
+    for branch,current in zip(bs,currents):
+        v=u;node=top
+        for c,sign in branch.parts:
+            v-=current*c.value.amount if c.type=='resistor' else sign*c.value.amount
+            node=c.terminals[1] if sign==1 else c.terminals[0]
+            voltages[node]=v
+    voltage=voltages[target.terminals[0]]-voltages[target.terminals[1]]
+    if req.quantity=='voltage':answer=voltage
+    elif target.type=='resistor':answer=voltage/target.value.amount
+    else:
+        i=next(i for i,b in enumerate(bs) if any(c.id==target.id for c,_ in b.parts))
+        sign=next(sign for c,sign in bs[i].parts if c.id==target.id)
+        answer=sign*currents[i]
+    original_values=solve_dc_tableau(ir)[target.id]
+    if voltage != original_values['voltage'] or answer != original_values[req.quantity]:
+        raise ValueError('Il passaggio intermedio non coincide con il tableau indipendente.')
+    final_svg=schematic(ir)
+    final_equations=(f'V({target.terminals[0]}) − V({target.terminals[1]}) = {voltage} V',
+                     f'{target.id}: {answer} {"V" if req.quantity=="voltage" else "A"}')
+    final=_step('Partitore e ritorno al resistore originale',
+        'Il ponte è diventato una rete di rami semplici. La sorgente impone la tensione totale del ramo in serie; '
+        'la ripartiamo sulle resistenze equivalenti. Poi torniamo ai morsetti del componente originale: '
+        'la sua tensione è conservata, la sua corrente si calcola usando il suo valore originale.',
+        final_svg,list(final_equations))
+    _verifica_passo(final,final_svg,final_equations)
+    result.append(final)
+    return answer,result

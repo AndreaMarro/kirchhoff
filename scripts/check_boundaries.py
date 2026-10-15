@@ -95,19 +95,61 @@ def descrivi(v: Violazione) -> str:
             f"{RECINTO}/ non puo' dipendere da nulla del progetto fuori da se'")
 
 
+FRONTEND = ("web", "frontend", "client", "app")
+
+
+def _verso_frontend(nome: str) -> bool:
+    """Vero quando `nome` punta a una superficie browser dentro `src/`."""
+    if not (nome == PACCHETTO or nome.startswith(f"{PACCHETTO}.")):
+        parti = nome.split(".")
+        return any(p in FRONTEND for p in parti)
+    resto = nome[len(PACCHETTO):].strip(".").split(".")
+    return any(p in FRONTEND for p in resto)
+
+
+def violazioni_presentazione(radice: Path) -> list[Violazione]:
+    """Ogni import verso il frontend da `domain/` o `render/`, deterministico.
+
+    La proiezione va dal kernel alla superficie, mai il contrario: se il
+    dominio o il renderer importassero il frontend, la verita' elettrica
+    avrebbe due padroni e il browser deciderebbe semantica (R3/H5).
+    """
+    trovate: list[Violazione] = []
+    for recinto in ("domain", "render"):
+        base = radice / recinto
+        if not base.is_dir():
+            raise FileNotFoundError(f"nessuna directory da controllare: {base}")
+        for file in sorted(base.rglob("*.py")):
+            albero = ast.parse(file.read_text(encoding="utf-8"), filename=str(file))
+            pacchetto = _parti_pacchetto(file, radice)
+            for nodo in ast.walk(albero):
+                for nome in _moduli_importati(nodo, pacchetto):
+                    if _verso_frontend(nome):
+                        trovate.append(Violazione(file, nodo.lineno, nome))
+    return trovate
+
+
 def main(argv: list[str] | None = None) -> int:
     argomenti = sys.argv[1:] if argv is None else argv
     radice = Path(argomenti[0]) if argomenti else RADICE_PREDEFINITA
 
     trovate = violazioni(radice)
-    if not trovate:
-        print(f"{RECINTO}/ non importa nulla del progetto fuori da se'")
-        return 0
+    if trovate:
+        for v in trovate:
+            print(descrivi(v))
+        print(f"\n{len(trovate)} violazioni del confine di dipendenza.")
+        return 1
+    print(f"{RECINTO}/ non importa nulla del progetto fuori da se'")
 
-    for v in trovate:
-        print(descrivi(v))
-    print(f"\n{len(trovate)} violazioni del confine di dipendenza.")
-    return 1
+    davanti = violazioni_presentazione(radice)
+    if davanti:
+        for v in davanti:
+            print(f"{v.file}:{v.riga}: importa {v.modulo_importato} — "
+                  "domain/ e render/ non possono dipendere dal frontend")
+        print(f"\n{len(davanti)} violazioni del confine di presentazione.")
+        return 1
+    print("domain/ e render/ non importano il frontend")
+    return 0
 
 
 if __name__ == "__main__":

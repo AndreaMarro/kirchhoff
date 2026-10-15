@@ -1,6 +1,9 @@
 """Il punto in cui le parti del prodotto si incontrano.
 
-L'ingresso è `resolve`. `risolvi` è lo stesso oggetto sotto il nome storico.
+La radice applicativa canonica e' `run_proof_session`
+(`kirchhoff.pipeline.proof_run`). `resolve` e' la compatibilita' storica:
+delega ogni domanda alla radice e ne proietta le chiusure in `Solved`.
+`risolvi` e' lo stesso oggetto sotto il nome storico.
 """
 from kirchhoff.domain.refusal import Refusal
 from kirchhoff.pipeline.failure import Failure

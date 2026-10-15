@@ -24,6 +24,7 @@ DC_TABLEAU_TYPES = frozenset({
     "current_source_dc",
     "voltage_controlled_voltage_source",
     "voltage_controlled_current_source",
+    "ideal_opamp",
 })
 
 
@@ -245,6 +246,11 @@ def _costitutiva(
             row[col_v(cid)] -= g * segno
         known[0] = ZERO
         return
+    if c.type == "ideal_opamp":
+        for cid, segno in vcontrol:
+            row[col_v(cid)] += segno
+        known[0] = ZERO
+        return
     raise ValueError(f"{c.id}: {c.type} non ammesso nel tableau DC resistivo")
 
 
@@ -303,6 +309,7 @@ def solve_dc_tableau(ir: IR) -> dict[str, dict[str, Fraction]]:
         if c.type in {
             "voltage_controlled_voltage_source",
             "voltage_controlled_current_source",
+            "ideal_opamp",
         }:
             if c.control_nodes is None:
                 raise ValueError(f"{c.id}: {c.type} senza nodi di controllo")

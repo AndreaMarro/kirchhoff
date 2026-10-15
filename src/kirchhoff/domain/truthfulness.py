@@ -13,7 +13,7 @@ from .didactic.plan import DidacticPlan
 from .exact import SingularSystemError
 from .identity import verifica
 from .independent_dc import TableauSingularError, solve_dc_tableau
-from .ir import IR, Magnitude, Request
+from .ir import DC_DOMAINS, IR, Magnitude, Request
 from .refusal import Refusal
 from .verify import compare_exact_solution_paths, verify
 
@@ -101,7 +101,7 @@ def _binding(request: Request, diagnosis: str) -> Refusal:
 
 
 def _context(ir: IR, request: Request, execution: NodalExecution) -> Refusal | None:
-    if ir.domain != "dc":
+    if ir.domain not in DC_DOMAINS:
         return Refusal("claim_unsupported", request.id, "request", f"domain={ir.domain!r} non supportato")
     if request.quantity not in SUPPORTED_NODAL_QUANTITIES:
         return Refusal("claim_unsupported", request.id, "request", f"quantity={request.quantity!r} non supportata")

@@ -1,0 +1,641 @@
+{
+  "answers": {
+    "disconnected_port": {
+      "status": "open_disconnected"
+    },
+    "ideal_voltage_shorts_port": {
+      "imaginary": 0.0,
+      "max_equation_residual": 0.0,
+      "rank": 2,
+      "real": 0.0,
+      "reference": "p -> 0",
+      "status": "finite_unique",
+      "unknowns": 2
+    },
+    "inconsistent_original_sources": {
+      "imaginary": 0.0,
+      "max_equation_residual": 0.0,
+      "rank": 2,
+      "real": 0.0,
+      "reference": "p -> 0",
+      "status": "finite_with_internal_freedom",
+      "unknowns": 3
+    },
+    "irrelevant_floating_island": {
+      "imaginary": 0.0,
+      "max_equation_residual": 0.0,
+      "rank": 2,
+      "real": 3.0,
+      "reference": "p -> 0",
+      "status": "finite_with_internal_freedom",
+      "unknowns": 3
+    },
+    "manual_bridge/amplitude_peak": {
+      "imaginary": 0.9223650385604115,
+      "manual_exact_imaginary": "1794/1945",
+      "manual_exact_real": "4808/1945",
+      "max_equation_residual": 2.482534153247273e-16,
+      "rank": 3,
+      "real": 2.4719794344473005,
+      "reference": "p -> 0",
+      "status": "finite_unique",
+      "unknowns": 3
+    },
+    "manual_bridge/base": {
+      "imaginary": 0.9223650385604115,
+      "manual_exact_imaginary": "1794/1945",
+      "manual_exact_real": "4808/1945",
+      "max_equation_residual": 2.482534153247273e-16,
+      "rank": 3,
+      "real": 2.4719794344473005,
+      "reference": "p -> 0",
+      "status": "finite_unique",
+      "unknowns": 3
+    },
+    "manual_bridge/components_reordered": {
+      "imaginary": 0.9223650385604115,
+      "manual_exact_imaginary": "1794/1945",
+      "manual_exact_real": "4808/1945",
+      "max_equation_residual": 2.482534153247273e-16,
+      "rank": 3,
+      "real": 2.4719794344473005,
+      "reference": "p -> 0",
+      "status": "finite_unique",
+      "unknowns": 3
+    },
+    "manual_bridge/port_reversed": {
+      "imaginary": 0.9223650385604116,
+      "manual_exact_imaginary": "1794/1945",
+      "manual_exact_real": "4808/1945",
+      "max_equation_residual": 2.237726045655905e-16,
+      "rank": 3,
+      "real": 2.4719794344473014,
+      "reference": "0 -> p",
+      "status": "finite_unique",
+      "unknowns": 3
+    },
+    "manual_bridge/source_polarities": {
+      "imaginary": 0.9223650385604115,
+      "manual_exact_imaginary": "1794/1945",
+      "manual_exact_real": "4808/1945",
+      "max_equation_residual": 2.482534153247273e-16,
+      "rank": 3,
+      "real": 2.4719794344473005,
+      "reference": "p -> 0",
+      "status": "finite_unique",
+      "unknowns": 3
+    },
+    "manual_bridge/source_values_and_phases": {
+      "imaginary": 0.9223650385604115,
+      "manual_exact_imaginary": "1794/1945",
+      "manual_exact_real": "4808/1945",
+      "max_equation_residual": 2.482534153247273e-16,
+      "rank": 3,
+      "real": 2.4719794344473005,
+      "reference": "p -> 0",
+      "status": "finite_unique",
+      "unknowns": 3
+    },
+    "manual_floating_source/amplitude_peak": {
+      "imaginary": -0.35174449489793536,
+      "manual_exact_imaginary": "-76146/216481",
+      "manual_exact_real": "628320/216481",
+      "max_equation_residual": 1.7235854893846466e-16,
+      "rank": 4,
+      "real": 2.9024256170287464,
+      "reference": "p -> 0",
+      "status": "finite_unique",
+      "unknowns": 4
+    },
+    "manual_floating_source/base": {
+      "imaginary": -0.35174449489793536,
+      "manual_exact_imaginary": "-76146/216481",
+      "manual_exact_real": "628320/216481",
+      "max_equation_residual": 1.7235854893846466e-16,
+      "rank": 4,
+      "real": 2.9024256170287464,
+      "reference": "p -> 0",
+      "status": "finite_unique",
+      "unknowns": 4
+    },
+    "manual_floating_source/components_reordered": {
+      "imaginary": -0.35174449489793536,
+      "manual_exact_imaginary": "-76146/216481",
+      "manual_exact_real": "628320/216481",
+      "max_equation_residual": 1.7235854893846466e-16,
+      "rank": 4,
+      "real": 2.9024256170287464,
+      "reference": "p -> 0",
+      "status": "finite_unique",
+      "unknowns": 4
+    },
+    "manual_floating_source/port_reversed": {
+      "imaginary": -0.35174449489793536,
+      "manual_exact_imaginary": "-76146/216481",
+      "manual_exact_real": "628320/216481",
+      "max_equation_residual": 1.1295700899707568e-16,
+      "rank": 4,
+      "real": 2.9024256170287464,
+      "reference": "0 -> p",
+      "status": "finite_unique",
+      "unknowns": 4
+    },
+    "manual_floating_source/source_polarities": {
+      "imaginary": -0.35174449489793536,
+      "manual_exact_imaginary": "-76146/216481",
+      "manual_exact_real": "628320/216481",
+      "max_equation_residual": 1.7235854893846466e-16,
+      "rank": 4,
+      "real": 2.9024256170287464,
+      "reference": "p -> 0",
+      "status": "finite_unique",
+      "unknowns": 4
+    },
+    "manual_floating_source/source_values_and_phases": {
+      "imaginary": -0.35174449489793536,
+      "manual_exact_imaginary": "-76146/216481",
+      "manual_exact_real": "628320/216481",
+      "max_equation_residual": 1.7235854893846466e-16,
+      "rank": 4,
+      "real": 2.9024256170287464,
+      "reference": "p -> 0",
+      "status": "finite_unique",
+      "unknowns": 4
+    },
+    "missing_port_terminal": {
+      "status": "invalid_port"
+    },
+    "only_current_source": {
+      "status": "open_disconnected"
+    },
+    "parallel_lc_resonance": {
+      "rank": 0,
+      "status": "open_resonance",
+      "unknowns": 1
+    },
+    "redundant_voltage_constraints": {
+      "imaginary": 0.0,
+      "max_equation_residual": 0.0,
+      "rank": 2,
+      "real": 0.0,
+      "reference": "p -> 0",
+      "status": "finite_with_internal_freedom",
+      "unknowns": 3
+    },
+    "same_port_terminal": {
+      "status": "invalid_port"
+    },
+    "seeded_mesh_01/amplitude_peak": {
+      "imaginary": 0.5742160119807593,
+      "max_equation_residual": 8.95090418262362e-16,
+      "rank": 6,
+      "real": 2.883741758367713,
+      "reference": "p -> 0",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_01/base": {
+      "imaginary": 0.5742160119807593,
+      "max_equation_residual": 8.95090418262362e-16,
+      "rank": 6,
+      "real": 2.883741758367713,
+      "reference": "p -> 0",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_01/components_reordered": {
+      "imaginary": 0.5742160119807593,
+      "max_equation_residual": 8.95090418262362e-16,
+      "rank": 6,
+      "real": 2.883741758367713,
+      "reference": "p -> 0",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_01/port_reversed": {
+      "imaginary": 0.5742160119807589,
+      "max_equation_residual": 2.0206364052201326e-16,
+      "rank": 6,
+      "real": 2.883741758367712,
+      "reference": "0 -> p",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_01/source_polarities": {
+      "imaginary": 0.5742160119807593,
+      "max_equation_residual": 8.95090418262362e-16,
+      "rank": 6,
+      "real": 2.883741758367713,
+      "reference": "p -> 0",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_01/source_values_and_phases": {
+      "imaginary": 0.5742160119807593,
+      "max_equation_residual": 8.95090418262362e-16,
+      "rank": 6,
+      "real": 2.883741758367713,
+      "reference": "p -> 0",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_02/amplitude_peak": {
+      "imaginary": 0.703508864222209,
+      "max_equation_residual": 1.170021796579212e-15,
+      "rank": 6,
+      "real": 5.2866536903572,
+      "reference": "p -> c",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_02/base": {
+      "imaginary": 0.703508864222209,
+      "max_equation_residual": 1.170021796579212e-15,
+      "rank": 6,
+      "real": 5.2866536903572,
+      "reference": "p -> c",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_02/components_reordered": {
+      "imaginary": 0.7035088642222111,
+      "max_equation_residual": 1.0179146870343963e-15,
+      "rank": 6,
+      "real": 5.286653690357198,
+      "reference": "p -> c",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_02/port_reversed": {
+      "imaginary": 0.7035088642222145,
+      "max_equation_residual": 1.1102230246251565e-15,
+      "rank": 6,
+      "real": 5.2866536903571975,
+      "reference": "c -> p",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_02/source_polarities": {
+      "imaginary": 0.703508864222209,
+      "max_equation_residual": 1.170021796579212e-15,
+      "rank": 6,
+      "real": 5.2866536903572,
+      "reference": "p -> c",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_02/source_values_and_phases": {
+      "imaginary": 0.703508864222209,
+      "max_equation_residual": 1.170021796579212e-15,
+      "rank": 6,
+      "real": 5.2866536903572,
+      "reference": "p -> c",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_03/amplitude_peak": {
+      "imaginary": -1.3877787807814457e-16,
+      "max_equation_residual": 5.083642999925921e-16,
+      "rank": 6,
+      "real": 3.6363636363636362,
+      "reference": "p -> 0",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_03/base": {
+      "imaginary": -1.3877787807814457e-16,
+      "max_equation_residual": 5.083642999925921e-16,
+      "rank": 6,
+      "real": 3.6363636363636362,
+      "reference": "p -> 0",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_03/components_reordered": {
+      "imaginary": -1.3877787807814457e-16,
+      "max_equation_residual": 5.083642999925921e-16,
+      "rank": 6,
+      "real": 3.6363636363636362,
+      "reference": "p -> 0",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_03/port_reversed": {
+      "imaginary": 7.632783294297951e-17,
+      "max_equation_residual": 7.400599882195397e-16,
+      "rank": 6,
+      "real": 3.6363636363636362,
+      "reference": "0 -> p",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_03/source_polarities": {
+      "imaginary": -1.3877787807814457e-16,
+      "max_equation_residual": 5.083642999925921e-16,
+      "rank": 6,
+      "real": 3.6363636363636362,
+      "reference": "p -> 0",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_03/source_values_and_phases": {
+      "imaginary": -1.3877787807814457e-16,
+      "max_equation_residual": 5.083642999925921e-16,
+      "rank": 6,
+      "real": 3.6363636363636362,
+      "reference": "p -> 0",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_04/amplitude_peak": {
+      "imaginary": -0.7964959568733154,
+      "max_equation_residual": 2.237726045655905e-16,
+      "rank": 6,
+      "real": 0.6805929919137468,
+      "reference": "p -> c",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_04/base": {
+      "imaginary": -0.7964959568733154,
+      "max_equation_residual": 2.237726045655905e-16,
+      "rank": 6,
+      "real": 0.6805929919137468,
+      "reference": "p -> c",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_04/components_reordered": {
+      "imaginary": -0.7964959568733154,
+      "max_equation_residual": 2.237726045655905e-16,
+      "rank": 6,
+      "real": 0.6805929919137468,
+      "reference": "p -> c",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_04/port_reversed": {
+      "imaginary": -0.7964959568733154,
+      "max_equation_residual": 2.482534153247273e-16,
+      "rank": 6,
+      "real": 0.6805929919137463,
+      "reference": "c -> p",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_04/source_polarities": {
+      "imaginary": -0.7964959568733154,
+      "max_equation_residual": 2.237726045655905e-16,
+      "rank": 6,
+      "real": 0.6805929919137468,
+      "reference": "p -> c",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_04/source_values_and_phases": {
+      "imaginary": -0.7964959568733154,
+      "max_equation_residual": 2.237726045655905e-16,
+      "rank": 6,
+      "real": 0.6805929919137468,
+      "reference": "p -> c",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_05/amplitude_peak": {
+      "imaginary": -0.511771818114189,
+      "max_equation_residual": 5.79553433516819e-16,
+      "rank": 6,
+      "real": 2.305236482876397,
+      "reference": "p -> 0",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_05/base": {
+      "imaginary": -0.511771818114189,
+      "max_equation_residual": 5.79553433516819e-16,
+      "rank": 6,
+      "real": 2.305236482876397,
+      "reference": "p -> 0",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_05/components_reordered": {
+      "imaginary": -0.511771818114189,
+      "max_equation_residual": 5.79553433516819e-16,
+      "rank": 6,
+      "real": 2.305236482876397,
+      "reference": "p -> 0",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_05/port_reversed": {
+      "imaginary": -0.5117718181141884,
+      "max_equation_residual": 3.6506759942727966e-16,
+      "rank": 6,
+      "real": 2.3052364828763974,
+      "reference": "0 -> p",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_05/source_polarities": {
+      "imaginary": -0.511771818114189,
+      "max_equation_residual": 5.79553433516819e-16,
+      "rank": 6,
+      "real": 2.305236482876397,
+      "reference": "p -> 0",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_05/source_values_and_phases": {
+      "imaginary": -0.511771818114189,
+      "max_equation_residual": 5.79553433516819e-16,
+      "rank": 6,
+      "real": 2.305236482876397,
+      "reference": "p -> 0",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_06/amplitude_peak": {
+      "imaginary": 2.336619944545286,
+      "max_equation_residual": 4.002966042486721e-16,
+      "rank": 6,
+      "real": 4.760467802125335,
+      "reference": "p -> c",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_06/base": {
+      "imaginary": 2.336619944545286,
+      "max_equation_residual": 4.002966042486721e-16,
+      "rank": 6,
+      "real": 4.760467802125335,
+      "reference": "p -> c",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_06/components_reordered": {
+      "imaginary": 2.336619944545286,
+      "max_equation_residual": 4.002966042486721e-16,
+      "rank": 6,
+      "real": 4.760467802125335,
+      "reference": "p -> c",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_06/port_reversed": {
+      "imaginary": 2.336619944545292,
+      "max_equation_residual": 1.3322676295501878e-15,
+      "rank": 6,
+      "real": 4.7604678021253415,
+      "reference": "c -> p",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_06/source_polarities": {
+      "imaginary": 2.336619944545286,
+      "max_equation_residual": 4.002966042486721e-16,
+      "rank": 6,
+      "real": 4.760467802125335,
+      "reference": "p -> c",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_06/source_values_and_phases": {
+      "imaginary": 2.336619944545286,
+      "max_equation_residual": 4.002966042486721e-16,
+      "rank": 6,
+      "real": 4.760467802125335,
+      "reference": "p -> c",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_07/amplitude_peak": {
+      "imaginary": 0.280676633452924,
+      "max_equation_residual": 1.4946834900704541e-16,
+      "rank": 6,
+      "real": 1.7519021326578719,
+      "reference": "p -> 0",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_07/base": {
+      "imaginary": 0.280676633452924,
+      "max_equation_residual": 1.4946834900704541e-16,
+      "rank": 6,
+      "real": 1.7519021326578719,
+      "reference": "p -> 0",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_07/components_reordered": {
+      "imaginary": 0.280676633452924,
+      "max_equation_residual": 1.4946834900704541e-16,
+      "rank": 6,
+      "real": 1.7519021326578719,
+      "reference": "p -> 0",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_07/port_reversed": {
+      "imaginary": 0.2806766334529239,
+      "max_equation_residual": 5.266250202865052e-16,
+      "rank": 6,
+      "real": 1.751902132657872,
+      "reference": "0 -> p",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_07/source_polarities": {
+      "imaginary": 0.280676633452924,
+      "max_equation_residual": 1.4946834900704541e-16,
+      "rank": 6,
+      "real": 1.7519021326578719,
+      "reference": "p -> 0",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_07/source_values_and_phases": {
+      "imaginary": 0.280676633452924,
+      "max_equation_residual": 1.4946834900704541e-16,
+      "rank": 6,
+      "real": 1.7519021326578719,
+      "reference": "p -> 0",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_08/amplitude_peak": {
+      "imaginary": 4.272776974571442,
+      "max_equation_residual": 1.1226435567921847e-15,
+      "rank": 6,
+      "real": 7.509130228772072,
+      "reference": "p -> c",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_08/base": {
+      "imaginary": 4.272776974571442,
+      "max_equation_residual": 1.1226435567921847e-15,
+      "rank": 6,
+      "real": 7.509130228772072,
+      "reference": "p -> c",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_08/components_reordered": {
+      "imaginary": 4.272776974571442,
+      "max_equation_residual": 1.1226435567921847e-15,
+      "rank": 6,
+      "real": 7.509130228772072,
+      "reference": "p -> c",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_08/port_reversed": {
+      "imaginary": 4.272776974571432,
+      "max_equation_residual": 5.287492929713006e-16,
+      "rank": 6,
+      "real": 7.509130228772066,
+      "reference": "c -> p",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_08/source_polarities": {
+      "imaginary": 4.272776974571442,
+      "max_equation_residual": 1.1226435567921847e-15,
+      "rank": 6,
+      "real": 7.509130228772072,
+      "reference": "p -> c",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "seeded_mesh_08/source_values_and_phases": {
+      "imaginary": 4.272776974571442,
+      "max_equation_residual": 1.1226435567921847e-15,
+      "rank": 6,
+      "real": 7.509130228772072,
+      "reference": "p -> c",
+      "status": "finite_unique",
+      "unknowns": 6
+    },
+    "series_lc_resonance": {
+      "imaginary": 0.0,
+      "max_equation_residual": 0.0,
+      "rank": 2,
+      "real": 0.0,
+      "reference": "p -> 0",
+      "status": "finite_unique",
+      "unknowns": 2
+    },
+    "zero_resistance_not_wire": {
+      "status": "invalid_value"
+    }
+  },
+  "case_count": 71,
+  "cases_sha256": "c6deeae0b704457dee2ad15fad0d6dae556bef84e69c477746124446434a39e9",
+  "finite_required": 60,
+  "frozen_at_utc": "2026-10-03T08:47:08.149648+00:00",
+  "model": "inherited/unknown",
+  "oracle_sha256": "8a05bb74435ece4ea67cac4835767b62c52d47f44691e96620431a97e3ad9b1b",
+  "product_called_before_freeze": false,
+  "seed": 2026100311
+}

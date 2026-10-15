@@ -25,9 +25,21 @@ jobs:
           # riproducibile; osservato fetch failed su manifest versioni).
           version: "0.11.8"
       - name: Sync frozen environment
-        run: uv sync --frozen --extra dev
+        run: uv sync --frozen --extra dev --extra mcp
       - name: Build reference-set
         run: uv run --no-sync kirchhoff-eval build --n 60 --seed 1 --depth 3 --split 0.6 --out reference-set
+      # Packaging tests exercise the real self-contained MCP App artifact.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Install locked App build dependencies
+        run: npm ci
+        working-directory: web
+      - name: Build standalone and MCP App resources
+        run: npm run build
+        working-directory: web
       - name: pytest
         run: uv run --no-sync python -m pytest
       - name: domain coverage

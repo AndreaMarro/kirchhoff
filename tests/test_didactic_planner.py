@@ -160,7 +160,8 @@ def test_planner_rifiuta_quando_niente_e_eseguibile():
         Component.of("R2", "resistor", ("c", "0"), F(10), "R2"),
     ))
     kernel = resolve(replace(ir, requests=(_req("R1", "voltage"),)))
-    assert isinstance(kernel, Solved)
+    assert isinstance(kernel, Refusal)
+    assert kernel.cause == "unsolvable"
     esito = pianifica(ir, _req("R1", "voltage"))
     assert isinstance(esito, Refusal)
     assert esito.cause == "unsolvable"
@@ -187,7 +188,8 @@ def test_nodale_capability_boundaries():
         ),
         Component.of("R3", "resistor", ("C", "0"), F(5), "R3"),
     ))
-    assert isinstance(resolve(replace(vcvs, requests=(_req("R3", "voltage"),))), Solved)
+    assert isinstance(
+        resolve(replace(vcvs, requests=(_req("R3", "voltage"),))), Refusal)
     assert not nodale_disponibile(vcvs, "voltage")
     assert isinstance(pianifica(vcvs, _req("R3", "voltage")), Refusal)
     flottante = _ir(("0", "a", "b"), (

@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/Users/andreamarro/MATJOURNEY/evidence-20261003/laplace-lesson-independent/run_product.py", line 90, in <module>
+    if __name__=='__main__': run()
+                             ^^^^^
+  File "/Users/andreamarro/MATJOURNEY/evidence-20261003/laplace-lesson-independent/run_product.py", line 27, in run
+    cases,criteria=C.integrity()
+                   ^^^^^^^^^^^^^
+  File "/Users/andreamarro/MATJOURNEY/evidence-20261003/laplace-lesson-independent/checker.py", line 394, in integrity
+    assert encoded({'classification':'additive-post-kernel/pre-lesson-freeze','cases':fixtures()})==(ROOT/'additive_cases.json').read_bytes()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

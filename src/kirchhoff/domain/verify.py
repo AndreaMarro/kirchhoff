@@ -16,6 +16,7 @@ from __future__ import annotations
 
 from fractions import Fraction
 
+from .exact import Cyc12
 from .ir import IR, REFERENCE_NODE
 from .ir.schema import CONTROLLED_SOURCE_TYPES
 from .mna import kcl_residuals, power_balance
@@ -24,6 +25,30 @@ from .refusal import Refusal
 ZERO = Fraction(0)
 PASSIVI = frozenset({"resistor", "capacitor", "inductor"})
 PHASOR_DOMAINS = frozenset({"ac_sinusoidal", "three_phase"})
+
+
+def phasor_complex_powers(ir: IR, sol: dict[str, dict], *,
+                          amplitude: str) -> dict[str, Cyc12]:
+    """S = V I* per fasori efficaci; S = V I*/2 per fasori di picco.
+
+    La convenzione e' un argomento obbligatorio: l'IR non la registra ancora.
+    La verifica di Tellegen ΣVI senza coniugato e' distinta da questa potenza
+    fisica. Nessun risultato e' certificato finche' il regime non e' servito
+    attraverso la spina di prova del prodotto.
+    """
+    if ir.domain not in PHASOR_DOMAINS:
+        raise ValueError("potenza complessa disponibile solo nel regime sinusoidale")
+    if amplitude not in {"rms", "peak"}:
+        raise ValueError("dichiarare fasori efficaci RMS oppure di picco")
+    factor = Fraction(1, 2) if amplitude == "peak" else Fraction(1)
+    powers: dict[str, Cyc12] = {}
+    for component in ir.components:
+        voltage = sol[component.id]["voltage"]
+        current = sol[component.id]["current"]
+        if not isinstance(voltage, Cyc12) or not isinstance(current, Cyc12):
+            raise TypeError(f"{component.id}: la potenza fasoriale richiede grandezze esatte Cyc12")
+        powers[component.id] = voltage * current.conjugate() * factor
+    return powers
 
 ATTESTAZIONE_COSTITUTIVE = "leggi costitutive delle sorgenti controllate"
 
@@ -140,7 +165,9 @@ def constitutive_residuals(ir: IR, sol: dict[str, dict]) -> dict[str, object]:
             continue
         cp, cq = c.control_nodes
         vctrl = _vcontrol_pubblicato(ir, sol, cp, cq)
-        if c.type == "voltage_controlled_voltage_source":
+        if c.type == "ideal_opamp":
+            residui[c.id] = vctrl
+        elif c.type == "voltage_controlled_voltage_source":
             residui[c.id] = sol[c.id]["voltage"] - c.value.amount * vctrl
         else:
             residui[c.id] = sol[c.id]["current"] - c.value.amount * vctrl

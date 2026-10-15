@@ -14,6 +14,8 @@ V1 b 0 12 volt
 R1 b a 100 ohm
 R2 a 0 220 ohm
 ? voltage R2
+? voltage R1
+? current R1
 """
 
 
@@ -29,8 +31,7 @@ def test_il_partitore_da_la_risposta_esatta_del_libro():
 
 def test_si_verifica_PRIMA_di_disegnare():
     esito = risolvi(leggi(PARTITORE))
-    for nome in ("legge dei nodi", "legge delle maglie",
-                 "bilancio di potenza", "sanità fisica"):
+    for nome in ("Claim elettrico: VERIFIED", "Sessione backend: CLOSED"):
         assert nome in esito.verifiche
 
 
@@ -52,6 +53,7 @@ def test_un_circuito_che_non_e_una_maglia_viene_RIFIUTATO_non_disposto_male():
     R1 b a 100 ohm
     R2 a 0 220 ohm
     R3 a 0 330 ohm
+    ? current R1
     """)
     with pytest.raises(ValueError, match="non formano una maglia sola"):
         layout_a_maglia(due_maglie)
@@ -81,14 +83,15 @@ def test_il_rifiuto_dice_quale_controllo_e_di_quanto():
 
 
 def test_una_maglia_di_due_soli_nodi_si_dispone():
-    esito = risolvi(leggi("V1 a 0 9 volt\nR1 a 0 3 ohm\n"))
+    esito = risolvi(leggi("V1 a 0 9 volt\nR1 a 0 3 ohm\n? current R1\n"))
     assert isinstance(esito, Risolto)
     assert esito.soluzione["R1"]["current"] == Fraction(3)
 
 
 def test_una_maglia_lunga_si_dispone_sul_perimetro():
     esito = risolvi(leggi(
-        "V1 d 0 12 volt\nR1 d c 10 ohm\nR2 c b 20 ohm\nR3 b 0 30 ohm\n"))
+        "V1 d 0 12 volt\nR1 d c 10 ohm\nR2 c b 20 ohm\nR3 b 0 30 ohm\n"
+        "? current R1\n"))
     assert isinstance(esito, Risolto)
     assert esito.soluzione["R1"]["current"] == Fraction(1, 5)
 
@@ -143,7 +146,7 @@ def test_il_comando_risolve_e_stampa(tmp_path, capsys):
     from kirchhoff.pipeline.cli import main
     assert main([str(_netlist(tmp_path))]) == 0
     fuori = capsys.readouterr().out
-    assert "legge dei nodi" in fuori and "bilancio di potenza" in fuori
+    assert "Claim elettrico: VERIFIED" in fuori and "Sessione backend: CLOSED" in fuori
     assert "33/4" in fuori and "8.25" in fuori
 
 
@@ -228,14 +231,20 @@ def test_un_componente_senza_soluzione_non_ferma_la_stampa(tmp_path, capsys, mon
 
     def parziale(circuito, layout=None):
         pieno = vero(circuito, layout)
+        ridotta = dict(pieno.soluzione)
+        ridotta["RX"] = {}
         return type(pieno)(
             circuito=pieno.circuito,
-            soluzione={k: v for k, v in pieno.soluzione.items() if k != "R1"},
+            soluzione=ridotta,
             layout=pieno.layout, svg=pieno.svg, verifiche=pieno.verifiche,
             solver=pieno.solver)
 
     monkeypatch.setattr(cli, "resolve", parziale)
-    assert cli.main([str(_netlist(tmp_path))]) == 0
+    f = tmp_path / "c.netlist"
+    f.write_text(
+        "V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\n"
+        "? voltage R2\n", encoding="utf-8")
+    assert cli.main([str(f)]) == 0
     fuori = capsys.readouterr().out
     assert "R2" in fuori and "33/4" in fuori
 

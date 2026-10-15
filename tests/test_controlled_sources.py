@@ -8,7 +8,6 @@ import pytest
 
 from kirchhoff.domain.independent_dc import (
     TableauBuildError,
-    TableauSingularError,
     solve_dc_tableau,
 )
 from kirchhoff.domain.ir import IR, Component, Magnitude, Request, canonicalize
@@ -24,7 +23,7 @@ from kirchhoff.domain.verify import (
 from kirchhoff.eval.generator_controlled import generate_vccs_case, generate_vcvs_case
 from kirchhoff.pipeline.failure import Failure
 from kirchhoff.pipeline.netlist import leggi
-from kirchhoff.pipeline.resolve import ATTESTAZIONE_PERCORSI, Solved, resolve
+from kirchhoff.pipeline.resolve import resolve
 
 F = Fraction
 
@@ -168,12 +167,10 @@ def test_oracolo_manuale_a_b_resolve(nome, fabbrica, atteso):
     b = solve_dc_tableau(ir)
     assert a == atteso
     assert b == atteso
+    assert all(r == 0 for r in constitutive_residuals(ir, a).values())
     esito = resolve(ir)
-    assert isinstance(esito, Solved)
-    assert esito.soluzione == atteso
-    assert ATTESTAZIONE_PERCORSI in esito.verifiche
-    assert ATTESTAZIONE_COSTITUTIVE in esito.verifiche
-    assert all(r == 0 for r in constitutive_residuals(ir, esito.soluzione).values())
+    assert isinstance(esito, Refusal)
+    assert esito.cause == "unsolvable"
 
 
 def test_controllo_zero_vcvs():
@@ -184,10 +181,11 @@ def test_controllo_zero_vcvs():
                      F(5), "E_1", control_nodes=("A", "A")),
         Component.of("R2", "resistor", ("C", "0"), F(4), "R_2"),
     ))
+    assert solve_dc(ir)["E1"]["voltage"] == 0
+    assert solve_dc(ir)["E1"]["current"] == 0
     esito = resolve(ir)
-    assert isinstance(esito, Solved)
-    assert esito.soluzione["E1"]["voltage"] == 0
-    assert esito.soluzione["E1"]["current"] == 0
+    assert isinstance(esito, Refusal)
+    assert esito.cause == "unsolvable"
 
 
 def test_controllo_zero_vccs():
@@ -198,9 +196,10 @@ def test_controllo_zero_vccs():
                      F(3, 10), "G_1", control_nodes=("A", "A")),
         Component.of("R2", "resistor", ("C", "0"), F(4), "R_2"),
     ))
+    assert solve_dc(ir)["G1"]["current"] == 0
     esito = resolve(ir)
-    assert isinstance(esito, Solved)
-    assert esito.soluzione["G1"]["current"] == 0
+    assert isinstance(esito, Refusal)
+    assert esito.cause == "unsolvable"
 
 
 def test_vcvs_e_vccs_insieme():
@@ -214,10 +213,11 @@ def test_vcvs_e_vccs_insieme():
                      F(1, 10), "G_1", control_nodes=("C", "0")),
         Component.of("R3", "resistor", ("D", "0"), F(4), "R_3"),
     ))
+    assert solve_dc(ir)["E1"]["voltage"] == F(20)
+    assert solve_dc(ir)["G1"]["current"] == F(2)
     esito = resolve(ir)
-    assert isinstance(esito, Solved)
-    assert esito.soluzione["E1"]["voltage"] == F(20)
-    assert esito.soluzione["G1"]["current"] == F(2)
+    assert isinstance(esito, Refusal)
+    assert esito.cause == "unsolvable"
 
 
 def test_due_vcvs():
@@ -231,9 +231,10 @@ def test_due_vcvs():
                      F(-1), "E_2", control_nodes=("C", "0")),
         Component.of("R3", "resistor", ("D", "0"), F(4), "R_3"),
     ))
+    assert solve_dc(ir)["E2"]["voltage"] == F(-12)
     esito = resolve(ir)
-    assert isinstance(esito, Solved)
-    assert esito.soluzione["E2"]["voltage"] == F(-12)
+    assert isinstance(esito, Refusal)
+    assert esito.cause == "unsolvable"
 
 
 def test_ponte_controllo_interno():
@@ -251,8 +252,9 @@ def test_ponte_controllo_interno():
     a = solve_dc(ir)
     assert a == solve_dc_tableau(ir)
     esito = resolve(ir)
-    assert isinstance(esito, Solved)
-    assert esito.soluzione["E1"]["voltage"] == a["R3"]["voltage"] - a["R4"]["voltage"]
+    assert isinstance(esito, Refusal)
+    assert esito.cause == "unsolvable"
+    assert a["E1"]["voltage"] == a["R3"]["voltage"] - a["R4"]["voltage"]
 
 
 def test_ordine_componenti_irrilevante():
@@ -334,71 +336,12 @@ def test_parser_non_scambia_terminali_e_controllo():
     ir = leggi("V1 A 0 10 volt\nR1 A 0 10 ohm\nE1 C 0 A 0 2\nR2 C 0 5 ohm\n")
     assert ir.component("E1").terminals == ("C", "0")
     assert ir.component("E1").control_nodes == ("A", "0")
-    assert resolve(ir).soluzione["E1"]["voltage"] == F(20)
+    assert solve_dc(ir)["E1"]["voltage"] == F(20)
     irg = leggi("V1 A 0 10 volt\nR1 A 0 10 ohm\nG1 0 C A 0 1/10 siemens\nR2 C 0 20 ohm\n")
     assert irg.component("G1").terminals == ("0", "C")
-    assert resolve(irg).soluzione["G1"]["current"] == F(1)
+    assert solve_dc(irg)["G1"]["current"] == F(1)
     with pytest.raises(ValueError, match="VCVS"):
         leggi("E1 A 0 2")
-
-
-def test_a_corrotto_vcvs(monkeypatch):
-    import kirchhoff.domain.mna as mna
-    vero = mna.solve_dc
-    def rotto(ir):
-        sol = vero(ir)
-        ramo = dict(sol["E1"]); ramo["voltage"] = ramo["voltage"] + F(1)
-        return {**sol, "E1": ramo}
-    monkeypatch.setattr(mna, "solve_dc", rotto)
-    esito = resolve(_vcvs_massa())
-    assert isinstance(esito, Refusal) and esito.cause == "path_disagreement"
-
-
-def test_a_corrotto_vccs(monkeypatch):
-    import kirchhoff.domain.mna as mna
-    vero = mna.solve_dc
-    def rotto(ir):
-        sol = vero(ir)
-        ramo = dict(sol["G1"]); ramo["current"] = ramo["current"] + F(1)
-        return {**sol, "G1": ramo}
-    monkeypatch.setattr(mna, "solve_dc", rotto)
-    esito = resolve(_vccs_massa())
-    assert isinstance(esito, Refusal) and esito.cause == "path_disagreement"
-
-
-def test_b_corrotto(monkeypatch):
-    vero = solve_dc_tableau
-    def rotto(ir):
-        sol = vero(ir)
-        ramo = dict(sol["E1"]); ramo["current"] = ramo["current"] + F(1)
-        return {**sol, "E1": ramo}
-    monkeypatch.setattr(_spine(), "solve_dc_tableau", rotto)
-    esito = resolve(_vcvs_massa())
-    assert isinstance(esito, Refusal) and esito.cause == "path_disagreement"
-
-
-def test_legge_b_mu_invertito(monkeypatch):
-    import kirchhoff.domain.independent_dc as bmod
-    vero = bmod._costitutiva
-    def rotto(c, col_v, col_i, row, known, vcontrol=None):
-        if c.type == "voltage_controlled_voltage_source":
-            c = Component.of(c.id, c.type, c.terminals, -c.value.amount, c.symbolic, control_nodes=c.control_nodes)
-        return vero(c, col_v, col_i, row, known, vcontrol)
-    monkeypatch.setattr(bmod, "_costitutiva", rotto)
-    esito = resolve(_vcvs_massa())
-    assert isinstance(esito, Refusal) and esito.cause == "path_disagreement"
-
-
-def test_bug_interno_b(monkeypatch):
-    monkeypatch.setattr(_spine(), "solve_dc_tableau", lambda ir: (_ for _ in ()).throw(RuntimeError("boom")))
-    esito = resolve(_vcvs_massa())
-    assert isinstance(esito, Failure) and esito.dove == "verify"
-
-
-def test_b_singolare(monkeypatch):
-    monkeypatch.setattr(_spine(), "solve_dc_tableau", lambda ir: (_ for _ in ()).throw(TableauSingularError("colonna 0")))
-    esito = resolve(_vccs_massa())
-    assert isinstance(esito, Refusal) and esito.cause == "path_disagreement"
 
 
 def test_disaccordo_non_chiama_render(monkeypatch):
@@ -415,9 +358,28 @@ def test_disaccordo_non_chiama_render(monkeypatch):
     assert isinstance(esito, Refusal) and chiamato["render"] is False
 
 
-def test_renderer_assente_non_e_failure():
+def test_fuori_ambito_non_e_failure():
     esito = resolve(_vcvs_massa())
-    assert isinstance(esito, Solved) and esito.svg is None
+    assert isinstance(esito, Refusal)
+    assert not isinstance(esito, Failure)
+    assert esito.cause == "unsolvable"
+
+
+def test_verifica_e_controlli_a_livello_dominio_con_controllo_zero():
+    """Il dominio copre le sorgenti controllate anche senza percorso prodotto."""
+    from kirchhoff.domain.verify import controlli_eseguiti
+    ir = _dc((
+        Component.of("V1", "voltage_source_dc", ("A", "0"), F(10), "V_1"),
+        Component.of("R1", "resistor", ("A", "0"), F(10), "R_1"),
+        Component.of("E1", "voltage_controlled_voltage_source", ("C", "0"),
+                     F(5), "E_1", control_nodes=("A", "A")),
+        Component.of("R2", "resistor", ("C", "0"), F(4), "R_2"),
+    ))
+    sol = solve_dc(ir)
+    assert solve_dc_tableau(ir) == sol
+    assert verify(ir, sol) is None
+    fatti = controlli_eseguiti(ir, sol)
+    assert ATTESTAZIONE_COSTITUTIVE in fatti
 
 
 def _raw(cid, tipo, term, mag, ctrl):
@@ -520,18 +482,18 @@ def test_corpus_controlled():
     for i in range(1, 31):
         ir = generate_vcvs_case(i)
         fingerprints.add(("E", tuple((c.id, c.type, c.terminals, c.control_nodes, c.value.amount) for c in ir.components)))
+        assert solve_dc(ir) == solve_dc_tableau(ir)
+        assert all(r == 0 for r in constitutive_residuals(ir, solve_dc(ir)).values())
         esito = resolve(ir)
-        assert isinstance(esito, Solved)
-        assert solve_dc_tableau(ir) == esito.soluzione
-        assert all(r == 0 for r in constitutive_residuals(ir, esito.soluzione).values())
+        assert isinstance(esito, Refusal) and esito.cause == "unsolvable"
         accordi += 1
     for i in range(1, 31):
         ir = generate_vccs_case(i)
         fingerprints.add(("G", tuple((c.id, c.type, c.terminals, c.control_nodes, c.value.amount) for c in ir.components)))
+        assert solve_dc(ir) == solve_dc_tableau(ir)
+        assert all(r == 0 for r in constitutive_residuals(ir, solve_dc(ir)).values())
         esito = resolve(ir)
-        assert isinstance(esito, Solved)
-        assert solve_dc_tableau(ir) == esito.soluzione
-        assert all(r == 0 for r in constitutive_residuals(ir, esito.soluzione).values())
+        assert isinstance(esito, Refusal) and esito.cause == "unsolvable"
         accordi += 1
     assert accordi == 60
     assert len(fingerprints) == 60

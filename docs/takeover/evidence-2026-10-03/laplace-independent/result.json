@@ -1,0 +1,1671 @@
+{
+  "model": "inherited/unknown",
+  "seed": 2026100317,
+  "case_count": 80,
+  "failures": 0,
+  "cases_sha256": "8caa2622aa067f2063e53e7e1f59d49a276180c8a0c709089febce3083818e0f",
+  "oracle_sha256": "62b803e5a6a79bfbbb0c5f9fed30ab44912dd392eedb14c79f0f1233483b4f7a",
+  "expected_sha256": "3cb19330473329bdac76cd85e9f44b3d965ac9b039ace2bea41e02e7a3bbb360",
+  "runner_sha256": "04287f6a8bf2a68e29ec9df117997539368ab99a559c8ce8261ee01a11b8aebe",
+  "adapter_sha256": "18b8dfbaae1074e45a384f56b5dd3fdc77d889609c842b888b556a72ee45a964",
+  "source_manifest_before": {
+    "files": [
+      {
+        "path": "src/kirchhoff/__init__.py",
+        "bytes": 144,
+        "sha256": "35da27bec14d5826bd3b409aca21a2e356b4840fd4d80942a8a174d97af8a76a"
+      },
+      {
+        "path": "src/kirchhoff/adapters/__init__.py",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "src/kirchhoff/api/__init__.py",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "src/kirchhoff/api/app_resource.py",
+        "bytes": 4047,
+        "sha256": "b8f979b66b36df4a0d8abfd1f49f7f9bfa5a74e84ca84b0bbe646d72be2afe2c"
+      },
+      {
+        "path": "src/kirchhoff/api/mcp_server.py",
+        "bytes": 3190,
+        "sha256": "e7ed11b829bdcf3b05117a9c47a3d0efcce0d0bd59ffd11c7c88d4821c21f0b7"
+      },
+      {
+        "path": "src/kirchhoff/config.py",
+        "bytes": 5289,
+        "sha256": "478bbbfebc752ac30c295be42858a1957a0254e47043a4f1131447e0217b3b12"
+      },
+      {
+        "path": "src/kirchhoff/domain/__init__.py",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/__init__.py",
+        "bytes": 3063,
+        "sha256": "7c8f82967734bcf7a8a807f0636b0cf22cad535b3633fc804bed40e38351b3a2"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/analytical.py",
+        "bytes": 23788,
+        "sha256": "9322d5b39c27254ec3aa712de3aef8af82c6d431c3b169f7d3762d2189b7767f"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/capabilities.py",
+        "bytes": 4981,
+        "sha256": "461337468c8e67faf53870e6037f27400f9ed41347d168e595a7a8bba3105da0"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/derivation.py",
+        "bytes": 8755,
+        "sha256": "0d383214f5841cab0148de3c8faa622423e4272b3b6a8f345ff75818628b9da0"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/execute.py",
+        "bytes": 13189,
+        "sha256": "90de84c35e87d29362629bf5ffc4880d3b5bd16dd2ee4798fee5c1b5fba77467"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/kinds.py",
+        "bytes": 880,
+        "sha256": "e29c3e85c3943b8a9143f2cdd93190c9262aae4b0220c3074d2ee71ececf3245"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/observation.py",
+        "bytes": 9665,
+        "sha256": "af22c72a97635791b63da42963c6f9ac7de3276726faec6e3e4810fd62fec3fd"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/orchestrate.py",
+        "bytes": 15215,
+        "sha256": "aad7a80247d6671ec1fb85c38bb0171aac485e8e2e6d849e2726b5f0fe4dee96"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/plan.py",
+        "bytes": 3609,
+        "sha256": "7c1064f3819da1b9127ef6480a21ca2f5d83669e892e642b9bc5e23a7545eaf3"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/planner.py",
+        "bytes": 3569,
+        "sha256": "9d617d3999a4926007717fe291d973bdb2685ee57d248b8f3c9700b37b001eb0"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/request.py",
+        "bytes": 7644,
+        "sha256": "532d6a3daa0b97b43017b9d6b208ad11246fe3a0253516b132716a9083cd723e"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/solve.py",
+        "bytes": 10713,
+        "sha256": "8699edb25333511ae6ea36318cc595e766d9431a2c1e0efb65babf3202a6544c"
+      },
+      {
+        "path": "src/kirchhoff/domain/exact.py",
+        "bytes": 4577,
+        "sha256": "0e2f240a932776324f5ebee1098ff3ad24effd47b5f7fb346a6ef80f4b340530"
+      },
+      {
+        "path": "src/kirchhoff/domain/identity.py",
+        "bytes": 10435,
+        "sha256": "4cc0b7073cb8ed248ba3558a237d7ff9741ed6e35dad0e2ea1d89ac1d0150111"
+      },
+      {
+        "path": "src/kirchhoff/domain/independent_dc.py",
+        "bytes": 10550,
+        "sha256": "b5bf72aec01ad52602b74d40474c026d6dab78df5bb5e52ede1c3306929978ae"
+      },
+      {
+        "path": "src/kirchhoff/domain/independent_phasor.py",
+        "bytes": 5561,
+        "sha256": "8fada4fae431482a8bf3cbf5e0fcb680505085364cab28c19e47dd679be662a5"
+      },
+      {
+        "path": "src/kirchhoff/domain/ir/__init__.py",
+        "bytes": 900,
+        "sha256": "099ddcfb7d3b9ed771375c70e1cfdb4a8a697934e44ac2440e823d1cce66a284"
+      },
+      {
+        "path": "src/kirchhoff/domain/ir/canonical.py",
+        "bytes": 2478,
+        "sha256": "ab96eb0896be154f7eb7dd735423470bc35e6d6d92252ea9d0771862b840e729"
+      },
+      {
+        "path": "src/kirchhoff/domain/ir/schema.py",
+        "bytes": 11906,
+        "sha256": "9d773dd3a423fb38c058065590c5271b0181cf12574ea2e1c3d337d5b7f92c82"
+      },
+      {
+        "path": "src/kirchhoff/domain/mna.py",
+        "bytes": 8596,
+        "sha256": "6f58e4e57d120862376c957bcf18cc1e65bbdfb080a590a3521ead840caed516"
+      },
+      {
+        "path": "src/kirchhoff/domain/port.py",
+        "bytes": 8144,
+        "sha256": "914d341564500a6509ddd18019255f97758420fe9d862c4e0aefd1e98a502b9e"
+      },
+      {
+        "path": "src/kirchhoff/domain/proof/__init__.py",
+        "bytes": 769,
+        "sha256": "85e8510ee298000f15a273a4351617034f359d71d82a4a04c20a7eeef3c9830b"
+      },
+      {
+        "path": "src/kirchhoff/domain/proof/graph.py",
+        "bytes": 14041,
+        "sha256": "8ec9b4a1867127d8352555df8f58e94ca7fc1b2a5c56b28c8bd097db341a1708"
+      },
+      {
+        "path": "src/kirchhoff/domain/proof/session.py",
+        "bytes": 22491,
+        "sha256": "5546ebe78271940a6c5ebb89c55867d918493ddc59e2a2370adbc709cbf7eac4"
+      },
+      {
+        "path": "src/kirchhoff/domain/refusal.py",
+        "bytes": 2416,
+        "sha256": "fae9abb80f6e3da3aa38023a91fb705b764d48b30448f89ae9d2e9d3ce4a653d"
+      },
+      {
+        "path": "src/kirchhoff/domain/student_trace.py",
+        "bytes": 16134,
+        "sha256": "d3fc6b1716688b2bf1a21685ab0bc9d3fb9a69554c93440c7824db541eb49365"
+      },
+      {
+        "path": "src/kirchhoff/domain/transform/__init__.py",
+        "bytes": 2048,
+        "sha256": "7e1a65fe2a44ed22548158f014c0e78182c394613e55fccfe74d3ec69b866a8d"
+      },
+      {
+        "path": "src/kirchhoff/domain/transform/applicability.py",
+        "bytes": 3461,
+        "sha256": "763e7db6676fd060df6fc08b1f826138d8b099251223b52986cb06bcb41b03bf"
+      },
+      {
+        "path": "src/kirchhoff/domain/transform/catalog.py",
+        "bytes": 35089,
+        "sha256": "9ef88f50abca792d84dd797f1840bad6f20e1084564a974a1fe079a9888ae835"
+      },
+      {
+        "path": "src/kirchhoff/domain/transform/check.py",
+        "bytes": 37720,
+        "sha256": "9ffd3bc912ab9a764bf3ab4821b46fbc47921d9a5f65928df57163a164c589e6"
+      },
+      {
+        "path": "src/kirchhoff/domain/transform/delta.py",
+        "bytes": 14041,
+        "sha256": "818776088a239e6177016037d400e3f0f247015efc0f4162aad07c8ac8f8040f"
+      },
+      {
+        "path": "src/kirchhoff/domain/transform/engine.py",
+        "bytes": 33819,
+        "sha256": "a80eaef3d5a383d3a455ac676609dd0b2091f8a3bd94c56d9699aebdfadd3845"
+      },
+      {
+        "path": "src/kirchhoff/domain/transform/primitives.py",
+        "bytes": 12247,
+        "sha256": "722a28fefb651aec2562f30c25d12a9226bdc20ef122cb2846ce611b849dad38"
+      },
+      {
+        "path": "src/kirchhoff/domain/transform/result.py",
+        "bytes": 26061,
+        "sha256": "d803e3c8d4296117ba0e12638fb0accf97d0c6081a96c48eeb838b231098d833"
+      },
+      {
+        "path": "src/kirchhoff/domain/transient.py",
+        "bytes": 2989,
+        "sha256": "9e1e5e28c0972f9271aa14f0190d9a41518c705e40a728fbd8af72609ee37b5c"
+      },
+      {
+        "path": "src/kirchhoff/domain/truthfulness.py",
+        "bytes": 9742,
+        "sha256": "087426dabf0229dc9472886b1bb05e662d8291869bc41d4f3be50fc3cba2e214"
+      },
+      {
+        "path": "src/kirchhoff/domain/two_port.py",
+        "bytes": 6763,
+        "sha256": "4cb9469eb95853adfe80a492f96daae0e6d43951cf6f9b623394315a2dea6fdd"
+      },
+      {
+        "path": "src/kirchhoff/domain/validate.py",
+        "bytes": 9982,
+        "sha256": "15bea3e16278369ab48bb57740063f1ebc4c8e12391be483c1179f0b4d798fd1"
+      },
+      {
+        "path": "src/kirchhoff/domain/verify.py",
+        "bytes": 10770,
+        "sha256": "e1cbc8f23e421f0390b1eb90f037d150a8cc2262a6efa5cb074656186aff5efa"
+      },
+      {
+        "path": "src/kirchhoff/eval/__init__.py",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "src/kirchhoff/eval/cli.py",
+        "bytes": 2857,
+        "sha256": "32aa052c40e0a0fdd653c7c46764a4ad589eb70f3ded831953c10b1811f55b9c"
+      },
+      {
+        "path": "src/kirchhoff/eval/generator.py",
+        "bytes": 4844,
+        "sha256": "0746ab6b8e65c33f9bf57465f1f54a2aeb004d8830c50ca2e3e94d6cc6613021"
+      },
+      {
+        "path": "src/kirchhoff/eval/generator_ac.py",
+        "bytes": 5396,
+        "sha256": "2ae756c4f53f8a9b24f1677eab4b2302f5fc62c3a04c7fce4cff5514453ed55a"
+      },
+      {
+        "path": "src/kirchhoff/eval/generator_controlled.py",
+        "bytes": 8334,
+        "sha256": "625ed8f0f8bcecaad313454af1e458c172d315fa57b61a2492b0eb4f1972c9c2"
+      },
+      {
+        "path": "src/kirchhoff/eval/generator_three_phase.py",
+        "bytes": 5767,
+        "sha256": "48e7634ae865eb959710bef0b74a93c5c09f44c23cc9b0967dffca3d3bab46b8"
+      },
+      {
+        "path": "src/kirchhoff/eval/generator_transient.py",
+        "bytes": 7371,
+        "sha256": "76080fef1897fe69ba5e7ffa5839572d786fd9fe4d984e59d784d4964bbd4814"
+      },
+      {
+        "path": "src/kirchhoff/eval/metrics.py",
+        "bytes": 6178,
+        "sha256": "61078d2ee08abcf30d03dfee3863962180cea430a8146641f0f7881cfa8f485f"
+      },
+      {
+        "path": "src/kirchhoff/eval/reference_set.py",
+        "bytes": 12216,
+        "sha256": "93ed846c80b8d45fb008b797e762a506819f75e6c6d2654c6fcbc0b8298e5479"
+      },
+      {
+        "path": "src/kirchhoff/eval/transformations.py",
+        "bytes": 2168,
+        "sha256": "b585116af0b568d33476496ec29a222364ad2cd5e23ca0ba604d538852ff1827"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/__init__.py",
+        "bytes": 666,
+        "sha256": "50e1bab960176145bbbe9a60b8ef36ae7706f033ac1d30b22b91fe1cbec397fb"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/capabilities.py",
+        "bytes": 4588,
+        "sha256": "d74e68b19daa003269199f0e67a433abc2fc36675ca2f66c3133d194330f13ce"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/circuitikz.py",
+        "bytes": 4855,
+        "sha256": "81208a05522de89e3e021f0f19b2dcf1907c3a704253b314ee8eef82b45ce90b"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/cli.py",
+        "bytes": 4996,
+        "sha256": "bcc7d28d6e733ef343eae1a1719e2ffdfa22e10378886475f014f3cf9e747d05"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/failure.py",
+        "bytes": 995,
+        "sha256": "3d9b4d60751161ca20bc10ed007674ac2d23539130cf0758dc8e2af69aabe3fe"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/image_revision.py",
+        "bytes": 5875,
+        "sha256": "be1615f06d117b132bbae1f830b91d0ddd2c89c0a322cd13ce5fdbe231d2d379"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson.py",
+        "bytes": 41510,
+        "sha256": "0cb19142cc9bbaa78d2387a12369606be303bf604b699795696d2a4439b90b87"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_ac.py",
+        "bytes": 25278,
+        "sha256": "2563630cec81165d520b466da66c2ce2daf536f473728446e570c7808fcbe544"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_ac_algebra.py",
+        "bytes": 6953,
+        "sha256": "992a55a5b86b404fa945986fdf980c1fc36b78a6c223e5cd6e11c3c9c65cecc1"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_ac_algebra_check.py",
+        "bytes": 11973,
+        "sha256": "114978589c083302e2ea87f1cded1238cdfa82bc46d9c6c0b9b08837a0735aaa"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_ac_port.py",
+        "bytes": 11893,
+        "sha256": "e03309a52ef44a3f9fd4d024ac7e572d40969707e6d0ac6872aa07faf88f38d6"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_ac_power.py",
+        "bytes": 2708,
+        "sha256": "f2966b54736e7218506878e07fd155dea9dea25ea1db8194c068b87fbd840cab"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_bridge.py",
+        "bytes": 7941,
+        "sha256": "2d94ee62a1de7235019db52b779512b5f26b9e128b8938f9f6bc34fc1089e082"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_math.py",
+        "bytes": 4539,
+        "sha256": "20a3fe9ee1a064e23cf094fa3de3c5466a0e868cb3beb2e01c7b3e88e9e15a09"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_pdf.py",
+        "bytes": 10071,
+        "sha256": "aa95089f23450167974e5b87f12b27761aefaa633fe703de52ace4f80a81f32c"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_pdf_math.py",
+        "bytes": 8645,
+        "sha256": "3ce3e4e3d03a232ff771e0a23301e876cadc5af54c75287b984f8ec1cc86b6d3"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_svg.py",
+        "bytes": 13467,
+        "sha256": "1a8bc3d74041c5ae4ed653975b5a4a7a27fe7fb5efeaa526aabf75bbac6e3651"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/netlist.py",
+        "bytes": 11388,
+        "sha256": "6fcbd1212592e027fa1f29c9fc905862ac8af896feff99226a5e0b4d2b8d50ce"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/presentation.py",
+        "bytes": 21069,
+        "sha256": "f2752690009a35e550e3b7fcd76f42d51f65d37d5bb4ac7ab1ad45a117388d3a"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/proof_run.py",
+        "bytes": 11738,
+        "sha256": "34d58a716dfc106a88a44e0c2fcea7ed9662b7542208ec176e5f4197a77a045a"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/proof_session.py",
+        "bytes": 13334,
+        "sha256": "a825d4fe505557805c08dd5baefa432f78634fe000fa42c9f8d0a3add00fa6d4"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/resolve.py",
+        "bytes": 8591,
+        "sha256": "ed3e66adf3639a6d49e47bac8294ee8040a3268cfb203ab1c0da5a6a219f3f32"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/risolvi.py",
+        "bytes": 4054,
+        "sha256": "ea4c3ece52ac4df4ec6a589da786c259b535e035793d45f68fbe4e370ba3e558"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/spice.py",
+        "bytes": 8242,
+        "sha256": "1d832a896e0287153612c33f7fb9aa2bb441c8af17566e0adaea54e61a56804c"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/state_registry.py",
+        "bytes": 10452,
+        "sha256": "9fe82a75ddc4435fffbeaf344df4d7588a717dcaf5eb7f739551e3959d3664d2"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/student_trace.py",
+        "bytes": 1124,
+        "sha256": "ebebf0569fdb69ba54022222789a2b5787c979dba6f53644f98f215362198ff0"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/vision_response.py",
+        "bytes": 5678,
+        "sha256": "b80e725b51542a85d814a61689c84eb9b1f28bd3d5ed67ad0c8cfc581f026fbd"
+      },
+      {
+        "path": "src/kirchhoff/ports/__init__.py",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "src/kirchhoff/ports/clock.py",
+        "bytes": 760,
+        "sha256": "10d2dda140abbbba33039e892c76c9e51b9d37dab59c2e8e64448f6aa8c25604"
+      },
+      {
+        "path": "src/kirchhoff/render/__init__.py",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "src/kirchhoff/render/layout/__init__.py",
+        "bytes": 3098,
+        "sha256": "b2eea3d85c0eccabdcdc0584744e1150449ad5614216ee79c372beedff7fec83"
+      },
+      {
+        "path": "src/kirchhoff/render/layout/apply.py",
+        "bytes": 13301,
+        "sha256": "3d2b3d174f8fbc1fbcad9252a47a8803961c2aa0eb96ee363c96b9bfbfe561b4"
+      },
+      {
+        "path": "src/kirchhoff/render/layout/connected.py",
+        "bytes": 4236,
+        "sha256": "d29c9952d978ae8da95913017782238d9ea94c40e92d222980dc52b653bb7fea"
+      },
+      {
+        "path": "src/kirchhoff/render/layout/continuity.py",
+        "bytes": 5590,
+        "sha256": "69ab99e81ce79a381e3669fe5dfe28c503961086913cf209a71d3c07d9a10364"
+      },
+      {
+        "path": "src/kirchhoff/render/layout/schema.py",
+        "bytes": 7378,
+        "sha256": "7134bf9a1fd3430a503d0ef5bdd71c1bf9f09bc691620d688d79c67a68fc1c76"
+      },
+      {
+        "path": "src/kirchhoff/render/layout/store.py",
+        "bytes": 10242,
+        "sha256": "3b9c1daacb134de81ab3cd2b2e356a329bda2f467c5d10bff17f7d2ac6e8965b"
+      },
+      {
+        "path": "src/kirchhoff/render/overlay/__init__.py",
+        "bytes": 711,
+        "sha256": "71d428e27cb2ed985d9b9105697414270838d3ec39fbd1d5ad0610b63b50d7c4"
+      },
+      {
+        "path": "src/kirchhoff/render/overlay/schema.py",
+        "bytes": 11364,
+        "sha256": "e86e92b886e9942cb51b0eeb52e18ea5010201388730ede89c2d3871c74dbb56"
+      },
+      {
+        "path": "src/kirchhoff/render/serialize/__init__.py",
+        "bytes": 641,
+        "sha256": "c0754c2c62d28b8edafacfa8d7c25b5a2315e8154bde29f78da89642ae0b1665"
+      },
+      {
+        "path": "src/kirchhoff/render/serialize/connectivity.py",
+        "bytes": 12380,
+        "sha256": "2c67e129ada91d3c4f720c67d9c2eb1e00914422738dd1bfe55f76df2f66ab5e"
+      },
+      {
+        "path": "src/kirchhoff/render/serialize/geometry.py",
+        "bytes": 27280,
+        "sha256": "e54d349befb3aa90512cdb3ce261ca0c44ec63bdb394aa996aa1bdbaefab751c"
+      },
+      {
+        "path": "src/kirchhoff/render/serialize/svg.py",
+        "bytes": 52171,
+        "sha256": "1cb0ec9c464b05f0fbafaf82252748672472b93db50e6fe3d7608c547fb273a5"
+      },
+      {
+        "path": "src/kirchhoff/render/step/__init__.py",
+        "bytes": 1308,
+        "sha256": "95d91bcd2a341c3239713aefb1a6bbeac1b28d319f0a5acff55d0481f2d28a29"
+      },
+      {
+        "path": "src/kirchhoff/render/step/compose.py",
+        "bytes": 5484,
+        "sha256": "f80f56965a86b5bcd9f2327f2f1e6e381d585c64405a8c74c4efaab5033b7325"
+      },
+      {
+        "path": "src/kirchhoff/render/step/schema.py",
+        "bytes": 29932,
+        "sha256": "3b16b9c0ab74770ce77fb9a20ce62f746a631b936221485876260cb01ab10970"
+      },
+      {
+        "path": "src/kirchhoff/runtime_identity.py",
+        "bytes": 3405,
+        "sha256": "20d7064a09ce59b4de5fccb4e839db4a2d1530eb106e62e859e62d8c53d7b038"
+      },
+      {
+        "path": "pyproject.toml",
+        "bytes": 1222,
+        "sha256": "5e2e7efe31f55df621629517a922871806b298381f05caa3ed873b36c5a615fd"
+      }
+    ],
+    "sha256": "20907b75112794f0ebac404716433e9265b534b8432a88baad1467ba70940726"
+  },
+  "source_manifest_after": {
+    "files": [
+      {
+        "path": "src/kirchhoff/__init__.py",
+        "bytes": 144,
+        "sha256": "35da27bec14d5826bd3b409aca21a2e356b4840fd4d80942a8a174d97af8a76a"
+      },
+      {
+        "path": "src/kirchhoff/adapters/__init__.py",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "src/kirchhoff/api/__init__.py",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "src/kirchhoff/api/app_resource.py",
+        "bytes": 4047,
+        "sha256": "b8f979b66b36df4a0d8abfd1f49f7f9bfa5a74e84ca84b0bbe646d72be2afe2c"
+      },
+      {
+        "path": "src/kirchhoff/api/mcp_server.py",
+        "bytes": 3190,
+        "sha256": "e7ed11b829bdcf3b05117a9c47a3d0efcce0d0bd59ffd11c7c88d4821c21f0b7"
+      },
+      {
+        "path": "src/kirchhoff/config.py",
+        "bytes": 5289,
+        "sha256": "478bbbfebc752ac30c295be42858a1957a0254e47043a4f1131447e0217b3b12"
+      },
+      {
+        "path": "src/kirchhoff/domain/__init__.py",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/__init__.py",
+        "bytes": 3063,
+        "sha256": "7c8f82967734bcf7a8a807f0636b0cf22cad535b3633fc804bed40e38351b3a2"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/analytical.py",
+        "bytes": 23788,
+        "sha256": "9322d5b39c27254ec3aa712de3aef8af82c6d431c3b169f7d3762d2189b7767f"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/capabilities.py",
+        "bytes": 4981,
+        "sha256": "461337468c8e67faf53870e6037f27400f9ed41347d168e595a7a8bba3105da0"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/derivation.py",
+        "bytes": 8755,
+        "sha256": "0d383214f5841cab0148de3c8faa622423e4272b3b6a8f345ff75818628b9da0"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/execute.py",
+        "bytes": 13189,
+        "sha256": "90de84c35e87d29362629bf5ffc4880d3b5bd16dd2ee4798fee5c1b5fba77467"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/kinds.py",
+        "bytes": 880,
+        "sha256": "e29c3e85c3943b8a9143f2cdd93190c9262aae4b0220c3074d2ee71ececf3245"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/observation.py",
+        "bytes": 9665,
+        "sha256": "af22c72a97635791b63da42963c6f9ac7de3276726faec6e3e4810fd62fec3fd"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/orchestrate.py",
+        "bytes": 15215,
+        "sha256": "aad7a80247d6671ec1fb85c38bb0171aac485e8e2e6d849e2726b5f0fe4dee96"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/plan.py",
+        "bytes": 3609,
+        "sha256": "7c1064f3819da1b9127ef6480a21ca2f5d83669e892e642b9bc5e23a7545eaf3"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/planner.py",
+        "bytes": 3569,
+        "sha256": "9d617d3999a4926007717fe291d973bdb2685ee57d248b8f3c9700b37b001eb0"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/request.py",
+        "bytes": 7644,
+        "sha256": "532d6a3daa0b97b43017b9d6b208ad11246fe3a0253516b132716a9083cd723e"
+      },
+      {
+        "path": "src/kirchhoff/domain/didactic/solve.py",
+        "bytes": 10713,
+        "sha256": "8699edb25333511ae6ea36318cc595e766d9431a2c1e0efb65babf3202a6544c"
+      },
+      {
+        "path": "src/kirchhoff/domain/exact.py",
+        "bytes": 4577,
+        "sha256": "0e2f240a932776324f5ebee1098ff3ad24effd47b5f7fb346a6ef80f4b340530"
+      },
+      {
+        "path": "src/kirchhoff/domain/identity.py",
+        "bytes": 10435,
+        "sha256": "4cc0b7073cb8ed248ba3558a237d7ff9741ed6e35dad0e2ea1d89ac1d0150111"
+      },
+      {
+        "path": "src/kirchhoff/domain/independent_dc.py",
+        "bytes": 10550,
+        "sha256": "b5bf72aec01ad52602b74d40474c026d6dab78df5bb5e52ede1c3306929978ae"
+      },
+      {
+        "path": "src/kirchhoff/domain/independent_phasor.py",
+        "bytes": 5561,
+        "sha256": "8fada4fae431482a8bf3cbf5e0fcb680505085364cab28c19e47dd679be662a5"
+      },
+      {
+        "path": "src/kirchhoff/domain/ir/__init__.py",
+        "bytes": 900,
+        "sha256": "099ddcfb7d3b9ed771375c70e1cfdb4a8a697934e44ac2440e823d1cce66a284"
+      },
+      {
+        "path": "src/kirchhoff/domain/ir/canonical.py",
+        "bytes": 2478,
+        "sha256": "ab96eb0896be154f7eb7dd735423470bc35e6d6d92252ea9d0771862b840e729"
+      },
+      {
+        "path": "src/kirchhoff/domain/ir/schema.py",
+        "bytes": 11906,
+        "sha256": "9d773dd3a423fb38c058065590c5271b0181cf12574ea2e1c3d337d5b7f92c82"
+      },
+      {
+        "path": "src/kirchhoff/domain/mna.py",
+        "bytes": 8596,
+        "sha256": "6f58e4e57d120862376c957bcf18cc1e65bbdfb080a590a3521ead840caed516"
+      },
+      {
+        "path": "src/kirchhoff/domain/port.py",
+        "bytes": 8144,
+        "sha256": "914d341564500a6509ddd18019255f97758420fe9d862c4e0aefd1e98a502b9e"
+      },
+      {
+        "path": "src/kirchhoff/domain/proof/__init__.py",
+        "bytes": 769,
+        "sha256": "85e8510ee298000f15a273a4351617034f359d71d82a4a04c20a7eeef3c9830b"
+      },
+      {
+        "path": "src/kirchhoff/domain/proof/graph.py",
+        "bytes": 14041,
+        "sha256": "8ec9b4a1867127d8352555df8f58e94ca7fc1b2a5c56b28c8bd097db341a1708"
+      },
+      {
+        "path": "src/kirchhoff/domain/proof/session.py",
+        "bytes": 22491,
+        "sha256": "5546ebe78271940a6c5ebb89c55867d918493ddc59e2a2370adbc709cbf7eac4"
+      },
+      {
+        "path": "src/kirchhoff/domain/refusal.py",
+        "bytes": 2416,
+        "sha256": "fae9abb80f6e3da3aa38023a91fb705b764d48b30448f89ae9d2e9d3ce4a653d"
+      },
+      {
+        "path": "src/kirchhoff/domain/student_trace.py",
+        "bytes": 16134,
+        "sha256": "d3fc6b1716688b2bf1a21685ab0bc9d3fb9a69554c93440c7824db541eb49365"
+      },
+      {
+        "path": "src/kirchhoff/domain/transform/__init__.py",
+        "bytes": 2048,
+        "sha256": "7e1a65fe2a44ed22548158f014c0e78182c394613e55fccfe74d3ec69b866a8d"
+      },
+      {
+        "path": "src/kirchhoff/domain/transform/applicability.py",
+        "bytes": 3461,
+        "sha256": "763e7db6676fd060df6fc08b1f826138d8b099251223b52986cb06bcb41b03bf"
+      },
+      {
+        "path": "src/kirchhoff/domain/transform/catalog.py",
+        "bytes": 35089,
+        "sha256": "9ef88f50abca792d84dd797f1840bad6f20e1084564a974a1fe079a9888ae835"
+      },
+      {
+        "path": "src/kirchhoff/domain/transform/check.py",
+        "bytes": 37720,
+        "sha256": "9ffd3bc912ab9a764bf3ab4821b46fbc47921d9a5f65928df57163a164c589e6"
+      },
+      {
+        "path": "src/kirchhoff/domain/transform/delta.py",
+        "bytes": 14041,
+        "sha256": "818776088a239e6177016037d400e3f0f247015efc0f4162aad07c8ac8f8040f"
+      },
+      {
+        "path": "src/kirchhoff/domain/transform/engine.py",
+        "bytes": 33819,
+        "sha256": "a80eaef3d5a383d3a455ac676609dd0b2091f8a3bd94c56d9699aebdfadd3845"
+      },
+      {
+        "path": "src/kirchhoff/domain/transform/primitives.py",
+        "bytes": 12247,
+        "sha256": "722a28fefb651aec2562f30c25d12a9226bdc20ef122cb2846ce611b849dad38"
+      },
+      {
+        "path": "src/kirchhoff/domain/transform/result.py",
+        "bytes": 26061,
+        "sha256": "d803e3c8d4296117ba0e12638fb0accf97d0c6081a96c48eeb838b231098d833"
+      },
+      {
+        "path": "src/kirchhoff/domain/transient.py",
+        "bytes": 2989,
+        "sha256": "9e1e5e28c0972f9271aa14f0190d9a41518c705e40a728fbd8af72609ee37b5c"
+      },
+      {
+        "path": "src/kirchhoff/domain/truthfulness.py",
+        "bytes": 9742,
+        "sha256": "087426dabf0229dc9472886b1bb05e662d8291869bc41d4f3be50fc3cba2e214"
+      },
+      {
+        "path": "src/kirchhoff/domain/two_port.py",
+        "bytes": 6763,
+        "sha256": "4cb9469eb95853adfe80a492f96daae0e6d43951cf6f9b623394315a2dea6fdd"
+      },
+      {
+        "path": "src/kirchhoff/domain/validate.py",
+        "bytes": 9982,
+        "sha256": "15bea3e16278369ab48bb57740063f1ebc4c8e12391be483c1179f0b4d798fd1"
+      },
+      {
+        "path": "src/kirchhoff/domain/verify.py",
+        "bytes": 10770,
+        "sha256": "e1cbc8f23e421f0390b1eb90f037d150a8cc2262a6efa5cb074656186aff5efa"
+      },
+      {
+        "path": "src/kirchhoff/eval/__init__.py",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "src/kirchhoff/eval/cli.py",
+        "bytes": 2857,
+        "sha256": "32aa052c40e0a0fdd653c7c46764a4ad589eb70f3ded831953c10b1811f55b9c"
+      },
+      {
+        "path": "src/kirchhoff/eval/generator.py",
+        "bytes": 4844,
+        "sha256": "0746ab6b8e65c33f9bf57465f1f54a2aeb004d8830c50ca2e3e94d6cc6613021"
+      },
+      {
+        "path": "src/kirchhoff/eval/generator_ac.py",
+        "bytes": 5396,
+        "sha256": "2ae756c4f53f8a9b24f1677eab4b2302f5fc62c3a04c7fce4cff5514453ed55a"
+      },
+      {
+        "path": "src/kirchhoff/eval/generator_controlled.py",
+        "bytes": 8334,
+        "sha256": "625ed8f0f8bcecaad313454af1e458c172d315fa57b61a2492b0eb4f1972c9c2"
+      },
+      {
+        "path": "src/kirchhoff/eval/generator_three_phase.py",
+        "bytes": 5767,
+        "sha256": "48e7634ae865eb959710bef0b74a93c5c09f44c23cc9b0967dffca3d3bab46b8"
+      },
+      {
+        "path": "src/kirchhoff/eval/generator_transient.py",
+        "bytes": 7371,
+        "sha256": "76080fef1897fe69ba5e7ffa5839572d786fd9fe4d984e59d784d4964bbd4814"
+      },
+      {
+        "path": "src/kirchhoff/eval/metrics.py",
+        "bytes": 6178,
+        "sha256": "61078d2ee08abcf30d03dfee3863962180cea430a8146641f0f7881cfa8f485f"
+      },
+      {
+        "path": "src/kirchhoff/eval/reference_set.py",
+        "bytes": 12216,
+        "sha256": "93ed846c80b8d45fb008b797e762a506819f75e6c6d2654c6fcbc0b8298e5479"
+      },
+      {
+        "path": "src/kirchhoff/eval/transformations.py",
+        "bytes": 2168,
+        "sha256": "b585116af0b568d33476496ec29a222364ad2cd5e23ca0ba604d538852ff1827"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/__init__.py",
+        "bytes": 666,
+        "sha256": "50e1bab960176145bbbe9a60b8ef36ae7706f033ac1d30b22b91fe1cbec397fb"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/capabilities.py",
+        "bytes": 4588,
+        "sha256": "d74e68b19daa003269199f0e67a433abc2fc36675ca2f66c3133d194330f13ce"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/circuitikz.py",
+        "bytes": 4855,
+        "sha256": "81208a05522de89e3e021f0f19b2dcf1907c3a704253b314ee8eef82b45ce90b"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/cli.py",
+        "bytes": 4996,
+        "sha256": "bcc7d28d6e733ef343eae1a1719e2ffdfa22e10378886475f014f3cf9e747d05"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/failure.py",
+        "bytes": 995,
+        "sha256": "3d9b4d60751161ca20bc10ed007674ac2d23539130cf0758dc8e2af69aabe3fe"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/image_revision.py",
+        "bytes": 5875,
+        "sha256": "be1615f06d117b132bbae1f830b91d0ddd2c89c0a322cd13ce5fdbe231d2d379"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson.py",
+        "bytes": 41510,
+        "sha256": "0cb19142cc9bbaa78d2387a12369606be303bf604b699795696d2a4439b90b87"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_ac.py",
+        "bytes": 25278,
+        "sha256": "2563630cec81165d520b466da66c2ce2daf536f473728446e570c7808fcbe544"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_ac_algebra.py",
+        "bytes": 6953,
+        "sha256": "992a55a5b86b404fa945986fdf980c1fc36b78a6c223e5cd6e11c3c9c65cecc1"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_ac_algebra_check.py",
+        "bytes": 11973,
+        "sha256": "114978589c083302e2ea87f1cded1238cdfa82bc46d9c6c0b9b08837a0735aaa"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_ac_port.py",
+        "bytes": 11893,
+        "sha256": "e03309a52ef44a3f9fd4d024ac7e572d40969707e6d0ac6872aa07faf88f38d6"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_ac_power.py",
+        "bytes": 2708,
+        "sha256": "f2966b54736e7218506878e07fd155dea9dea25ea1db8194c068b87fbd840cab"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_bridge.py",
+        "bytes": 7941,
+        "sha256": "2d94ee62a1de7235019db52b779512b5f26b9e128b8938f9f6bc34fc1089e082"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_math.py",
+        "bytes": 4539,
+        "sha256": "20a3fe9ee1a064e23cf094fa3de3c5466a0e868cb3beb2e01c7b3e88e9e15a09"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_pdf.py",
+        "bytes": 10071,
+        "sha256": "aa95089f23450167974e5b87f12b27761aefaa633fe703de52ace4f80a81f32c"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_pdf_math.py",
+        "bytes": 8645,
+        "sha256": "3ce3e4e3d03a232ff771e0a23301e876cadc5af54c75287b984f8ec1cc86b6d3"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/lesson_svg.py",
+        "bytes": 13467,
+        "sha256": "1a8bc3d74041c5ae4ed653975b5a4a7a27fe7fb5efeaa526aabf75bbac6e3651"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/netlist.py",
+        "bytes": 11388,
+        "sha256": "6fcbd1212592e027fa1f29c9fc905862ac8af896feff99226a5e0b4d2b8d50ce"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/presentation.py",
+        "bytes": 21069,
+        "sha256": "f2752690009a35e550e3b7fcd76f42d51f65d37d5bb4ac7ab1ad45a117388d3a"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/proof_run.py",
+        "bytes": 11738,
+        "sha256": "34d58a716dfc106a88a44e0c2fcea7ed9662b7542208ec176e5f4197a77a045a"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/proof_session.py",
+        "bytes": 13334,
+        "sha256": "a825d4fe505557805c08dd5baefa432f78634fe000fa42c9f8d0a3add00fa6d4"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/resolve.py",
+        "bytes": 8591,
+        "sha256": "ed3e66adf3639a6d49e47bac8294ee8040a3268cfb203ab1c0da5a6a219f3f32"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/risolvi.py",
+        "bytes": 4054,
+        "sha256": "ea4c3ece52ac4df4ec6a589da786c259b535e035793d45f68fbe4e370ba3e558"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/spice.py",
+        "bytes": 8242,
+        "sha256": "1d832a896e0287153612c33f7fb9aa2bb441c8af17566e0adaea54e61a56804c"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/state_registry.py",
+        "bytes": 10452,
+        "sha256": "9fe82a75ddc4435fffbeaf344df4d7588a717dcaf5eb7f739551e3959d3664d2"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/student_trace.py",
+        "bytes": 1124,
+        "sha256": "ebebf0569fdb69ba54022222789a2b5787c979dba6f53644f98f215362198ff0"
+      },
+      {
+        "path": "src/kirchhoff/pipeline/vision_response.py",
+        "bytes": 5678,
+        "sha256": "b80e725b51542a85d814a61689c84eb9b1f28bd3d5ed67ad0c8cfc581f026fbd"
+      },
+      {
+        "path": "src/kirchhoff/ports/__init__.py",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "src/kirchhoff/ports/clock.py",
+        "bytes": 760,
+        "sha256": "10d2dda140abbbba33039e892c76c9e51b9d37dab59c2e8e64448f6aa8c25604"
+      },
+      {
+        "path": "src/kirchhoff/render/__init__.py",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "src/kirchhoff/render/layout/__init__.py",
+        "bytes": 3098,
+        "sha256": "b2eea3d85c0eccabdcdc0584744e1150449ad5614216ee79c372beedff7fec83"
+      },
+      {
+        "path": "src/kirchhoff/render/layout/apply.py",
+        "bytes": 13301,
+        "sha256": "3d2b3d174f8fbc1fbcad9252a47a8803961c2aa0eb96ee363c96b9bfbfe561b4"
+      },
+      {
+        "path": "src/kirchhoff/render/layout/connected.py",
+        "bytes": 4236,
+        "sha256": "d29c9952d978ae8da95913017782238d9ea94c40e92d222980dc52b653bb7fea"
+      },
+      {
+        "path": "src/kirchhoff/render/layout/continuity.py",
+        "bytes": 5590,
+        "sha256": "69ab99e81ce79a381e3669fe5dfe28c503961086913cf209a71d3c07d9a10364"
+      },
+      {
+        "path": "src/kirchhoff/render/layout/schema.py",
+        "bytes": 7378,
+        "sha256": "7134bf9a1fd3430a503d0ef5bdd71c1bf9f09bc691620d688d79c67a68fc1c76"
+      },
+      {
+        "path": "src/kirchhoff/render/layout/store.py",
+        "bytes": 10242,
+        "sha256": "3b9c1daacb134de81ab3cd2b2e356a329bda2f467c5d10bff17f7d2ac6e8965b"
+      },
+      {
+        "path": "src/kirchhoff/render/overlay/__init__.py",
+        "bytes": 711,
+        "sha256": "71d428e27cb2ed985d9b9105697414270838d3ec39fbd1d5ad0610b63b50d7c4"
+      },
+      {
+        "path": "src/kirchhoff/render/overlay/schema.py",
+        "bytes": 11364,
+        "sha256": "e86e92b886e9942cb51b0eeb52e18ea5010201388730ede89c2d3871c74dbb56"
+      },
+      {
+        "path": "src/kirchhoff/render/serialize/__init__.py",
+        "bytes": 641,
+        "sha256": "c0754c2c62d28b8edafacfa8d7c25b5a2315e8154bde29f78da89642ae0b1665"
+      },
+      {
+        "path": "src/kirchhoff/render/serialize/connectivity.py",
+        "bytes": 12380,
+        "sha256": "2c67e129ada91d3c4f720c67d9c2eb1e00914422738dd1bfe55f76df2f66ab5e"
+      },
+      {
+        "path": "src/kirchhoff/render/serialize/geometry.py",
+        "bytes": 27280,
+        "sha256": "e54d349befb3aa90512cdb3ce261ca0c44ec63bdb394aa996aa1bdbaefab751c"
+      },
+      {
+        "path": "src/kirchhoff/render/serialize/svg.py",
+        "bytes": 52171,
+        "sha256": "1cb0ec9c464b05f0fbafaf82252748672472b93db50e6fe3d7608c547fb273a5"
+      },
+      {
+        "path": "src/kirchhoff/render/step/__init__.py",
+        "bytes": 1308,
+        "sha256": "95d91bcd2a341c3239713aefb1a6bbeac1b28d319f0a5acff55d0481f2d28a29"
+      },
+      {
+        "path": "src/kirchhoff/render/step/compose.py",
+        "bytes": 5484,
+        "sha256": "f80f56965a86b5bcd9f2327f2f1e6e381d585c64405a8c74c4efaab5033b7325"
+      },
+      {
+        "path": "src/kirchhoff/render/step/schema.py",
+        "bytes": 29932,
+        "sha256": "3b16b9c0ab74770ce77fb9a20ce62f746a631b936221485876260cb01ab10970"
+      },
+      {
+        "path": "src/kirchhoff/runtime_identity.py",
+        "bytes": 3405,
+        "sha256": "20d7064a09ce59b4de5fccb4e839db4a2d1530eb106e62e859e62d8c53d7b038"
+      },
+      {
+        "path": "pyproject.toml",
+        "bytes": 1222,
+        "sha256": "5e2e7efe31f55df621629517a922871806b298381f05caa3ed873b36c5a615fd"
+      }
+    ],
+    "sha256": "20907b75112794f0ebac404716433e9265b534b8432a88baad1467ba70940726"
+  },
+  "source_unchanged": true,
+  "staging_manifest_before": {
+    "files": [
+      {
+        "path": "laplace.py",
+        "bytes": 11319,
+        "sha256": "f1fe3a43c8e778e690bb49200782d64f9dbf4ea09167672db76cc96db79c6c5e"
+      },
+      {
+        "path": "laplace_rational.py",
+        "bytes": 7931,
+        "sha256": "e9ebdb4a9b31a8975be58877514db957a34454c62fca97ae2d4b6d623729ea6f"
+      },
+      {
+        "path": "test_laplace.py",
+        "bytes": 10531,
+        "sha256": "07a760fc0920d45bca9df505efae577bac0367e5beb3e5df80a362145f79ddd6"
+      },
+      {
+        "path": "test_rational.py",
+        "bytes": 4478,
+        "sha256": "89852f52dd68d08e6ba0bcb50b61e2e75d920f2687404b53c5af24dd3a6dab94"
+      }
+    ],
+    "sha256": "f4278a3fa6fdd79f5ae027f84024a5206c46f4a9c94e8df99b21d89e7d0fffb9"
+  },
+  "staging_manifest_after": {
+    "files": [
+      {
+        "path": "laplace.py",
+        "bytes": 11319,
+        "sha256": "f1fe3a43c8e778e690bb49200782d64f9dbf4ea09167672db76cc96db79c6c5e"
+      },
+      {
+        "path": "laplace_rational.py",
+        "bytes": 7931,
+        "sha256": "e9ebdb4a9b31a8975be58877514db957a34454c62fca97ae2d4b6d623729ea6f"
+      },
+      {
+        "path": "test_laplace.py",
+        "bytes": 10531,
+        "sha256": "07a760fc0920d45bca9df505efae577bac0367e5beb3e5df80a362145f79ddd6"
+      },
+      {
+        "path": "test_rational.py",
+        "bytes": 4478,
+        "sha256": "89852f52dd68d08e6ba0bcb50b61e2e75d920f2687404b53c5af24dd3a6dab94"
+      }
+    ],
+    "sha256": "f4278a3fa6fdd79f5ae027f84024a5206c46f4a9c94e8df99b21d89e7d0fffb9"
+  },
+  "staging_unchanged": true,
+  "responses_sha256": "55b82d6d67c37d1dc0ea294085d716c791e97c47665a65a363f71d4888a2ea4f",
+  "assurance_scope": "kernel rational response; no time inversion, lesson/PDF or product verification inferred",
+  "now_a_regression_suite": true,
+  "response_mutations": [
+    {
+      "mutation": "capacitor_current_sign",
+      "rejected": true
+    },
+    {
+      "mutation": "missing_initial_contribution",
+      "rejected": true
+    },
+    {
+      "mutation": "extra_s",
+      "rejected": true
+    }
+  ],
+  "results": [
+    {
+      "id": "rc_step/base",
+      "status": "passed",
+      "response_sha256": "f33fa52a953ec87fa335e3764795a8d4ff5d22bb3ede60322437ddc4456a19f2",
+      "response_bytes": 3258,
+      "max_scaled_error": 8.821617130939291e-16
+    },
+    {
+      "id": "rc_step/reordered",
+      "status": "passed",
+      "response_sha256": "3217c9f6c60ecbb49bb76d7c86bb6db3299f2cd9b46ccf9098068b1a892cb759",
+      "response_bytes": 3263,
+      "max_scaled_error": 5.551115123125783e-16
+    },
+    {
+      "id": "rc_step/directions_reversed",
+      "status": "passed",
+      "response_sha256": "6c4b5c5ee6283be8b4f40195d6c32b9cd733abaa2bef5314f74ae890854987c5",
+      "response_bytes": 3281,
+      "max_scaled_error": 8.821617130939291e-16
+    },
+    {
+      "id": "rc_step/source_metadata_changed",
+      "status": "passed",
+      "response_sha256": "b62ee67190bf6a02fb0c40c3239ada65a9c3d2c4adee0e9c8710ada2bea36ce2",
+      "response_bytes": 3277,
+      "max_scaled_error": 8.821617130939291e-16
+    },
+    {
+      "id": "rc_step/time_scaled",
+      "status": "passed",
+      "response_sha256": "bbce251369522ee80b8c3936c8eec9a874d338548b737c573a33579f9709ff66",
+      "response_bytes": 3267,
+      "max_scaled_error": 4.874166920496099e-16
+    },
+    {
+      "id": "rc_decay/base",
+      "status": "passed",
+      "response_sha256": "e124930b54ef995f00ce3bbd256306529c2af00e7c0db929b0a2a6b11734bb47",
+      "response_bytes": 3162,
+      "max_scaled_error": 1.9626155733547184e-16
+    },
+    {
+      "id": "rc_decay/reordered",
+      "status": "passed",
+      "response_sha256": "8c9bb9c762ad36fab7ab524a0bc427cbfce98a31d61d7842ba8f22032ca2cd0b",
+      "response_bytes": 3167,
+      "max_scaled_error": 2.0960743511701532e-16
+    },
+    {
+      "id": "rc_decay/directions_reversed",
+      "status": "passed",
+      "response_sha256": "2e9f690c1437f50546634154303739603dfa711afd53ee3e47ff3f2f71ac4936",
+      "response_bytes": 3179,
+      "max_scaled_error": 1.9626155733547184e-16
+    },
+    {
+      "id": "rc_decay/source_metadata_changed",
+      "status": "passed",
+      "response_sha256": "6be68d48c6c3021fe30940b9b347e91951879cfced9f19a6b62befef4549bb2b",
+      "response_bytes": 3181,
+      "max_scaled_error": 1.9626155733547184e-16
+    },
+    {
+      "id": "rc_decay/time_scaled",
+      "status": "passed",
+      "response_sha256": "4e56f77516dd5f3e49b2f589780fd9a3acc2c9ae263e4dfaabb402e638a38f28",
+      "response_bytes": 3143,
+      "max_scaled_error": 1.1102230246251565e-16
+    },
+    {
+      "id": "rl_step/base",
+      "status": "passed",
+      "response_sha256": "913c3fc81cb60064c848b60602412d2e2aa564f1efb8771eae07e328611c5486",
+      "response_bytes": 3824,
+      "max_scaled_error": 1.7842870038618583e-16
+    },
+    {
+      "id": "rl_step/reordered",
+      "status": "passed",
+      "response_sha256": "92eb611594636cd4724cbe503ceacb0cde540074962abd99e7c33be84c46cf60",
+      "response_bytes": 3829,
+      "max_scaled_error": 3.841541122891592e-16
+    },
+    {
+      "id": "rl_step/directions_reversed",
+      "status": "passed",
+      "response_sha256": "b8e2c6c028c61e29d01c682e81cab5957b30c26792dc40fc8ff108522d08b895",
+      "response_bytes": 3849,
+      "max_scaled_error": 1.7842870038618583e-16
+    },
+    {
+      "id": "rl_step/source_metadata_changed",
+      "status": "passed",
+      "response_sha256": "18abeab32ad9c9fb841b393d0e2a09a3ab082c34dfafa865e57bed1c59c835b7",
+      "response_bytes": 3843,
+      "max_scaled_error": 1.7842870038618583e-16
+    },
+    {
+      "id": "rl_step/time_scaled",
+      "status": "passed",
+      "response_sha256": "d6f14dc4f4a0aac0c719e5698de520070a5e7a7c3d3237ae6b3876d179a62aa8",
+      "response_bytes": 3817,
+      "max_scaled_error": 2.293118746528481e-16
+    },
+    {
+      "id": "rl_decay/base",
+      "status": "passed",
+      "response_sha256": "113f15ec1051ce847618037a69ba1b92e335cf58a9a53c17fd0b7a0aed1d5c01",
+      "response_bytes": 3682,
+      "max_scaled_error": 1.1443916996305594e-16
+    },
+    {
+      "id": "rl_decay/reordered",
+      "status": "passed",
+      "response_sha256": "c7b132e5ede5883de444d15654fa8bff58c6a60551c1e2fa91c90b206297c7c5",
+      "response_bytes": 3687,
+      "max_scaled_error": 2.220446049250313e-16
+    },
+    {
+      "id": "rl_decay/directions_reversed",
+      "status": "passed",
+      "response_sha256": "3009d707aeedce1bbf5949a9610dd3cb40c88f8f6d197de7fd9c2f5344a24f42",
+      "response_bytes": 3703,
+      "max_scaled_error": 1.1443916996305594e-16
+    },
+    {
+      "id": "rl_decay/source_metadata_changed",
+      "status": "passed",
+      "response_sha256": "a5ccfc6729acf231049a4a0a5bb8994aad4e538951f37534669b155555deb3bf",
+      "response_bytes": 3701,
+      "max_scaled_error": 1.1443916996305594e-16
+    },
+    {
+      "id": "rl_decay/time_scaled",
+      "status": "passed",
+      "response_sha256": "7fe08f4040eef003805574732531d84d270b41937ebd93cf2e42c50dd1de97ca",
+      "response_bytes": 3703,
+      "max_scaled_error": 5.594315114139762e-17
+    },
+    {
+      "id": "rlc_underdamped/base",
+      "status": "passed",
+      "response_sha256": "1e837c759f09a4969544a2d28d3d140d167d2ce40fdf9cd0374e55c223dd7ef8",
+      "response_bytes": 5033,
+      "max_scaled_error": 5.024259173452657e-16
+    },
+    {
+      "id": "rlc_underdamped/reordered",
+      "status": "passed",
+      "response_sha256": "d843c0c84905d3562159a9f32aef9969442c353c7cc69e5dfb07e44696506167",
+      "response_bytes": 5038,
+      "max_scaled_error": 1.4247862149356196e-15
+    },
+    {
+      "id": "rlc_underdamped/directions_reversed",
+      "status": "passed",
+      "response_sha256": "42575a67ef180bfc2b2227da41cc30a9a88c34f330420a93152d98795453794c",
+      "response_bytes": 5067,
+      "max_scaled_error": 5.024259173452657e-16
+    },
+    {
+      "id": "rlc_underdamped/source_metadata_changed",
+      "status": "passed",
+      "response_sha256": "ac9dafaf51915331d3b224a7650515d6fee0fb0596265dc4389dc8d250aa49a7",
+      "response_bytes": 5052,
+      "max_scaled_error": 5.024259173452657e-16
+    },
+    {
+      "id": "rlc_underdamped/time_scaled",
+      "status": "passed",
+      "response_sha256": "8f0bc38498fb640f6117859eb9a30abd3b68e1c876894213ac3567294bdcdbaa",
+      "response_bytes": 5064,
+      "max_scaled_error": 9.648366761623376e-16
+    },
+    {
+      "id": "rlc_critical/base",
+      "status": "passed",
+      "response_sha256": "8d7ceb78dbd0a3bdd950a7b9e3ad5490a8d9d8ec768e43177d419c1d30cd7222",
+      "response_bytes": 4954,
+      "max_scaled_error": 5.551115123125783e-16
+    },
+    {
+      "id": "rlc_critical/reordered",
+      "status": "passed",
+      "response_sha256": "c451e380214845697b53e29f20514a9878a87b13d7320a637c727d8602b74c32",
+      "response_bytes": 4959,
+      "max_scaled_error": 8.945527238488607e-16
+    },
+    {
+      "id": "rlc_critical/directions_reversed",
+      "status": "passed",
+      "response_sha256": "403cc46b32d4b9296a86b956df64e5e4d1edcb9e0e6a4850fa967d1228e5c74f",
+      "response_bytes": 4968,
+      "max_scaled_error": 5.551115123125783e-16
+    },
+    {
+      "id": "rlc_critical/source_metadata_changed",
+      "status": "passed",
+      "response_sha256": "f8ed8d28dbac3046be6ed6ba6b1aa58636d73edbe4b1b780091c6fd4d6162a27",
+      "response_bytes": 4973,
+      "max_scaled_error": 5.551115123125783e-16
+    },
+    {
+      "id": "rlc_critical/time_scaled",
+      "status": "passed",
+      "response_sha256": "5eaa2e05d814d8ca0ecb889182f0072cb3a3aa5262475ff176870341bc8a3c72",
+      "response_bytes": 4983,
+      "max_scaled_error": 3.3306690738754696e-16
+    },
+    {
+      "id": "rlc_overdamped/base",
+      "status": "passed",
+      "response_sha256": "f77bd433d82e37546ab90d75918b83851554ea04ca0a6fd895541a39e3e6964e",
+      "response_bytes": 5040,
+      "max_scaled_error": 2.537522032792446e-16
+    },
+    {
+      "id": "rlc_overdamped/reordered",
+      "status": "passed",
+      "response_sha256": "fe4ea7e5ad8610b1e4ddd19ae5fcdad92144e7afde87fec6e78ff55e46341d92",
+      "response_bytes": 5045,
+      "max_scaled_error": 4.0566938136919073e-16
+    },
+    {
+      "id": "rlc_overdamped/directions_reversed",
+      "status": "passed",
+      "response_sha256": "2f0f8f2d3c9b6c2961fdd404ed93575193d398bda4916ef981831f3d7d79f572",
+      "response_bytes": 5072,
+      "max_scaled_error": 2.537522032792446e-16
+    },
+    {
+      "id": "rlc_overdamped/source_metadata_changed",
+      "status": "passed",
+      "response_sha256": "16357cef4fc870cfa9b9fd8d6ae25d9c8cf1cfc97bd7da675c41fc6a68f7d2e4",
+      "response_bytes": 5059,
+      "max_scaled_error": 2.537522032792446e-16
+    },
+    {
+      "id": "rlc_overdamped/time_scaled",
+      "status": "passed",
+      "response_sha256": "e13f72d90c088d217d9475bb2ec09197996cfa683098be0d58b51445bc5a8a78",
+      "response_bytes": 5075,
+      "max_scaled_error": 1.7763568394002505e-15
+    },
+    {
+      "id": "lc_oscillation/base",
+      "status": "passed",
+      "response_sha256": "4dbf135926a1f39140a7fdda954417f6441d806e3d835042f6fe268c9c117415",
+      "response_bytes": 3878,
+      "max_scaled_error": 3.5936166323393236e-16
+    },
+    {
+      "id": "lc_oscillation/reordered",
+      "status": "passed",
+      "response_sha256": "24491ae11c64bf34b3b7c9992e4d6be3baad6a831d5e218c3965d77a162b6ba0",
+      "response_bytes": 3883,
+      "max_scaled_error": 3.682533823596828e-16
+    },
+    {
+      "id": "lc_oscillation/directions_reversed",
+      "status": "passed",
+      "response_sha256": "a4d32141fb6fd98c0601cc5b8520e65f097a7ebd2a24822539c2fa5180a64698",
+      "response_bytes": 3898,
+      "max_scaled_error": 3.5936166323393236e-16
+    },
+    {
+      "id": "lc_oscillation/source_metadata_changed",
+      "status": "passed",
+      "response_sha256": "da8bf80072e51010d00566f55bd0cd25f71b2229deab8e92b92498a69f8ff0d5",
+      "response_bytes": 3897,
+      "max_scaled_error": 3.5936166323393236e-16
+    },
+    {
+      "id": "lc_oscillation/time_scaled",
+      "status": "passed",
+      "response_sha256": "7a7f1c7dc5250088231bd131d68a4d9bedaed8b7a61bf9c8b4b38bc80ab9ae9f",
+      "response_bytes": 3900,
+      "max_scaled_error": 2.0186203923413507e-16
+    },
+    {
+      "id": "bridge_initial/base",
+      "status": "passed",
+      "response_sha256": "eab73a1d6a4157faacbf3d58a97d065c4a0b224d5892b39e6462a9f0264ef41b",
+      "response_bytes": 8427,
+      "max_scaled_error": 7.088251261480115e-16
+    },
+    {
+      "id": "bridge_initial/reordered",
+      "status": "passed",
+      "response_sha256": "78bce443a3d822855074b7709e73c4571473d29e8b4785472a56562ede5427cb",
+      "response_bytes": 8432,
+      "max_scaled_error": 7.771561172376096e-16
+    },
+    {
+      "id": "bridge_initial/directions_reversed",
+      "status": "passed",
+      "response_sha256": "76e39e6f4358e52a638f1c5d14c8a9c4c126d06c1d18caf01c3d2e4318492569",
+      "response_bytes": 8472,
+      "max_scaled_error": 7.088251261480115e-16
+    },
+    {
+      "id": "bridge_initial/source_metadata_changed",
+      "status": "passed",
+      "response_sha256": "ef348b6596961ae9085ba8c62f65e3d7005b4ad5dd7dcee51ce5e3e2db1490da",
+      "response_bytes": 8446,
+      "max_scaled_error": 7.088251261480115e-16
+    },
+    {
+      "id": "bridge_initial/time_scaled",
+      "status": "passed",
+      "response_sha256": "a1443f885b04868bc219439cf23849650091481216bdc3555576a71f46c2e669",
+      "response_bytes": 8369,
+      "max_scaled_error": 6.684427777288335e-16
+    },
+    {
+      "id": "bridge_initial/forced_only",
+      "status": "passed",
+      "response_sha256": "3cea3d40342f50c8c39a152e8ccd687f34f5915d0bb7f87ff49557fc409631c2",
+      "response_bytes": 8273,
+      "max_scaled_error": 8.137348938533156e-16
+    },
+    {
+      "id": "bridge_initial/initial_only",
+      "status": "passed",
+      "response_sha256": "e864922613a15dcc4909ecd5ff65793c608c3cb46d298c46d0d4a84348e4a343",
+      "response_bytes": 7996,
+      "max_scaled_error": 8.809598470440964e-16
+    },
+    {
+      "id": "seeded_mesh_01/base",
+      "status": "passed",
+      "response_sha256": "773b9926e9c570cc02242e96517e02c5b7f39310e4cf82183385e8ed761d8cc1",
+      "response_bytes": 11210,
+      "max_scaled_error": 6.106226635438361e-16
+    },
+    {
+      "id": "seeded_mesh_01/reordered",
+      "status": "passed",
+      "response_sha256": "7fd1b2a168af300a004392aaa255af2a1227ec3194eeb9eb0c3cd31dea1242a8",
+      "response_bytes": 11215,
+      "max_scaled_error": 1.2438245552835282e-15
+    },
+    {
+      "id": "seeded_mesh_01/directions_reversed",
+      "status": "passed",
+      "response_sha256": "81549a327af1c1e07b2c78bf7dfc50c29a478c0eee8b70f2ff92f0f802136453",
+      "response_bytes": 11224,
+      "max_scaled_error": 6.106226635438361e-16
+    },
+    {
+      "id": "seeded_mesh_01/source_metadata_changed",
+      "status": "passed",
+      "response_sha256": "670c37bb29337a3581b3fd0dd2307c99cbdcd1d78e521384a80142265e2efc4a",
+      "response_bytes": 11229,
+      "max_scaled_error": 6.106226635438361e-16
+    },
+    {
+      "id": "seeded_mesh_01/time_scaled",
+      "status": "passed",
+      "response_sha256": "fac257f5e6bae2ef488d17c83affe22f491cdb9f0ea20662c10f0554d3dd96e2",
+      "response_bytes": 11050,
+      "max_scaled_error": 1.0469746996603394e-15
+    },
+    {
+      "id": "seeded_mesh_01/forced_only",
+      "status": "passed",
+      "response_sha256": "078804f8f95ada6880c8f8f6cf81ec55e0cdd6b4f254acafb1376ee7150736d5",
+      "response_bytes": 11165,
+      "max_scaled_error": 6.780638872845102e-16
+    },
+    {
+      "id": "seeded_mesh_01/initial_only",
+      "status": "passed",
+      "response_sha256": "5357841bf2de3ad1f2242512b66dcc80d184c4e46ca8531e5b1b1d146c599b0a",
+      "response_bytes": 10297,
+      "max_scaled_error": 4.965068306494546e-16
+    },
+    {
+      "id": "seeded_mesh_02/base",
+      "status": "passed",
+      "response_sha256": "549dc7d518d51a911c47841a7f9c194f3de266a3945ccdf2e75322329e192727",
+      "response_bytes": 14543,
+      "max_scaled_error": 7.69783040139002e-16
+    },
+    {
+      "id": "seeded_mesh_02/reordered",
+      "status": "passed",
+      "response_sha256": "d53872e1f6d176dc5807039ab311b1769b8a8f32f68f7f05e5cb65bcf10d4039",
+      "response_bytes": 14548,
+      "max_scaled_error": 8.899114524108741e-16
+    },
+    {
+      "id": "seeded_mesh_02/directions_reversed",
+      "status": "passed",
+      "response_sha256": "fc3754d12cb07822123b2557f6c4b941bc7dbaab09cc072494a0b7eb2b950267",
+      "response_bytes": 14635,
+      "max_scaled_error": 7.69783040139002e-16
+    },
+    {
+      "id": "seeded_mesh_02/source_metadata_changed",
+      "status": "passed",
+      "response_sha256": "bc8b2e731d9a8470328f059d5778fa1f434a2cf50a29c93dc2fb7feb64f87f14",
+      "response_bytes": 14562,
+      "max_scaled_error": 7.69783040139002e-16
+    },
+    {
+      "id": "seeded_mesh_02/time_scaled",
+      "status": "passed",
+      "response_sha256": "37be4cc4554fd5348694c34408b5c22fbc5ad39b756bd63d9429435a2ff8f810",
+      "response_bytes": 14769,
+      "max_scaled_error": 5.160421400148998e-16
+    },
+    {
+      "id": "seeded_mesh_02/forced_only",
+      "status": "passed",
+      "response_sha256": "52a7b989323ad306e9bbf33eec97ae76769615eb65446519b944c83ee982aecb",
+      "response_bytes": 14494,
+      "max_scaled_error": 5.79553433516819e-16
+    },
+    {
+      "id": "seeded_mesh_02/initial_only",
+      "status": "passed",
+      "response_sha256": "3a1bb9d9a6d27e9d9d1ab0f409488c7dc8326dba39691cf9ec263946317570f6",
+      "response_bytes": 11043,
+      "max_scaled_error": 7.294905439968299e-16
+    },
+    {
+      "id": "seeded_mesh_03/base",
+      "status": "passed",
+      "response_sha256": "f2094ce0445d9c97656009c4a082dee7caf7160bba7585f1e75568bbf4422191",
+      "response_bytes": 13859,
+      "max_scaled_error": 1.4432899320127035e-15
+    },
+    {
+      "id": "seeded_mesh_03/reordered",
+      "status": "passed",
+      "response_sha256": "a38d35690e5af8caa1aa71d00855caf8375b81840705944b83b5d681cdb80f5b",
+      "response_bytes": 13864,
+      "max_scaled_error": 1.3322676295501878e-15
+    },
+    {
+      "id": "seeded_mesh_03/directions_reversed",
+      "status": "passed",
+      "response_sha256": "43c906fcbf454eceeb956967332f2f5fd4a761011c5dd8bc68a8d969b60db487",
+      "response_bytes": 13830,
+      "max_scaled_error": 1.4432899320127035e-15
+    },
+    {
+      "id": "seeded_mesh_03/source_metadata_changed",
+      "status": "passed",
+      "response_sha256": "9d47345e964efc153ef03d5420d542f13fcc10289b51a121a7a2e03d43165ff8",
+      "response_bytes": 13878,
+      "max_scaled_error": 1.4432899320127035e-15
+    },
+    {
+      "id": "seeded_mesh_03/time_scaled",
+      "status": "passed",
+      "response_sha256": "7acf474969e86b5c2e31b7c664fe09dadfe929390bb1e27076b6c4beeb6fc57a",
+      "response_bytes": 13952,
+      "max_scaled_error": 8.327829086705872e-16
+    },
+    {
+      "id": "seeded_mesh_03/forced_only",
+      "status": "passed",
+      "response_sha256": "de55d6854e9a80be16bc1c0de353fecd6e60f4989a7b707acb2d805c0c4a0ca6",
+      "response_bytes": 13587,
+      "max_scaled_error": 6.841755527497296e-16
+    },
+    {
+      "id": "seeded_mesh_03/initial_only",
+      "status": "passed",
+      "response_sha256": "d4019279d83c3803d2c55dd5fd75df9d960e074f72be9e7aeabb53ddb83f8bee",
+      "response_bytes": 10831,
+      "max_scaled_error": 8.968100940422724e-16
+    },
+    {
+      "id": "redundant_voltage_constraints",
+      "status": "expected_refusal",
+      "response_sha256": "aa7ecf2c30d07a0e290b253381a2f91308a37ea83096771f3488faa53ac1027d",
+      "response_bytes": 293,
+      "cause": "unsolvable",
+      "expected": "nonunique_system"
+    },
+    {
+      "id": "inconsistent_voltage_constraints",
+      "status": "expected_refusal",
+      "response_sha256": "10332165793bd87710ec46c6c134827dd6b2e27c179b13bcd0bd5c472bcb124d",
+      "response_bytes": 296,
+      "cause": "unsolvable",
+      "expected": "inconsistent_system"
+    },
+    {
+      "id": "open_inductor_initial_impulse",
+      "status": "passed",
+      "response_sha256": "51046faf347c720adadbf63b496f5d82c8fc6fb49e93a9658ed247e34f992471",
+      "response_bytes": 1868,
+      "max_scaled_error": 0.0
+    },
+    {
+      "id": "clamped_capacitor_initial_impulse",
+      "status": "passed",
+      "response_sha256": "7ad6a2e3fd44894a55a40db176682a58a487d8b9d537d81fb59811e95b6925b2",
+      "response_bytes": 2317,
+      "max_scaled_error": 1.8873791418627663e-16
+    },
+    {
+      "id": "floating_island",
+      "status": "expected_refusal",
+      "response_sha256": "8527f9c46da7e9bd8090159a1ed338e02e010ed1a9320ee8078c5a01f45f7a97",
+      "response_bytes": 279,
+      "cause": "unsolvable",
+      "expected": "nonunique_system"
+    },
+    {
+      "id": "zero_resistance",
+      "status": "expected_input_error",
+      "error": "ValueError: R1: valore non positivo per resistor (0)"
+    },
+    {
+      "id": "missing_capacitor_initial",
+      "status": "expected_input_error",
+      "error": "ValueError: Dichiara tutte e sole le tensioni iniziali dei condensatori, anche quando valgono zero: ['C1']."
+    },
+    {
+      "id": "unknown_capacitor_initial",
+      "status": "expected_input_error",
+      "error": "ValueError: Dichiara tutte e sole le tensioni iniziali dei condensatori, anche quando valgono zero: ['C1']."
+    },
+    {
+      "id": "missing_source_transform",
+      "status": "expected_input_error",
+      "error": "ValueError: Dichiara tutte e sole le trasformate delle sorgenti, anche quando valgono zero: ['V1']."
+    },
+    {
+      "id": "zero_source_denominator",
+      "status": "expected_input_error",
+      "error": "ZeroDivisionError: Il denominatore della funzione razionale è nullo."
+    },
+    {
+      "id": "duplicate_component_id",
+      "status": "expected_input_error",
+      "error": "ValueError: identificatori di componente ripetuti: R1"
+    },
+    {
+      "id": "missing_inductor_initial",
+      "status": "expected_input_error",
+      "error": "ValueError: Dichiara tutte e sole le correnti iniziali degli induttori, anche quando valgono zero: ['L1']."
+    }
+  ]
+}

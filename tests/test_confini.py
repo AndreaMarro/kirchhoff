@@ -136,3 +136,24 @@ def test_una_radice_sbagliata_non_dichiara_tutto_pulito(tmp_path: Path):
     """Il modo peggiore di fallire per un gate: puntato altrove, e sembra verde."""
     with pytest.raises(FileNotFoundError, match="nessuna directory"):
         confini.violazioni(tmp_path / "non-esiste")
+
+
+def test_il_frontend_non_e_importato_dal_kernel(tmp_path: Path):
+    for recinto in ("domain", "render"):
+        base = tmp_path / "kirchhoff" / recinto
+        base.mkdir(parents=True)
+    (tmp_path / "kirchhoff" / "__init__.py").write_text("", encoding="utf-8")
+    (tmp_path / "kirchhoff" / "domain" / "__init__.py").write_text("", encoding="utf-8")
+    (tmp_path / "kirchhoff" / "render" / "__init__.py").write_text("", encoding="utf-8")
+    (tmp_path / "kirchhoff" / "domain" / "pulito.py").write_text(
+        "from kirchhoff.domain.ir import IR\n", encoding="utf-8")
+    (tmp_path / "kirchhoff" / "render" / "colpevole.py").write_text(
+        "from kirchhoff.web.session import Vista\n", encoding="utf-8")
+
+    trovate = confini.violazioni_presentazione(tmp_path / "kirchhoff")
+    assert len(trovate) == 1
+    assert trovate[0].modulo_importato == "kirchhoff.web.session"
+
+
+def test_la_presentazione_regge_sull_albero_vero():
+    assert confini.violazioni_presentazione(SORGENTE) == []

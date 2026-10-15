@@ -1,0 +1,17 @@
+{
+  "post_opening_checks": true,
+  "frozen_expected_changed": false,
+  "checked_solved_lessons": 62,
+  "checks": [
+    "requested port reference",
+    "impedance in Q(j)",
+    "exact rectangular fields",
+    "math AST matches coefficients",
+    "8 significant decimal digits",
+    "no VERIFIED promotion"
+  ],
+  "lesson_builds": [
+    "b3bfc46306a0dcf6a2d01a2470870f5e2245b913cdaf4ef152360c64aa82d21b"
+  ],
+  "passed": true
+}
