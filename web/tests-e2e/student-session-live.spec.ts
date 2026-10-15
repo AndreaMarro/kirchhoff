@@ -132,13 +132,27 @@ test('due sorgenti: la lezione servita mostra la differenza di tensione reale',a
 });
 
 test('il perimetro visibile coincide con quello dichiarato dal server',async({page})=>{
- const declared=await fetch(`${base}/api/capabilities`).then(r=>r.json()) as {scope:string;controlled_sources:boolean;ac:boolean;transients:boolean};
- expect(declared.controlled_sources).toBe(false);
- expect(declared.ac).toBe(true);
- expect(declared.transients).toBe(false);
+ const response=await fetch(`${base}/api/capabilities`);
+ expect(response.ok).toBe(true);
+ const declared=await response.json() as {scope:string};
+ // Il contratto Laplace esistente serve la risposta trasformata, non l'intera famiglia transitoria.
+ expect(declared).toMatchObject({
+  schema:'kirchhoff-capabilities.v1',solve:true,controlled_sources:false,ac:true,
+  transients:true,product_verified:false,
+  ac_scope:{certified_lesson:false},
+  laplace_scope:{
+   component_types:['resistor','capacitor','inductor','voltage_source','current_source'],
+   quantities:['voltage','current'],methods:['auto','laplace'],
+   source_waveforms:['step','impulse'],initial_conditions:'explicit_all_C_L_at_0-',
+   response_domain:'laplace',coefficient_order:'ascending',exact_coefficients:'rational',
+   response_units:['V*s','A*s'],inverse_transform:false,topology_switching:false,
+   certified_lesson:false,
+  },
+ });
+ expect(declared.scope.trim()).not.toBe('');
  await page.goto(base!);
- await page.getByText('Cosa puoi risolvere in questa versione').click();
- await expect(page.locator('.student-scope').first()).toContainText(declared.scope);
+ await page.getByText('Cosa puoi risolvere in questa versione',{exact:true}).click();
+ await expect(page.locator('.student-scope').first().locator('p').first()).toHaveText(declared.scope);
 });
 
 test('un valore e una KCL dello studente sono controllati fino al primo errore',async({page})=>{

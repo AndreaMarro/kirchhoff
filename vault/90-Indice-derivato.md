@@ -1,5 +1,5 @@
 ---
-sha: a6b1e8f95682d89f1ee42fc840fe5f33901437c7
+sha: 71aa0cf61ce53f20717ca4d7d52cda9987b94244
 tipo: indice-derivato
 ---
 
@@ -10,8 +10,8 @@ tipo: indice-derivato
 > una nota, ha torto lui — e `--verifica` lo dice, invece di lasciartelo
 > scoprire.
 
-Costruito sulla revisione `a6b1e8f95682d89f1ee42fc840fe5f33901437c7`.
-52 note.
+Costruito sulla revisione `71aa0cf61ce53f20717ca4d7d52cda9987b94244`.
+53 note.
 
 ## (radice)
 
@@ -90,6 +90,7 @@ Costruito sulla revisione `a6b1e8f95682d89f1ee42fc840fe5f33901437c7`.
 - [[20261015T014105Z-convergenza-pr15]] — Giro 20261015T014105Z — convergenza-pr15 · `receipt-di-giro` → [[00-INDICE]]
 - [[20261015T023429Z-fix-quaderno-19]] — Giro 20261015T023429Z — fix-quaderno-19 · `receipt-di-giro` → [[00-INDICE]]
 - [[20261015T052628Z-integrazione-15-in-17]] — Giro 20261015T052628Z — integrazione-15-in-17 · `receipt-di-giro` → [[00-INDICE]]
+- [[20261015T053514Z-oracolo-capabilities-laplace]] — Giro 20261015T053514Z — oracolo-capabilities-laplace · `receipt-di-giro` → [[00-INDICE]]
 
 ## 80-Operazioni
 

@@ -309,3 +309,16 @@ cambio false→true non copre quei limiti. Nessun cambio di API, supporto
 generico a tutti i transitori, Claim VERIFIED, soglie o skip è autorizzato
 dalla classificazione. La nuova unione parser15→17 resta verificata nel suo
 perimetro locale; nessuna promozione/main/quorum ne deriva.
+
+### Seguito locale — oracolo capabilities/UI/Laplace, 15 ottobre 2026
+
+L'oracolo sopra è stato riallineato in un'unità separata sulla base71aa0cf:
+HTTP/schema/flags e limiti Laplace granulari, scope non vuoto e primo paragrafoUI
+uguale al server. Live24PASS/0FAIL, comprese le due prove prima abortite;
+14 mutanti del vero callback respinti prima di goto e controllo sano;
+overlay separato browser-only del testo scope osservato in desktop/mobile.
+Nessun prodotto/API/schema/Verified/skip cambiato, gli altri sei callback
+restano byte-invariati. Review tecnica separata APPROVE sullo hash17cf86d2;
+pin futuro del commit ancora pendente nella receipt. Il precedente22/2
+rimane una misura storica. Questo chiude localmente il debito dell'oracolo,
+non certifica main/quorum, ogni transitorio o le altre unità16/H5/K4.
