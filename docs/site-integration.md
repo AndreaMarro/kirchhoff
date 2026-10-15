@@ -1,3 +1,15 @@
+> Aggiornamento operativo 2026-10-15. Il documento sotto conserva il contratto
+> e le misure della revisione storica di settembre; non è un nuovo verdetto
+> di usabilità. L'ingresso corrente predefinito è StudentApp: per questo banco
+> tecnico usare `?view=proof`, preservando query e hash con URL API.
+> URL operativo del banco: `https://andreamarro.github.io/kirchhoff/?view=proof`.
+> Il guscio `web/site-host/` forza tale query e mantiene separato l'URL iniziale
+> dal passo corrente: fullscreen nativo conserva l'iframe, link/fallback aprono
+> il link iniziale; per il passo corrente usare Copia link. Nessuna lettura del
+> DOM del figlio o nuovo IPC. Gli snippet root-only sotto sono storici e vanno
+> adattati con la query proof prima di un uso attuale. Per verifiche/deploy
+> seguire il playbook manuale aggiornato; questa nota non pubblica il sito.
+
 # Contratto d'integrazione sito — Proof Workbench (beta 0.3)
 
 Verificato il 2026-09-08 su `work/beta-hardening-0.3-integration-muse13`

@@ -120,6 +120,13 @@ export function App(): React.JSX.Element {
           onSelect={(id) => setSelection({ exercise: id, step: -1, frame: "before" })}
         />
       ) : null}
+      {/* Guida d'ingresso in una riga: lo studente dal sito deve capire i
+          primi 15 secondi senza tutorial. Statica, nessuno stato, nessun tour. */}
+      {index ? (
+        <p className="kf-entry-hint">
+          Scegli un esempio, premi Avanti per seguire i passi, confronta Prima e Dopo.
+        </p>
+      ) : null}
       <main className="kf-main">
         {error ? (
           // Guasto di trasporto, non di dominio: la sessione non e' mai
