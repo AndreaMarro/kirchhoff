@@ -463,3 +463,23 @@ Interoperabilita Ardesia NOT_CHECKED_CURRENT; solo locale, nessuna nuova
 identita corrente attestata.44 accettazioni di reader Kirchhoff precedenti
 non sono test Ardesia. Source-map/advisory,21famiglie, design globale,
 accessibilita e pilot mantengono le destinazioni gia registrate.
+
+
+## K4 — integrazione parziale verificata, 15 ottobre 2026
+
+PR23 MERGED; main `e1375fb47f306fa1709d5952f6072e0e3eb3d01f`, tree `54687a9b09f376d5c6df865401cf4470ae33a9ca`.
+Due APPROVE esatti e4CI candidato verdi, gate comment6199099346; poi2CI main
+verdi,923HTTP,12K4+6viewport+2DC reali PASS. La precedente IN_REVIEW/FAIL
+resta storica e i due full locali restano FAIL. Review separata differisce
+i timeout come P2→issue20; primario accetta la sola integrazione delimitata
+e mantiene affidabilità P3→issue20. Vedi receipt `vault/70-Receipt-di-giro/20261015T183042Z-giustificazione-passo-main-verificato.md`.
+Quattro campi canonici esposti; residui numerici/cross-check/terminal mapping
+generale restano P2→prossimo H5/K4; autenticazione/forgiature coerenti→H3.
+WEB-DEPENDENCY-TRIAGE-2026-10-15, UX host/frame/scroll349,21famiglie/design/pilot
+e Ardesia localonly NOT_CHECKED_CURRENT restano aperti. Nessun deploy o
+nuovo Verified. Goal ATTIVO; nessun terzo full locale per source-map.
+
+
+## CONSEGNA-2026-10-15 — chiusura operativa richiesta dal proprietario
+
+Stato corrente e matrice delle21famiglie: `docs/ops/CONSEGNA-2026-10-15.md`. K4 integrato e provato su main e1375fb, senza ProductVerified. Source-map-js1.2.2 ha8GREEN/363unit/build/923HTTP locali; CI candidato ancora pendente alla scrittura. Auditexit1/mockertinypoolVitest e legacyfromSourceMap restano da triagiare. Recupero#18 parziale e affidabilità locale#20 irrisolta restano debiti anche qualora archiviati amministrativamente per la fine dell’esecuzione: chiusura non equivale a fix. Nessun branch o originale eliminato.

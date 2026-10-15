@@ -1,5 +1,5 @@
 ---
-sha: fec4fff5fd347e899501010185edb4b0d2393175
+sha: 25702c19c553aa7b2dc7bcee8a73a8fb74739a97
 tipo: indice-derivato
 ---
 
@@ -10,8 +10,8 @@ tipo: indice-derivato
 > una nota, ha torto lui — e `--verifica` lo dice, invece di lasciartelo
 > scoprire.
 
-Costruito sulla revisione `fec4fff5fd347e899501010185edb4b0d2393175`.
-63 note.
+Costruito sulla revisione `25702c19c553aa7b2dc7bcee8a73a8fb74739a97`.
+65 note.
 
 ## (radice)
 
@@ -101,6 +101,8 @@ Costruito sulla revisione `fec4fff5fd347e899501010185edb4b0d2393175`.
 - [[20261015T143215Z-provenienza-main-verificato]] — Giro 20261015T143215Z — provenienza-main-verificato · `receipt-di-giro` → [[00-INDICE]]
 - [[20261015T155224Z-source-map-verifica-differita]] — Giro 20261015T155224Z — source-map-verifica-differita · `receipt-di-giro` → [[00-INDICE]]
 - [[20261015T173935Z-giustificazione-passo-in-review]] — Giro 20261015T173935Z — giustificazione-passo-in-review · `receipt-di-giro` → [[00-INDICE]]
+- [[20261015T183042Z-giustificazione-passo-main-verificato]] — Giro 20261015T183042Z — giustificazione-passo-main-verificato · `receipt-di-giro` → [[00-INDICE]]
+- [[20261015T191000Z-mappe-sorgente-consegna-ci-pendente]] — Giro 20261015T191000Z — mappe-sorgente-consegna-ci-pendente · `receipt-di-giro` → [[00-INDICE]]
 
 ## 80-Operazioni
 

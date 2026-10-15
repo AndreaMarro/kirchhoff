@@ -19,11 +19,15 @@ tecnico proof DC. Non è una copertura completa delle 21 famiglie.
 |---|---|
 | Ingressi delle lezioni | HTTP e MCP usano `create_lesson`; il percorso DC certificato passa da `run_proof_session_con_run`, AC e Laplace hanno lezioni con controlli propri e senza Claim VERIFIED |
 | Verita' visuale singola (H5) | `render/` non riesegue `transform()`: proietta `TransformExecution` certificata (0 chiamate produttive, testato) |
+| Giustificazione dei passi (K4) | Precondizioni, motivazione, osservazione e lineage nella proiezione canonica; [contratto e limiti](docs/student-session-step-justification.md) |
 | Contratto di presentazione | Il banco proof usa `StudentSessionView` (student-session.v0.1); le lezioni studente usano `circuit-lesson.v1`. Gli stati dei controlli restano distinti; mai Product Verified |
 | Superficie | React 19 + TS strict + Vite: lo studente apre `/`, il banco tecnico `/?view=proof`; foto automatica solo con provider configurato |
 | Lavagna e procedimento | Schema a componenti con incroci distinti dalle giunzioni; StudentTrace verifica riduzioni R, KCL topologica e valori DC sul circuito originale, lasciando senza giudizio semplificazioni incerte e metodi non rappresentati |
 | MCP | Tool stdio senza UI + risorsa MCP App interattiva; la compatibilita' con un host reale richiede ancora prova |
 | Backend storico | Epic 1 chiusa, P1-J/K/L integrati, H2.5/O0/H2.75 fusi in `main` |
+
+La [consegna del 15 ottobre 2026](docs/ops/CONSEGNA-2026-10-15.md) raccoglie
+SHA, verifiche, tutte le 21 famiglie e debiti ancora non implementati.
 
 ## Avvio locale dello studente
 
