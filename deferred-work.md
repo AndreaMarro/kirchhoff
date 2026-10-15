@@ -478,3 +478,8 @@ generale restano P2→prossimo H5/K4; autenticazione/forgiature coerenti→H3.
 WEB-DEPENDENCY-TRIAGE-2026-10-15, UX host/frame/scroll349,21famiglie/design/pilot
 e Ardesia localonly NOT_CHECKED_CURRENT restano aperti. Nessun deploy o
 nuovo Verified. Goal ATTIVO; nessun terzo full locale per source-map.
+
+
+## CONSEGNA-2026-10-15 — chiusura operativa richiesta dal proprietario
+
+Stato corrente e matrice delle21famiglie: `docs/ops/CONSEGNA-2026-10-15.md`. K4 integrato e provato su main e1375fb, senza ProductVerified. Source-map-js1.2.2 ha8GREEN/363unit/build/923HTTP locali; CI candidato ancora pendente alla scrittura. Auditexit1/mockertinypoolVitest e legacyfromSourceMap restano da triagiare. Recupero#18 parziale e affidabilità locale#20 irrisolta restano debiti anche qualora archiviati amministrativamente per la fine dell’esecuzione: chiusura non equivale a fix. Nessun branch o originale eliminato.
