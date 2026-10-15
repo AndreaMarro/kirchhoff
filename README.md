@@ -51,6 +51,8 @@ Per il banco tecnico statico: `cd web && npm run dev`, poi `/?view=proof`.
 Le sue sessioni versionate si rigenerano con
 `uv run --no-sync python scripts/generate_workbench.py`; il test
 `tests/test_workbench_generation.py` ne controlla il contenuto.
+Il collegamento dalle evidenze del Claim ai passi analitici e il comportamento
+delle viste legacy sono descritti nel [contratto di navigazione delle evidenze](docs/student-session-evidence-navigation.md).
 
 ## MCP locale
 

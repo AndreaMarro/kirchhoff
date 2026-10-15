@@ -1,5 +1,5 @@
 ---
-sha: 701a8e6b859665c6daa97b477f9661fbc47881f6
+sha: 8a580e9658098b6f91fb16febe5396502c46c268
 tipo: indice-derivato
 ---
 
@@ -10,8 +10,8 @@ tipo: indice-derivato
 > una nota, ha torto lui — e `--verifica` lo dice, invece di lasciartelo
 > scoprire.
 
-Costruito sulla revisione `701a8e6b859665c6daa97b477f9661fbc47881f6`.
-56 note.
+Costruito sulla revisione `8a580e9658098b6f91fb16febe5396502c46c268`.
+58 note.
 
 ## (radice)
 
@@ -94,6 +94,8 @@ Costruito sulla revisione `701a8e6b859665c6daa97b477f9661fbc47881f6`.
 - [[20261015T060236Z-catalogo-proof-undici-provenienza]] — Giro 20261015T060236Z — catalogo proof a undici esempi · `receipt-di-giro` → [[00-INDICE]]
 - [[20261015T065609Z-recupero-host-operazioni-pr16]] — Recupero del guscio e delle operazioni PR16 → [[00-INDICE]]
 - [[20261015T080500Z-correzioni-review-consolidata]] — Correzioni del procedimento e della dichiarazione del quaderno → [[00-INDICE]]
+- [[20261015T092800Z-main-verificato-e-chiusure]] — Convergenza integrata, main verificato e chiusure tracciate → [[00-INDICE]]
+- [[20261015T104216Z-claim-derivazione-passo]] — Dal Claim alla derivazione e al passo che la produce → [[00-INDICE]]
 
 ## 80-Operazioni
 

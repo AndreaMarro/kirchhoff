@@ -147,6 +147,9 @@ function step(v: Json): StepView {
     evidence_refs: arr(v["evidence_refs"], "step.evidence_refs").map((e, i) =>
       str(e, `step.evidence_refs[${i}]`),
     ),
+    ...(Object.hasOwn(v, "derivation_ref")
+      ? { derivation_ref: strNull(v["derivation_ref"], "step.derivation_ref") }
+      : {}),
     before_svg: beforeSvg === null ? null : str(beforeSvg, "step.before_svg"),
     after_svg: afterSvg === null ? null : str(afterSvg, "step.after_svg"),
   };
@@ -277,6 +280,8 @@ export function parseSession(payload: Json): StudentSessionView {
       throw new Error("closed senza passi");
     }
     const indici = new Set<number>();
+    const esponeDerivazioni = vista.steps.some(p => Object.hasOwn(p, "derivation_ref"));
+    const derivazioni: string[] = [];
     for (const [i, passo] of vista.steps.entries()) {
       if (indici.has(passo.index)) {
         throw new Error(`indice ${passo.index} duplicato`);
@@ -325,6 +330,27 @@ export function parseSession(payload: Json): StudentSessionView {
           throw new Error(`evidence_ref ${ref} non risolubile negli stati`);
         }
       }
+      if (esponeDerivazioni) {
+        if (!Object.hasOwn(passo, "derivation_ref")) {
+          throw new Error("mapping derivazione-passo parziale");
+        }
+        if (passo.kind === "analytical") {
+          const ref = passo.derivation_ref;
+          if (typeof ref !== "string" || !ref.trim()) {
+            throw new Error("derivation_ref del passo analitico non valido");
+          }
+          if (derivazioni.includes(ref)) throw new Error("derivation_ref duplicato");
+          derivazioni.push(ref);
+        } else if (passo.derivation_ref !== null) {
+          throw new Error("derivation_ref su trasformazione");
+        }
+      }
+    }
+    if (esponeDerivazioni && (
+      derivazioni.length !== vista.verification.evidence_ids.length
+      || derivazioni.some((ref, i) => ref !== vista.verification!.evidence_ids[i])
+    )) {
+      throw new Error("derivazioni dei passi diverse dalle evidenze del Claim");
     }
   }
   if (vista.outcome === "refusal") {

@@ -548,6 +548,48 @@ button {
   flex: none;
 }
 
+.kf-evidence-steps {
+  margin-top: var(--kf-space-3);
+  padding-top: var(--kf-space-3);
+  border-top: 1px solid var(--kf-border-subtle);
+}
+
+.kf-evidence-links {
+  display: grid;
+  gap: var(--kf-space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.kf-evidence-links li {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.kf-evidence-links button {
+  display: block;
+  width: 100%;
+  min-height: var(--kf-touch-min);
+  padding: var(--kf-space-2) var(--kf-space-3);
+  border: 1px solid var(--kf-border-subtle);
+  border-radius: var(--kf-radius-sm);
+  background: var(--kf-surface-overlay);
+  color: var(--kf-provenance);
+  text-align: left;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.kf-evidence-links button:hover {
+  border-color: var(--kf-provenance);
+}
+
+.kf-evidence-unavailable {
+  color: var(--kf-ink-secondary);
+  font-size: var(--kf-type-small);
+}
+
 /* --- barra controlli --- */
 
 .kf-controls {

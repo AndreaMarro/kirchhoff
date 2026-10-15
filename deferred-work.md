@@ -350,3 +350,34 @@ C701-1 P2 (busy StudentTrace dopo edit durante controllo) e C701-2 P2 (promessa 
 Il proprietario consente reviewer Codex separato al posto della seconda famiglia soltanto per questa esecuzione, con tutti gli altri gate e protezioni invariati; nessuna modifica permanente della policy. H5/K4 P2 e scroll host349 P3 mantengono le destinazioni sopra, come21famiglie/design/pilot/H3. Ardesia rimane solo locale.
 
 Seguito delle verifiche, fonte4 invariata: default140PASS/4FAIL/54SKIP, poi i quattro casi passano nella singola replica invariata. Foto/PDF reali3PASS/1FAIL, poi una replica invariata del PDFdesktop1PASS; nel primo trace solveHTTP200 impiega5890.991ms oltre attesa5000ms, body non catturato. Preservare entrambi i fallimenti; non chiamare verdi le suite originali. CI completa del nuovo SHA e gate main ancora pendenti.
+
+
+## H5/K4 — collegamento Claim → derivazione → passo, 15 ottobre 2026
+
+**P2 navigazione: affrontato nei contenuti del candidato, promozione ancora
+pendente al pin/CI/main.** Checkpoint producer committed pulito `8a580e9658098b6f91fb16febe5396502c46c268`;
+`derivation_ref` conserva il vero `derivation_after`, separato dagli IR refs.
+Profilo nuovo completo e legacy onesto; ID opachi, salto al passo/focus anche
+se corrente, contesto nuovo senza focus ereditato. Scala D1→indice3 eD2→4;
+ponte D3→2/KCL. Nessun nuovo solver o cambiamento di Verified.
+
+I gate locali sul contenuto finale sono 2544 Python PASS/97,37% con soglia95,
+domain100% e confini0;227unit web/13suite/typecheck/build,16nuovi browser mirati
+e160default PASS/54skip opzionali invariati/zeroFAIL o flaky. I16sono inclusi
+nei160. Primo Python1FAIL2543PASS per drift del fingerprint globale conservato;
+risolto rigenerando anche18lezioni/18PDF dal producer canonico pulito, senza
+indebolire test o identità. Proof12output/112closure eStudentApp37/113closure
+legati allo stesso Csrc8a. Due indici byteidentici, formule e SVG invariati;
+nei PDF cambiano solo Subject/footer di revisione. Dettagli nella receipt
+20261015T104216Z-claim-derivazione-passo.md. Review separata dei contenuti APPROVE, SHA256
+`650b545100afcfcf5183f9fb0a9bf7d7854177eecf449377e921155b10619be2`.
+Non attribuire già CI, merge o verifica main a questo checkpoint preparatorio.
+
+**P2 residuo, DEFERRED → prossima unità prodotto H5/K4:** ispezione completa di
+residui, cross-check, terminal mapping e provenienza. **P2 autenticazione,
+DEFERRED → H3:** il legacy dichiarato non autentica un produttore ostile.
+**P3 runtime, DEFERRED → issue20; P3 scroll349, DEFERRED → unità isolata UX
+host/frame** già descritta sopra. Formule lunghe restano scorrevoli nel
+riquadro; non dichiarare WCAG/design globale,21famiglie complete o pilot.
+Ardesia22e5 rimane soltanto locale; probe dei18payload/roundtripJSON non è
+una nuova prova browser/IndexedDB/durabilità o fullsuite Ardesia.

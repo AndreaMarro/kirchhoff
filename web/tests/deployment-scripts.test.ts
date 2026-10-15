@@ -187,3 +187,57 @@ describe("profilo operativo esplicito", () => {
     const r = await cli("smoke-public"); expect(r.code).toBe(1); expect(r.stdout).toContain("rifiuto-domanda");
   });
 });
+
+describe("H5: legame esplicito Claim-derivazione-passo nel vero CLI", () => {
+  function vistaConLegame() {
+    const view = JSON.parse(remoti.get("sessions/scala-tre-riduzioni.json")!.toString());
+    view.verification.evidence_ids = ["derivazione-alfa", "derivazione-omega"];
+    for (const step of view.steps) {
+      step.derivation_ref = step.index === 3 ? "derivazione-alfa" : step.index === 4 ? "derivazione-omega" : null;
+    }
+    return view;
+  }
+  function deposita(view: unknown) {
+    remoti.set("sessions/scala-tre-riduzioni.json", Buffer.from(JSON.stringify(view)));
+  }
+  it("accetta il mapping sano con ID opachi", async () => {
+    deposita(vistaConLegame());
+    expect((await cli("smoke-public")).code).toBe(0);
+  });
+  it("mantiene leggibile il legacy sano con tutti i campi assenti", async () => {
+    const view = vistaConLegame();
+    for (const step of view.steps) delete step.derivation_ref;
+    deposita(view);
+    expect((await cli("smoke-public")).code).toBe(0);
+  });
+  it.each([
+    "un solo presente", "uno omesso", "tutti null", "analitico null",
+    "analitico blank", "analitico numerico", "analitico booleano",
+    "trasformazione con ref", "duplicato", "duplicati anche nel Claim", "estraneo", "ordine invertito",
+    "evidenza extra", "evidenza mancante", "spazi ID",
+    "passi vuoti", "passi assenti",
+  ])("rifiuta il profilo incoerente: %s", async caso => {
+    const view = vistaConLegame();
+    if (caso === "un solo presente") view.steps.forEach((s: Record<string, unknown>, i: number) => { if (i !== 3) delete s.derivation_ref; });
+    if (caso === "uno omesso") delete view.steps[0].derivation_ref;
+    if (caso === "tutti null") view.steps.forEach((s: Record<string, unknown>) => { s.derivation_ref = null; });
+    if (caso === "analitico null") view.steps[3].derivation_ref = null;
+    if (caso === "analitico blank") view.steps[3].derivation_ref = " \n ";
+    if (caso === "analitico numerico") view.steps[3].derivation_ref = 3;
+    if (caso === "analitico booleano") view.steps[3].derivation_ref = false;
+    if (caso === "trasformazione con ref") view.steps[0].derivation_ref = "derivazione-alfa";
+    if (caso === "duplicato") view.steps[4].derivation_ref = "derivazione-alfa";
+    if (caso === "duplicati anche nel Claim") { view.steps[4].derivation_ref = "derivazione-alfa"; view.verification.evidence_ids = ["derivazione-alfa", "derivazione-alfa"]; }
+    if (caso === "estraneo") view.steps[3].derivation_ref = "D0";
+    if (caso === "ordine invertito") view.verification.evidence_ids.reverse();
+    if (caso === "evidenza extra") view.verification.evidence_ids.push("extra");
+    if (caso === "evidenza mancante") view.verification.evidence_ids.pop();
+    if (caso === "spazi ID") view.steps[3].derivation_ref = " derivazione-alfa ";
+    if (caso === "passi vuoti") view.steps = [];
+    if (caso === "passi assenti") delete view.steps;
+    deposita(view);
+    const result = await cli("smoke-public");
+    expect(result.code).toBe(1);
+    expect(result.stdout).toContain("scala-tre-riduzioni");
+  });
+});

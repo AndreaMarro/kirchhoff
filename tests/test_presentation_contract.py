@@ -41,7 +41,7 @@ CHIAVI_VISTA = frozenset({
 CHIAVI_PASSO = frozenset({
     "action", "affected", "after_ref", "after_svg", "before_ref",
     "before_svg", "equation", "equations", "evidence_refs", "index", "kind",
-    "preserved",
+    "preserved", "derivation_ref",
 })
 
 D1_100 = """\
@@ -850,3 +850,90 @@ def test_il_registro_di_un_altro_circuito_non_presta_i_suoi_stati():
     assert esito.dove == "publication"
     assert esito.messaggio == (
         "gli stati del registro non coincidono con gli stati operativi della run")
+
+
+@pytest.mark.parametrize("netlist,layout", [(D1_100, None), (SCALA_3R, _layout_scala)])
+def test_h5_la_proiezione_conserva_il_legame_autorevole_della_derivazione(netlist, layout):
+    from kirchhoff.domain.proof.session import AnalyticalProofStep
+    from kirchhoff.pipeline.presentation import project_closed_session
+    chiusura, run = _chiusura_con_run(netlist)
+    vista = project_closed_session(
+        chiusura.session, chiusura.registry, run,
+        layout_iniziale=layout() if layout else layout_a_maglia(leggi(netlist)),
+        istante=1, casualita=bytes(range(10)))
+    assert not isinstance(vista, Failure)
+    attesi = {p.index: p.derivation_after for p in chiusura.session.steps
+              if isinstance(p, AnalyticalProofStep)}
+    assert attesi
+    assert [getattr(p, "derivation_ref", None) for p in vista.steps
+            if p.kind == "analytical"] == list(chiusura.session.final_claim.evidence_ids)
+    for passo in vista.steps:
+        assert getattr(passo, "derivation_ref", None) == attesi.get(passo.index)
+    assert all(p.evidence_refs for p in vista.steps)
+
+
+@pytest.mark.parametrize("caso", [
+    "analitico-null", "analitico-blank", "analitico-numero", "analitico-bool",
+    "trasformazione-ref", "duplicati-anche-nel-claim", "estraneo", "tutti-null",
+    "ref-scambiati", "claim-riordinato", "claim-extra", "claim-incompleto",
+    "spazi-id", "passi-riordinati",
+])
+def test_h5_il_confine_respinge_il_legame_incoerente(caso):
+    from dataclasses import replace
+    vista = _vista_chiusa_legale()
+    # Il costruttore della sessione deve prima accettare il controllo sano.
+    assert _ricostruisci(vista).outcome == "closed"
+    passi = list(vista.steps)
+    analitici = [i for i, p in enumerate(passi) if p.kind == "analytical"]
+    primo, secondo = analitici[:2]
+    verifica = vista.verification
+    if caso == "analitico-null": passi[primo] = replace(passi[primo], derivation_ref=None)
+    if caso == "analitico-blank": passi[primo] = replace(passi[primo], derivation_ref=" \n ")
+    if caso == "analitico-numero": passi[primo] = replace(passi[primo], derivation_ref=3)
+    if caso == "analitico-bool": passi[primo] = replace(passi[primo], derivation_ref=False)
+    if caso == "trasformazione-ref": passi[0] = replace(passi[0], derivation_ref=passi[primo].derivation_ref)
+    if caso == "duplicati-anche-nel-claim":
+        passi[secondo] = replace(passi[secondo], derivation_ref=passi[primo].derivation_ref)
+        verifica = replace(verifica, evidence_ids=(passi[primo].derivation_ref,) * 2)
+    if caso == "estraneo": passi[primo] = replace(passi[primo], derivation_ref="D0")
+    if caso == "tutti-null": passi = [replace(p, derivation_ref=None) for p in passi]
+    if caso == "ref-scambiati":
+        a, b = passi[primo].derivation_ref, passi[secondo].derivation_ref
+        passi[primo] = replace(passi[primo], derivation_ref=b)
+        passi[secondo] = replace(passi[secondo], derivation_ref=a)
+    if caso == "claim-riordinato": verifica = replace(verifica, evidence_ids=tuple(reversed(verifica.evidence_ids)))
+    if caso == "claim-extra": verifica = replace(verifica, evidence_ids=(*verifica.evidence_ids, "extra"))
+    if caso == "claim-incompleto": verifica = replace(verifica, evidence_ids=verifica.evidence_ids[:-1])
+    if caso == "spazi-id": passi[primo] = replace(passi[primo], derivation_ref=" " + passi[primo].derivation_ref + " ")
+    if caso == "passi-riordinati": passi.reverse()
+    with pytest.raises(ValueError):
+        replace(vista, steps=tuple(passi), verification=verifica)
+
+
+def test_h5_gli_identificatori_restano_opachi_senza_normalizzazione():
+    from dataclasses import replace
+    vista = _vista_chiusa_legale()
+    nomi = ("origine-alfa", "derivazione-omega")
+    mappa = dict(zip(vista.verification.evidence_ids, nomi))
+    passi = tuple(replace(p, derivation_ref=mappa.get(p.derivation_ref)) for p in vista.steps)
+    nuova = replace(vista, steps=passi, verification=replace(vista.verification, evidence_ids=nomi))
+    assert nuova.verification.evidence_ids == nomi
+    assert tuple(p.derivation_ref for p in nuova.steps if p.kind == "analytical") == nomi
+
+
+def test_h5_due_trasformazioni_scambiate_non_cambiano_la_sequenza_analitica():
+    from dataclasses import replace
+    from kirchhoff.pipeline.presentation import project_closed_session
+    chiusura, run = _chiusura_con_run(SCALA_3R)
+    vista = project_closed_session(
+        chiusura.session, chiusura.registry, run,
+        layout_iniziale=_layout_scala(), istante=1,
+        casualita=bytes(range(10)))
+    assert not isinstance(vista, Failure)
+    assert _ricostruisci(vista).outcome == "closed"
+    passi = list(vista.steps)
+    assert passi[0].kind == passi[1].kind == "transform"
+    passi[0], passi[1] = passi[1], passi[0]
+    assert tuple(p.derivation_ref for p in passi if p.kind == "analytical") == vista.verification.evidence_ids
+    with pytest.raises(ValueError, match="fuori ordine"):
+        replace(vista, steps=tuple(passi))
