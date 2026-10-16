@@ -93,6 +93,42 @@ def diagnose(ir: IR, trace: StudentTrace, netlist: str) -> dict:
         if step.reading != "clear":
             return {**base, "outcome": "not_assessable", "category": step.reading,
                     "message": "Non riesco a leggere con sicurezza questo passaggio; chiariscilo prima del controllo."}
+        if step.operation == "ohm-tensione":
+            # Contratto esplicito: V(first) = I(first) * R(second), nei
+            # morsetti originali. La prosa non viene interpretata come formula.
+            try:
+                target, factor = ir.component(step.first), ir.component(step.second)
+            except KeyError:
+                return {**base, "outcome": "not_assessable", "category": "identifier",
+                        "message": "Indica il resistore della tensione e quello usato nel prodotto nel circuito originale."}
+            if target.type != "resistor" or factor.type != "resistor":
+                return {**base, "outcome": "not_assessable", "category": "model",
+                        "message": "Questo controllo di Ohm richiede due riferimenti a resistori ideali, anche coincidenti."}
+            try:
+                claimed = Fraction(step.claimed_value) if step.claimed_value else None
+            except (ValueError, ZeroDivisionError):
+                claimed = None
+            if claimed is None:
+                return {**base, "outcome": "not_assessable", "category": "transcription",
+                        "message": "Indica il valore esatto della tensione scritta, in volt."}
+            if observed_dc is None:
+                observed_dc = _verified_dc_observables(ir)
+            if observed_dc is None:
+                return {**base, "outcome": "not_assessable", "category": "proof",
+                        "message": "I percorsi indipendenti non concordano o non sono disponibili; non giudico errato il prodotto di Ohm."}
+            branch_current = observed_dc[target.id]["current"]
+            expected = observed_dc[target.id]["voltage"]
+            product = branch_current * factor.value.amount
+            if product != expected:
+                return {**base, "outcome": "first_invalid", "category": "reference",
+                        "message": f"Per V({target.id}) stai usando R({factor.id}) = {factor.value.amount} ohm: con I({target.id}) = {branch_current} A il prodotto vale {product} V. La resistenza di {target.id} è {target.value.amount} ohm e la sua tensione è {expected} V. Rivedi il riferimento della resistenza prima dell'aritmetica."}
+            if factor.value.amount != target.value.amount:
+                return {**base, "outcome": "not_assessable", "category": "simplification",
+                        "message": "La corrente è nulla e i due prodotti coincidono; una resistenza diversa non prova qui un errore. Chiarisci la sostituzione."}
+            if claimed != product:
+                return {**base, "outcome": "first_invalid", "category": "algebra",
+                        "message": f"La resistenza usata ha il valore corretto per {target.id}, ma {branch_current} A × {factor.value.amount} ohm = {product} V, non {claimed} V. Rivedi il calcolo."}
+            continue
         if step.operation == "kcl":
             if step.first not in ir.nodes or not any(step.first in c.terminals for c in ir.components):
                 return {**base, "outcome": "not_assessable", "category": "identifier",
