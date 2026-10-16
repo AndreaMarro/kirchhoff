@@ -1,0 +1,84 @@
+{
+  "source_main": "a3eb02bbeee7bc2914737f73cf771f524265c4c4",
+  "candidate": "023fef3da11c995f359db2738abd29e0c7e0acf5",
+  "base": "7e1c4b6148622805c457538249bab1cb2d92152d",
+  "contexts": 2,
+  "solver": "real local HTTP API",
+  "diagnoses": [
+    {
+      "schema": "student-diagnosis.v1",
+      "step": 1,
+      "circuit_fingerprint": "b2fef93fb834aac879fe6c5e18b5d881be2dc0d47c725fff59d38047ebf0a9d6",
+      "focus": [
+        "R2",
+        "R1"
+      ],
+      "outcome": "first_invalid",
+      "category": "reference",
+      "message": "Per V(R2) stai usando R(R1) = 1000 ohm: con I(R2) = 1/250 A il prodotto vale 4 V. La resistenza di R2 è 2000 ohm e la sua tensione è 8 V. Rivedi il riferimento della resistenza prima dell'aritmetica.",
+      "engine_revision": "a3eb02bbeee7bc2914737f73cf771f524265c4c4"
+    },
+    {
+      "schema": "student-diagnosis.v1",
+      "step": 1,
+      "circuit_fingerprint": "b2fef93fb834aac879fe6c5e18b5d881be2dc0d47c725fff59d38047ebf0a9d6",
+      "focus": [
+        "R2",
+        "R2"
+      ],
+      "outcome": "first_invalid",
+      "category": "algebra",
+      "message": "La resistenza usata ha il valore corretto per R2, ma 1/250 A × 2000 ohm = 8 V, non 4 V. Rivedi il calcolo.",
+      "engine_revision": "a3eb02bbeee7bc2914737f73cf771f524265c4c4"
+    },
+    {
+      "schema": "student-diagnosis.v1",
+      "outcome": "valid_so_far",
+      "step": null,
+      "category": null,
+      "focus": [],
+      "circuit_fingerprint": "b2fef93fb834aac879fe6c5e18b5d881be2dc0d47c725fff59d38047ebf0a9d6",
+      "message": "I passaggi controllati sono validi fin qui; il procedimento completo resta da verificare.",
+      "engine_revision": "a3eb02bbeee7bc2914737f73cf771f524265c4c4"
+    },
+    {
+      "schema": "student-diagnosis.v1",
+      "step": 1,
+      "circuit_fingerprint": "b2fef93fb834aac879fe6c5e18b5d881be2dc0d47c725fff59d38047ebf0a9d6",
+      "focus": [
+        "R2",
+        "R2"
+      ],
+      "outcome": "not_assessable",
+      "category": "unreadable",
+      "message": "Non riesco a leggere con sicurezza questo passaggio; chiariscilo prima del controllo.",
+      "engine_revision": "a3eb02bbeee7bc2914737f73cf771f524265c4c4"
+    }
+  ],
+  "artifacts": {
+    "dc-cronologia-quaderno-a3eb02b.json": {
+      "bytes": 1797,
+      "sha256": "86d196f95ffbbb864b3ecbcc6dceca31802429121bffd0d1c3874a372dcf8009"
+    },
+    "dc-cronologia-lezione-a3eb02b.pdf": {
+      "bytes": 88090,
+      "sha256": "7e642963be9668b3aa9864d4440ef55d723a2472ab669e8c50968d018bae33fa"
+    },
+    "dc-cronologia-riaperta-a3eb02b.png": {
+      "bytes": 151147,
+      "sha256": "6be447f53c79d5c64ee15005092f0ba92578047b89d0eb2e3e6463be9038bb61"
+    }
+  },
+  "lesson": {
+    "source_sha": "a3eb02bbeee7bc2914737f73cf771f524265c4c4",
+    "lesson_build": "c0e36cf289f625f9442013b216004aee2b94b09bbf6bdfd07f2868b9ea67897d",
+    "fingerprint": "b2fef93fb834aac879fe6c5e18b5d881be2dc0d47c725fff59d38047ebf0a9d6",
+    "answer": {
+      "exact": "8",
+      "decimal": "8",
+      "unit": "V",
+      "reference": "b → 0"
+    }
+  },
+  "cold_reopen": "PASS: fresh context, all four attempts recalculated"
+}

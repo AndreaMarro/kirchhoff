@@ -1,3 +1,10 @@
+> **Registro storico, chiusura operativa del 16 ottobre 2026.** Le etichette
+> IN_PROGRESS e READY_FOR_REVIEW sotto descrivono l'istante delle singole
+> annotazioni. I tre lavori del 16 ottobre sono integrati nelle PR #25, #26 e
+> #27; lo stato finale è nella [consegna corrente](docs/ops/CONSEGNA-2026-10-16.md).
+> I requisiti ancora non implementati sono debiti conservati e differiti,
+> non lavorazioni lasciate attive da questa esecuzione. La chiusura non
+> certifica il completamento del prodotto o delle famiglie.
 
 ## Story 1.7 — tre rilievi della ri-revisione, registrati e non chiusi
 
@@ -654,3 +661,22 @@ omissione bozze esplicita. Testo estratto e tutte le pagine renderizzate/ispezio
 Questo materiale è ancorato400; non si attribuisce a un futuro main. La review
 tecnica del delta non ha finding. Stato READY_FOR_REVIEW: browser e CI dello
 SHA finale ancora da acquisire prima della promozione.
+
+## CLOSEOUT-20261016 — sviluppi integrati e lavorazione chiusa
+
+Codice finale `a3eb02bbeee7bc2914737f73cf771f524265c4c4`, tree
+`24b92ff9c7f91d6e5946f565cb6eeed3fb6d1d23`. PR #25 (recupero trasporto,
+copia e tastiera), #26 (riferimenti di Ohm) e #27 (cronologia/quaderno v3/PDF)
+sono MERGED. La verifica successiva su main ha ripetuto sei casi history
+con API e browser reali, esportato e riaperto il quaderno e ispezionato
+testo e tutti i render del PDF di dieci pagine.
+
+CI del codice integrato: Python 2628 PASS/3 SKIP, copertura 97,34%, dominio
+100%; web 391 unit PASS, 186 browser PASS/62 skip delle lane live opzionali.
+Gli esiti locali distinti e i fallimenti precedenti restano conservati nel
+receipt della PR e nelle [prove di consegna](docs/evidence/2026-10-16/closeout.json).
+Nessun timeout, retry, skip o gate è stato indebolito.
+
+La chiusura richiesta dal proprietario termina la lavorazione. Rimangono
+differiti i debiti delle famiglie, il triage residuo, il pilot umano e le
+integrazioni non dimostrate; nessuno è dichiarato implementato dalla chiusura.
