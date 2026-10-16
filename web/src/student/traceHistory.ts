@@ -37,7 +37,7 @@ export async function checkTrace(netlist:string,fingerprint:string,steps:TraceSt
  const result:unknown=await response.json();
  if(!response.ok)throw new Error(record(result)&&typeof result.message==='string'?result.message:'Controllo non riuscito.');
  if(!record(result)||result.schema!=='student-diagnosis.v1'||result.circuit_fingerprint!==fingerprint||
-  !['first_invalid','valid_so_far','not_assessable'].includes(String(result.outcome))||
+  typeof result.outcome!=='string'||!['first_invalid','valid_so_far','not_assessable'].includes(result.outcome)||
   !(result.step===null||Number.isInteger(result.step)&&Number(result.step)>=1&&Number(result.step)<=steps.length)||
   !(result.category===null||typeof result.category==='string'&&result.category.length<=100)||
   typeof result.message!=='string'||result.message.length>4000||!Array.isArray(result.focus)||result.focus.length>64||

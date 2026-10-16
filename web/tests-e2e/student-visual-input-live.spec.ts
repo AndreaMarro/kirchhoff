@@ -36,7 +36,8 @@ test('foto, componenti modificabili, conferma e quaderno riaperto senza scrivere
  const download=page.waitForEvent('download');
  await page.getByRole('button',{name:'Salva quaderno ↓'}).click();
  const saved=JSON.parse(await readFile(await (await download).path(),'utf8'));
- expect(saved.schema).toBe('kirchhoff-portable-session.v2');
+ expect(saved.schema).toBe('kirchhoff-portable-session.v3');
+ expect(saved.traceHistory).toEqual([]);
  expect(saved.answerExact).toBe('2');
  expect(saved.sourceArtifact.original.sha256).toBe(createHash('sha256').update(bytes).digest('hex'));
  expect(Buffer.from(saved.sourceArtifact.original.dataURL.split(',')[1],'base64')).toEqual(bytes);

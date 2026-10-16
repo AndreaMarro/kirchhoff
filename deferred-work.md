@@ -624,3 +624,33 @@ Verifica del fix:21 Python/API/PDFPASS e37 unit mirate webPASS. Il test
 font usa le metriche Helvetica standard (max1015/1000, W944/1000)
 lette dal parser indipendente; ogni riga del controesempio resta nel MediaBox.
 Controreview sul nuovo SHA e suite complete ancora richieste.
+
+Chiusura del candidato400 e delta finale: review tecnica separata APPROVE400;
+CI push/PR Python2628PASS3SKIP,97.34%,dominio100%; web388unitPASS,
+186browserPASS62SKIP. Gli skip Python sono helper sprint_plan non raggiungibile,
+Chromium assente nel job Python e ngspice assente. I62 browser sono lane live
+opzionali;6 history+2 Ohm esplicitamentePASS con API reale. Non è una review
+GitHub umana né una prova del prodotto integrato.
+
+Un full Python locale nel checkout iniziale è uscito2 prima di eseguire test:
+2 errori collection Errno60 su file invariati,654.45s. Stack nativo bloccato in
+FileIO.read e hash Git/remoto identici hanno isolato il problema di lettura.
+Anche l'avvio browser ha incontrato bad-interpreter I/O e poi il timeout
+webServer invariato, senza test eseguiti. Errori conservati; nessun budget
+aumentato. Un clone indipendente fuori dalla cartella iniziale, medesimo
+lockfile e holdout escluso, raccoglie2631 test e completa il full Python:
+**2631PASS,0SKIP,234.81s,97.40%,dominio100%**. Node24.19.0,Python3.12.12;
+chiavi provider escluse.14 browser live sorgenti foto/PDF e capabilitiesPASS.
+
+Tre regressioni aggiuntive autentiche RED: schema/outcome array convertibili
+in stringa erano accettati. Guardie richiedono stringhe esplicite;40 test
+miratiPASS, ricontrollati anche in contesto separato. Adeguato il test foto al
+formato v3 intenzionale, aggiungendo assert storia vuota. Ultimo full unit web
+**391PASS**, build/tipiPASS. Nessun timeout, retry, skip o gate indebolito.
+
+Un export UI reale400 contiene4 controlli, riaperti in nuovo contesto, e PDF
+di10 pagine: domanda, soluzione, diagrammi, operandi, esiti ricalcolati e
+omissione bozze esplicita. Testo estratto e tutte le pagine renderizzate/ispezionate.
+Questo materiale è ancorato400; non si attribuisce a un futuro main. La review
+tecnica del delta non ha finding. Stato READY_FOR_REVIEW: browser e CI dello
+SHA finale ancora da acquisire prima della promozione.

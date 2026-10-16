@@ -20,7 +20,8 @@ describe('risposte del controllo',()=>{
  });
  it.each([
   {...valid,schema:'future'}, {...valid,engine_revision:'missing'}, {...valid,circuit_fingerprint:'0'.repeat(64)},
-  {...valid,outcome:'certified'}, {...valid,step:33}, {...valid,focus:[42]}, {...valid,message:42},
+  {...valid,outcome:'certified'}, {...valid,outcome:['first_invalid']}, {...valid,outcome:['valid_so_far']},
+  {...valid,step:33}, {...valid,focus:[42]}, {...valid,message:42},
   {...valid,step:null}, {...valid,outcome:'valid_so_far',step:1},
  ])('rifiuta risposte non interpretabili o riferite a un altro circuito',async result=>{
   vi.stubGlobal('fetch',vi.fn().mockResolvedValue(new Response(JSON.stringify(result))));

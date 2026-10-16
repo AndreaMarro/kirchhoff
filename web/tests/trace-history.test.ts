@@ -6,6 +6,10 @@ const fields={netlist:fixture.netlist,method:'auto',answerExact:'8',engineRevisi
  showOriginal:false,boardScene:'',traceSteps:fixture.attempts[2].steps,priorImageSha256:null};
 
 describe('cronologia del quaderno',()=>{
+ it('rifiuta una versione convertibile in testo ma non dichiarata come stringa',async()=>{
+  const bundle=await makeSessionBundle(fields);
+  await expect(readSessionBundle(JSON.stringify({...bundle,schema:[bundle.schema]}))).rejects.toThrow('Versione');
+ });
  it('conserva tutte le revisioni precedenti e il draft corrente in versione3',async()=>{
   const bundle=await makeSessionBundle({...fields,traceHistory:fixture.attempts});
   expect(bundle.schema).toBe('kirchhoff-portable-session.v3');

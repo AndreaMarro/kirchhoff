@@ -38,7 +38,7 @@ export async function readSessionBundle(text:string):Promise<SessionBundle>{
  if(text.length>MAX_SESSION_BYTES)throw new Error('Il quaderno supera 42 MB. Riduci le immagini nella lavagna.');
  let value:unknown;
  try{value=JSON.parse(text);}catch{throw new Error('Il quaderno non è un JSON leggibile.');}
- if(!record(value)||![SESSION_SCHEMA,'kirchhoff-portable-session.v1','kirchhoff-portable-session.v2'].includes(String(value.schema))||typeof value.netlist!=='string'||!value.netlist.trim()||value.netlist.length>16000||
+ if(!record(value)||typeof value.schema!=='string'||![SESSION_SCHEMA,'kirchhoff-portable-session.v1','kirchhoff-portable-session.v2'].includes(value.schema)||typeof value.netlist!=='string'||!value.netlist.trim()||value.netlist.length>16000||
     typeof value.method!=='string'||value.method.length>40||typeof value.answerExact!=='string'||value.answerExact.length>200||
     typeof value.engineRevision!=='string'||value.engineRevision.length>100||typeof value.circuitFingerprint!=='string'||
     !/^[a-f0-9]{64}$/.test(value.circuitFingerprint)||!Number.isInteger(value.selectedStep)||Number(value.selectedStep)<0||Number(value.selectedStep)>512||
