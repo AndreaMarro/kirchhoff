@@ -572,3 +572,85 @@ certificazione del metodo libero, dell'intero prodotto o delle famiglie DC.
 Il PDF continua a escludere la storia dei tentativi. Prossima unità: reader
 Ardesia .lesson limitato prima degli effetti, con recupero selettivo del
 contratto moderno e senza coinvolgere la pipeline narrativa LLM.
+
+## STUDENT-HISTORY-20261016 — cronologia portabile e materiale
+
+Base main7e1c4b6148622805c457538249bab1cb2d92152d. Branch
+codex/student-history-20261016. PR25/26 integrate; nessuna PR Kirchhoff aperta
+al controllo iniziale. Estensione del flusso StudentTrace/quaderno/PDF,
+contratto in `docs/student-trace-history.md`. Nessuna modifica al dominio,
+Verified, soglie o holdout. Nessun contesto privato pubblicato.
+
+RED autentico:8 test quaderno e6 PDF sulla capacità assente; ulteriori2 RED
+su risposte diagnosi incoerenti e1 HTTP su cronologia null. Baseline mirata
+13 quadernoPASS e132 PythonPASS. Il nuovo test lungo aveva inizialmente un
+testo oltre500 caratteri: fixture corretta entro il contratto e ampliata a32
+passi; non è un bug della produzione. Primo avvio Playwright senza attributo
+JSON ESM: errore di raccolta, corretto caricando la fixture con fs; non RED
+funzionale. Le revisioni e i fallimenti storici restano distinguibili.
+
+Verifiche attuali:35 unit webPASS,17 Python/API/PDFPASS, tipi/buildPASS;
+6 live browserPASS desktop/mobile con API reale e cold context. Un run Python
+adiacente113PASS1FAIL sul catalogo con lesson_build precedente, da rigenerare
+canonicamente in commit separato. Suite complete, rigenerazione, review tecnica
+esatta e CI ancora da acquisire; stato IN_PROGRESS. Nessun test/gate, skip,
+retry o timeout indebolito; nessuna chiamata a provider o dato reale.
+
+La cronologia è salvata esplicitamente nel file, senza autosave del server.
+Le diagnosi importate non diventano prove: si ricalcolano per circuito/revisione.
+Le bozze non controllate e i glifi non renderizzabili sono omissioni dichiarate.
+Non sono dimostrate collaborazione remota, utilità con pilot umano o completezza
+delle famiglie. Criterio di chiusura: candidato revisionato, check richiesti
+verdi sullo SHA esatto e materiale letto/renderizzato con i tentativi originali.
+
+Review del codice3661511: P2 riprodotto con70W+FINE, testo estratto completo
+ma coda fuori pagina nel rendering. Due regressioni genuine RED (W e Ω che
+diventa "ohm"); normalizzazione prima del wrap e bound conservativo Helvetica
+1.1em risolvono l'overflow di tutte le righe della cronologia. Il test usa
+metriche standard lette da pypdf, indipendenti dal generatore e bloccate in dev. Un ulteriore RED
+HTTP distingueva rifiuto del circuito da cambio motore; la revisione ora si
+confronta con l'identità del processo, anche quando la lezione è un rifiuto.
+Guardie strutturali TS non convertono array in etichette valide. Primo run
+dei due nuovi test di shape già GREEN, non conteggiato come RED.
+
+Full unit web sul codice366:386PASS, exit0, Node24.19.0; nessun timeout
+osservato in questo run. Non cancella i timeout storici. Successivi avvii
+Python hanno incontrato errori di setup su import pygments.regexopt e sul
+percorso editable di kirchhoff. File/import controllati; il test usa ora
+PYTHONPATH=src esplicito per scegliere il checkout in prova, senza cambiare
+produzione, test o soglie.
+
+Verifica del fix:21 Python/API/PDFPASS e37 unit mirate webPASS. Il test
+font usa le metriche Helvetica standard (max1015/1000, W944/1000)
+lette dal parser indipendente; ogni riga del controesempio resta nel MediaBox.
+Controreview sul nuovo SHA e suite complete ancora richieste.
+
+Chiusura del candidato400 e delta finale: review tecnica separata APPROVE400;
+CI push/PR Python2628PASS3SKIP,97.34%,dominio100%; web388unitPASS,
+186browserPASS62SKIP. Gli skip Python sono helper sprint_plan non raggiungibile,
+Chromium assente nel job Python e ngspice assente. I62 browser sono lane live
+opzionali;6 history+2 Ohm esplicitamentePASS con API reale. Non è una review
+GitHub umana né una prova del prodotto integrato.
+
+Un full Python locale nel checkout iniziale è uscito2 prima di eseguire test:
+2 errori collection Errno60 su file invariati,654.45s. Stack nativo bloccato in
+FileIO.read e hash Git/remoto identici hanno isolato il problema di lettura.
+Anche l'avvio browser ha incontrato bad-interpreter I/O e poi il timeout
+webServer invariato, senza test eseguiti. Errori conservati; nessun budget
+aumentato. Un clone indipendente fuori dalla cartella iniziale, medesimo
+lockfile e holdout escluso, raccoglie2631 test e completa il full Python:
+**2631PASS,0SKIP,234.81s,97.40%,dominio100%**. Node24.19.0,Python3.12.12;
+chiavi provider escluse.14 browser live sorgenti foto/PDF e capabilitiesPASS.
+
+Tre regressioni aggiuntive autentiche RED: schema/outcome array convertibili
+in stringa erano accettati. Guardie richiedono stringhe esplicite;40 test
+miratiPASS, ricontrollati anche in contesto separato. Adeguato il test foto al
+formato v3 intenzionale, aggiungendo assert storia vuota. Ultimo full unit web
+**391PASS**, build/tipiPASS. Nessun timeout, retry, skip o gate indebolito.
+
+Un export UI reale400 contiene4 controlli, riaperti in nuovo contesto, e PDF
+di10 pagine: domanda, soluzione, diagrammi, operandi, esiti ricalcolati e
+omissione bozze esplicita. Testo estratto e tutte le pagine renderizzate/ispezionate.
+Questo materiale è ancorato400; non si attribuisce a un futuro main. La review
+tecnica del delta non ha finding. Stato READY_FOR_REVIEW: browser e CI dello
+SHA finale ancora da acquisire prima della promozione.

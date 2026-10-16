@@ -1,0 +1,67 @@
+{
+  "netlist": "V1 a 0 12 volt\nR1 a b 1000 ohm\nR2 b 0 2000 ohm\n? voltage R2",
+  "attempts": [
+    {
+      "engineRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "steps": [
+        {
+          "transcription": "V_R2 = I_R2 * R1 = 4 V",
+          "operation": "ohm-tensione",
+          "first": "R2",
+          "second": "R1",
+          "claimed_value": "4",
+          "reading": "clear"
+        }
+      ],
+      "circuitFingerprint": "b2fef93fb834aac879fe6c5e18b5d881be2dc0d47c725fff59d38047ebf0a9d6"
+    },
+    {
+      "engineRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "steps": [
+        {
+          "transcription": "V_R2 = I_R2 * R2 = 4 V",
+          "operation": "ohm-tensione",
+          "first": "R2",
+          "second": "R2",
+          "claimed_value": "4",
+          "reading": "clear"
+        }
+      ],
+      "circuitFingerprint": "b2fef93fb834aac879fe6c5e18b5d881be2dc0d47c725fff59d38047ebf0a9d6"
+    },
+    {
+      "engineRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "steps": [
+        {
+          "transcription": "V_R2 = I_R2 * R2 = 8 V",
+          "operation": "ohm-tensione",
+          "first": "R2",
+          "second": "R2",
+          "claimed_value": "8",
+          "reading": "clear"
+        }
+      ],
+      "circuitFingerprint": "b2fef93fb834aac879fe6c5e18b5d881be2dc0d47c725fff59d38047ebf0a9d6"
+    },
+    {
+      "engineRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "steps": [
+        {
+          "transcription": "Passaggio da chiarire",
+          "operation": "ohm-tensione",
+          "first": "R2",
+          "second": "R2",
+          "claimed_value": "8",
+          "reading": "unreadable"
+        }
+      ],
+      "circuitFingerprint": "b2fef93fb834aac879fe6c5e18b5d881be2dc0d47c725fff59d38047ebf0a9d6"
+    }
+  ],
+  "categories": [
+    "reference",
+    "algebra",
+    null,
+    "unreadable"
+  ]
+}

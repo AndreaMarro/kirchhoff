@@ -212,15 +212,23 @@ class Handler(BaseHTTPRequestHandler):
             if self.path not in {'/api/solve','/api/pdf','/api/diagnose'}:return self.send(404,dict(message='Operazione non trovata.'))
             if not isinstance(payload.get('netlist'),str):raise ValueError('Manca il circuito da risolvere.')
             if self.path=='/api/diagnose':
-                return self.send(200,diagnose_payload(payload['netlist'],payload.get('trace')))
+                diagnosis=diagnose_payload(payload['netlist'],payload.get('trace'))
+                return self.send(200,{**diagnosis,'engine_revision':revision()})
             source_kind=payload.get('source_kind','netlist')
             if source_kind not in {'netlist','image'}:raise ValueError('Origine del circuito sconosciuta.')
             provenance=None
             if source_kind=='image':
                 provenance=verify_revision(payload.get('confirmation_token'),payload['netlist'],PHOTO_RECEIPT_SECRET)
-            result=create_lesson(payload['netlist'],payload.get('method','auto'),revision())
+            engine_revision=revision()
+            result=create_lesson(payload['netlist'],payload.get('method','auto'),engine_revision)
             if provenance and result.get('outcome')=='solved':result['input_provenance']=provenance
-            if self.path=='/api/pdf':return self.send(200,export_pdf(result),'application/pdf')
+            if self.path=='/api/pdf':
+                if 'trace_history' in payload and not isinstance(payload['trace_history'],list):
+                    raise ValueError('La cronologia deve essere un elenco di tentativi.')
+                expected=payload.get('expected_engine_revision')
+                if expected is not None and expected!=engine_revision:
+                    raise ValueError('Il motore è cambiato: ricontrolla i tentativi prima di esportare il PDF.')
+                return self.send(200,export_pdf(result,trace_history=payload.get('trace_history')),'application/pdf')
             return self.send(200,result)
         except RuntimeIdentityError as exc:
             self.send(409,dict(code='runtime_changed',message=str(exc)))
