@@ -572,3 +572,33 @@ certificazione del metodo libero, dell'intero prodotto o delle famiglie DC.
 Il PDF continua a escludere la storia dei tentativi. Prossima unità: reader
 Ardesia .lesson limitato prima degli effetti, con recupero selettivo del
 contratto moderno e senza coinvolgere la pipeline narrativa LLM.
+
+## STUDENT-HISTORY-20261016 — cronologia portabile e materiale
+
+Base main7e1c4b6148622805c457538249bab1cb2d92152d. Branch
+codex/student-history-20261016. PR25/26 integrate; nessuna PR Kirchhoff aperta
+al controllo iniziale. Estensione del flusso StudentTrace/quaderno/PDF,
+contratto in `docs/student-trace-history.md`. Nessuna modifica al dominio,
+Verified, soglie o holdout. Nessun contesto privato pubblicato.
+
+RED autentico:8 test quaderno e6 PDF sulla capacità assente; ulteriori2 RED
+su risposte diagnosi incoerenti e1 HTTP su cronologia null. Baseline mirata
+13 quadernoPASS e132 PythonPASS. Il nuovo test lungo aveva inizialmente un
+testo oltre500 caratteri: fixture corretta entro il contratto e ampliata a32
+passi; non è un bug della produzione. Primo avvio Playwright senza attributo
+JSON ESM: errore di raccolta, corretto caricando la fixture con fs; non RED
+funzionale. Le revisioni e i fallimenti storici restano distinguibili.
+
+Verifiche attuali:35 unit webPASS,17 Python/API/PDFPASS, tipi/buildPASS;
+6 live browserPASS desktop/mobile con API reale e cold context. Un run Python
+adiacente113PASS1FAIL sul catalogo con lesson_build precedente, da rigenerare
+canonicamente in commit separato. Suite complete, rigenerazione, review tecnica
+esatta e CI ancora da acquisire; stato IN_PROGRESS. Nessun test/gate, skip,
+retry o timeout indebolito; nessuna chiamata a provider o dato reale.
+
+La cronologia è salvata esplicitamente nel file, senza autosave del server.
+Le diagnosi importate non diventano prove: si ricalcolano per circuito/revisione.
+Le bozze non controllate e i glifi non renderizzabili sono omissioni dichiarate.
+Non sono dimostrate collaborazione remota, utilità con pilot umano o completezza
+delle famiglie. Criterio di chiusura: candidato revisionato, check richiesti
+verdi sullo SHA esatto e materiale letto/renderizzato con i tentativi originali.

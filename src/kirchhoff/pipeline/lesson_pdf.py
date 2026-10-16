@@ -10,13 +10,14 @@ import xml.etree.ElementTree as ET
 
 from kirchhoff.pipeline.lesson_pdf_math import actual_text, draw_box, equation_boxes
 from kirchhoff.pipeline.lesson_math import equation_text
+from kirchhoff.pipeline.student_history import recheck_history
 from kirchhoff.runtime_identity import assert_runtime_current
 
 
-def _plain(s):
+def _plain(s, errors='replace'):
     for a, b in {'Ω':'ohm', 'Σ':'Somma', '→':'->', '−':'-', '×':'x', '‖':' || ', '≠':'!=', 'Δ':'Delta', '…':'...', '∠':'angolo', 'ω':'omega', 'δ':'delta'}.items():
         s = s.replace(a, b)
-    return s.encode('cp1252', 'replace').decode('cp1252')
+    return s.encode('cp1252', errors).decode('cp1252')
 
 
 def _literal(s):
@@ -84,10 +85,13 @@ def _drawing(svg, ytop=727, max_height=320):
     return result+'Q\n', ytop-h*scale-28
 
 
-def export_pdf(lesson):
+def export_pdf(lesson, *, trace_history=None):
     assert_runtime_current()
     if lesson.get('outcome') != 'solved':
         raise ValueError('Il PDF richiede una lezione risolta.')
+    attempts = recheck_history(lesson['netlist'], trace_history) if trace_history is not None else []
+    if attempts and attempts[0]['circuitFingerprint'] != lesson.get('fingerprint'):
+        raise ValueError('La cronologia non appartiene al circuito della lezione.')
     objects = [b'', b'', b'<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>',
                b'<< /Type /Font /Subtype /Type1 /BaseFont /Times-Roman /Encoding /WinAnsiEncoding >>',
                b'<< /Type /Font /Subtype /Type1 /BaseFont /Times-Italic /Encoding /WinAnsiEncoding >>',
@@ -155,6 +159,43 @@ def export_pdf(lesson):
                 stream+=_text(42,y,line);y-=16
             y-=13
         stream+=_text(42,35,f'{i+1}/{len(lesson["steps"])} - {lesson["title"]} - {lesson["answer"]["reference"]}',9)
+        page(stream)
+    for index, attempt in enumerate(attempts, 1):
+        stream='0.14 0.20 0.29 rg\n'+_text(42,800,'KIRCHHOFF / TENTATIVI E CORREZIONI',10)
+        stream+=_text(42,770,f'Tentativo {index}',22,'F2')
+        drawing,y=_drawing(lesson['original'],ytop=738,max_height=170);stream+=drawing
+
+        def paragraph(text, size=11):
+            nonlocal stream,y
+            for line in textwrap.wrap(str(text),80,break_long_words=True):
+                if y<75:
+                    page(stream)
+                    stream='0.14 0.20 0.29 rg\n'+_text(42,800,f'Tentativo {index} - continua',18,'F2')
+                    y=765
+                # Il quaderno conserva ogni carattere. Per il font PDF base,
+                # un'omissione visibile e' preferibile a glifi "?" silenziosi.
+                try:
+                    _plain(line, errors='strict')
+                except UnicodeEncodeError:
+                    line='[Testo non visualizzabile con il font PDF; originale completo nel quaderno.]'
+                stream+=_text(42,y,line,size);y-=16
+            y-=8
+
+        paragraph('Esiti ricalcolati sul circuito originale; il testo libero non e una prova certificata.')
+        paragraph('Motore del controllo conservato (provenienza dichiarata): '+attempt['engineRevision'],9)
+        paragraph('Motore del ricalcolo PDF: '+(lesson.get('source_sha') or 'non disponibile'),9)
+        diagnosis=attempt['diagnosis']
+        outcome=('Passaggi controllati validi fin qui.' if diagnosis['outcome']=='valid_so_far' else
+                 'Passaggio non valutabile.' if diagnosis['outcome']=='not_assessable' else
+                 f'Primo errore al passaggio {diagnosis["step"]} ({diagnosis["category"]}).')
+        paragraph(outcome)
+        paragraph(diagnosis['message'])
+        for number, step in enumerate(attempt['steps'],1):
+            paragraph(f'Passaggio {number}: '+step['transcription'])
+            paragraph(f'Operazione: {step["operation"]}; primo: {step["first"] or "non indicato"}; '
+                      f'secondo/verso: {step["second"] or "non indicato"}; '
+                      f'valore: {step["claimed_value"] if step["claimed_value"] is not None else "non indicato"}; lettura: {step["reading"]}.',9)
+        paragraph('Sono inclusi i controlli completati. Eventuali bozze successive restano nel quaderno.',9)
         page(stream)
     objects[0]=b'<< /Type /Catalog /Pages 2 0 R >>'
     objects[1]=f'<< /Type /Pages /Count {len(pages)} /Kids [{" ".join(str(p)+" 0 R" for p in pages)}] >>'.encode()

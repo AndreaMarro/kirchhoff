@@ -3,6 +3,8 @@ import {CircuitEditor} from './CircuitEditor.tsx';
 import {CircuitInterpretation} from './CircuitInterpretation.tsx';
 import {StudentTracePanel,blankTraceStep} from './StudentTracePanel.tsx';
 import type {TraceStep} from './StudentTracePanel.tsx';
+import {checkTrace,storedTraceHistory} from './traceHistory.ts';
+import type {TraceAttempt} from './traceHistory.ts';
 import {boardSceneSha256,makeSessionBundle,readSessionBundle,MAX_SESSION_BYTES} from './sessionBundle.ts';
 import type {BoardSourceRecord} from './sessionBundle.ts';
 import './student.css';
@@ -66,7 +68,8 @@ export function StudentApp(){
  const sessionInput=useRef<HTMLInputElement>(null),boardSnapshot=useRef(new Map<string,{resolve:(scene:string)=>void;reject:(error:Error)=>void;timer:ReturnType<typeof setTimeout>}>());
  const [boardOpened,setBoardOpened]=useState(false);
  const [boardEpoch,setBoardEpoch]=useState(0),[sessionEpoch,setSessionEpoch]=useState(0);
- const [traceState,setTraceState]=useState<{fingerprint:string;steps:TraceStep[]}>({fingerprint:'',steps:[blankTraceStep()]});
+ const [traceChecking,setTraceChecking]=useState(false);
+ const [traceState,setTraceState]=useState<{fingerprint:string;steps:TraceStep[];history:TraceAttempt[]}>({fingerprint:'',steps:[blankTraceStep()],history:[]});
  const entry=useRef(new URLSearchParams(location.hash.slice(1)));
  const restoreStep=useRef(true);
  const current=lesson?.steps[step];
@@ -224,7 +227,9 @@ export function StudentApp(){
   if(!lesson)return;setBusy(true);setError('');
   try{
    const ex=examples.find(e=>e.id===example);
-   const res=ex?await fetch(`lessons/${ex.methods[method]??ex.methods.auto}.pdf`):await fetch('api/pdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({netlist,method,source_kind:lessonImage&&photoConfirmationToken?'image':'netlist',confirmation_token:photoConfirmationToken})});
+   const history=traceState.fingerprint===lesson.fingerprint?traceState.history:[];
+   if(history.length&&!api)throw new Error('Per includere tentativi e correzioni nel PDF serve il server Kirchhoff. Salva il quaderno per conservarli.');
+   const res=ex&&!history.length?await fetch(`lessons/${ex.methods[method]??ex.methods.auto}.pdf`):await fetch('api/pdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({netlist:lesson.netlist,method,trace_history:storedTraceHistory(history),expected_engine_revision:history.at(-1)?.diagnosis.engine_revision,source_kind:lessonImage&&photoConfirmationToken?'image':'netlist',confirmation_token:photoConfirmationToken})});
    if(!res.ok){await response(res);return;}
    if(!res.headers.get('Content-Type')?.includes('application/pdf'))throw new Error('Documento PDF non disponibile.');
    const url=URL.createObjectURL(await res.blob()),a=document.createElement('a');a.href=url;a.download='Kirchhoff-circuito-passo-passo.pdf';a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);
@@ -276,6 +281,7 @@ export function StudentApp(){
    const bundle=await makeSessionBundle({netlist:lesson.netlist,method,answerExact:lesson.answer.exact,
     engineRevision:lesson.lesson_build??lesson.source_sha,selectedStep:step,showOriginal,boardScene:scene,
     traceSteps:traceState.fingerprint===lesson.fingerprint?traceState.steps:[blankTraceStep()],
+    traceHistory:traceState.fingerprint===lesson.fingerprint?storedTraceHistory(traceState.history):[],
     priorImageSha256:lesson.input_provenance?.source_sha256??(historicalImageDigest.current?.fingerprint===lesson.fingerprint?historicalImageDigest.current.sha256:null),
     boardSource,sourceArtifact:sourceOwner.current?.fingerprint===lesson.fingerprint?sourceOwner.current.artifact:null});
    if(n!==request.current)return;
@@ -300,13 +306,20 @@ export function StudentApp(){
    if(n!==request.current)return;
    if(value.fingerprint!==bundle.circuitFingerprint||value.answer.exact!==bundle.answerExact)
     throw new Error('Il risultato salvato non coincide con la nuova verifica: il quaderno resta chiuso.');
+   const history:TraceAttempt[]=[];
+   for(const attempt of bundle.traceHistory){
+    const diagnosis=await checkTrace(bundle.netlist,bundle.circuitFingerprint,attempt.steps);
+    if(n!==request.current)return;
+    if(diagnosis.engine_revision!==value.source_sha)throw new Error('Il motore è cambiato durante la riapertura: il quaderno resta chiuso. Riprova.');
+    history.push({...attempt,diagnosis});
+   }
    boardScene.current=bundle.boardScene;boardOwner.current=bundle.boardScene?value.fingerprint:null;boardSourceCandidate.current=null;
    boardSourceOwner.current=bundle.boardSource?{fingerprint:value.fingerprint,source:bundle.boardSource,scene:bundle.boardScene}:null;
    historicalImageDigest.current=bundle.priorImageSha256?{fingerprint:value.fingerprint,sha256:bundle.priorImageSha256}:null;
    sourceOwner.current=bundle.sourceArtifact?{fingerprint:value.fingerprint,artifact:bundle.sourceArtifact}:null;
    sourceCandidate.current=bundle.sourceArtifact?{image:bundle.sourceArtifact.prepared.dataURL,original:bundle.sourceArtifact.original,kind:bundle.sourceArtifact.kind,selection:bundle.sourceArtifact.selection}:null;
    setPickedFile(null);setBoardEpoch(x=>x+1);setBoardOpened(false);
-   setTraceState({fingerprint:value.fingerprint,steps:bundle.traceSteps});setSessionEpoch(x=>x+1);
+   setTraceState({fingerprint:value.fingerprint,steps:bundle.traceSteps,history});setSessionEpoch(x=>x+1);
    setLesson(value);setLessonImage(bundle.sourceArtifact?.prepared.dataURL??null);setPhotoConfirmationToken(null);setImage(bundle.sourceArtifact?.prepared.dataURL??null);setImageFromBoard(bundle.sourceArtifact?.kind==='board');setConfirmed(false);setUncertainties([]);setObservations([]);setCandidates([]);setModelReportedComplete(null);
    setExample('');setNetlist(bundle.netlist);setDraft(bundle.netlist);setMethod(bundle.method);setStep(Math.min(bundle.selectedStep,value.steps.length-1));
    setShowOriginal(bundle.showOriginal);setCompare(false);setZoom(100);setPanel(false);
@@ -319,9 +332,9 @@ export function StudentApp(){
   <header className="student-header"><a href="#" className="student-brand">Kirchhoff<span>con Andrea Marro</span></a><span className="student-tag">Capire il circuito, un passaggio alla volta</span><button onClick={()=>{setTab('photo');setPanel(true);setError('');}}>Il tuo circuito <span aria-hidden="true">＋</span></button></header>
   <main className="student-main">
    <div className="student-heading"><div><p className="student-eyebrow">Il laboratorio dei circuiti</p><h1>Il circuito, passo per passo.</h1></div><p>Scegli una strada. Segui i disegni. Torna all’originale quando serve.</p></div>
-   <div className="student-toolbar student-picker"><label>Esercizio <select aria-label="Scegli un circuito" value={example} disabled={busy} onChange={e=>{const ex=examples.find(x=>x.id===e.target.value);if(ex){boardSourceCandidate.current=null;boardSourceOwner.current=null;setMethod('auto');setExample(ex.id);setNetlist(ex.netlist);setDraft(ex.netlist);setImage(null);setImageFromBoard(false);setLessonImage(null);setPhotoConfirmationToken(null);}}}>{!example?<option value="">Il tuo circuito</option>:null}{examples.map(e=><option key={e.id} value={e.id}>{e.title}</option>)}</select></label><label>Metodo <select aria-label="Scegli il metodo" value={method} disabled={busy||!lesson} onChange={e=>{if(example)setMethod(e.target.value);else void solve(netlist,e.target.value,lessonImage,photoConfirmationToken);}}>{(lesson?.available??['auto']).map(m=><option key={m} value={m}>{names[m]}</option>)}</select></label><button disabled={busy||!lesson||!api||!supportsDcTools(lesson)} onClick={()=>void circuitikz()}>Scarica CircuitikZ ↓</button><button disabled={busy||!lesson||!api||!supportsDcTools(lesson)} onClick={()=>void spice()}>Scarica SPICE ↓</button><button disabled={busy||!lesson} onClick={()=>void pdf()}>Scarica PDF ↓</button></div>
-   <div className="student-toolbar student-session-actions"><button disabled={busy||!lesson} aria-describedby="student-notebook-contents" onClick={()=>void saveSession()}>Salva quaderno ↓</button><button disabled={busy} onClick={()=>sessionInput.current?.click()}>Apri quaderno ↑</button><input ref={sessionInput} type="file" accept=".json,application/json" hidden onChange={e=>{void openSession(e.target.files?.[0]);e.target.value='';}}/></div>
-   <p id="student-notebook-contents" style={{overflowWrap:'anywhere'}}>Il quaderno include circuito, procedimento e contenuti della lavagna.{notebookSource?.original?<> Include anche il file originale «{notebookSource.original.name}» e l’immagine della fonte usata.</>:notebookSource?<> Include anche l’immagine della fonte usata.</>:null} Chi riceve il quaderno può leggere questi contenuti.</p>
+   <div className="student-toolbar student-picker"><label>Esercizio <select aria-label="Scegli un circuito" value={example} disabled={busy} onChange={e=>{const ex=examples.find(x=>x.id===e.target.value);if(ex){boardSourceCandidate.current=null;boardSourceOwner.current=null;setMethod('auto');setExample(ex.id);setNetlist(ex.netlist);setDraft(ex.netlist);setImage(null);setImageFromBoard(false);setLessonImage(null);setPhotoConfirmationToken(null);}}}>{!example?<option value="">Il tuo circuito</option>:null}{examples.map(e=><option key={e.id} value={e.id}>{e.title}</option>)}</select></label><label>Metodo <select aria-label="Scegli il metodo" value={method} disabled={busy||!lesson} onChange={e=>{if(example)setMethod(e.target.value);else void solve(netlist,e.target.value,lessonImage,photoConfirmationToken);}}>{(lesson?.available??['auto']).map(m=><option key={m} value={m}>{names[m]}</option>)}</select></label><button disabled={busy||!lesson||!api||!supportsDcTools(lesson)} onClick={()=>void circuitikz()}>Scarica CircuitikZ ↓</button><button disabled={busy||!lesson||!api||!supportsDcTools(lesson)} onClick={()=>void spice()}>Scarica SPICE ↓</button><button disabled={busy||traceChecking||!lesson} onClick={()=>void pdf()}>Scarica PDF ↓</button></div>
+   <div className="student-toolbar student-session-actions"><button disabled={busy||traceChecking||!lesson} aria-describedby="student-notebook-contents" onClick={()=>void saveSession()}>Salva quaderno ↓</button><button disabled={busy||traceChecking} onClick={()=>sessionInput.current?.click()}>Apri quaderno ↑</button><input ref={sessionInput} type="file" accept=".json,application/json" hidden onChange={e=>{void openSession(e.target.files?.[0]);e.target.value='';}}/></div>
+   <p id="student-notebook-contents" style={{overflowWrap:'anywhere'}}>Il quaderno include circuito, procedimento, tentativi controllati e contenuti della lavagna.{notebookSource?.original?<> Include anche il file originale «{notebookSource.original.name}» e l’immagine della fonte usata.</>:notebookSource?<> Include anche l’immagine della fonte usata.</>:null} Chi riceve il quaderno può leggere questi contenuti. Il PDF include soluzione e controlli completati; le bozze non controllate restano nel quaderno.</p>
    {error?<div className="student-error" role="alert">{error}</div>:null}
    {notice?<p role="status">{notice}</p>:null}
    {lesson&&current?<section className={`student-lesson ${expanded?"is-expanded":""}`} aria-busy={busy}>
@@ -338,7 +351,7 @@ export function StudentApp(){
    </section>:<p role="status">{busy?'Preparo la lezione…':error?'Nessuna nuova lezione disponibile.':'Caricamento…'}</p>}
    {isAcLesson(lesson)?<p>In AC puoi salvare PDF, circuito e quaderno. Gli export SPICE/CircuitikZ e il confronto automatico del procedimento sono disponibili solo in continua.</p>:null}
    {isLaplaceLesson(lesson)?<p>Puoi salvare i passaggi in PDF, il circuito e il quaderno. La risposta è una funzione di s, con le condizioni iniziali dichiarate.</p>:null}
-   {lesson&&api&&supportsDcTools(lesson)?<StudentTracePanel key={`${lesson.fingerprint}:${sessionEpoch}`} netlist={lesson.netlist} fingerprint={lesson.fingerprint} steps={traceState.fingerprint===lesson.fingerprint?traceState.steps:[blankTraceStep()]} onStepsChange={steps=>setTraceState({fingerprint:lesson.fingerprint,steps})}/>:null}
+   {lesson&&api&&supportsDcTools(lesson)?<StudentTracePanel key={`${lesson.fingerprint}:${sessionEpoch}`} netlist={lesson.netlist} fingerprint={lesson.fingerprint} steps={traceState.fingerprint===lesson.fingerprint?traceState.steps:[blankTraceStep()]} history={traceState.fingerprint===lesson.fingerprint?traceState.history:[]} disabled={busy} onCheckingChange={setTraceChecking} onStepsChange={steps=>setTraceState(previous=>({fingerprint:lesson.fingerprint,steps,history:previous.fingerprint===lesson.fingerprint?previous.history:[]}))} onAttempt={attempt=>setTraceState(previous=>({fingerprint:lesson.fingerprint,steps:previous.fingerprint===lesson.fingerprint?previous.steps:attempt.steps,history:[...(previous.fingerprint===lesson.fingerprint?previous.history:[]),attempt]}))}/>:null}
    <details className="student-scope"><summary>Cosa puoi risolvere in questa versione</summary><p>{scope||'Circuiti resistivi in continua con sorgenti indipendenti. Il server locale aggiunge tensioni, correnti e potenze AC per RLC e sorgenti indipendenti; la potenza richiede RMS o picco espliciti. I transitori restano fuori ambito.'}</p><p>{apiStatus==='pending'?'Sto verificando il collegamento al server Kirchhoff.':api?'Puoi risolvere circuiti nuovi: il server locale è collegato.':'Stai usando il catalogo statico. Per risolvere circuiti nuovi occorre collegare il server Kirchhoff.'}</p></details>
    <details className="student-scope"><summary>Controllo del risultato e provenienza</summary><p>{lesson?verificationDescription(lesson):'Apri una lezione per vedere i controlli eseguiti.'}</p><p>Versione del motore: <code>{lesson?.lesson_build??lesson?.source_sha}</code></p>{lesson?.input_provenance?<><p>Immagine preparata per l’analisi: <code>{lesson.input_provenance.source_sha256}</code></p><p>Circuito corretto e confermato: <code>{lesson.input_provenance.circuit_sha256}</code></p><p>Confermato il {new Date(lesson.input_provenance.confirmed_at_unix*1000).toLocaleString('it-IT')}.</p><p>La conferma lega questa revisione all’immagine preparata; non certifica che la trascrizione sia fedele.</p></>:null}{visibleBoardSource?<p>Ritaglio della lavagna: {boardStrokeLabel(visibleBoardSource.selectedElementIds.length,visibleBoardSource.selectionOnly)}; impronta della scena usata: <code>{visibleBoardSource.sceneSha256}</code>. Questa è la provenienza del ritaglio, non una verifica della trascrizione.</p>:null}<p><a href={`?view=proof${location.hash}`}>Apri gli strumenti tecnici di verifica ↗</a></p></details>
   </main>
