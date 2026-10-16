@@ -25,8 +25,9 @@ errore di riferimento: il passo resta non valutabile, chiedendo chiarimento.
 Riferimenti sconosciuti, modelli diversi, letture incerte e prove indipendenti
 indisponibili restano non valutabili. Nessun nuovo stato `Verified` è concesso.
 
-Il quaderno v2 conserva i campi del passo senza sostituire la diagnosi o una
-risposta salvata al ricalcolo. I reader precedenti che non conoscono l'operazione
+I quaderni v2 e v3 conservano i campi del passo senza sostituire la diagnosi o
+una risposta salvata al ricalcolo. Il v3 conserva anche la
+[cronologia dei controlli](student-trace-history.md). I reader precedenti che non conoscono l'operazione
 la rifiutano, senza convertirla silenziosamente in un altro passo.
 
 Prove: `test_student_trace_ohm.py`, `session-bundle.test.ts` e

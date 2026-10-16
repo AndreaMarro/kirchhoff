@@ -26,8 +26,10 @@ tecnico proof DC. Non è una copertura completa delle 21 famiglie.
 | MCP | Tool stdio senza UI + risorsa MCP App interattiva; la compatibilita' con un host reale richiede ancora prova |
 | Backend storico | Epic 1 chiusa, P1-J/K/L integrati, H2.5/O0/H2.75 fusi in `main` |
 
-La [consegna del 15 ottobre 2026](docs/ops/CONSEGNA-2026-10-15.md) raccoglie
-SHA, verifiche, tutte le 21 famiglie e debiti ancora non implementati.
+La [consegna del 16 ottobre 2026](docs/ops/CONSEGNA-2026-10-16.md) raccoglie
+gli sviluppi integrati, gli SHA, le prove e la chiusura operativa. La
+[consegna precedente](docs/ops/CONSEGNA-2026-10-15.md) conserva la matrice
+delle 21 famiglie e i debiti storici: 15 PARTIAL, 6 NOT_SUPPORTED, 0 COMPLETE.
 
 ## Avvio locale dello studente
 
@@ -106,7 +108,13 @@ circuito; il pulsante nella lavagna consente un'associazione esplicita. **Apri
 quaderno** richiede il server locale, convalida il file e ricalcola la lezione:
 un'impronta o un risultato diverso blocca il caricamento.
 
-Il quaderno v2 conserva anche la fonte associata alla lezione: se disponibile,
+Il quaderno v3 conserva il procedimento corrente e la cronologia ordinata dei
+tentativi e delle correzioni. La riapertura ricalcola soluzione e controlli
+prima di sostituire la lezione corrente; errori di rete, rifiuti e risposte
+obsolete non aggiungono controlli. I formati v1/v2 restano leggibili con
+cronologia vuota. [Contratto, limiti e prove](docs/student-trace-history.md).
+
+La fonte portabile, introdotta in v2, resta inclusa in v3: se disponibile,
 il file originale foto o PDF, con nome e byte, e l'immagine preparata della
 pagina o del ritaglio usato. Per una fonte senza file originale conserva
 l'immagine usata. I contenuti della lavagna sono inclusi. La descrizione accanto
@@ -119,6 +127,12 @@ per modificare il circuito occorre confrontare e confermare nuovamente la fonte.
 Un vecchio quaderno privo dei byte della fonte conserva il circuito e la lavagna
 salvati: il solo hash non ricostruisce una foto originale assente.
 Questo file non sostituisce la persistenza di una lezione Ardesia.
+
+Il PDF conserva in ordine i tentativi controllati, i riferimenti usati e le
+diagnosi ricalcolate. Le bozze non controllate e i glifi non visualizzabili
+sono omissioni dichiarate. Per i passi strutturati di Ohm, un resistore
+riferito male resta distinguibile da un prodotto aritmetico errato:
+[semantica e casi supportati](docs/student-trace-ohm-voltage.md).
 
 ## Ricompilare la lavagna
 

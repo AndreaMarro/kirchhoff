@@ -1,0 +1,185 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-16",
+  "repository": "AndreaMarro/kirchhoff",
+  "visibility": "PUBLIC",
+  "status": "INTEGRATED_CODE; OWNER_REQUESTED_DOCUMENTATION_CLOSEOUT",
+  "codeSha": "a3eb02bbeee7bc2914737f73cf771f524265c4c4",
+  "codeTree": "24b92ff9c7f91d6e5946f565cb6eeed3fb6d1d23",
+  "candidateSha": "023fef3da11c995f359db2738abd29e0c7e0acf5",
+  "candidateTreeEqualsMain": true,
+  "mergedPullRequests": [
+    25,
+    26,
+    27
+  ],
+  "checks": {
+    "localCandidate": {
+      "python": {
+        "passed": 2631,
+        "skipped": 0,
+        "exit": 0,
+        "seconds": 234.81,
+        "coverage_percent": 97.4,
+        "domain_percent": 100,
+        "log": "history-python-tmp-final.log"
+      },
+      "web_unit": {
+        "passed": 391,
+        "exit": 0,
+        "log": "history-web-final.log"
+      },
+      "build_and_types": {
+        "exit": 0,
+        "log": "history-build-final.log"
+      },
+      "browser_standard": {
+        "passed": 186,
+        "skipped": 62,
+        "exit": 0,
+        "retry": 0,
+        "workers": 2,
+        "log": "history-browser-final.log",
+        "skip_reason": "Existing optional live lanes, including6 new history cases"
+      },
+      "browser_live": {
+        "passed": 22,
+        "skipped": 0,
+        "exit": 0,
+        "seconds": 18.1,
+        "log": "history-live-final.log",
+        "server": "http://127.0.0.1:43926",
+        "cases": "6history+2Ohm+2photo+2PDF+10capabilities"
+      },
+      "domain_boundaries_bmad": {
+        "exit": 0,
+        "domain_percent": 100
+      },
+      "toolchain": {
+        "node": "24.19.0",
+        "python": "3.12.12",
+        "chromium": "153.0.8010.12",
+        "pypdf": "6.13.3"
+      }
+    },
+    "candidateCi": {
+      "python_pr": {
+        "run": 38841679789,
+        "job": 116782976706,
+        "state": "SUCCESS",
+        "passed": 2628,
+        "skipped": 3,
+        "coverage_percent": 97.34,
+        "domain_percent": 100
+      },
+      "python_push": {
+        "run": 38841673878,
+        "job": 116782958141,
+        "state": "SUCCESS",
+        "passed": 2628,
+        "skipped": 3,
+        "coverage_percent": 97.34,
+        "domain_percent": 100
+      },
+      "web_pr": {
+        "run": 38841679808,
+        "job": 116782976627,
+        "state": "SUCCESS",
+        "unit_passed": 391,
+        "browser_passed": 186,
+        "browser_skipped": 62
+      },
+      "web_push": {
+        "run": 38841673791,
+        "job": 116782957902,
+        "state": "SUCCESS",
+        "unit_passed": 391,
+        "browser_passed": 186,
+        "browser_skipped": 62
+      }
+    },
+    "mainCi": {
+      "python": {
+        "run": 38842416646,
+        "job": 116785293992,
+        "state": "SUCCESS",
+        "passed": 2628,
+        "skipped": 3,
+        "coverage_percent": 97.34,
+        "domain_percent": 100,
+        "seconds": 367.46
+      },
+      "web": {
+        "run": 38842416706,
+        "job": 116785294423,
+        "state": "SUCCESS",
+        "unit_passed": 391,
+        "browser_passed": 186,
+        "browser_skipped": 62
+      }
+    },
+    "mainBrowserLive": {
+      "pass": 6,
+      "seconds": 8.1
+    }
+  },
+  "artifacts": [
+    {
+      "path": "dc-cronologia-quaderno-a3eb02b.json",
+      "bytes": 1797,
+      "sha256": "86d196f95ffbbb864b3ecbcc6dceca31802429121bffd0d1c3874a372dcf8009",
+      "producerSha": "a3eb02bbeee7bc2914737f73cf771f524265c4c4"
+    },
+    {
+      "path": "dc-cronologia-lezione-a3eb02b.pdf",
+      "bytes": 88090,
+      "sha256": "7e642963be9668b3aa9864d4440ef55d723a2472ab669e8c50968d018bae33fa",
+      "producerSha": "a3eb02bbeee7bc2914737f73cf771f524265c4c4"
+    },
+    {
+      "path": "dc-cronologia-riaperta-a3eb02b.png",
+      "bytes": 151147,
+      "sha256": "6be447f53c79d5c64ee15005092f0ba92578047b89d0eb2e3e6463be9038bb61",
+      "producerSha": "a3eb02bbeee7bc2914737f73cf771f524265c4c4"
+    },
+    {
+      "path": "dc-cronologia-prova-a3eb02b.json",
+      "bytes": 3118,
+      "sha256": "e2bd7cf67d2ce5dd2396874ace0f3227fc307ba4322ac5d76a168c2ea9bdb287",
+      "producerSha": "a3eb02bbeee7bc2914737f73cf771f524265c4c4"
+    }
+  ],
+  "review": {
+    "verdict": "APPROVE technical bounded",
+    "candidate": "023fef3da11c995f359db2738abd29e0c7e0acf5",
+    "reviewer": "/root/review_history",
+    "independent_targeted_web_passed": 40,
+    "human_github_approval": false
+  },
+  "skipReasons": {
+    "pythonCi": [
+      "sprint_plan helper not reachable",
+      "Chromium absent in Python job",
+      "ngspice absent"
+    ],
+    "browserStandard": "62 optional live cases skipped; separate explicit live run covers22 cases"
+  },
+  "failuresPreserved": [
+    "113PASS1FAIL catalog adjacent run, resolved canonical regeneration",
+    "Initial Documents fullPython exit2,2 collection Errno60 errors,0 tests executed,654.45s",
+    "Documents Playwright bad-interpreter I/O, no tests executed",
+    "Documents webServer unchanged60000ms startup timeout, no tests executed",
+    "Two earlier structural-shape test first runs were alreadyGREEN, not counted as RED",
+    "PDF bbox helper under systemPython3.14 failed to load libexpat; same XML parsed and asserted with frozenCPython3.12.12; no production change"
+  ],
+  "limits": {
+    "familiesPartial": 15,
+    "familiesNotSupported": 6,
+    "familiesComplete": 0,
+    "productVerified": false,
+    "humanPilot": "NOT_RUN",
+    "physicalDurability": "NOT_ATTESTED",
+    "generalIntegration": "NOT_ATTESTED"
+  },
+  "deploymentCommandExecuted": false
+}
