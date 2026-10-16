@@ -73,7 +73,10 @@ soglie di qualità, l'holdout, gli invarianti di privacy e la costituzione stess
 
 ## GitHub
 
-`origin` è `github.com/AndreaMarro/kirchhoff`, **privato**. Monorepo: prodotto, `vault/`, `ops/`.
+`origin` è `github.com/AndreaMarro/kirchhoff`, **pubblico** al controllo del 16 ottobre 2026.
+Monorepo: prodotto, `vault/`, `ops/`. Prima di ogni pubblicazione, riattesta la visibilità
+con `gh api repos/AndreaMarro/kirchhoff --jq .visibility`: non dedurre riservatezza dal
+checkout locale e non pubblicare contesto privato, lezioni reali o dati personali.
 Si pubblica con `./ops/loop/pubblica.sh`, che rifiuta su ramo diverso da `main` e su albero sporco,
 e verifica dopo il push che il conteggio remoto coincida col locale.
 
@@ -132,6 +135,11 @@ e verifica dopo il push che il conteggio remoto coincida col locale.
 <!-- Fuori dal blocco gestito da bmad-project-context: qui non viene sostituito al refresh. -->
 
 ## Fatti che il blocco gestito non conosce ancora
+
+- **Visibilità da riattestare prima del push.** Il controllo GitHub del 16 ottobre 2026
+  restituisce `public`. Questa nota resta fuori dal blocco generato perché un refresh del
+  contesto non ripristini l'assunzione storica di repository privato. Non modifica la
+  visibilità né gli invarianti di privacy; i documenti storici conservano la propria data.
 
 - **I vocabolari chiusi sono due, non uno.** La riga «Non aggiungere un'operazione al catalogo
   delle Trasformazioni» sopra ne conosce uno solo. Dalla Story 1.2 (26/08/2026) esiste anche

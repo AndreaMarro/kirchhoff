@@ -483,3 +483,52 @@ nuovo Verified. Goal ATTIVO; nessun terzo full locale per source-map.
 ## CONSEGNA-2026-10-15 — chiusura operativa richiesta dal proprietario
 
 Stato corrente e matrice delle21famiglie: `docs/ops/CONSEGNA-2026-10-15.md`. K4 integrato e provato su main e1375fb, senza ProductVerified. Source-map-js1.2.2 ha8GREEN/363unit/build/923HTTP locali; CI candidato ancora pendente alla scrittura. Auditexit1/mockertinypoolVitest e legacyfromSourceMap restano da triagiare. Recupero#18 parziale e affidabilità locale#20 irrisolta restano debiti anche qualora archiviati amministrativamente per la fine dell’esecuzione: chiusura non equivale a fix. Nessun branch o originale eliminato.
+
+## AUDIT-WORKBENCH-2026-10-16 — candidato di recupero trasporto e copia
+
+Baseline `c778fd113cfe400f62d6c9858d3266e96be771f4`. Il retry invalida
+catalogo e sessione precedenti e carica una sessione solo dopo l'indice corrente;
+le risposte obsolete dell'indice non possono insediarsi. La copia negata o
+assente mostra il link selezionabile, senza una falsa conferma di copia.
+Navigare cambia il contesto della copia e invalida il suo completamento tardivo.
+`AGENTS.md` riporta la visibilità pubblica riattestata via GitHub e richiede
+preflight prima della pubblicazione; nessuna modifica della visibilità.
+
+Mappa criterio → prova: `workbench-recovery.spec.ts` controlla attesa dell'indice,
+errore indice seguito da recupero, clipboard negata/assente e link manuale;
+`trasporto.spec.ts` preserva l'ownership delle sessioni e `workbench.spec.ts`
+controlla copia reale, refresh, tastiera e storage negato. Sei regressioni viste
+rosse sulla baseline → sei verdi; insieme alle prove adiacenti, 42 PASS.
+
+Stato alla scrittura: **IN_PROGRESS**, suite browser completa e CI del candidato
+ancora da acquisire. Suite unitaria: baseline 363 PASS; primo run sul candidato
+362 PASS + 1 FAIL (`controllo numerico`, subprocess Node ETIMEDOUT); esecuzione
+seriale successiva 363 PASS. La causa del timeout non è isolata e il FAIL resta
+registrato. Primo avvio browser senza installazione completata: errore di setup,
+non RED funzionale. Run Python locale interrotto (exit143): mancava il dev set
+generato dal setup CI, nessun risultato completo attribuito al prodotto.
+Review separata e CI esatta necessarie prima della decisione sul candidato.
+Nessuna nuova attestazione H3/H5/K4 generale, famiglia, Ardesia o pilot umano.
+
+Review separata del primo candidato `4126639`: un P2 riprodotto su desktop e
+mobile, le frecce nel nuovo input manuale attivavano le hotkey e lo smontavano.
+Quattro controprove aggiuntive viste RED; il gestore ora lascia i tasti ai
+campi input/textarea/select e agli editor di testo. La suite browser completa
+dopo la correzione passa ancora 186 test, con gli stessi 54 skip opzionali e
+retry0. Tipi e build PASS.
+
+Il successivo full unit locale resta **361 PASS / 2 FAIL** per ETIMEDOUT Node
+nei casi «terminale componente preservato» e «attributo ignoto». Non sono
+fallimenti del validator importato: il processo non restituisce un risultato.
+Validator, guard e lock sono invariati dalla baseline. Una controprova separata
+di 50 avvii Node minimi e 50 chiamate del validator passa (massimi 235/376ms),
+senza isolare la causa dei timeout sotto Vitest. Nessun timeout/retry/skip o
+oracolo è stato modificato; il tema resta aperto nell'affidabilità del runner.
+
+Stato remoto corrente e decisione: [PR #25](https://github.com/AndreaMarro/kirchhoff/pull/25),
+il cui head va letto prima di attribuire CI o review. Prossima unità prioritaria
+DC: rappresentare esplicitamente il riferimento usato in un passaggio di Ohm,
+così da distinguere R1 usata al posto di R2 da un errore aritmetico. Oggi il
+controllo numerico rileva 4V invece di 8V, ma restituisce soltanto `category=value`.
+Il PDF della lezione non include la storia dei tentativi/correzioni; il quaderno
+conserva la trace corrente. Entrambi i limiti restano aperti.
