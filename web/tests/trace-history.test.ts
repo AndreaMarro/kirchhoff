@@ -27,6 +27,8 @@ describe('cronologia del quaderno',()=>{
   [{...fixture.attempts[0],diagnosis:{outcome:'valid_so_far'}}],
   [{...fixture.attempts[0],circuitFingerprint:'0'.repeat(64)}],
   [{...fixture.attempts[0],steps:[{...fixture.attempts[0].steps[0],diagnosis:'valid'}]}],
+  [{...fixture.attempts[0],steps:[{...fixture.attempts[0].steps[0],operation:['serie']}]}],
+  [{...fixture.attempts[0],steps:[{...fixture.attempts[0].steps[0],reading:['clear']}]}],
   Array(33).fill(fixture.attempts[0]),
  ])('rifiuta record corrotti o prove esterne prima di aprire il quaderno',async traceHistory=>{
   const bundle=await makeSessionBundle(fields);

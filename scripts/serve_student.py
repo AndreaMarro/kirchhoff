@@ -219,14 +219,15 @@ class Handler(BaseHTTPRequestHandler):
             provenance=None
             if source_kind=='image':
                 provenance=verify_revision(payload.get('confirmation_token'),payload['netlist'],PHOTO_RECEIPT_SECRET)
-            result=create_lesson(payload['netlist'],payload.get('method','auto'),revision())
+            engine_revision=revision()
+            result=create_lesson(payload['netlist'],payload.get('method','auto'),engine_revision)
             if provenance and result.get('outcome')=='solved':result['input_provenance']=provenance
             if self.path=='/api/pdf':
                 if 'trace_history' in payload and not isinstance(payload['trace_history'],list):
                     raise ValueError('La cronologia deve essere un elenco di tentativi.')
                 expected=payload.get('expected_engine_revision')
-                if expected is not None and expected!=result.get('source_sha'):
-                    raise ValueError('Il motore e cambiato: ricontrolla i tentativi prima di esportare il PDF.')
+                if expected is not None and expected!=engine_revision:
+                    raise ValueError('Il motore è cambiato: ricontrolla i tentativi prima di esportare il PDF.')
                 return self.send(200,export_pdf(result,trace_history=payload.get('trace_history')),'application/pdf')
             return self.send(200,result)
         except RuntimeIdentityError as exc:

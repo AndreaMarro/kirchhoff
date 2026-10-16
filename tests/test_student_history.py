@@ -128,3 +128,32 @@ def test_api_pdf_rifiuta_revisioni_incoerenti(server, damage):
         post(server, '/api/pdf', payload)
     assert error.value.code == 422
     assert error.value.headers['Content-Type'] == 'application/json'
+
+
+def test_api_pdf_rifiuto_del_circuito_non_accusa_un_cambio_del_motore(server):
+    attempt = FIXTURE['attempts'][0]
+    with post(server, '/api/diagnose', {'netlist': FIXTURE['netlist'], 'trace': {
+            'schema': 'student-trace.v1', 'circuit_fingerprint': attempt['circuitFingerprint'], 'steps': attempt['steps']}}) as response:
+        revision = json.load(response)['engine_revision']
+    impossible = 'V1 a 0 12 volt\nV2 a 0 6 volt\nR1 a 0 6 ohm\n? current R1'
+    with pytest.raises(HTTPError) as error:
+        post(server, '/api/pdf', {'netlist': impossible, 'expected_engine_revision': revision, 'trace_history': []})
+    assert error.value.code == 422
+    message = json.loads(error.value.read())['message']
+    assert 'lezione risolta' in message
+
+
+@pytest.mark.parametrize('transcription', ['W' * 70 + 'FINE', 'Ω' * 70 + 'FINE', '字' * 70])
+def test_pdf_righe_del_tentativo_restano_nei_margini_con_metriche_indipendenti(transcription):
+    from pypdf._font import Font
+    attempts = deepcopy(FIXTURE['attempts'][:1])
+    attempts[0]['steps'][0]['transcription'] = transcription
+    reader = PdfReader(BytesIO(export_pdf(create_lesson(FIXTURE['netlist']), trace_history=attempts)))
+    history_page = reader.pages[-1]
+    def check(text, cm, tm, font, size):
+        if not text.strip(): return
+        metrics = Font.from_font_resource(font)
+        width = sum(metrics.character_widths.get(char, metrics.character_widths.get('default', 0))
+                    for char in text.rstrip('\n')) / 1000 * size
+        assert 42 <= tm[4] and tm[4] + width <= float(history_page.mediabox.right) - 42
+    history_page.extract_text(visitor_text=check)

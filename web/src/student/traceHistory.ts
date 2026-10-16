@@ -9,8 +9,8 @@ const record=(x:unknown):x is Record<string,unknown>=>Boolean(x)&&typeof x==='ob
 
 export function validTraceSteps(value:unknown):value is TraceStep[]{
  return Array.isArray(value)&&value.length>=1&&value.length<=32&&value.every(step=>record(step)&&
-  ['serie','parallelo','kcl','kvl','corrente','tensione','ohm-tensione','altro'].includes(String(step.operation))&&
-  ['clear','ambiguous','unreadable'].includes(String(step.reading))&&
+  typeof step.operation==='string'&&['serie','parallelo','kcl','kvl','corrente','tensione','ohm-tensione','altro'].includes(step.operation)&&
+  typeof step.reading==='string'&&['clear','ambiguous','unreadable'].includes(step.reading)&&
   ['transcription','first','second'].every(key=>typeof step[key]==='string'&&step[key].length<=500)&&
   (step.claimed_value===null||typeof step.claimed_value==='string'&&step.claimed_value.length<=100));
 }

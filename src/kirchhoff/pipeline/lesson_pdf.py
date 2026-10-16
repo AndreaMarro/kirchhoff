@@ -167,17 +167,19 @@ def export_pdf(lesson, *, trace_history=None):
 
         def paragraph(text, size=11):
             nonlocal stream,y
-            for line in textwrap.wrap(str(text),80,break_long_words=True):
+            try:
+                rendered=_plain(str(text), errors='strict')
+            except UnicodeEncodeError:
+                rendered='[Testo non visualizzabile con il font PDF; originale completo nel quaderno.]'
+            # Helvetica WinAnsi ha ampiezza massima 1.015 em. Il bound 1.1
+            # resta conservativo e non richiede un font/dependency runtime.
+            # Normalizzare prima: Ω diventa "ohm" e occupa tre glifi.
+            width=max(1,int(510/(size*1.1)))
+            for line in textwrap.wrap(rendered,width,break_long_words=True):
                 if y<75:
                     page(stream)
                     stream='0.14 0.20 0.29 rg\n'+_text(42,800,f'Tentativo {index} - continua',18,'F2')
                     y=765
-                # Il quaderno conserva ogni carattere. Per il font PDF base,
-                # un'omissione visibile e' preferibile a glifi "?" silenziosi.
-                try:
-                    _plain(line, errors='strict')
-                except UnicodeEncodeError:
-                    line='[Testo non visualizzabile con il font PDF; originale completo nel quaderno.]'
                 stream+=_text(42,y,line,size);y-=16
             y-=8
 

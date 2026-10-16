@@ -602,3 +602,25 @@ Le bozze non controllate e i glifi non renderizzabili sono omissioni dichiarate.
 Non sono dimostrate collaborazione remota, utilità con pilot umano o completezza
 delle famiglie. Criterio di chiusura: candidato revisionato, check richiesti
 verdi sullo SHA esatto e materiale letto/renderizzato con i tentativi originali.
+
+Review del codice3661511: P2 riprodotto con70W+FINE, testo estratto completo
+ma coda fuori pagina nel rendering. Due regressioni genuine RED (W e Ω che
+diventa "ohm"); normalizzazione prima del wrap e bound conservativo Helvetica
+1.1em risolvono l'overflow di tutte le righe della cronologia. Il test usa
+metriche standard lette da pypdf, indipendenti dal generatore e bloccate in dev. Un ulteriore RED
+HTTP distingueva rifiuto del circuito da cambio motore; la revisione ora si
+confronta con l'identità del processo, anche quando la lezione è un rifiuto.
+Guardie strutturali TS non convertono array in etichette valide. Primo run
+dei due nuovi test di shape già GREEN, non conteggiato come RED.
+
+Full unit web sul codice366:386PASS, exit0, Node24.19.0; nessun timeout
+osservato in questo run. Non cancella i timeout storici. Successivi avvii
+Python hanno incontrato errori di setup su import pygments.regexopt e sul
+percorso editable di kirchhoff. File/import controllati; il test usa ora
+PYTHONPATH=src esplicito per scegliere il checkout in prova, senza cambiare
+produzione, test o soglie.
+
+Verifica del fix:21 Python/API/PDFPASS e37 unit mirate webPASS. Il test
+font usa le metriche Helvetica standard (max1015/1000, W944/1000)
+lette dal parser indipendente; ogni riga del controesempio resta nel MediaBox.
+Controreview sul nuovo SHA e suite complete ancora richieste.
