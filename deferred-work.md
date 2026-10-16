@@ -509,3 +509,26 @@ non RED funzionale. Run Python locale interrotto (exit143): mancava il dev set
 generato dal setup CI, nessun risultato completo attribuito al prodotto.
 Review separata e CI esatta necessarie prima della decisione sul candidato.
 Nessuna nuova attestazione H3/H5/K4 generale, famiglia, Ardesia o pilot umano.
+
+Review separata del primo candidato `4126639`: un P2 riprodotto su desktop e
+mobile, le frecce nel nuovo input manuale attivavano le hotkey e lo smontavano.
+Quattro controprove aggiuntive viste RED; il gestore ora lascia i tasti ai
+campi input/textarea/select e agli editor di testo. La suite browser completa
+dopo la correzione passa ancora 186 test, con gli stessi 54 skip opzionali e
+retry0. Tipi e build PASS.
+
+Il successivo full unit locale resta **361 PASS / 2 FAIL** per ETIMEDOUT Node
+nei casi «terminale componente preservato» e «attributo ignoto». Non sono
+fallimenti del validator importato: il processo non restituisce un risultato.
+Validator, guard e lock sono invariati dalla baseline. Una controprova separata
+di 50 avvii Node minimi e 50 chiamate del validator passa (massimi 235/376ms),
+senza isolare la causa dei timeout sotto Vitest. Nessun timeout/retry/skip o
+oracolo è stato modificato; il tema resta aperto nell'affidabilità del runner.
+
+Stato remoto corrente e decisione: [PR #25](https://github.com/AndreaMarro/kirchhoff/pull/25),
+il cui head va letto prima di attribuire CI o review. Prossima unità prioritaria
+DC: rappresentare esplicitamente il riferimento usato in un passaggio di Ohm,
+così da distinguere R1 usata al posto di R2 da un errore aritmetico. Oggi il
+controllo numerico rileva 4V invece di 8V, ma restituisce soltanto `category=value`.
+Il PDF della lezione non include la storia dei tentativi/correzioni; il quaderno
+conserva la trace corrente. Entrambi i limiti restano aperti.

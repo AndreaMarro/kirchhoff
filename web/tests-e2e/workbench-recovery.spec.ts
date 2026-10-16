@@ -65,6 +65,9 @@ for (const clipboard of ["negata", "assente"] as const) {
     expect(await manuale.evaluate((input: HTMLInputElement) =>
       input.value.slice(input.selectionStart ?? 0, input.selectionEnd ?? 0),
     )).toBe(link);
+    await page.keyboard.press("Shift+ArrowRight");
+    await expect(page).toHaveURL(link);
+    await expect(manuale).toBeFocused();
     await expect(copia).not.toContainText("Copiato");
     await page.getByRole("button", { name: "Passo successivo" }).click();
     await expect(page).not.toHaveURL(link);

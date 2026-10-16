@@ -101,6 +101,10 @@ export function App(): React.JSX.Element {
   useEffect(() => {
     const onKey = (ev: KeyboardEvent): void => {
       if (ev.metaKey || ev.ctrlKey || ev.altKey) return;
+      // Nei campi le frecce appartengono a cursore e selezione del testo,
+      // anche nel fallback readOnly della clipboard.
+      if (ev.target instanceof HTMLElement &&
+          (ev.target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(ev.target.tagName))) return;
       if (ev.key === "ArrowRight") goStep(1);
       else if (ev.key === "ArrowLeft") goStep(-1);
       else if (ev.key === "b" || ev.key === "B") setSelection({ ...selection, frame: "before" });
