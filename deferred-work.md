@@ -532,3 +532,43 @@ così da distinguere R1 usata al posto di R2 da un errore aritmetico. Oggi il
 controllo numerico rileva 4V invece di 8V, ma restituisce soltanto `category=value`.
 Il PDF della lezione non include la storia dei tentativi/correzioni; il quaderno
 conserva la trace corrente. Entrambi i limiti restano aperti.
+
+## STUDENT-TRACE-OHM-20261016 — candidato di diagnosi esplicita
+
+Base: main `06a7dc26b15b5409f8077e4a2972999a9bc04ba1`, PR25 integrata con
+quattro CI candidato e due CI main verdi. Codice umano/produttore:
+`67f6285936e5284656f48c018c2dec739f7e8364`. Il passo `ohm-tensione` riusa
+StudentStep: V(first)=I(first)×R(second), sul circuito originale. R1 usata
+al posto di R2 è `reference`; con fattore corretto e prodotto errato è
+`algebra`. Resistenze di valore uguale sono sostituibili; a corrente nulla
+un fattore diverso resta non valutabile. Il testo libero non viene inferito.
+Contratto e limiti: `docs/student-trace-ohm-voltage.md`.
+
+Mappa criterio → test: `test_student_trace_ohm.py` (operandi, primo errore,
+aritmetica, valore uguale, zero, identificatori/modelli/letture/prove
+indisponibili, stato IR e payload); `session-bundle.test.ts` (conservazione
+dei due riferimenti); `student-ohm-live.spec.ts` (UI→API reale→quaderno→nuovo
+contesto→ricalcolo e nuova diagnosi).
+
+TDD: nuovo dominio 13 FAIL/1 PASS → GREEN; regressione dello stato IR
+individuata nello sviluppo, vista RED e corretta senza cambiare l'oracolo;
+quaderno 1 FAIL/12 PASS → 13 PASS. Primo full Python: 2609 PASS/1 FAIL,
+catalogo con vecchio lesson_build. Rigenerazione canonica di 18 JSON e 18 PDF
+dal produttore sopra: tutti i payload identici esclusi source_sha/lesson_build;
+nessun caso o risultato cambiato. Drift test GREEN. Nuovo full Python:
+**2610 PASS, 97.40%, dominio 100%**; confini e catena BMAD PASS. Build/tipi PASS.
+Browser standard: **186 PASS/56 SKIP**, 2 worker, retry0. Le due nuove identità
+sono nella lane live opzionale: attivata sul server reale, **2 PASS** su
+desktop/mobile, con quaderno riaperto in un contesto pulito.
+
+Full unit web: **363 PASS/1 FAIL**, ETIMEDOUT Node nel caso K4 «terminale id
+numerico». È conservato insieme ai fallimenti della precedente unità;
+validator CLI e lock sono invariati. Nessun rerun alla cieca o modifica di
+timeout/retry/skip; la causa del runner locale resta aperta.
+
+Stato alla scrittura: **READY_FOR_REVIEW**, review separata e CI esatta ancora
+da acquisire. Commit degli artefatti separato dal codice umano. Non è una
+certificazione del metodo libero, dell'intero prodotto o delle famiglie DC.
+Il PDF continua a escludere la storia dei tentativi. Prossima unità: reader
+Ardesia .lesson limitato prima degli effetti, con recupero selettivo del
+contratto moderno e senza coinvolgere la pipeline narrativa LLM.

@@ -41,6 +41,11 @@ describe('quaderno portabile',()=>{
   const bundle=await makeSessionBundle({...fields,traceSteps:[kcl]});
   expect((await readSessionBundle(JSON.stringify(bundle))).traceSteps).toEqual([kcl]);
  });
+ it('conserva bersaglio e resistenza usata nel prodotto di Ohm senza reinterpretarli',async()=>{
+  const ohm={...fields.traceSteps[0],operation:'ohm-tensione',first:'R2',second:'R1',claimed_value:'4',transcription:'V_R2 = I_R2 * R1'};
+  const bundle=await makeSessionBundle({...fields,traceSteps:[ohm]});
+  expect((await readSessionBundle(JSON.stringify(bundle))).traceSteps).toEqual([ohm]);
+ });
  it('conserva una KVL strutturata e i versi dei rami nel quaderno',async()=>{
   const kvl={...fields.traceSteps[0],operation:'kvl',first:'b',second:'+R1,+R2,-V1',claimed_value:null,transcription:'KVL alla maglia'};
   const bundle=await makeSessionBundle({...fields,traceSteps:[kvl]});
