@@ -26,7 +26,10 @@ tecnico proof DC. Non è una copertura completa delle 21 famiglie.
 | MCP | Tool stdio senza UI + risorsa MCP App interattiva; la compatibilita' con un host reale richiede ancora prova |
 | Backend storico | Epic 1 chiusa, P1-J/K/L integrati, H2.5/O0/H2.75 fusi in `main` |
 
-La [consegna del 16 ottobre 2026](docs/ops/CONSEGNA-2026-10-16.md) raccoglie
+La [consegna del 18 ottobre 2026](docs/ops/CONSEGNA-2026-10-18.md) descrive il
+candidato per ingressi, verifiche neutrali e quaderni offline DRAFT, con prove
+e prossimi passi; il piano complessivo resta parziale. La
+[consegna del 16 ottobre 2026](docs/ops/CONSEGNA-2026-10-16.md) raccoglie
 gli sviluppi integrati, gli SHA, le prove e la chiusura operativa. La
 [consegna precedente](docs/ops/CONSEGNA-2026-10-15.md) conserva la matrice
 delle 21 famiglie e i debiti storici: 15 PARTIAL, 6 NOT_SUPPORTED, 0 COMPLETE.

@@ -1,0 +1,81 @@
+
+> kirchhoff-proof-workbench@0.1.0 test
+> vitest run --maxWorkers=1
+
+
+ RUN  v3.2.7 ${REPO_ROOT}/web
+
+ ✓ tests/deployment-scripts.test.ts (49 tests) 34756ms
+   ✓ verifier: build attesa e file realmente serviti > la build identica verifica tutti i corpi, chunk lazy, worker, lessons e MCP  951ms
+   ✓ verifier: build attesa e file realmente serviti > un nuovo corpo diverso non può dare MATCH  745ms
+   ✓ verifier: build attesa e file realmente serviti > HTML con entry diversa fallisce anche se il vecchio asset identico è ancora disponibile  1564ms
+   ✓ verifier: build attesa e file realmente serviti > assenza di sessions/scala-tre-riduzioni.json fallisce  719ms
+   ✓ verifier: build attesa e file realmente serviti > assenza di assets/pdf.worker.min.mjs fallisce  484ms
+   ✓ verifier: build attesa e file realmente serviti > assenza di assets/lazy.js fallisce  673ms
+   ✓ verifier: build attesa e file realmente serviti > assenza di lessons/index.json fallisce  837ms
+   ✓ verifier: build attesa e file realmente serviti > assenza di mcp/build-manifest.json fallisce  785ms
+   ✓ verifier: build attesa e file realmente serviti > anche i byte di un chunk non indicato nellHTML sono verificati  913ms
+   ✓ smoke: indice dinamico e coerenza delle viste proof DC > undici voci sane passano e vengono lette tutte  855ms
+   ✓ smoke: indice dinamico e coerenza delle viste proof DC > la mancanza di un nuovo corpo è un guasto  587ms
+   ✓ smoke: indice dinamico e coerenza delle viste proof DC > una chiusura con risposta incoerente fallisce  505ms
+   ✓ smoke: indice dinamico e coerenza delle viste proof DC > una chiusura con unita incoerente fallisce  517ms
+   ✓ smoke: indice dinamico e coerenza delle viste proof DC > una chiusura con truth incoerente fallisce  1325ms
+   ✓ smoke: indice dinamico e coerenza delle viste proof DC > una chiusura con verifica incoerente fallisce  835ms
+   ✓ smoke: indice dinamico e coerenza delle viste proof DC > una chiusura con razionale incoerente fallisce  762ms
+   ✓ smoke: indice dinamico e coerenza delle viste proof DC > un rifiuto con risposta non è presentato come onesto  743ms
+   ✓ smoke: indice dinamico e coerenza delle viste proof DC > identificatori duplicati nellindice falliscono senza ignorare la coda  818ms
+   ✓ argomenti espliciti degli strumenti > smoke-public senza URL termina senza richieste implicite  317ms
+   ✓ argomenti espliciti degli strumenti > verify-artifacts senza URL termina senza richieste implicite  325ms
+   ✓ argomenti espliciti degli strumenti > verifier usa la directory attesa esplicita anche senza dist di default  750ms
+   ✓ regressioni della review sul contratto operativo > review: rifiuto con chiusura VERIFIED non dà verde  2247ms
+   ✓ regressioni della review sul contratto operativo > review: denominatore negativo non dà verde  775ms
+   ✓ regressioni della review sul contratto operativo > review: failure con diagnosis inventato non dà verde  725ms
+   ✓ regressioni della review sul contratto operativo > coerenza: risposta diversa dalla risposta dichiarata nellindice non dà verde  791ms
+   ✓ profilo operativo esplicito > anche un Failure canonico è un guasto operativo  646ms
+   ✓ profilo operativo esplicito > gli spazi esterni ammessi dal confine browser non guastano una risposta sana  752ms
+   ✓ profilo operativo esplicito > un rifiuto con passi non è un catalogo sano  861ms
+   ✓ H5: legame esplicito Claim-derivazione-passo nel vero CLI > accetta il mapping sano con ID opachi  761ms
+   ✓ H5: legame esplicito Claim-derivazione-passo nel vero CLI > mantiene leggibile il legacy sano con tutti i campi assenti  938ms
+   ✓ H5: legame esplicito Claim-derivazione-passo nel vero CLI > rifiuta il profilo incoerente: un solo presente  621ms
+   ✓ H5: legame esplicito Claim-derivazione-passo nel vero CLI > rifiuta il profilo incoerente: uno omesso  634ms
+   ✓ H5: legame esplicito Claim-derivazione-passo nel vero CLI > rifiuta il profilo incoerente: tutti null  578ms
+   ✓ H5: legame esplicito Claim-derivazione-passo nel vero CLI > rifiuta il profilo incoerente: analitico null  847ms
+   ✓ H5: legame esplicito Claim-derivazione-passo nel vero CLI > rifiuta il profilo incoerente: analitico blank  546ms
+   ✓ H5: legame esplicito Claim-derivazione-passo nel vero CLI > rifiuta il profilo incoerente: analitico numerico  507ms
+   ✓ H5: legame esplicito Claim-derivazione-passo nel vero CLI > rifiuta il profilo incoerente: analitico booleano  497ms
+   ✓ H5: legame esplicito Claim-derivazione-passo nel vero CLI > rifiuta il profilo incoerente: trasformazione con ref  601ms
+   ✓ H5: legame esplicito Claim-derivazione-passo nel vero CLI > rifiuta il profilo incoerente: duplicato  595ms
+   ✓ H5: legame esplicito Claim-derivazione-passo nel vero CLI > rifiuta il profilo incoerente: duplicati anche nel Claim  593ms
+   ✓ H5: legame esplicito Claim-derivazione-passo nel vero CLI > rifiuta il profilo incoerente: estraneo  540ms
+   ✓ H5: legame esplicito Claim-derivazione-passo nel vero CLI > rifiuta il profilo incoerente: ordine invertito  595ms
+   ✓ H5: legame esplicito Claim-derivazione-passo nel vero CLI > rifiuta il profilo incoerente: evidenza extra  598ms
+   ✓ H5: legame esplicito Claim-derivazione-passo nel vero CLI > rifiuta il profilo incoerente: evidenza mancante  547ms
+   ✓ H5: legame esplicito Claim-derivazione-passo nel vero CLI > rifiuta il profilo incoerente: spazi ID  490ms
+   ✓ H5: legame esplicito Claim-derivazione-passo nel vero CLI > rifiuta il profilo incoerente: passi vuoti  376ms
+   ✓ H5: legame esplicito Claim-derivazione-passo nel vero CLI > rifiuta il profilo incoerente: passi assenti  554ms
+ ✓ tests/justification-contract.test.ts (122 tests) 7667ms
+   ✓ K4 contratto CLI reale > respinge trasformazione null dopo controllo sano adiacente  324ms
+ ✓ tests/guards.test.ts (77 tests) 144ms
+ ✓ tests/proof-evidence.test.ts (17 tests) 50ms
+ ✓ tests/trace-check.test.ts (14 tests) 76ms
+ ✓ tests/stage.test.ts (11 tests) 21ms
+ ✓ tests/circuit-editor.test.ts (9 tests) 9ms
+ ✓ tests/source-artifact.test.ts (5 tests) 105ms
+ ✓ tests/board-protocol.test.ts (11 tests) 21ms
+ ✓ tests/step-justification.test.ts (6 tests) 152ms
+ ✓ tests/trace-history.test.ts (13 tests) 61ms
+ ✓ tests/session-bundle.test.ts (13 tests) 83ms
+ ✓ tests/saved-lesson.test.ts (4 tests) 49ms
+ ✓ tests/circuit-input-model.test.ts (10 tests) 38ms
+ ✓ tests/source-map-boundary.test.ts (8 tests) 37ms
+ ✓ tests/board-selection.test.ts (3 tests) 11ms
+ ✓ tests/lesson-presentation.test.ts (15 tests) 14ms
+ ✓ tests/lesson-math.test.ts (6 tests) 19ms
+ ✓ tests/offline-worker.test.ts (1 test) 9ms
+ ✓ tests/document-input.test.ts (2 tests) 11ms
+
+ Test Files  20 passed (20)
+      Tests  396 passed (396)
+   Start at  16:28:22
+   Duration  64.21s (transform 2.36s, setup 0ms, collect 4.31s, tests 43.33s, environment 8ms, prepare 6.83s)
+

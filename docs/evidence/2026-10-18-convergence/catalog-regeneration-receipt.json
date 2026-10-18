@@ -1,0 +1,331 @@
+{
+  "at": "2026-10-18T14:07:11.194180+00:00",
+  "source_sha_declared": "89cc7bcba93cb12922ad7fd864feec206ff68dfa",
+  "note": "Git base at generation; content revision and later source binding identify actual changed source bytes. No self-referential exact-commit assertion.",
+  "files": [
+    {
+      "path": "web/public/lessons/corrente-paralleli-auto.json",
+      "before_sha256": "44628d04692da453e4267a0e0b6c756d90db69cbcadcddefe6ec3b56ae907371",
+      "after_sha256": "bdc2da4ce94ccd8aa42aa803e4135db8d35ee1e0da943cef9d3396e01832f839",
+      "only_changed_keys": [
+        "editorial_status",
+        "lesson_build",
+        "source_sha"
+      ],
+      "scientific_payload_unchanged": true
+    },
+    {
+      "path": "web/public/lessons/corrente-paralleli-auto.pdf",
+      "before_sha256": "353db7ddca35771ba22a517badc1ec681a5a2d8853200c98caa8aa6d2482b25f",
+      "after_sha256": "cfd27dea2001d05221afcc9844a898dd257c6f2c1b65a67a14bf12bd724716a1",
+      "pages": 5,
+      "only_page_footer_changed": true
+    },
+    {
+      "path": "web/public/lessons/corrente-paralleli-millman.json",
+      "before_sha256": "a124000f6d3eb2b498d3b786ff0288cbc5e7745631c5b6bde0acb23c34466a67",
+      "after_sha256": "20715806f1394036357ac38b95a614070586915c5ef7fc186f61a614dd25c47d",
+      "only_changed_keys": [
+        "editorial_status",
+        "lesson_build",
+        "source_sha"
+      ],
+      "scientific_payload_unchanged": true
+    },
+    {
+      "path": "web/public/lessons/corrente-paralleli-millman.pdf",
+      "before_sha256": "f66fa145172465a068734599db17f4aa9370004462a93ad248842c631fa4ca7d",
+      "after_sha256": "a3716bff11fc349936a31f6a4ca3cd6b70b7b8255262ec3263f854907fc6758a",
+      "pages": 5,
+      "only_page_footer_changed": true
+    },
+    {
+      "path": "web/public/lessons/corrente-paralleli-nodal.json",
+      "before_sha256": "3610535ff6419b8db29486e1c70c528c208f6f7e79369fed6086db63617972f6",
+      "after_sha256": "06d1365e10c61e86f36a1a357d3446a508634494353144ab76641f4f09577004",
+      "only_changed_keys": [
+        "editorial_status",
+        "lesson_build",
+        "source_sha"
+      ],
+      "scientific_payload_unchanged": true
+    },
+    {
+      "path": "web/public/lessons/corrente-paralleli-nodal.pdf",
+      "before_sha256": "243c87c21ec72fb83f52b70114c609f2cc5d46ab0ec12eec2694886323f4b841",
+      "after_sha256": "252fdb5b4eaf656b7673d7d7f02d2a426822d3cee26788336c19692faa75ed08",
+      "pages": 6,
+      "only_page_footer_changed": true
+    },
+    {
+      "path": "web/public/lessons/corrente-paralleli-superposition.json",
+      "before_sha256": "0e976ca8e08302616f043f7d94ca70978eaaf2b6990054fdfa4e4969c8896936",
+      "after_sha256": "d531ef76b46baa836d781edd5ea6dceacc33240ab9b9f43cf4383172e8230faa",
+      "only_changed_keys": [
+        "editorial_status",
+        "lesson_build",
+        "source_sha"
+      ],
+      "scientific_payload_unchanged": true
+    },
+    {
+      "path": "web/public/lessons/corrente-paralleli-superposition.pdf",
+      "before_sha256": "302122ca0b042b7eb8e4efd2be523300019a85d561e41f4382582c8344cd2a26",
+      "after_sha256": "04c2fccedfd725997374ba7d324e9496aea6e653d7ba3848409babcf1895d9fc",
+      "pages": 5,
+      "only_page_footer_changed": true
+    },
+    {
+      "path": "web/public/lessons/corrente-paralleli-thevenin.json",
+      "before_sha256": "37a0905e698cb750ab1123959b601e713eaccc7533205192be9bc0d72fbe40d9",
+      "after_sha256": "1f2f25f39f693e834a953b953f677f5f960ed103baf0127fe1a3e93bbfa0145d",
+      "only_changed_keys": [
+        "editorial_status",
+        "lesson_build",
+        "source_sha"
+      ],
+      "scientific_payload_unchanged": true
+    },
+    {
+      "path": "web/public/lessons/corrente-paralleli-thevenin.pdf",
+      "before_sha256": "6a2df92167e3eb5d11de4ae22140a70df93fa0b8fad4c68648028d00c72c0ae2",
+      "after_sha256": "da3d4de6077cdf226cda1597b8328e5c95bf86dbb999e6c2f52b15c0ae8a58c2",
+      "pages": 6,
+      "only_page_footer_changed": true
+    },
+    {
+      "path": "web/public/lessons/due-generatori-auto.json",
+      "before_sha256": "4c6c768de726e1236abd02ddc2a736f32d5c6dd2c1b59dc14c280f8f4706d762",
+      "after_sha256": "f81c3e79f8320f3d8a69173a8396cb66dc60babc876359e275ebe423cd85f224",
+      "only_changed_keys": [
+        "editorial_status",
+        "lesson_build",
+        "source_sha"
+      ],
+      "scientific_payload_unchanged": true
+    },
+    {
+      "path": "web/public/lessons/due-generatori-auto.pdf",
+      "before_sha256": "ea8c8738cd8689aa690188cf0f1d3e9024905ab6ae76365b3406ef27cc2543a7",
+      "after_sha256": "e2f8ffb97cb690db2af6e1bc307761b4df5bd30401f48529b85cec8e3da3af9c",
+      "pages": 5,
+      "only_page_footer_changed": true
+    },
+    {
+      "path": "web/public/lessons/due-generatori-millman.json",
+      "before_sha256": "4c6c768de726e1236abd02ddc2a736f32d5c6dd2c1b59dc14c280f8f4706d762",
+      "after_sha256": "f81c3e79f8320f3d8a69173a8396cb66dc60babc876359e275ebe423cd85f224",
+      "only_changed_keys": [
+        "editorial_status",
+        "lesson_build",
+        "source_sha"
+      ],
+      "scientific_payload_unchanged": true
+    },
+    {
+      "path": "web/public/lessons/due-generatori-millman.pdf",
+      "before_sha256": "ea8c8738cd8689aa690188cf0f1d3e9024905ab6ae76365b3406ef27cc2543a7",
+      "after_sha256": "e2f8ffb97cb690db2af6e1bc307761b4df5bd30401f48529b85cec8e3da3af9c",
+      "pages": 5,
+      "only_page_footer_changed": true
+    },
+    {
+      "path": "web/public/lessons/due-generatori-nodal.json",
+      "before_sha256": "cc0ad510ab1c41c427478b2b2a73e6f735b6b0ad59ee5b26505eee02d5f43d21",
+      "after_sha256": "c43cb19f3fb13d42582118944759938eda974340e9da40124e44205ee032e568",
+      "only_changed_keys": [
+        "editorial_status",
+        "lesson_build",
+        "source_sha"
+      ],
+      "scientific_payload_unchanged": true
+    },
+    {
+      "path": "web/public/lessons/due-generatori-nodal.pdf",
+      "before_sha256": "af18b5930918016b345da53e1c1cef2ec3511acc0c971709e242d97b268c4170",
+      "after_sha256": "06f11ee5470312648522466f034587b3c2a27f04d0f1da5af8830750661370e9",
+      "pages": 6,
+      "only_page_footer_changed": true
+    },
+    {
+      "path": "web/public/lessons/due-generatori-norton.json",
+      "before_sha256": "f3e8b7f2d35b24e58a18727bfbdfb29060b93989d335b1186a96fd156421c0f3",
+      "after_sha256": "44624ebce57b303f0a6b68b505fdbc1429667143bec397950c3c4c15f64dfea3",
+      "only_changed_keys": [
+        "editorial_status",
+        "lesson_build",
+        "source_sha"
+      ],
+      "scientific_payload_unchanged": true
+    },
+    {
+      "path": "web/public/lessons/due-generatori-norton.pdf",
+      "before_sha256": "f8f94a54da50fe6186d5bd1634fc6e62136a1e60c0a145c6f5527cc164d792e5",
+      "after_sha256": "18ac18e05b05127cdcbb34cf67420be3886d0ee93e49451781ad676f40cbbe18",
+      "pages": 7,
+      "only_page_footer_changed": true
+    },
+    {
+      "path": "web/public/lessons/due-generatori-superposition.json",
+      "before_sha256": "b368c15e816c61c51787b7eeacd337323d8444bbdec2c006cad3ca55c38062b9",
+      "after_sha256": "fef0696c0a74eaab171361cf0b18137b5d8f1753b840d50cd043dd3dd4cb18e1",
+      "only_changed_keys": [
+        "editorial_status",
+        "lesson_build",
+        "source_sha"
+      ],
+      "scientific_payload_unchanged": true
+    },
+    {
+      "path": "web/public/lessons/due-generatori-superposition.pdf",
+      "before_sha256": "93c27f79ac9b8743e232ff7328159a2c9dd5786d5572f337b2a9ed84959027a3",
+      "after_sha256": "1822364c9437adfa166643a6dbf88e91901faf7783428e91c26dca580b31fb36",
+      "pages": 6,
+      "only_page_footer_changed": true
+    },
+    {
+      "path": "web/public/lessons/due-generatori-thevenin.json",
+      "before_sha256": "0be8119281fce4e1b4c7b43e45aa67cce8db9298851ab109f9928e48871a40c7",
+      "after_sha256": "1a9521db3d315075ff3176bc0ca59c1ceeeb759ee5695e4835a9b6eabad4d53b",
+      "only_changed_keys": [
+        "editorial_status",
+        "lesson_build",
+        "source_sha"
+      ],
+      "scientific_payload_unchanged": true
+    },
+    {
+      "path": "web/public/lessons/due-generatori-thevenin.pdf",
+      "before_sha256": "35861d4676a79f55f6efb7633437a94e1cb54df048662437fcf7cdc0fa73dfad",
+      "after_sha256": "87d49049b9e86853d3143d10a10f28e3c743dbfcd497f3ad50a02a1ee319ba19",
+      "pages": 6,
+      "only_page_footer_changed": true
+    },
+    {
+      "path": "web/public/lessons/partitore-d1-auto.json",
+      "before_sha256": "39760ed4993a7b09cdcc1374aa2c88f191d583972037bb15ff8eb7b272f37733",
+      "after_sha256": "4d68209adf37b42aa48bcf9e718b1e2d2a179560b6d508f5654a1433fbc8c2de",
+      "only_changed_keys": [
+        "editorial_status",
+        "lesson_build",
+        "source_sha"
+      ],
+      "scientific_payload_unchanged": true
+    },
+    {
+      "path": "web/public/lessons/partitore-d1-auto.pdf",
+      "before_sha256": "915eeff6af591f7996dbb03abb7b22beda9b90510b91740dacf94b6f5908a1a5",
+      "after_sha256": "d541a5bde18a8fb8fc7d4e664ac1ed57770bc6e8ce7ce5ae79a04c7788ce4940",
+      "pages": 6,
+      "only_page_footer_changed": true
+    },
+    {
+      "path": "web/public/lessons/partitore-d1-millman.json",
+      "before_sha256": "4e68b5c17102f7f593a09f2c9237edc31a1bef71f2e229893947e9902a6556d0",
+      "after_sha256": "8ceca7096f5f88ff84d39031e542e31b0092d989d6e6402b7da15e303b6fb6a5",
+      "only_changed_keys": [
+        "editorial_status",
+        "lesson_build",
+        "source_sha"
+      ],
+      "scientific_payload_unchanged": true
+    },
+    {
+      "path": "web/public/lessons/partitore-d1-millman.pdf",
+      "before_sha256": "93daed044d37eb37aed7e3ef54e1c7931426a74facfcda3fba7f6e88a35c715c",
+      "after_sha256": "016bb8e409e684c3a1c98a8a7c453f1913e7a19457b7f0ba4d82190f5d8f5078",
+      "pages": 6,
+      "only_page_footer_changed": true
+    },
+    {
+      "path": "web/public/lessons/partitore-d1-nodal.json",
+      "before_sha256": "7000dd7a689d23201b68d598362b2153500edc2871204b47299fe63bae87ee9b",
+      "after_sha256": "43cacc281dfc7cc533d2fab3105f25dae80be4fa59c3bf493fd5093fd277c76c",
+      "only_changed_keys": [
+        "editorial_status",
+        "lesson_build",
+        "source_sha"
+      ],
+      "scientific_payload_unchanged": true
+    },
+    {
+      "path": "web/public/lessons/partitore-d1-nodal.pdf",
+      "before_sha256": "7c1fb05e98ac56a2b420dbba244af680bb900de314e720dd410e3dd96826cddd",
+      "after_sha256": "798c3ca5c91cd59e4d7f39efde638dfb3a5098d323a185722d893de8ec862a9d",
+      "pages": 6,
+      "only_page_footer_changed": true
+    },
+    {
+      "path": "web/public/lessons/partitore-d1-superposition.json",
+      "before_sha256": "bebf76943169be618fd2c3ebaf1e01ac92eb25a494b2aa407d3628976c92f437",
+      "after_sha256": "cc4ec189bed5aed88d255230e8e58428d6d202005c4a0dbdc3fb894ac7b2db93",
+      "only_changed_keys": [
+        "editorial_status",
+        "lesson_build",
+        "source_sha"
+      ],
+      "scientific_payload_unchanged": true
+    },
+    {
+      "path": "web/public/lessons/partitore-d1-superposition.pdf",
+      "before_sha256": "d8e7580e69ad9cb609f9a579c5020e0b427442e8542078057e05eefd296fd54c",
+      "after_sha256": "fde07b62341123148118f660efe6812ce92a8e57a2ef146d549d5a67773c472a",
+      "pages": 6,
+      "only_page_footer_changed": true
+    },
+    {
+      "path": "web/public/lessons/ponte-nodale-auto.json",
+      "before_sha256": "5bf76b7d596163df2c18f1702731e4a34d0695746b936b1f81eba4630c378ef9",
+      "after_sha256": "1b1714201ab6656b38929ca1e81c47d2f4b36e7c1a2c70796dfa1ffcba34dc3e",
+      "only_changed_keys": [
+        "editorial_status",
+        "lesson_build",
+        "source_sha"
+      ],
+      "scientific_payload_unchanged": true
+    },
+    {
+      "path": "web/public/lessons/ponte-nodale-auto.pdf",
+      "before_sha256": "6f142851a794b70267d273baa254da33874353830b5176dfd38c38a8ee0ea81d",
+      "after_sha256": "71c612d5b1c4a3bbbfc2d20c10b6cbc1fd71096f65ca9fc55396bd594ee5e9c8",
+      "pages": 6,
+      "only_page_footer_changed": true
+    },
+    {
+      "path": "web/public/lessons/ponte-nodale-nodal.json",
+      "before_sha256": "1d69ff767bcf0e0984e497e8eca38ab3a6496d631f9e74d1dfe0dd789ab7dd2f",
+      "after_sha256": "c6f17778e928de00e7e237ae36b113f5533a3ee94e42b4c345b8ec378dbff13e",
+      "only_changed_keys": [
+        "editorial_status",
+        "lesson_build",
+        "source_sha"
+      ],
+      "scientific_payload_unchanged": true
+    },
+    {
+      "path": "web/public/lessons/ponte-nodale-nodal.pdf",
+      "before_sha256": "0b5dff6674efbfffc465eacb7edb5793dbabaa1ae87949c81d1151ef5c3cc9cf",
+      "after_sha256": "e03a64bcae0e3e33cb5dd662e31c3f4d6bae3ea23f3e2ec0541379ff753d33d4",
+      "pages": 7,
+      "only_page_footer_changed": true
+    },
+    {
+      "path": "web/public/lessons/ponte-nodale-star_delta.json",
+      "before_sha256": "5bf76b7d596163df2c18f1702731e4a34d0695746b936b1f81eba4630c378ef9",
+      "after_sha256": "1b1714201ab6656b38929ca1e81c47d2f4b36e7c1a2c70796dfa1ffcba34dc3e",
+      "only_changed_keys": [
+        "editorial_status",
+        "lesson_build",
+        "source_sha"
+      ],
+      "scientific_payload_unchanged": true
+    },
+    {
+      "path": "web/public/lessons/ponte-nodale-star_delta.pdf",
+      "before_sha256": "6f142851a794b70267d273baa254da33874353830b5176dfd38c38a8ee0ea81d",
+      "after_sha256": "71c612d5b1c4a3bbbfc2d20c10b6cbc1fd71096f65ca9fc55396bd594ee5e9c8",
+      "pages": 6,
+      "only_page_footer_changed": true
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "schema": "kirchhoff-offline-unit.v1",
+  "unit": "K05a offline saved-reader increment",
+  "status": "LOCAL_INCREMENT_VERIFIED",
+  "at": "2026-10-18T14:55:23.903889+00:00",
+  "phase": "Local increment committed; next increment remains open",
+  "commit": "a7890f9f29c31bc56272cecba8ceec6f403a6131",
+  "source_sha256": "76c5e638a5b00320dbd34f7cf59df749648016b96f413189dcffb31b4f1ab22b",
+  "worktree_clean": true,
+  "checks": {
+    "python": {
+      "total": 2705,
+      "skipped": 0,
+      "failed": 0,
+      "errors": 0,
+      "passed": 2705
+    },
+    "coverage_combined_percent": 97.679862,
+    "domain_lines_and_branches_percent": 100,
+    "web_unit_passed": 396,
+    "browser": {
+      "startTime": "2026-10-18T14:46:51.337Z",
+      "duration": 332356.621,
+      "expected": 252,
+      "skipped": 4,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "all_source_fingerprints_match": true
+  },
+  "full_plan_done": false,
+  "flow_done": false,
+  "product_ready": false,
+  "teacher_approved": false,
+  "review_quorum": "NOT_SATISFIED",
+  "remote_exact_sha_ci": "NOT_RUN",
+  "external_publication": false,
+  "limits": [
+    "Free-ink scene remains exportable but is not rendered in offline reader",
+    "Legacy notebooks without saved view still require server",
+    "No physical Safari/Pencil/iPad or accessibility-conformance claim",
+    "No teacher-signed lesson content",
+    "Governance dual-runs and adoption not completed"
+  ],
+  "next_steps": [
+    "Bounded board preview bound to exact scene without a second canvas",
+    "Complete structured loaded-divider student journey and history checks",
+    "Prepare human-content review workflow; agent cannot approve",
+    "Complete governance and independent validation gates separately"
+  ]
+}

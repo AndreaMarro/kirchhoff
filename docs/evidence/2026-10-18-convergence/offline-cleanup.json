@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-18T14:52:53.590994+00:00",
+  "owned_api_pid": 82834,
+  "signal": "SIGTERM",
+  "api_log": "${EVIDENCE_ROOT}/offline-transport-api.log",
+  "api_log_sha256": "568de99f9be940395496362f075ec7a553a58f5c5551b82210fd87d74a186583",
+  "broken_pipe_occurrences": 2,
+  "note": "Browser suite completed before stopping API. BrokenPipe follows abandoned-request fault cases as an inference; no final browser failures. Preview managed by completed Playwright run; unrelated 4173 untouched.",
+  "listeners_after_shutdown": {
+    "43921": false,
+    "43922": false
+  }
+}
