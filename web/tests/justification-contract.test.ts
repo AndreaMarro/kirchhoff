@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
+import { readFileSync, mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
+import { tmpdir } from "node:os";
 import { spawnSync } from "node:child_process";
 import { parseSession, STEP_IDENTITY_ATTRIBUTES } from "../src/session/guards.ts";
 
@@ -35,7 +36,7 @@ function attestation(v: Wire): Wire {
 }
 const script = `import {readFileSync} from 'node:fs';
 import {validaVista} from './scripts/artifact-contract.mjs';
-const {vista,voce}=JSON.parse(readFileSync(0,'utf8'));
+const {vista,voce}=JSON.parse(readFileSync(process.argv[1],'utf8'));
 process.stdout.write(JSON.stringify(validaVista(vista,voce)));`;
 function cli(v: Wire): Wire {
   // Gli id delle Request non sono gli id del catalogo; la voce corrisponde
@@ -43,12 +44,21 @@ function cli(v: Wire): Wire {
   const index = JSON.parse(readFileSync(join(web, "public/sessions/index.json"), "utf8")) as Wire[];
   const entry = index.find(e => obj(e.domanda).target === obj(v.question).target && obj(e.domanda).quantity === obj(v.question).quantity && e.outcome === v.outcome && e.risposta_esatta === `${obj(v.answer).exact} ${obj(v.answer).unit}`);
   expect(entry, "voce di catalogo della fixture").toBeDefined();
-  const r = spawnSync(process.execPath, ["--input-type=module", "-e", script], {
-    cwd: web, input: JSON.stringify({ vista: v, voce: entry }), encoding: "utf8", timeout: 10_000,
-  });
-  if (r.error) throw r.error;
-  if (r.status !== 0) throw new Error(r.stderr);
-  return JSON.parse(r.stdout);
+  // Il fixture resta identico: evita il blocco intermittente della pipe stdin
+  // osservato con spawnSync su macOS, mantenendo processo e timeout del CLI.
+  const directory = mkdtempSync(join(tmpdir(), "kirchhoff-contract-"));
+  try {
+    const input = join(directory, "request.json");
+    writeFileSync(input, JSON.stringify({ vista: v, voce: entry }), "utf8");
+    const r = spawnSync(process.execPath, ["--input-type=module", "-e", script, input], {
+      cwd: web, encoding: "utf8", timeout: 10_000,
+    });
+    if (r.error) throw r.error;
+    if (r.status !== 0) throw new Error(r.stderr);
+    return JSON.parse(r.stdout);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
 }
 const bad: [string, (v: Wire) => void][] = [
   ["presenza parziale", v => { delete analytical(v).justification; }],

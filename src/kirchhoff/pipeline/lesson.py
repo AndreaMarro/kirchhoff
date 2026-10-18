@@ -243,6 +243,14 @@ def _checked_step(title: str, explanation: str, svg: str,
 
 def create_lesson(text: str, method: str = 'auto', source_sha: str = '') -> dict:
     """Un solo ingresso per catalogo, input editato, web e PDF."""
+    lezione = _create_lesson(text, method, source_sha)
+    if lezione.get('outcome') == 'solved':
+        lezione['editorial_status'] = 'DRAFT'
+    return lezione
+
+
+def _create_lesson(text: str, method: str = 'auto', source_sha: str = '') -> dict:
+    """Costruisce i controlli del calcolo, distinti dall'approvazione dei testi."""
     assert_runtime_current()
     if method not in {'auto', 'millman', 'norton', 'thevenin', 'superposition', 'nodal', 'star_delta', 'test_current', 'phasor', 'laplace'}:
         raise ValueError('Metodo sconosciuto.')

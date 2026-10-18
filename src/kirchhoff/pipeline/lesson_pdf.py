@@ -100,8 +100,10 @@ def export_pdf(lesson, *, trace_history=None):
     def page(stream):
         revision = lesson.get('lesson_build', '')[:12]
         source = lesson.get('fingerprint', '')[:12]
+        nota = 'Spiegazioni DRAFT: revisione docente assente.'
         if revision or source:
-            stream += _text(42,20,f'Revisione {revision or "non disponibile"} / input {source or "non disponibile"}',8)
+            nota = f'Revisione {revision or "non disponibile"} / input {source or "non disponibile"} / ' + nota
+        stream += _text(42,20,nota,8)
         content=stream.encode('cp1252','replace');content_id=len(objects)+1
         objects.append(f'<< /Length {len(content)} >>\nstream\n'.encode()+content+b'endstream')
         page_id=len(objects)+1

@@ -43,7 +43,7 @@ test('un server indisponibile è dichiarato e un nuovo tentativo può recuperare
  await page.goto(base!);
  await page.locator('.student-lesson[aria-busy=false]').waitFor();
  await page.locator('input[type=file][accept*="application/json"]').setInputFiles(file);
- await expect(page.getByRole('alert')).toContainText('Per riaprire un quaderno serve il server Kirchhoff.');
+ await expect(page.getByRole('alert')).toContainText('Richiesta non riuscita (503)');
  expect(checks).toBeGreaterThan(0);expect(solves).toBe(0);
  await page.unroute('**/api/capabilities');
  await page.locator('input[type=file][accept*="application/json"]').setInputFiles(file);

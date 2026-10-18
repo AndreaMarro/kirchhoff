@@ -6,6 +6,13 @@ import type {SourceArtifact} from './sourceArtifact.ts';
 export const SESSION_SCHEMA='kirchhoff-portable-session.v3' as const;
 export const MAX_SESSION_BYTES=42_000_000;
 export type BoardSourceRecord={sceneSha256:string;selectedElementIds:string[];selectionOnly:boolean};
+export type SavedLessonView={
+ contentStatus:'DRAFT';title:string;method:string;original:string;
+ steps:Array<{title:string;explanation:string;svg:string;equations:string[];focus:string[];math?:unknown}>;
+ answer:{exact:string;unit:string;reference:string;decimal?:string;display_exact?:string;quantity?:string;math?:unknown};
+ conventions?:{domain?:string};
+};
+export type SavedLesson={schema:'kirchhoff-saved-lesson.v1';view:SavedLessonView;sha256:string};
 export type SessionBundle={
  schema:typeof SESSION_SCHEMA|'kirchhoff-portable-session.v1'|'kirchhoff-portable-session.v2';
  netlist:string;
@@ -21,6 +28,7 @@ export type SessionBundle={
  priorImageSha256:string|null;
  boardSource?:BoardSourceRecord|null;
  sourceArtifact?:SourceArtifact|null;
+ savedLesson?:SavedLesson;
 };
 
 const record=(value:unknown):value is Record<string,unknown>=>Boolean(value)&&typeof value==='object'&&!Array.isArray(value);
@@ -29,6 +37,34 @@ const digest=async(text:string)=>{
  return [...new Uint8Array(bytes)].map(byte=>byte.toString(16).padStart(2,'0')).join('');
 };
 export const boardSceneSha256=digest;
+
+type SavedContext=Pick<SessionBundle,'netlist'|'method'|'answerExact'|'engineRevision'>;
+const copiedText=(v:unknown,max:number):v is string=>typeof v==='string'&&v.length<=max;
+const copyError=()=>new Error('La copia salvata dei passaggi non è valida o non appartiene al quaderno.');
+function validSavedView(value:unknown):value is SavedLessonView{
+ if(!record(value)||value.contentStatus!=='DRAFT'||
+  Object.keys(value).some(key=>!['contentStatus','title','method','original','steps','answer','conventions'].includes(key))||
+  !copiedText(value.title,1000)||!copiedText(value.method,40)||!copiedText(value.original,500_000)||
+  !Array.isArray(value.steps)||!value.steps.length||value.steps.length>512||
+  !value.steps.every(s=>record(s)&&copiedText(s.title,1000)&&copiedText(s.explanation,16000)&&copiedText(s.svg,500_000)&&
+    Array.isArray(s.equations)&&s.equations.length<=256&&s.equations.every(e=>copiedText(e,4000))&&
+    Array.isArray(s.focus)&&s.focus.length<=128&&s.focus.every(id=>copiedText(id,128)))||
+  !record(value.answer)||!copiedText(value.answer.exact,200)||!copiedText(value.answer.unit,80)||!copiedText(value.answer.reference,1000)||
+  ['decimal','display_exact','quantity'].some(k=>value.answer&&record(value.answer)&&value.answer[k]!==undefined&&!copiedText(value.answer[k],1000))||
+  value.conventions!==undefined&&(!record(value.conventions)||value.conventions.domain!==undefined&&!copiedText(value.conventions.domain,40)))return false;
+ return new TextEncoder().encode(JSON.stringify(value)).length<=4_000_000;
+}
+const savedDigest=(view:SavedLessonView,context:SavedContext)=>digest(JSON.stringify({netlist:context.netlist,
+ method:context.method,answerExact:context.answerExact,engineRevision:context.engineRevision,view}));
+
+/** Copia presentazionale: l'hash rileva alterazioni, non conferisce autorità scientifica. */
+export async function makeSavedLesson(view:Omit<SavedLessonView,'contentStatus'>,context:SavedContext):Promise<SavedLesson>{
+ const copied:SavedLessonView={contentStatus:'DRAFT',title:view.title,method:view.method,original:view.original,
+  steps:view.steps.map(s=>({title:s.title,explanation:s.explanation,svg:s.svg,equations:s.equations,focus:s.focus,...(s.math===undefined?{}:{math:s.math})})),
+  answer:view.answer,...(view.conventions?{conventions:{domain:view.conventions.domain}}:{})};
+ if(!validSavedView(copied)||copied.answer.exact!==context.answerExact)throw copyError();
+ return {schema:'kirchhoff-saved-lesson.v1',view:copied,sha256:await savedDigest(copied,context)};
+}
 
 export async function makeSessionBundle(fields:Omit<SessionBundle,'schema'|'circuitFingerprint'|'traceHistory'>&{traceHistory?:StoredTraceAttempt[]}):Promise<SessionBundle>{
  return {schema:SESSION_SCHEMA,...fields,traceHistory:fields.traceHistory??[],circuitFingerprint:await digest(fields.netlist)};
@@ -67,6 +103,12 @@ export async function readSessionBundle(text:string):Promise<SessionBundle>{
  if(value.schema!==SESSION_SCHEMA&&value.traceHistory!==undefined&&(!Array.isArray(value.traceHistory)||value.traceHistory.length))
   throw new Error('La cronologia richiede un quaderno versione 3.');
  value.traceHistory=readTraceHistory(value.schema===SESSION_SCHEMA?value.traceHistory:[],value.circuitFingerprint);
+ if(value.savedLesson!==undefined){
+  const saved=value.savedLesson;
+  if(value.schema!==SESSION_SCHEMA||!record(saved)||saved.schema!=='kirchhoff-saved-lesson.v1'||
+     !validSavedView(saved.view)||saved.view.answer.exact!==value.answerExact||typeof saved.sha256!=='string'||
+     saved.sha256!==await savedDigest(saved.view,value as unknown as SavedContext))throw copyError();
+ }
  if(value.boardScene){
   let scene:unknown;
   try{scene=JSON.parse(value.boardScene);}catch{throw new Error('La lavagna nel quaderno non è leggibile.');}
