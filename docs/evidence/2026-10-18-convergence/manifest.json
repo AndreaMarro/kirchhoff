@@ -285,6 +285,114 @@
       "sha256": "6f92a0a3173d1c485f283ab40d69f192f4d90c522aeda7a64061cd0d18051b90",
       "original_sha256": "6f92a0a3173d1c485f283ab40d69f192f4d90c522aeda7a64061cd0d18051b90",
       "local_paths_redacted": false
+    },
+    {
+      "path": "github-39138973716-python.log",
+      "bytes": 69044,
+      "sha256": "32a947f048989f081d3fb9e2372e7aea03a9ecb88dac7296aeeaa470956e0efa",
+      "original_sha256": "32a947f048989f081d3fb9e2372e7aea03a9ecb88dac7296aeeaa470956e0efa",
+      "local_paths_redacted": false
+    },
+    {
+      "path": "github-39138960894-python.log",
+      "bytes": 68353,
+      "sha256": "abe31b3be9cad58ba1a6b48177f4b2adc8f14a470352aa284a42d852675f7cca",
+      "original_sha256": "abe31b3be9cad58ba1a6b48177f4b2adc8f14a470352aa284a42d852675f7cca",
+      "local_paths_redacted": false
+    },
+    {
+      "path": "github-39138973717-web.log",
+      "bytes": 107253,
+      "sha256": "993622eac68ce52d0bd2d6287a306c952c5102ce1ee77dd725f9c7966ebc2ffe",
+      "original_sha256": "993622eac68ce52d0bd2d6287a306c952c5102ce1ee77dd725f9c7966ebc2ffe",
+      "local_paths_redacted": false
+    },
+    {
+      "path": "github-39138960906-web.log",
+      "bytes": 106723,
+      "sha256": "28b4505e9ada595e5b473bfde6556d166841ca45c920070171492187a881c024",
+      "original_sha256": "28b4505e9ada595e5b473bfde6556d166841ca45c920070171492187a881c024",
+      "local_paths_redacted": false
+    },
+    {
+      "path": "ci-closeout-observation.json",
+      "bytes": 2627,
+      "sha256": "b9dec2ce36d6e327339019de4b71c8ac23a8b0f01427982290ccbb1a3a8d1104",
+      "original_sha256": "b9dec2ce36d6e327339019de4b71c8ac23a8b0f01427982290ccbb1a3a8d1104",
+      "local_paths_redacted": false
     }
-  ]
+  ],
+  "post_publication_ci": {
+    "schema": "kirchhoff-ci-closeout-observation.v1",
+    "at": "2026-10-18T15:19:49.007000+00:00",
+    "first_published_head": "e42c589e20ec6488239f6835d80c6c77820793a6",
+    "initial_runs": [
+      {
+        "conclusion": "success",
+        "databaseId": 39138973717,
+        "event": "pull_request",
+        "headSha": "e42c589e20ec6488239f6835d80c6c77820793a6",
+        "name": "web",
+        "status": "completed",
+        "url": "https://github.com/AndreaMarro/kirchhoff/actions/runs/39138973717"
+      },
+      {
+        "conclusion": "failure",
+        "databaseId": 39138973716,
+        "event": "pull_request",
+        "headSha": "e42c589e20ec6488239f6835d80c6c77820793a6",
+        "name": "test",
+        "status": "completed",
+        "url": "https://github.com/AndreaMarro/kirchhoff/actions/runs/39138973716"
+      },
+      {
+        "conclusion": "success",
+        "databaseId": 39138960906,
+        "event": "push",
+        "headSha": "e42c589e20ec6488239f6835d80c6c77820793a6",
+        "name": "web",
+        "status": "completed",
+        "url": "https://github.com/AndreaMarro/kirchhoff/actions/runs/39138960906"
+      },
+      {
+        "conclusion": "failure",
+        "databaseId": 39138960894,
+        "event": "push",
+        "headSha": "e42c589e20ec6488239f6835d80c6c77820793a6",
+        "name": "test",
+        "status": "completed",
+        "url": "https://github.com/AndreaMarro/kirchhoff/actions/runs/39138960894"
+      }
+    ],
+    "python_pr": {
+      "passed": 2702,
+      "skipped": 3,
+      "test_failures": 0,
+      "coverage_gate": "FAIL",
+      "coverage_combined_percent": 97.6179,
+      "baseline_percent": 97.6784238082
+    },
+    "python_push": {
+      "passed": 2701,
+      "skipped": 3,
+      "test_failures": 1,
+      "test": "test_sorgenti_mutate_in_corsa_invalidano_la_ricevuta",
+      "observed": "only chain gate reached; source mutation fixture never called",
+      "root_cause_of_that_single_run": "INFERENCE clock mismatch; receipt details not exposed by original assertion"
+    },
+    "web_each": {
+      "unit_passed": 396,
+      "browser_passed": 194,
+      "browser_skipped": 62
+    },
+    "clock_regression": {
+      "test": "test_freschezza_usa_orologio_del_filesystem_non_wall_clock",
+      "observed_red": true,
+      "red_exit": 1,
+      "green_exit": 0,
+      "scope": "wall clock +10s relative to filesystem timestamps; all15 verifier tests pass after per-command filesystem marker fix; stale/symlink tests preserved"
+    },
+    "coverage_diagnosis": "Entire measured local/CI difference is pipeline/cli.py. CI did not install the real browser used by PDF integration. Prepare a real browser in explicit legacy-cache fixture; no threshold change.",
+    "final_ci": "READ_EXACT_HEAD_PR_CHECKS_AFTER_FIX"
+  }
 }

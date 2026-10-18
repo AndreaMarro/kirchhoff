@@ -1,0 +1,757 @@
+web	Set up job	﻿2026-10-18T15:06:28.4324713Z Current runner version: '2.337.0'
+web	Set up job	2026-10-18T15:06:28.4350232Z ##[group]Runner Image Provisioner
+web	Set up job	2026-10-18T15:06:28.4351189Z Hosted Compute Agent
+web	Set up job	2026-10-18T15:06:28.4351845Z Version: 20261012.601
+web	Set up job	2026-10-18T15:06:28.4352486Z Commit: f3dc54e1fb89da6852db922499a0233137369e1d
+web	Set up job	2026-10-18T15:06:28.4353284Z Build Date: 2026-10-12T17:48:21Z
+web	Set up job	2026-10-18T15:06:28.4353986Z Worker ID: {e9473ceb-0464-4ba8-bda7-7e2b67fb249a}
+web	Set up job	2026-10-18T15:06:28.4355351Z Region: centralus
+web	Set up job	2026-10-18T15:06:28.4356013Z Cloud: Azure
+web	Set up job	2026-10-18T15:06:28.4356571Z ##[endgroup]
+web	Set up job	2026-10-18T15:06:28.4358199Z ##[group]Operating System
+web	Set up job	2026-10-18T15:06:28.4358876Z Ubuntu
+web	Set up job	2026-10-18T15:06:28.4359443Z 24.04.5
+web	Set up job	2026-10-18T15:06:28.4360010Z LTS
+web	Set up job	2026-10-18T15:06:28.4360531Z ##[endgroup]
+web	Set up job	2026-10-18T15:06:28.4361139Z ##[group]Runner Image
+web	Set up job	2026-10-18T15:06:28.4361790Z Image: ubuntu-24.04
+web	Set up job	2026-10-18T15:06:28.4362404Z Version: 20261012.334.1
+web	Set up job	2026-10-18T15:06:28.4363545Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md
+web	Set up job	2026-10-18T15:06:28.4365894Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261012.334
+web	Set up job	2026-10-18T15:06:28.4366977Z ##[endgroup]
+web	Set up job	2026-10-18T15:06:28.4368173Z ##[group]GITHUB_TOKEN Permissions
+web	Set up job	2026-10-18T15:06:28.4370097Z Contents: read
+web	Set up job	2026-10-18T15:06:28.4370800Z Metadata: read
+web	Set up job	2026-10-18T15:06:28.4371386Z ##[endgroup]
+web	Set up job	2026-10-18T15:06:28.4373446Z Secret source: Actions
+web	Set up job	2026-10-18T15:06:28.4374798Z Cache mode: write
+web	Set up job	2026-10-18T15:06:28.4375824Z Prepare workflow directory
+web	Set up job	2026-10-18T15:06:28.4717851Z Prepare all required actions
+web	Set up job	2026-10-18T15:06:28.4768377Z Getting action download info
+web	Set up job	2026-10-18T15:06:28.7458319Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+web	Set up job	2026-10-18T15:06:28.8647819Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+web	Set up job	2026-10-18T15:06:29.0558005Z Complete job name: web
+web	Run actions/checkout@v4	﻿2026-10-18T15:06:29.1354118Z ##[group]Run actions/checkout@v4
+web	Run actions/checkout@v4	2026-10-18T15:06:29.1355287Z with:
+web	Run actions/checkout@v4	2026-10-18T15:06:29.1355760Z   repository: AndreaMarro/kirchhoff
+web	Run actions/checkout@v4	2026-10-18T15:06:29.1359633Z   token: ***
+web	Run actions/checkout@v4	2026-10-18T15:06:29.1360068Z   ssh-strict: true
+web	Run actions/checkout@v4	2026-10-18T15:06:29.1360517Z   ssh-user: git
+web	Run actions/checkout@v4	2026-10-18T15:06:29.1360983Z   persist-credentials: true
+web	Run actions/checkout@v4	2026-10-18T15:06:29.1361486Z   clean: true
+web	Run actions/checkout@v4	2026-10-18T15:06:29.1361934Z   sparse-checkout-cone-mode: true
+web	Run actions/checkout@v4	2026-10-18T15:06:29.1362461Z   fetch-depth: 1
+web	Run actions/checkout@v4	2026-10-18T15:06:29.1362891Z   fetch-tags: false
+web	Run actions/checkout@v4	2026-10-18T15:06:29.1363344Z   show-progress: true
+web	Run actions/checkout@v4	2026-10-18T15:06:29.1363795Z   lfs: false
+web	Run actions/checkout@v4	2026-10-18T15:06:29.1364207Z   submodules: false
+web	Run actions/checkout@v4	2026-10-18T15:06:29.1365095Z   set-safe-directory: true
+web	Run actions/checkout@v4	2026-10-18T15:06:29.1365633Z   allow-unsafe-pr-checkout: false
+web	Run actions/checkout@v4	2026-10-18T15:06:29.1366489Z ##[endgroup]
+web	Run actions/checkout@v4	2026-10-18T15:06:29.2403817Z Syncing repository: AndreaMarro/kirchhoff
+web	Run actions/checkout@v4	2026-10-18T15:06:29.2406726Z ##[group]Getting Git version info
+web	Run actions/checkout@v4	2026-10-18T15:06:29.2407883Z Working directory is '/home/runner/work/kirchhoff/kirchhoff'
+web	Run actions/checkout@v4	2026-10-18T15:06:29.2409573Z [command]/usr/bin/git version
+web	Run actions/checkout@v4	2026-10-18T15:06:29.2488369Z git version 2.55.0
+web	Run actions/checkout@v4	2026-10-18T15:06:29.2510141Z ##[endgroup]
+web	Run actions/checkout@v4	2026-10-18T15:06:29.2527119Z Temporarily overriding HOME='/home/runner/work/_temp/e1564490-66d4-43ab-8cf9-42217c8b1aae' before making global git config changes
+web	Run actions/checkout@v4	2026-10-18T15:06:29.2529501Z Adding repository directory to the temporary git global config as a safe directory
+web	Run actions/checkout@v4	2026-10-18T15:06:29.2533670Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/kirchhoff/kirchhoff
+web	Run actions/checkout@v4	2026-10-18T15:06:29.2586559Z Deleting the contents of '/home/runner/work/kirchhoff/kirchhoff'
+web	Run actions/checkout@v4	2026-10-18T15:06:29.2591466Z ##[group]Initializing the repository
+web	Run actions/checkout@v4	2026-10-18T15:06:29.2595236Z [command]/usr/bin/git init /home/runner/work/kirchhoff/kirchhoff
+web	Run actions/checkout@v4	2026-10-18T15:06:29.2729863Z hint: Using 'master' as the name for the initial branch. This default branch name
+web	Run actions/checkout@v4	2026-10-18T15:06:29.2731667Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+web	Run actions/checkout@v4	2026-10-18T15:06:29.2735497Z hint: to use in all of your new repositories, which will suppress this warning,
+web	Run actions/checkout@v4	2026-10-18T15:06:29.2736830Z hint: call:
+web	Run actions/checkout@v4	2026-10-18T15:06:29.2737577Z hint:
+web	Run actions/checkout@v4	2026-10-18T15:06:29.2738388Z hint: 	git config --global init.defaultBranch <name>
+web	Run actions/checkout@v4	2026-10-18T15:06:29.2739364Z hint:
+web	Run actions/checkout@v4	2026-10-18T15:06:29.2740273Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+web	Run actions/checkout@v4	2026-10-18T15:06:29.2741811Z hint: 'development'. The just-created branch can be renamed via this command:
+web	Run actions/checkout@v4	2026-10-18T15:06:29.2743028Z hint:
+web	Run actions/checkout@v4	2026-10-18T15:06:29.2743670Z hint: 	git branch -m <name>
+web	Run actions/checkout@v4	2026-10-18T15:06:29.2744659Z hint:
+web	Run actions/checkout@v4	2026-10-18T15:06:29.2745711Z hint: Disable this message with "git config set advice.defaultBranchName false"
+web	Run actions/checkout@v4	2026-10-18T15:06:29.2747011Z Initialized empty Git repository in /home/runner/work/kirchhoff/kirchhoff/.git/
+web	Run actions/checkout@v4	2026-10-18T15:06:29.2748726Z [command]/usr/bin/git remote add origin https://github.com/AndreaMarro/kirchhoff
+web	Run actions/checkout@v4	2026-10-18T15:06:29.2799683Z ##[endgroup]
+web	Run actions/checkout@v4	2026-10-18T15:06:29.2800921Z ##[group]Disabling automatic garbage collection
+web	Run actions/checkout@v4	2026-10-18T15:06:29.2802726Z [command]/usr/bin/git config --local gc.auto 0
+web	Run actions/checkout@v4	2026-10-18T15:06:29.2851466Z ##[endgroup]
+web	Run actions/checkout@v4	2026-10-18T15:06:29.2852601Z ##[group]Setting up auth
+web	Run actions/checkout@v4	2026-10-18T15:06:29.2853764Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+web	Run actions/checkout@v4	2026-10-18T15:06:29.2879595Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+web	Run actions/checkout@v4	2026-10-18T15:06:29.3327909Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+web	Run actions/checkout@v4	2026-10-18T15:06:29.3367710Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+web	Run actions/checkout@v4	2026-10-18T15:06:29.3592195Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+web	Run actions/checkout@v4	2026-10-18T15:06:29.3629369Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+web	Run actions/checkout@v4	2026-10-18T15:06:29.3853025Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+web	Run actions/checkout@v4	2026-10-18T15:06:29.3896845Z ##[endgroup]
+web	Run actions/checkout@v4	2026-10-18T15:06:29.3898145Z ##[group]Fetching the repository
+web	Run actions/checkout@v4	2026-10-18T15:06:29.3907838Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +c87e7d6e66c290614a26481ce5ada497c6c8a7c2:refs/remotes/pull/29/merge
+web	Run actions/checkout@v4	2026-10-18T15:06:30.7545553Z From https://github.com/AndreaMarro/kirchhoff
+web	Run actions/checkout@v4	2026-10-18T15:06:30.7547558Z  * [new ref]         c87e7d6e66c290614a26481ce5ada497c6c8a7c2 -> pull/29/merge
+web	Run actions/checkout@v4	2026-10-18T15:06:30.7554151Z ##[endgroup]
+web	Run actions/checkout@v4	2026-10-18T15:06:30.7555862Z ##[group]Determining the checkout info
+web	Run actions/checkout@v4	2026-10-18T15:06:30.7557455Z ##[endgroup]
+web	Run actions/checkout@v4	2026-10-18T15:06:30.7561647Z [command]/usr/bin/git sparse-checkout disable
+web	Run actions/checkout@v4	2026-10-18T15:06:30.7625690Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+web	Run actions/checkout@v4	2026-10-18T15:06:30.7661337Z ##[group]Checking out the ref
+web	Run actions/checkout@v4	2026-10-18T15:06:30.7665944Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/29/merge
+web	Run actions/checkout@v4	2026-10-18T15:06:30.9087399Z Note: switching to 'refs/remotes/pull/29/merge'.
+web	Run actions/checkout@v4	2026-10-18T15:06:30.9088446Z 
+web	Run actions/checkout@v4	2026-10-18T15:06:30.9089077Z You are in 'detached HEAD' state. You can look around, make experimental
+web	Run actions/checkout@v4	2026-10-18T15:06:30.9090424Z changes and commit them, and you can discard any commits you make in this
+web	Run actions/checkout@v4	2026-10-18T15:06:30.9091761Z state without impacting any branches by switching back to a branch.
+web	Run actions/checkout@v4	2026-10-18T15:06:30.9092519Z 
+web	Run actions/checkout@v4	2026-10-18T15:06:30.9093124Z If you want to create a new branch to retain commits you create, you may
+web	Run actions/checkout@v4	2026-10-18T15:06:30.9094638Z do so (now or later) by using -c with the switch command. Example:
+web	Run actions/checkout@v4	2026-10-18T15:06:30.9095461Z 
+web	Run actions/checkout@v4	2026-10-18T15:06:30.9095863Z   git switch -c <new-branch-name>
+web	Run actions/checkout@v4	2026-10-18T15:06:30.9096806Z 
+web	Run actions/checkout@v4	2026-10-18T15:06:30.9097420Z Or undo this operation with:
+web	Run actions/checkout@v4	2026-10-18T15:06:30.9098396Z 
+web	Run actions/checkout@v4	2026-10-18T15:06:30.9098981Z   git switch -
+web	Run actions/checkout@v4	2026-10-18T15:06:30.9099777Z 
+web	Run actions/checkout@v4	2026-10-18T15:06:30.9100881Z Turn off this advice by setting config variable advice.detachedHead to false
+web	Run actions/checkout@v4	2026-10-18T15:06:30.9102339Z 
+web	Run actions/checkout@v4	2026-10-18T15:06:30.9104049Z HEAD is now at c87e7d6 Merge e42c589e20ec6488239f6835d80c6c77820793a6 into b35a8b5da0616f00a7764397bda0e6b95aca3c95
+web	Run actions/checkout@v4	2026-10-18T15:06:30.9110028Z ##[endgroup]
+web	Run actions/checkout@v4	2026-10-18T15:06:30.9153306Z [command]/usr/bin/git log -1 --format=%H
+web	Run actions/checkout@v4	2026-10-18T15:06:30.9180839Z c87e7d6e66c290614a26481ce5ada497c6c8a7c2
+web	Run actions/setup-node@v4	﻿2026-10-18T15:06:30.9639195Z ##[group]Run actions/setup-node@v4
+web	Run actions/setup-node@v4	2026-10-18T15:06:30.9640491Z with:
+web	Run actions/setup-node@v4	2026-10-18T15:06:30.9641473Z   node-version: 22
+web	Run actions/setup-node@v4	2026-10-18T15:06:30.9642478Z   cache: npm
+web	Run actions/setup-node@v4	2026-10-18T15:06:30.9643640Z   cache-dependency-path: web/package-lock.json
+web	Run actions/setup-node@v4	2026-10-18T15:06:30.9645334Z   always-auth: false
+web	Run actions/setup-node@v4	2026-10-18T15:06:30.9646409Z   check-latest: false
+web	Run actions/setup-node@v4	2026-10-18T15:06:30.9655907Z   token: ***
+web	Run actions/setup-node@v4	2026-10-18T15:06:30.9656896Z ##[endgroup]
+web	Run actions/setup-node@v4	2026-10-18T15:06:31.1118071Z (node:2333) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+web	Run actions/setup-node@v4	2026-10-18T15:06:31.1121975Z (Use `node --trace-deprecation ...` to show where the warning was created)
+web	Run actions/setup-node@v4	2026-10-18T15:06:31.1145299Z Found in cache @ /opt/hostedtoolcache/node/22.23.3/x64
+web	Run actions/setup-node@v4	2026-10-18T15:06:31.1150490Z ##[group]Environment details
+web	Run actions/setup-node@v4	2026-10-18T15:06:31.5636276Z node: v22.23.3
+web	Run actions/setup-node@v4	2026-10-18T15:06:31.5636975Z npm: 10.9.9
+web	Run actions/setup-node@v4	2026-10-18T15:06:31.5637456Z yarn: 1.22.22
+web	Run actions/setup-node@v4	2026-10-18T15:06:31.5639332Z ##[endgroup]
+web	Run actions/setup-node@v4	2026-10-18T15:06:31.5661843Z [command]/opt/hostedtoolcache/node/22.23.3/x64/bin/npm config get cache
+web	Run actions/setup-node@v4	2026-10-18T15:06:31.6789272Z /home/runner/.npm
+web	Run actions/setup-node@v4	2026-10-18T15:06:31.8239703Z Cache hit for: node-cache-Linux-x64-npm-56d106e00151ada5ae4e13a2f88dce9bb8d350ca98280959ebf18eab8a253525
+web	Run actions/setup-node@v4	2026-10-18T15:06:31.8341471Z (node:2333) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+web	Run actions/setup-node@v4	2026-10-18T15:06:32.8550152Z Received 59478568 of 59478568 (100.0%), 64.6 MBs/sec
+web	Run actions/setup-node@v4	2026-10-18T15:06:32.8551395Z Cache Size: ~57 MB (59478568 B)
+web	Run actions/setup-node@v4	2026-10-18T15:06:32.8671327Z [command]/usr/bin/tar -xf /home/runner/work/_temp/b5fab097-4cba-4acd-b820-459a54a04813/cache.tzst -P -C /home/runner/work/kirchhoff/kirchhoff --use-compress-program unzstd
+web	Run actions/setup-node@v4	2026-10-18T15:06:32.9612281Z Cache restored successfully
+web	Run actions/setup-node@v4	2026-10-18T15:06:32.9658617Z Cache restored from key: node-cache-Linux-x64-npm-56d106e00151ada5ae4e13a2f88dce9bb8d350ca98280959ebf18eab8a253525
+web	Installazione bloccata	﻿2026-10-18T15:06:32.9826695Z ##[group]Run npm ci
+web	Installazione bloccata	2026-10-18T15:06:32.9827068Z ^[[36;1mnpm ci^[[0m
+web	Installazione bloccata	2026-10-18T15:06:33.0129178Z shell: /usr/bin/bash -e {0}
+web	Installazione bloccata	2026-10-18T15:06:33.0129522Z ##[endgroup]
+web	Installazione bloccata	2026-10-18T15:06:35.5632779Z 
+web	Installazione bloccata	2026-10-18T15:06:35.5640954Z added 83 packages, and audited 84 packages in 2s
+web	Installazione bloccata	2026-10-18T15:06:35.5641307Z 
+web	Installazione bloccata	2026-10-18T15:06:35.5641595Z 20 packages are looking for funding
+web	Installazione bloccata	2026-10-18T15:06:35.5641943Z   run `npm fund` for details
+web	Installazione bloccata	2026-10-18T15:06:35.5773992Z 
+web	Installazione bloccata	2026-10-18T15:06:35.5774691Z 3 vulnerabilities (1 moderate, 2 critical)
+web	Installazione bloccata	2026-10-18T15:06:35.5775114Z 
+web	Installazione bloccata	2026-10-18T15:06:35.5775432Z To address all issues (including breaking changes), run:
+web	Installazione bloccata	2026-10-18T15:06:35.5775826Z   npm audit fix --force
+web	Installazione bloccata	2026-10-18T15:06:35.5775990Z 
+web	Installazione bloccata	2026-10-18T15:06:35.5776130Z Run `npm audit` for details.
+web	Controllo tipi	﻿2026-10-18T15:06:35.6344179Z ##[group]Run npm run typecheck
+web	Controllo tipi	2026-10-18T15:06:35.6344890Z ^[[36;1mnpm run typecheck^[[0m
+web	Controllo tipi	2026-10-18T15:06:35.6409990Z shell: /usr/bin/bash -e {0}
+web	Controllo tipi	2026-10-18T15:06:35.6410280Z ##[endgroup]
+web	Controllo tipi	2026-10-18T15:06:35.7404248Z 
+web	Controllo tipi	2026-10-18T15:06:35.7404962Z > kirchhoff-proof-workbench@0.1.0 typecheck
+web	Controllo tipi	2026-10-18T15:06:35.7405850Z > tsc --noEmit
+web	Controllo tipi	2026-10-18T15:06:35.7406089Z 
+web	Unit test	﻿2026-10-18T15:06:40.2526463Z ##[group]Run npm run test
+web	Unit test	2026-10-18T15:06:40.2526880Z ^[[36;1mnpm run test^[[0m
+web	Unit test	2026-10-18T15:06:40.2592968Z shell: /usr/bin/bash -e {0}
+web	Unit test	2026-10-18T15:06:40.2593461Z ##[endgroup]
+web	Unit test	2026-10-18T15:06:40.3573862Z 
+web	Unit test	2026-10-18T15:06:40.3574621Z > kirchhoff-proof-workbench@0.1.0 test
+web	Unit test	2026-10-18T15:06:40.3575185Z > vitest run
+web	Unit test	2026-10-18T15:06:40.3575335Z 
+web	Unit test	2026-10-18T15:06:40.7108227Z 
+web	Unit test	2026-10-18T15:06:40.7111743Z ^[[1m^[[46m RUN ^[[49m^[[22m ^[[36mv3.2.7 ^[[39m^[[90m/home/runner/work/kirchhoff/kirchhoff/web^[[39m
+web	Unit test	2026-10-18T15:06:40.7112478Z 
+web	Unit test	2026-10-18T15:06:41.3596706Z  ^[[32m✓^[[39m tests/guards.test.ts ^[[2m(^[[22m^[[2m77 tests^[[22m^[[2m)^[[22m^[[32m 88^[[2mms^[[22m^[[39m
+web	Unit test	2026-10-18T15:06:41.8135456Z  ^[[32m✓^[[39m tests/session-bundle.test.ts ^[[2m(^[[22m^[[2m13 tests^[[22m^[[2m)^[[22m^[[32m 47^[[2mms^[[22m^[[39m
+web	Unit test	2026-10-18T15:06:42.1383253Z  ^[[32m✓^[[39m tests/lesson-presentation.test.ts ^[[2m(^[[22m^[[2m15 tests^[[22m^[[2m)^[[22m^[[32m 9^[[2mms^[[22m^[[39m
+web	Unit test	2026-10-18T15:06:42.4765626Z  ^[[32m✓^[[39m tests/circuit-input-model.test.ts ^[[2m(^[[22m^[[2m10 tests^[[22m^[[2m)^[[22m^[[32m 15^[[2mms^[[22m^[[39m
+web	Unit test	2026-10-18T15:06:42.9552546Z  ^[[32m✓^[[39m tests/step-justification.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 41^[[2mms^[[22m^[[39m
+web	Unit test	2026-10-18T15:06:43.3206383Z  ^[[32m✓^[[39m tests/circuit-editor.test.ts ^[[2m(^[[22m^[[2m9 tests^[[22m^[[2m)^[[22m^[[32m 14^[[2mms^[[22m^[[39m
+web	Unit test	2026-10-18T15:06:43.6863888Z  ^[[32m✓^[[39m tests/proof-evidence.test.ts ^[[2m(^[[22m^[[2m17 tests^[[22m^[[2m)^[[22m^[[32m 60^[[2mms^[[22m^[[39m
+web	Unit test	2026-10-18T15:06:44.0556292Z  ^[[32m✓^[[39m tests/source-artifact.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 23^[[2mms^[[22m^[[39m
+web	Unit test	2026-10-18T15:06:44.4180430Z  ^[[32m✓^[[39m tests/saved-lesson.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 37^[[2mms^[[22m^[[39m
+web	Unit test	2026-10-18T15:06:44.7686492Z  ^[[32m✓^[[39m tests/lesson-math.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 10^[[2mms^[[22m^[[39m
+web	Unit test	2026-10-18T15:06:45.0881248Z  ^[[32m✓^[[39m tests/board-protocol.test.ts ^[[2m(^[[22m^[[2m11 tests^[[22m^[[2m)^[[22m^[[32m 9^[[2mms^[[22m^[[39m
+web	Unit test	2026-10-18T15:06:45.4355478Z  ^[[32m✓^[[39m tests/stage.test.ts ^[[2m(^[[22m^[[2m11 tests^[[22m^[[2m)^[[22m^[[32m 12^[[2mms^[[22m^[[39m
+web	Unit test	2026-10-18T15:06:45.7802819Z  ^[[32m✓^[[39m tests/source-map-boundary.test.ts ^[[2m(^[[22m^[[2m8 tests^[[22m^[[2m)^[[22m^[[32m 13^[[2mms^[[22m^[[39m
+web	Unit test	2026-10-18T15:06:46.1190394Z  ^[[32m✓^[[39m tests/trace-history.test.ts ^[[2m(^[[22m^[[2m13 tests^[[22m^[[2m)^[[22m^[[32m 23^[[2mms^[[22m^[[39m
+web	Unit test	2026-10-18T15:06:46.4655807Z  ^[[32m✓^[[39m tests/trace-check.test.ts ^[[2m(^[[22m^[[2m14 tests^[[22m^[[2m)^[[22m^[[32m 46^[[2mms^[[22m^[[39m
+web	Unit test	2026-10-18T15:06:46.9582334Z  ^[[32m✓^[[39m tests/offline-worker.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+web	Unit test	2026-10-18T15:06:47.0526915Z  ^[[32m✓^[[39m tests/justification-contract.test.ts ^[[2m(^[[22m^[[2m122 tests^[[22m^[[2m)^[[22m^[[33m 5809^[[2mms^[[22m^[[39m
+web	Unit test	2026-10-18T15:06:47.2846199Z  ^[[32m✓^[[39m tests/board-selection.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 6^[[2mms^[[22m^[[39m
+web	Unit test	2026-10-18T15:06:47.4030201Z  ^[[32m✓^[[39m tests/document-input.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 8^[[2mms^[[22m^[[39m
+web	Unit test	2026-10-18T15:06:51.0652355Z  ^[[32m✓^[[39m tests/deployment-scripts.test.ts ^[[2m(^[[22m^[[2m49 tests^[[22m^[[2m)^[[22m^[[33m 9855^[[2mms^[[22m^[[39m
+web	Unit test	2026-10-18T15:06:51.0654699Z    ^[[33m^[[2m✓^[[22m^[[39m verifier: build attesa e file realmente serviti^[[2m > ^[[22mla build identica verifica tutti i corpi, chunk lazy, worker, lessons e MCP ^[[33m 339^[[2mms^[[22m^[[39m
+web	Unit test	2026-10-18T15:06:51.0656399Z    ^[[33m^[[2m✓^[[22m^[[39m verifier: build attesa e file realmente serviti^[[2m > ^[[22mHTML con entry diversa fallisce anche se il vecchio asset identico è ancora disponibile ^[[33m 318^[[2mms^[[22m^[[39m
+web	Unit test	2026-10-18T15:06:51.0658150Z    ^[[33m^[[2m✓^[[22m^[[39m verifier: build attesa e file realmente serviti^[[2m > ^[[22massenza di assets/pdf.worker.min.mjs fallisce ^[[33m 309^[[2mms^[[22m^[[39m
+web	Unit test	2026-10-18T15:06:51.0660303Z    ^[[33m^[[2m✓^[[22m^[[39m verifier: build attesa e file realmente serviti^[[2m > ^[[22manche i byte di un chunk non indicato nellHTML sono verificati ^[[33m 308^[[2mms^[[22m^[[39m
+web	Unit test	2026-10-18T15:06:51.0802894Z 
+web	Unit test	2026-10-18T15:06:51.0810051Z ^[[2m Test Files ^[[22m ^[[1m^[[32m20 passed^[[39m^[[22m^[[90m (20)^[[39m
+web	Unit test	2026-10-18T15:06:51.0811648Z ^[[2m      Tests ^[[22m ^[[1m^[[32m396 passed^[[39m^[[22m^[[90m (396)^[[39m
+web	Unit test	2026-10-18T15:06:51.0813011Z ^[[2m   Start at ^[[22m 15:06:40
+web	Unit test	2026-10-18T15:06:51.0815252Z ^[[2m   Duration ^[[22m 10.37s^[[2m (transform 701ms, setup 0ms, collect 1.48s, tests 16.13s, environment 5ms, prepare 2.11s)^[[22m
+web	Unit test	2026-10-18T15:06:51.0820056Z 
+web	Build di produzione	﻿2026-10-18T15:06:51.2000536Z ##[group]Run npm run build
+web	Build di produzione	2026-10-18T15:06:51.2000862Z ^[[36;1mnpm run build^[[0m
+web	Build di produzione	2026-10-18T15:06:51.2063757Z shell: /usr/bin/bash -e {0}
+web	Build di produzione	2026-10-18T15:06:51.2064034Z ##[endgroup]
+web	Build di produzione	2026-10-18T15:06:51.3051885Z 
+web	Build di produzione	2026-10-18T15:06:51.3052369Z > kirchhoff-proof-workbench@0.1.0 build
+web	Build di produzione	2026-10-18T15:06:51.3053115Z > tsc --noEmit && vite build && vite build --config vite.mcp.config.ts
+web	Build di produzione	2026-10-18T15:06:51.3053441Z 
+web	Build di produzione	2026-10-18T15:06:55.9098110Z ^[[36mvite v7.3.6 ^[[32mbuilding client environment for production...^[[36m^[[39m
+web	Build di produzione	2026-10-18T15:06:55.9764292Z transforming...
+web	Build di produzione	2026-10-18T15:06:57.8979423Z ^[[32m✓^[[39m 69 modules transformed.
+web	Build di produzione	2026-10-18T15:06:58.2120470Z rendering chunks...
+web	Build di produzione	2026-10-18T15:06:58.2729645Z computing gzip size...
+web	Build di produzione	2026-10-18T15:06:58.2902166Z ^[[2mdist/^[[22m^[[32mindex.html                          ^[[39m^[[1m^[[2m    0.90 kB^[[22m^[[1m^[[22m^[[2m │ gzip:   0.55 kB^[[22m
+web	Build di produzione	2026-10-18T15:06:58.2903515Z ^[[2mdist/^[[22m^[[32moffline-sw.js                       ^[[39m^[[1m^[[2m   27.72 kB^[[22m^[[1m^[[22m
+web	Build di produzione	2026-10-18T15:06:58.2905038Z ^[[2mdist/^[[22m^[[2massets/^[[22m^[[32mpdf.worker.min-Dswkl-cV.mjs  ^[[39m^[[1m^[[2m1,265.41 kB^[[22m^[[1m^[[22m
+web	Build di produzione	2026-10-18T15:06:58.2907130Z ^[[2mdist/^[[22m^[[2massets/^[[22m^[[35mindex-Cnbq3u_8.css           ^[[39m^[[1m^[[2m   37.43 kB^[[22m^[[1m^[[22m^[[2m │ gzip:   7.66 kB^[[22m
+web	Build di produzione	2026-10-18T15:06:58.2908907Z ^[[2mdist/^[[22m^[[2massets/^[[22m^[[36mindex-DroGVsfW.js            ^[[39m^[[1m^[[2m  330.13 kB^[[22m^[[1m^[[22m^[[2m │ gzip: 102.25 kB^[[22m
+web	Build di produzione	2026-10-18T15:06:58.2910632Z ^[[2mdist/^[[22m^[[2massets/^[[22m^[[36mpdf-CoTZ2JFh.js              ^[[39m^[[1m^[[2m  436.68 kB^[[22m^[[1m^[[22m^[[2m │ gzip: 130.66 kB^[[22m
+web	Build di produzione	2026-10-18T15:06:58.2911706Z ^[[32m✓ built in 2.35s^[[39m
+web	Build di produzione	2026-10-18T15:06:58.4898376Z ^[[36mvite v7.3.6 ^[[32mbuilding client environment for production...^[[36m^[[39m
+web	Build di produzione	2026-10-18T15:06:58.5204628Z transforming...
+web	Build di produzione	2026-10-18T15:06:58.8753243Z ^[[33mnode_modules/zod/v4/core/regexes.js (74:0): A comment
+web	Build di produzione	2026-10-18T15:06:58.8753862Z 
+web	Build di produzione	2026-10-18T15:06:58.8754930Z "/** Anchors a pattern source. The interpolation lives here rather than at the call site because
+web	Build di produzione	2026-10-18T15:06:58.8756372Z  * esbuild will not drop a `@__PURE__` call whose own argument interpolates a variable, but it
+web	Build di produzione	2026-10-18T15:06:58.8757675Z  * will drop `anchor(dateSource)`. Keeping it inline pinned `date` into every bundle. */"
+web	Build di produzione	2026-10-18T15:06:58.8758369Z 
+web	Build di produzione	2026-10-18T15:06:58.8760191Z in "node_modules/zod/v4/core/regexes.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.^[[39m
+web	Build di produzione	2026-10-18T15:06:58.8837399Z ^[[33mnode_modules/zod/v4/core/util.js (400:0): A comment
+web	Build di produzione	2026-10-18T15:06:58.8837898Z 
+web	Build di produzione	2026-10-18T15:06:58.8839315Z "// Wrapped in a `@__PURE__` IIFE: esbuild never tree-shakes a top-level initializer that contains a member access on `Number`, so the bare object literal survived into every bundle."
+web	Build di produzione	2026-10-18T15:06:58.8840590Z 
+web	Build di produzione	2026-10-18T15:06:58.8842325Z in "node_modules/zod/v4/core/util.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.^[[39m
+web	Build di produzione	2026-10-18T15:06:59.5621929Z ^[[32m✓^[[39m 160 modules transformed.
+web	Build di produzione	2026-10-18T15:06:59.7978439Z rendering chunks...
+web	Build di produzione	2026-10-18T15:06:59.8031869Z computing gzip size...
+web	Build di produzione	2026-10-18T15:06:59.8109844Z ^[[2mdist/mcp/^[[22m^[[36mkirchhoff-mcp-app.iife.js  ^[[39m^[[1m^[[2m241.96 kB^[[22m^[[1m^[[22m^[[2m │ gzip: 64.55 kB^[[22m
+web	Build di produzione	2026-10-18T15:06:59.8111188Z ^[[32m✓ built in 1.31s^[[39m
+web	Browser Chromium per Playwright	﻿2026-10-18T15:06:59.8446111Z ##[group]Run npx playwright install --with-deps chromium
+web	Browser Chromium per Playwright	2026-10-18T15:06:59.8446993Z ^[[36;1mnpx playwright install --with-deps chromium^[[0m
+web	Browser Chromium per Playwright	2026-10-18T15:06:59.8534764Z shell: /usr/bin/bash -e {0}
+web	Browser Chromium per Playwright	2026-10-18T15:06:59.8535064Z ##[endgroup]
+web	Browser Chromium per Playwright	2026-10-18T15:07:00.6292180Z Installing dependencies...
+web	Browser Chromium per Playwright	2026-10-18T15:07:00.6362047Z Switching to root user to install dependencies...
+web	Browser Chromium per Playwright	2026-10-18T15:07:00.7225806Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+web	Browser Chromium per Playwright	2026-10-18T15:07:00.7546958Z Get:6 https://packages.microsoft.com/ubuntu/24.04/prod noble InRelease [3600 B]
+web	Browser Chromium per Playwright	2026-10-18T15:07:00.7657725Z Hit:2 http://azure.archive.ubuntu.com/ubuntu noble InRelease
+web	Browser Chromium per Playwright	2026-10-18T15:07:00.7692094Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+web	Browser Chromium per Playwright	2026-10-18T15:07:00.7735231Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+web	Browser Chromium per Playwright	2026-10-18T15:07:00.7737058Z Get:5 http://azure.archive.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+web	Browser Chromium per Playwright	2026-10-18T15:07:00.8296568Z Get:7 https://packages.microsoft.com/ubuntu/24.04/prod noble/main amd64 Packages [618 kB]
+web	Browser Chromium per Playwright	2026-10-18T15:07:00.8546264Z Get:8 https://packages.microsoft.com/ubuntu/24.04/prod noble/main arm64 Packages [557 kB]
+web	Browser Chromium per Playwright	2026-10-18T15:07:00.8628156Z Get:9 https://packages.microsoft.com/ubuntu/24.04/prod noble/main armhf Packages [12.4 kB]
+web	Browser Chromium per Playwright	2026-10-18T15:07:00.9439479Z Get:10 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1397 kB]
+web	Browser Chromium per Playwright	2026-10-18T15:07:00.9515962Z Get:11 http://azure.archive.ubuntu.com/ubuntu noble-updates/main Translation-en [308 kB]
+web	Browser Chromium per Playwright	2026-10-18T15:07:00.9527707Z Get:12 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1704 kB]
+web	Browser Chromium per Playwright	2026-10-18T15:07:00.9625762Z Get:13 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe Translation-en [342 kB]
+web	Browser Chromium per Playwright	2026-10-18T15:07:00.9636845Z Get:14 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [1805 kB]
+web	Browser Chromium per Playwright	2026-10-18T15:07:00.9723421Z Get:15 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted Translation-en [411 kB]
+web	Browser Chromium per Playwright	2026-10-18T15:07:01.0487120Z Get:16 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Packages [1144 kB]
+web	Browser Chromium per Playwright	2026-10-18T15:07:01.0565117Z Get:17 http://azure.archive.ubuntu.com/ubuntu noble-security/main Translation-en [231 kB]
+web	Browser Chromium per Playwright	2026-10-18T15:07:01.0579314Z Get:18 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1222 kB]
+web	Browser Chromium per Playwright	2026-10-18T15:07:01.0634606Z Get:19 http://azure.archive.ubuntu.com/ubuntu noble-security/universe Translation-en [246 kB]
+web	Browser Chromium per Playwright	2026-10-18T15:07:01.1127264Z Get:20 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [1713 kB]
+web	Browser Chromium per Playwright	2026-10-18T15:07:01.1202530Z Get:21 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted Translation-en [392 kB]
+web	Browser Chromium per Playwright	2026-10-18T15:07:04.0248185Z Fetched 12.5 MB in 1s (9905 kB/s)
+web	Browser Chromium per Playwright	2026-10-18T15:07:04.9096042Z Reading package lists...
+web	Browser Chromium per Playwright	2026-10-18T15:07:04.9331805Z Reading package lists...
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.1110130Z Building dependency tree...
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.1117525Z Reading state information...
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2491745Z libasound2t64 is already the newest version (1.2.11-1ubuntu0.3).
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2492815Z libasound2t64 set to manually installed.
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2493849Z libatk-bridge2.0-0t64 is already the newest version (2.52.0-1build1).
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2495197Z libatk-bridge2.0-0t64 set to manually installed.
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2496139Z libatk1.0-0t64 is already the newest version (2.52.0-1build1).
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2496833Z libatk1.0-0t64 set to manually installed.
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2497457Z libatspi2.0-0t64 is already the newest version (2.52.0-1build1).
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2498066Z libatspi2.0-0t64 set to manually installed.
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2498543Z libcairo2 is already the newest version (1.18.0-3build1).
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2498983Z libcairo2 set to manually installed.
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2499466Z libcups2t64 is already the newest version (2.4.7-1.2ubuntu7.14).
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2499948Z libcups2t64 set to manually installed.
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2500859Z libdbus-1-3 is already the newest version (1.14.10-4ubuntu4.1).
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2501323Z libdbus-1-3 set to manually installed.
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2501815Z libdrm2 is already the newest version (2.4.125-1ubuntu0.1~24.04.2).
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2502298Z libdrm2 set to manually installed.
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2502918Z libgbm1 is already the newest version (25.2.8-0ubuntu0.24.04.4).
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2503385Z libgbm1 set to manually installed.
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2503880Z libglib2.0-0t64 is already the newest version (2.80.0-6ubuntu3.9).
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2504627Z libglib2.0-0t64 set to manually installed.
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2505141Z libnspr4 is already the newest version (2:4.35-1.1build1).
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2505591Z libnspr4 set to manually installed.
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2506039Z libnss3 is already the newest version (2:3.98-1ubuntu0.2).
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2506469Z libnss3 set to manually installed.
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2506947Z libpango-1.0-0 is already the newest version (1.52.1+ds-1build1).
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2507437Z libpango-1.0-0 set to manually installed.
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2507908Z libx11-6 is already the newest version (2:1.8.7-1ubuntu0.1).
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2508348Z libx11-6 set to manually installed.
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2508740Z libxcb1 is already the newest version (1.15-1ubuntu2).
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2509135Z libxcb1 set to manually installed.
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2509575Z libxcomposite1 is already the newest version (1:0.4.5-1build3).
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2510021Z libxcomposite1 set to manually installed.
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2510456Z libxdamage1 is already the newest version (1:1.1.6-1build1).
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2510874Z libxdamage1 set to manually installed.
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2511306Z libxext6 is already the newest version (2:1.3.4-1build2).
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2511702Z libxext6 set to manually installed.
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2512113Z libxfixes3 is already the newest version (1:6.0.0-2build1).
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2512524Z libxfixes3 set to manually installed.
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2512951Z libxkbcommon0 is already the newest version (1.6.0-1build1).
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2513368Z libxkbcommon0 set to manually installed.
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2513993Z libxrandr2 is already the newest version (2:1.5.2-2build1).
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2514597Z libxrandr2 set to manually installed.
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2515029Z xvfb is already the newest version (2:21.1.12-1ubuntu1.8).
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2515597Z fonts-noto-color-emoji is already the newest version (2.047-0ubuntu0.24.04.1).
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2516188Z libfontconfig1 is already the newest version (2.15.0-1.1ubuntu2).
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2516631Z libfontconfig1 set to manually installed.
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2517105Z libfreetype6 is already the newest version (2.13.2+dfsg-1ubuntu0.2).
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2517654Z libfreetype6 set to manually installed.
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2518101Z fonts-liberation is already the newest version (1:2.1.5-3).
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2518537Z fonts-liberation set to manually installed.
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2518965Z The following additional packages will be installed:
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2519350Z   xfonts-encodings xfonts-utils
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2519656Z Recommended packages:
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2519962Z   fonts-ipafont-mincho fonts-tlwg-loma
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2682416Z The following NEW packages will be installed:
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2683365Z   fonts-freefont-ttf fonts-ipafont-gothic fonts-tlwg-loma-otf fonts-unifont
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2688315Z   fonts-wqy-zenhei xfonts-cyrillic xfonts-encodings xfonts-scalable
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2688796Z   xfonts-utils
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2856720Z 0 upgraded, 9 newly installed, 0 to remove and 44 not upgraded.
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2857213Z Need to get 21.1 MB of archives.
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2857662Z After this operation, 79.5 MB of additional disk space will be used.
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.2858187Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.3356039Z Get:2 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 fonts-ipafont-gothic all 00303-21ubuntu1 [3513 kB]
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.4058344Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 fonts-freefont-ttf all 20211204+svn4273-2 [5641 kB]
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.4858135Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 fonts-tlwg-loma-otf all 1:0.7.3-1 [107 kB]
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.5207600Z Get:5 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 fonts-unifont all 1:15.1.01-1build1 [2993 kB]
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.5871506Z Get:6 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 fonts-wqy-zenhei all 0.9.45-8 [7472 kB]
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.7051059Z Get:7 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 xfonts-encodings all 1:1.0.5-0ubuntu2 [578 kB]
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.7428214Z Get:8 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 xfonts-utils amd64 1:7.7+6build3 [94.4 kB]
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.7752086Z Get:9 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 xfonts-cyrillic all 1:1.0.5+nmu1 [384 kB]
+web	Browser Chromium per Playwright	2026-10-18T15:07:05.8075023Z Get:10 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 xfonts-scalable all 1:1.0.3-1.3 [304 kB]
+web	Browser Chromium per Playwright	2026-10-18T15:07:06.0498056Z Fetched 21.1 MB in 1s (39.5 MB/s)
+web	Browser Chromium per Playwright	2026-10-18T15:07:06.0742603Z Selecting previously unselected package fonts-ipafont-gothic.
+web	Browser Chromium per Playwright	2026-10-18T15:07:06.1072965Z (Reading database ... 
+web	Browser Chromium per Playwright	2026-10-18T15:07:06.1073858Z (Reading database ... 5%
+web	Browser Chromium per Playwright	2026-10-18T15:07:06.1074595Z (Reading database ... 10%
+web	Browser Chromium per Playwright	2026-10-18T15:07:06.1075110Z (Reading database ... 15%
+web	Browser Chromium per Playwright	2026-10-18T15:07:06.1075459Z (Reading database ... 20%
+web	Browser Chromium per Playwright	2026-10-18T15:07:06.1075844Z (Reading database ... 25%
+web	Browser Chromium per Playwright	2026-10-18T15:07:06.1076311Z (Reading database ... 30%
+web	Browser Chromium per Playwright	2026-10-18T15:07:06.1076750Z (Reading database ... 35%
+web	Browser Chromium per Playwright	2026-10-18T15:07:06.1077183Z (Reading database ... 40%
+web	Browser Chromium per Playwright	2026-10-18T15:07:06.1077533Z (Reading database ... 45%
+web	Browser Chromium per Playwright	2026-10-18T15:07:06.1077803Z (Reading database ... 50%
+web	Browser Chromium per Playwright	2026-10-18T15:07:06.1115106Z (Reading database ... 55%
+web	Browser Chromium per Playwright	2026-10-18T15:07:06.2139556Z (Reading database ... 60%
+web	Browser Chromium per Playwright	2026-10-18T15:07:06.3996417Z (Reading database ... 65%
+web	Browser Chromium per Playwright	2026-10-18T15:07:06.6048234Z (Reading database ... 70%
+web	Browser Chromium per Playwright	2026-10-18T15:07:06.8089268Z (Reading database ... 75%
+web	Browser Chromium per Playwright	2026-10-18T15:07:06.9183767Z (Reading database ... 80%
+web	Browser Chromium per Playwright	2026-10-18T15:07:07.0526009Z (Reading database ... 85%
+web	Browser Chromium per Playwright	2026-10-18T15:07:07.2254597Z (Reading database ... 90%
+web	Browser Chromium per Playwright	2026-10-18T15:07:07.3558924Z (Reading database ... 95%
+web	Browser Chromium per Playwright	2026-10-18T15:07:07.3559653Z (Reading database ... 100%
+web	Browser Chromium per Playwright	2026-10-18T15:07:07.3560293Z (Reading database ... 203540 files and directories currently installed.)
+web	Browser Chromium per Playwright	2026-10-18T15:07:07.3599547Z Preparing to unpack .../0-fonts-ipafont-gothic_00303-21ubuntu1_all.deb ...
+web	Browser Chromium per Playwright	2026-10-18T15:07:07.3693903Z Unpacking fonts-ipafont-gothic (00303-21ubuntu1) ...
+web	Browser Chromium per Playwright	2026-10-18T15:07:07.5958292Z Selecting previously unselected package fonts-freefont-ttf.
+web	Browser Chromium per Playwright	2026-10-18T15:07:07.6081730Z Preparing to unpack .../1-fonts-freefont-ttf_20211204+svn4273-2_all.deb ...
+web	Browser Chromium per Playwright	2026-10-18T15:07:07.6091504Z Unpacking fonts-freefont-ttf (20211204+svn4273-2) ...
+web	Browser Chromium per Playwright	2026-10-18T15:07:07.6850205Z Selecting previously unselected package fonts-tlwg-loma-otf.
+web	Browser Chromium per Playwright	2026-10-18T15:07:07.6975014Z Preparing to unpack .../2-fonts-tlwg-loma-otf_1%3a0.7.3-1_all.deb ...
+web	Browser Chromium per Playwright	2026-10-18T15:07:07.7002511Z Unpacking fonts-tlwg-loma-otf (1:0.7.3-1) ...
+web	Browser Chromium per Playwright	2026-10-18T15:07:07.7210529Z Selecting previously unselected package fonts-unifont.
+web	Browser Chromium per Playwright	2026-10-18T15:07:07.7335963Z Preparing to unpack .../3-fonts-unifont_1%3a15.1.01-1build1_all.deb ...
+web	Browser Chromium per Playwright	2026-10-18T15:07:07.7344686Z Unpacking fonts-unifont (1:15.1.01-1build1) ...
+web	Browser Chromium per Playwright	2026-10-18T15:07:07.8360803Z Selecting previously unselected package fonts-wqy-zenhei.
+web	Browser Chromium per Playwright	2026-10-18T15:07:07.8487456Z Preparing to unpack .../4-fonts-wqy-zenhei_0.9.45-8_all.deb ...
+web	Browser Chromium per Playwright	2026-10-18T15:07:07.8585918Z Unpacking fonts-wqy-zenhei (0.9.45-8) ...
+web	Browser Chromium per Playwright	2026-10-18T15:07:08.3188552Z Selecting previously unselected package xfonts-encodings.
+web	Browser Chromium per Playwright	2026-10-18T15:07:08.3311263Z Preparing to unpack .../5-xfonts-encodings_1%3a1.0.5-0ubuntu2_all.deb ...
+web	Browser Chromium per Playwright	2026-10-18T15:07:08.3321781Z Unpacking xfonts-encodings (1:1.0.5-0ubuntu2) ...
+web	Browser Chromium per Playwright	2026-10-18T15:07:08.3603565Z Selecting previously unselected package xfonts-utils.
+web	Browser Chromium per Playwright	2026-10-18T15:07:08.3728517Z Preparing to unpack .../6-xfonts-utils_1%3a7.7+6build3_amd64.deb ...
+web	Browser Chromium per Playwright	2026-10-18T15:07:08.3736851Z Unpacking xfonts-utils (1:7.7+6build3) ...
+web	Browser Chromium per Playwright	2026-10-18T15:07:08.4122583Z Selecting previously unselected package xfonts-cyrillic.
+web	Browser Chromium per Playwright	2026-10-18T15:07:08.4244153Z Preparing to unpack .../7-xfonts-cyrillic_1%3a1.0.5+nmu1_all.deb ...
+web	Browser Chromium per Playwright	2026-10-18T15:07:08.4252677Z Unpacking xfonts-cyrillic (1:1.0.5+nmu1) ...
+web	Browser Chromium per Playwright	2026-10-18T15:07:08.4592535Z Selecting previously unselected package xfonts-scalable.
+web	Browser Chromium per Playwright	2026-10-18T15:07:08.4717773Z Preparing to unpack .../8-xfonts-scalable_1%3a1.0.3-1.3_all.deb ...
+web	Browser Chromium per Playwright	2026-10-18T15:07:08.4727343Z Unpacking xfonts-scalable (1:1.0.3-1.3) ...
+web	Browser Chromium per Playwright	2026-10-18T15:07:08.5158491Z Setting up fonts-wqy-zenhei (0.9.45-8) ...
+web	Browser Chromium per Playwright	2026-10-18T15:07:08.5278471Z Setting up fonts-freefont-ttf (20211204+svn4273-2) ...
+web	Browser Chromium per Playwright	2026-10-18T15:07:08.5299979Z Setting up fonts-tlwg-loma-otf (1:0.7.3-1) ...
+web	Browser Chromium per Playwright	2026-10-18T15:07:08.5320938Z Setting up xfonts-encodings (1:1.0.5-0ubuntu2) ...
+web	Browser Chromium per Playwright	2026-10-18T15:07:08.5340996Z Setting up fonts-ipafont-gothic (00303-21ubuntu1) ...
+web	Browser Chromium per Playwright	2026-10-18T15:07:08.5411372Z update-alternatives: using /usr/share/fonts/opentype/ipafont-gothic/ipag.ttf to provide /usr/share/fonts/truetype/fonts-japanese-gothic.ttf (fonts-japanese-gothic.ttf) in auto mode
+web	Browser Chromium per Playwright	2026-10-18T15:07:08.5428022Z Setting up fonts-unifont (1:15.1.01-1build1) ...
+web	Browser Chromium per Playwright	2026-10-18T15:07:08.5448883Z Setting up xfonts-utils (1:7.7+6build3) ...
+web	Browser Chromium per Playwright	2026-10-18T15:07:08.5490223Z Setting up xfonts-cyrillic (1:1.0.5+nmu1) ...
+web	Browser Chromium per Playwright	2026-10-18T15:07:08.5791526Z Setting up xfonts-scalable (1:1.0.3-1.3) ...
+web	Browser Chromium per Playwright	2026-10-18T15:07:08.6063070Z Processing triggers for man-db (2.12.0-4build2) ...
+web	Browser Chromium per Playwright	2026-10-18T15:07:08.6084830Z Not building database; man-db/auto-update is not 'true'.
+web	Browser Chromium per Playwright	2026-10-18T15:07:08.6097664Z Processing triggers for fontconfig (2.15.0-1.1ubuntu2) ...
+web	Browser Chromium per Playwright	2026-10-18T15:07:09.3566162Z 
+web	Browser Chromium per Playwright	2026-10-18T15:07:09.3566900Z Running kernel seems to be up-to-date.
+web	Browser Chromium per Playwright	2026-10-18T15:07:09.3567228Z 
+web	Browser Chromium per Playwright	2026-10-18T15:07:09.3567431Z No services need to be restarted.
+web	Browser Chromium per Playwright	2026-10-18T15:07:09.3567700Z 
+web	Browser Chromium per Playwright	2026-10-18T15:07:09.3567895Z No containers need to be restarted.
+web	Browser Chromium per Playwright	2026-10-18T15:07:09.3568132Z 
+web	Browser Chromium per Playwright	2026-10-18T15:07:09.3568368Z No user sessions are running outdated binaries.
+web	Browser Chromium per Playwright	2026-10-18T15:07:09.3568661Z 
+web	Browser Chromium per Playwright	2026-10-18T15:07:09.3569051Z No VM guests are running outdated hypervisor (qemu) binaries on this host.
+web	Browser Chromium per Playwright	2026-10-18T15:07:10.1963476Z Downloading Chrome for Testing 153.0.8010.12 (playwright chromium v1243) from https://cdn.playwright.dev/builds/cft/153.0.8010.12/linux64/chrome-linux64.zip
+web	Browser Chromium per Playwright	2026-10-18T15:07:10.6493898Z |                                                                                |   0% of 186.8 MiB
+web	Browser Chromium per Playwright	2026-10-18T15:07:11.0665276Z |■■■■■■■■                                                                        |  10% of 186.8 MiB
+web	Browser Chromium per Playwright	2026-10-18T15:07:11.1641539Z |■■■■■■■■■■■■■■■■                                                                |  20% of 186.8 MiB
+web	Browser Chromium per Playwright	2026-10-18T15:07:11.2333400Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 186.8 MiB
+web	Browser Chromium per Playwright	2026-10-18T15:07:11.3184044Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 186.8 MiB
+web	Browser Chromium per Playwright	2026-10-18T15:07:11.3900079Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 186.8 MiB
+web	Browser Chromium per Playwright	2026-10-18T15:07:11.4589066Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 186.8 MiB
+web	Browser Chromium per Playwright	2026-10-18T15:07:11.5353706Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 186.8 MiB
+web	Browser Chromium per Playwright	2026-10-18T15:07:11.6012331Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 186.8 MiB
+web	Browser Chromium per Playwright	2026-10-18T15:07:11.6786422Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 186.8 MiB
+web	Browser Chromium per Playwright	2026-10-18T15:07:11.7453995Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 186.8 MiB
+web	Browser Chromium per Playwright	2026-10-18T15:07:14.5087700Z Chrome for Testing 153.0.8010.12 (playwright chromium v1243) downloaded to /home/runner/.cache/ms-playwright/chromium-1243
+web	Browser Chromium per Playwright	2026-10-18T15:07:14.5091242Z Downloading FFmpeg (playwright ffmpeg v1011) from https://cdn.playwright.dev/dbazure/download/playwright/builds/ffmpeg/1011/ffmpeg-linux.zip
+web	Browser Chromium per Playwright	2026-10-18T15:07:15.0734106Z |                                                                                |   0% of 2.3 MiB
+web	Browser Chromium per Playwright	2026-10-18T15:07:15.1300194Z |■■■■■■■■                                                                        |  10% of 2.3 MiB
+web	Browser Chromium per Playwright	2026-10-18T15:07:15.1593599Z |■■■■■■■■■■■■■■■■                                                                |  20% of 2.3 MiB
+web	Browser Chromium per Playwright	2026-10-18T15:07:15.1848890Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 2.3 MiB
+web	Browser Chromium per Playwright	2026-10-18T15:07:15.2028363Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 2.3 MiB
+web	Browser Chromium per Playwright	2026-10-18T15:07:15.2207998Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 2.3 MiB
+web	Browser Chromium per Playwright	2026-10-18T15:07:15.2276637Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 2.3 MiB
+web	Browser Chromium per Playwright	2026-10-18T15:07:15.2445505Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 2.3 MiB
+web	Browser Chromium per Playwright	2026-10-18T15:07:15.2497857Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 2.3 MiB
+web	Browser Chromium per Playwright	2026-10-18T15:07:15.2534351Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 2.3 MiB
+web	Browser Chromium per Playwright	2026-10-18T15:07:15.2579602Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 2.3 MiB
+web	Browser Chromium per Playwright	2026-10-18T15:07:15.3196882Z FFmpeg (playwright ffmpeg v1011) downloaded to /home/runner/.cache/ms-playwright/ffmpeg-1011
+web	Browser Chromium per Playwright	2026-10-18T15:07:15.3200269Z Downloading Chrome Headless Shell 153.0.8010.12 (playwright chromium-headless-shell v1243) from https://cdn.playwright.dev/builds/cft/153.0.8010.12/linux64/chrome-headless-shell-linux64.zip
+web	Browser Chromium per Playwright	2026-10-18T15:07:15.7524644Z |                                                                                |   0% of 114.3 MiB
+web	Browser Chromium per Playwright	2026-10-18T15:07:16.0363363Z |■■■■■■■■                                                                        |  10% of 114.3 MiB
+web	Browser Chromium per Playwright	2026-10-18T15:07:16.0985680Z |■■■■■■■■■■■■■■■■                                                                |  20% of 114.3 MiB
+web	Browser Chromium per Playwright	2026-10-18T15:07:16.1537414Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 114.3 MiB
+web	Browser Chromium per Playwright	2026-10-18T15:07:16.2070746Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 114.3 MiB
+web	Browser Chromium per Playwright	2026-10-18T15:07:16.2598072Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 114.3 MiB
+web	Browser Chromium per Playwright	2026-10-18T15:07:16.3106569Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 114.3 MiB
+web	Browser Chromium per Playwright	2026-10-18T15:07:16.3607024Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 114.3 MiB
+web	Browser Chromium per Playwright	2026-10-18T15:07:16.4098556Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 114.3 MiB
+web	Browser Chromium per Playwright	2026-10-18T15:07:16.4594162Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 114.3 MiB
+web	Browser Chromium per Playwright	2026-10-18T15:07:16.5085713Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 114.3 MiB
+web	Browser Chromium per Playwright	2026-10-18T15:07:18.4796163Z Chrome Headless Shell 153.0.8010.12 (playwright chromium-headless-shell v1243) downloaded to /home/runner/.cache/ms-playwright/chromium_headless_shell-1243
+web	End-to-end	﻿2026-10-18T15:07:18.5061811Z ##[group]Run npm run test:e2e
+web	End-to-end	2026-10-18T15:07:18.5062453Z ^[[36;1mnpm run test:e2e^[[0m
+web	End-to-end	2026-10-18T15:07:18.5147509Z shell: /usr/bin/bash -e {0}
+web	End-to-end	2026-10-18T15:07:18.5147825Z ##[endgroup]
+web	End-to-end	2026-10-18T15:07:18.6183577Z 
+web	End-to-end	2026-10-18T15:07:18.6184077Z > kirchhoff-proof-workbench@0.1.0 test:e2e
+web	End-to-end	2026-10-18T15:07:18.6184876Z > playwright test
+web	End-to-end	2026-10-18T15:07:18.6185125Z 
+web	End-to-end	2026-10-18T15:07:20.7832609Z 
+web	End-to-end	2026-10-18T15:07:20.7833535Z Running 256 tests using 2 workers
+web	End-to-end	2026-10-18T15:07:20.7834593Z 
+web	End-to-end	2026-10-18T15:07:22.9560611Z   ✓    1 [desktop] › tests-e2e/evidence-navigation.spec.ts:4:1 › le evidenze conducono al passo analitico corretto anche se già corrente (1.2s)
+web	End-to-end	2026-10-18T15:07:23.7586701Z   ✓    3 [desktop] › tests-e2e/evidence-navigation.spec.ts:29:1 › una derivazione KCL mostra le equazioni proiettate dal kernel (751ms)
+web	End-to-end	2026-10-18T15:07:24.3594744Z   ✓    4 [desktop] › tests-e2e/evidence-navigation.spec.ts:44:1 › una vista legacy dichiara il collegamento non esposto senza inventare link (575ms)
+web	End-to-end	2026-10-18T15:07:24.7531074Z   ✓    5 [desktop] › tests-e2e/evidence-navigation.spec.ts:58:1 › un mapping esposto ma incoerente non mostra una risposta certificata (364ms)
+web	End-to-end	2026-10-18T15:07:24.7878931Z   ✓    2 [desktop] › tests-e2e/evidence-component.spec.ts:37:1 › il componente attraversa closed, refusal, failure e closed senza hook o prove stantie (1.1s)
+web	End-to-end	2026-10-18T15:07:25.4082185Z   ✓    6 [desktop] › tests-e2e/evidence-navigation.spec.ts:71:1 › la navigazione tratta come opachi gli identificatori delle derivazioni (641ms)
+web	End-to-end	2026-10-18T15:07:25.6516186Z   ✓    7 [desktop] › tests-e2e/evidence-component.spec.ts:55:1 › il focus richiesto da un'evidenza non passa a una nuova sessione con lo stesso ID (849ms)
+web	End-to-end	2026-10-18T15:07:26.2358337Z   ✓    9 [desktop] › tests-e2e/evidence-component.spec.ts:70:1 › una sessione nuova già al target non riceve il focus richiesto dalla precedente (568ms)
+web	End-to-end	2026-10-18T15:07:26.2389629Z   -   10 [desktop] › tests-e2e/fumo-pubblico.spec.ts:35:1 › pubblico: homepage e 3 successi + rifiuto
+web	End-to-end	2026-10-18T15:07:26.2425831Z   -   11 [desktop] › tests-e2e/fumo-pubblico.spec.ts:53:1 › pubblico in cornice ospite: carica, tastiera confinata, tema
+web	End-to-end	2026-10-18T15:07:26.5336416Z   ✓    8 [desktop] › tests-e2e/failure.spec.ts:25:1 › il guasto si dichiara senza inventare risposte (1.1s)
+web	End-to-end	2026-10-18T15:07:27.0497186Z   ✓   12 [desktop] › tests-e2e/integrazione.spec.ts:45:1 › incorniciato largo: invarianti d'integrazione (787ms)
+web	End-to-end	2026-10-18T15:07:27.4866432Z   ✓   14 [desktop] › tests-e2e/integrazione.spec.ts:67:1 › incorniciato stretto: resta usabile e senza trabocco (420ms)
+web	End-to-end	2026-10-18T15:07:27.6348503Z   ✓   13 [desktop] › tests-e2e/mobile.spec.ts:8:1 › niente scroll orizzontale e flusso a una mano (1.1s)
+web	End-to-end	2026-10-18T15:07:28.0860797Z   ✓   15 [desktop] › tests-e2e/integrazione.spec.ts:78:1 › incorniciato: la tastiera resta nel contesto atteso (583ms)
+web	End-to-end	2026-10-18T15:07:28.4696729Z   ✓   17 [desktop] › tests-e2e/integrazione.spec.ts:92:1 › incorniciato origine diversa: copia-link resta onesto (372ms)
+web	End-to-end	2026-10-18T15:07:28.7808292Z   ✓   16 [desktop] › tests-e2e/mobile.spec.ts:29:1 › schermata mobile per il quaderno visuale (1.1s)
+web	End-to-end	2026-10-18T15:07:29.0989561Z   ✓   18 [desktop] › tests-e2e/integrazione.spec.ts:115:1 › incorniciato stessa origine: copia-link consegna il deep link (615ms)
+web	End-to-end	2026-10-18T15:07:29.4816500Z   ✓   20 [desktop] › tests-e2e/integrazione.spec.ts:138:1 › incorniciato: il guasto di trasporto si supera senza ricaricare l'ospite (370ms)
+web	End-to-end	2026-10-18T15:07:29.7537060Z   ✓   19 [desktop] › tests-e2e/motion.spec.ts:5:1 › moto ridotto: semantica intatta, durate nulle (945ms)
+web	End-to-end	2026-10-18T15:07:29.9483247Z   ✓   21 [desktop] › tests-e2e/integrazione.spec.ts:168:3 › incorniciato tablet › misura intermedia: usabile e senza trabocco (454ms)
+web	End-to-end	2026-10-18T15:07:30.5328103Z   ✓   22 [desktop] › tests-e2e/provenance-inspection.spec.ts:7:1 › la provenienza completa del catalogo è leggibile da tastiera e dopo riapertura (758ms)
+web	End-to-end	2026-10-18T15:07:30.7761183Z   ✓   23 [desktop] › tests-e2e/rail.spec.ts:10:1 › il rail non espone equazioni grezze (802ms)
+web	End-to-end	2026-10-18T15:07:31.2990602Z   ✓   24 [desktop] › tests-e2e/provenance-inspection.spec.ts:31:1 › revisioni con lo stesso prefisso restano distinguibili e i metadati opachi sono testo (753ms)
+web	End-to-end	2026-10-18T15:07:31.6186242Z   ✓   26 [desktop] › tests-e2e/provenance-inspection.spec.ts:57:1 › la provenienza assente è dichiarata senza inventare un produttore o nascondere il Claim (302ms)
+web	End-to-end	2026-10-18T15:07:31.6646594Z   ✓   25 [desktop] › tests-e2e/rail.spec.ts:15:1 › l'equazione lunga resta disponibile nell'ispettore (870ms)
+web	End-to-end	2026-10-18T15:07:32.0312475Z   ✓   27 [desktop] › tests-e2e/provenance-inspection.spec.ts:68:1 › i campi vuoti del profilo leggibile hanno un limite esplicito (401ms)
+web	End-to-end	2026-10-18T15:07:32.4238921Z   ✓   29 [desktop] › tests-e2e/saved-notebook-offline.spec.ts:10:1 › un errore HTTP delle capability rimane visibile e non apre la copia (377ms)
+web	End-to-end	2026-10-18T15:07:32.6600730Z   ✓   28 [desktop] › tests-e2e/rail.spec.ts:22:1 › il rail resta contenuto nella sua colonna (967ms)
+web	End-to-end	2026-10-18T15:07:33.2176708Z   ✓   30 [desktop] › tests-e2e/saved-notebook-offline.spec.ts:18:1 › chiudere la copia invalida un ricalcolo ancora in attesa (781ms)
+web	End-to-end	2026-10-18T15:07:33.8152575Z   ✓   31 [desktop] › tests-e2e/site-host.spec.ts:84:1 › ospite desktop: cornice 720px tiene rail, palco e ispettore (1.1s)
+web	End-to-end	2026-10-18T15:07:34.5502023Z   ✓   32 [desktop] › tests-e2e/saved-notebook-offline.spec.ts:37:1 › quaderno: chiusura pagina, riapertura senza rete e copia in sola lettura senza nuovi giudizi (1.3s)
+web	End-to-end	2026-10-18T15:07:35.0813256Z   ✓   34 [desktop] › tests-e2e/saved-notebook-offline.spec.ts:67:1 › l’attivazione offline non cancella la cache di un altro scope sulla stessa origine (513ms)
+web	End-to-end	2026-10-18T15:07:35.4974775Z   ✓   33 [desktop] › tests-e2e/site-host.spec.ts:104:1 › ospite desktop: altezze sotto 720px restano senza trabocco orizzontale (1.7s)
+web	End-to-end	2026-10-18T15:07:36.0077497Z   ✓   36 [desktop] › tests-e2e/site-host.spec.ts:124:1 › ospite desktop: tastiera resta nella cornice, l'ospite non la vede (495ms)
+web	End-to-end	2026-10-18T15:07:36.5627562Z   ✓   35 [desktop] › tests-e2e/state.spec.ts:9:1 › cambio rapido di esercizio non incrocia le sessioni (1.5s)
+web	End-to-end	2026-10-18T15:07:36.8529228Z   ✓   37 [desktop] › tests-e2e/site-host.spec.ts:140:1 › schermo intero nativo conserva la navigazione; il link dedicato resta iniziale (832ms)
+web	End-to-end	2026-10-18T15:07:37.3280148Z   ✓   39 [desktop] › tests-e2e/site-host.spec.ts:164:3 › alternativa assente: richiede il link iniziale e lo dichiara dopo navigazione (456ms)
+web	End-to-end	2026-10-18T15:07:37.5948615Z   ✓   38 [desktop] › tests-e2e/state.spec.ts:31:1 › cambio passo non lascia selezioni stantie (1.0s)
+web	End-to-end	2026-10-18T15:07:37.9537265Z   ✓   40 [desktop] › tests-e2e/site-host.spec.ts:164:3 › alternativa rigetto: richiede il link iniziale e lo dichiara dopo navigazione (616ms)
+web	End-to-end	2026-10-18T15:07:38.4481064Z   ✓   42 [desktop] › tests-e2e/site-host.spec.ts:164:3 › alternativa throw: richiede il link iniziale e lo dichiara dopo navigazione (480ms)
+web	End-to-end	2026-10-18T15:07:38.4652150Z   ✓   41 [desktop] › tests-e2e/state.spec.ts:40:1 › fotogramma non disponibile si normalizza a prima (846ms)
+web	End-to-end	2026-10-18T15:07:39.0867955Z   ✓   43 [desktop] › tests-e2e/site-host.spec.ts:191:1 › URL con query conserva gli altri parametri e apre proof, ingresso normale resta studente (622ms)
+web	End-to-end	2026-10-18T15:07:39.3693429Z   ✓   44 [desktop] › tests-e2e/state.spec.ts:47:1 › passo invalido si normalizza all'apertura (881ms)
+web	End-to-end	2026-10-18T15:07:39.4846891Z   ✓   45 [desktop] › tests-e2e/site-host.spec.ts:201:1 › ospite desktop: intestazione appiccicosa non copre la cornice (384ms)
+web	End-to-end	2026-10-18T15:07:39.9090372Z   ✓   47 [desktop] › tests-e2e/site-host.spec.ts:214:1 › ospite desktop: guasto di trasporto senza ricaricare l'ospite (407ms)
+web	End-to-end	2026-10-18T15:07:40.3423540Z   ✓   46 [desktop] › tests-e2e/state.spec.ts:54:1 › consumata nel prima non resta rivendicata nel dopo (960ms)
+web	End-to-end	2026-10-18T15:07:40.5935768Z   ✓   48 [desktop] › tests-e2e/site-host.spec.ts:239:3 › ospite tablet › misura 780x700: usabile e senza trabocco (674ms)
+web	End-to-end	2026-10-18T15:07:40.9135930Z   ✓   50 [desktop] › tests-e2e/site-host.spec.ts:262:3 › ospite mobile stretto › barra iniziale del banco accessibile dopo aver portato la cornice in vista (308ms)
+web	End-to-end	2026-10-18T15:07:41.2836650Z   ✓   49 [desktop] › tests-e2e/state.spec.ts:66:1 › preservata resta selezionata fra prima e dopo (927ms)
+web	End-to-end	2026-10-18T15:07:41.5758006Z   ✓   51 [desktop] › tests-e2e/site-host.spec.ts:278:3 › ospite mobile stretto › misura 360px: cornice fluida, niente trabocco, bersagli a una mano (643ms)
+web	End-to-end	2026-10-18T15:07:42.2472302Z   ✓   52 [desktop] › tests-e2e/state.spec.ts:77:1 › pre-selezione dell'evidenza nell'altro fotogramma sopravvive (948ms)
+web	End-to-end	2026-10-18T15:07:42.2995849Z   ✓   53 [desktop] › tests-e2e/step-justification.spec.ts:9:3 › la giustificazione canonica partitore-d1 si apre con tastiera e conserva i fotogrammi (708ms)
+web	End-to-end	2026-10-18T15:07:42.9958596Z   ✓   55 [desktop] › tests-e2e/step-justification.spec.ts:9:3 › la giustificazione canonica due-rami-parallelo si apre con tastiera e conserva i fotogrammi (678ms)
+web	End-to-end	2026-10-18T15:07:43.6005400Z   ✓   56 [desktop] › tests-e2e/step-justification.spec.ts:44:1 › il cambio fra due serie aggiorna la giustificazione e l'analitico non la eredita (589ms)
+web	End-to-end	2026-10-18T15:07:43.8169445Z   ✓   54 [desktop] › tests-e2e/state.spec.ts:89:1 › cronologia reale: indietro e avanti restano coerenti (1.6s)
+web	End-to-end	2026-10-18T15:07:43.8185390Z   -   58 [desktop] › tests-e2e/student-ac-live.spec.ts:12:1 › AC reale: fasori, risultato, PDF e quaderno riaperto
+web	End-to-end	2026-10-18T15:07:43.8193261Z   -   59 [desktop] › tests-e2e/student-ac-live.spec.ts:60:1 › MCP App effettiva: handshake SDK e chiamate al motore attraverso host locale di prova
+web	End-to-end	2026-10-18T15:07:43.8197826Z   -   60 [desktop] › tests-e2e/student-ac-port-live.spec.ts:12:1 › impedenza AC da componenti: algebra, PDF e quaderno riaperto
+web	End-to-end	2026-10-18T15:07:43.8200055Z   -   61 [desktop] › tests-e2e/student-ac-port-live.spec.ts:74:1 › impedenza AC nella MCP App con SDK reale e host locale di prova
+web	End-to-end	2026-10-18T15:07:43.8202348Z   -   62 [desktop] › tests-e2e/student-ac-power-live.spec.ts:12:39 › Potenza AC rms: rifiuto unspecified, S/P/Q, PDF e quaderno ricalcolato
+web	End-to-end	2026-10-18T15:07:43.8205146Z   -   63 [desktop] › tests-e2e/student-ac-power-live.spec.ts:12:39 › Potenza AC peak: rifiuto unspecified, S/P/Q, PDF e quaderno ricalcolato
+web	End-to-end	2026-10-18T15:07:43.8207397Z   -   64 [desktop] › tests-e2e/student-ac-power-live.spec.ts:75:1 › MCP App potenza peak: SDK reale e host locale di prova
+web	End-to-end	2026-10-18T15:07:44.1238642Z   ✓   57 [desktop] › tests-e2e/step-justification.spec.ts:59:1 › il legacy esplicita il limite e mantiene risposta e derivazioni (503ms)
+web	End-to-end	2026-10-18T15:07:44.4854035Z   ✓   66 [desktop] › tests-e2e/step-justification.spec.ts:73:1 › una giustificazione incoerente viene rifiutata prima della risposta (345ms)
+web	End-to-end	2026-10-18T15:07:45.0532054Z   ✓   67 [desktop] › tests-e2e/step-justification.spec.ts:85:1 › testo opaco lungo resta inerte e va a capo (555ms)
+web	End-to-end	2026-10-18T15:07:45.0534970Z   -   68 [desktop] › tests-e2e/student-history-live.spec.ts:30:1 › sequenza errore-correzione e illeggibile sopravvive a nuovo contesto e PDF reale
+web	End-to-end	2026-10-18T15:07:45.0537484Z   -   69 [desktop] › tests-e2e/student-history-live.spec.ts:76:1 › PDF del catalogo include i controlli via API anziche ometterli nel documento statico
+web	End-to-end	2026-10-18T15:07:45.0551458Z   -   70 [desktop] › tests-e2e/student-history-live.spec.ts:91:1 › rete assente, rifiuto e risposta superata non aggiungono tentativi
+web	End-to-end	2026-10-18T15:07:45.0560030Z   -   71 [desktop] › tests-e2e/student-laplace-live.spec.ts:17:29 › rc-step: componenti, stato iniziale, algebra, PDF e quaderno riaperto
+web	End-to-end	2026-10-18T15:07:45.0562309Z   -   72 [desktop] › tests-e2e/student-laplace-live.spec.ts:17:29 › rc-impulse: componenti, stato iniziale, algebra, PDF e quaderno riaperto
+web	End-to-end	2026-10-18T15:07:45.0568723Z   -   73 [desktop] › tests-e2e/student-laplace-live.spec.ts:17:29 › rl-free: componenti, stato iniziale, algebra, PDF e quaderno riaperto
+web	End-to-end	2026-10-18T15:07:45.0571021Z   -   74 [desktop] › tests-e2e/student-laplace-live.spec.ts:80:1 › Laplace nella MCP App con SDK reale e host locale di prova
+web	End-to-end	2026-10-18T15:07:45.0573436Z   -   75 [desktop] › tests-e2e/student-notebook-capabilities-live.spec.ts:16:1 › la prima apertura attende capabilities reali ancora in arrivo
+web	End-to-end	2026-10-18T15:07:45.0577016Z   -   76 [desktop] › tests-e2e/student-notebook-capabilities-live.spec.ts:39:1 › un server indisponibile è dichiarato e un nuovo tentativo può recuperare
+web	End-to-end	2026-10-18T15:07:45.0579594Z   -   77 [desktop] › tests-e2e/student-notebook-capabilities-live.spec.ts:55:1 › un catalogo iniziale in ritardo non sostituisce il quaderno scelto
+web	End-to-end	2026-10-18T15:07:45.0582048Z   -   78 [desktop] › tests-e2e/student-notebook-capabilities-live.spec.ts:77:48 › una nuova fonte file annulla l’apertura in attesa e libera il comando di calcolo
+web	End-to-end	2026-10-18T15:07:45.0584258Z   -   79 [desktop] › tests-e2e/student-notebook-capabilities-live.spec.ts:77:48 › una nuova fonte editor annulla l’apertura in attesa e libera il comando di calcolo
+web	End-to-end	2026-10-18T15:07:45.0586716Z   -   80 [desktop] › tests-e2e/student-ohm-live.spec.ts:7:1 › Ohm distingue riferimento e aritmetica e conserva gli operandi dopo riapertura
+web	End-to-end	2026-10-18T15:07:45.0589278Z   -   81 [desktop] › tests-e2e/student-pdf-input-live.spec.ts:7:1 › PDF multipagina, scelta locale e ritaglio conservano il file e la revisione nel quaderno
+web	End-to-end	2026-10-18T15:07:45.0768399Z   ✓   65 [desktop] › tests-e2e/student-board.spec.ts:29:1 › la lavagna distingue un incrocio da una giunzione confermata (1.2s)
+web	End-to-end	2026-10-18T15:07:45.9409365Z   ✓   82 [desktop] › tests-e2e/student-photo.spec.ts:5:1 › una modifica semantica dopo la conferma della foto invalida il consenso (859ms)
+web	End-to-end	2026-10-18T15:07:46.5213805Z   ✓   83 [desktop] › tests-e2e/student-board.spec.ts:34:1 › la giunzione della lavagna unisce i nodi esportati (1.4s)
+web	End-to-end	2026-10-18T15:07:47.0346460Z   ✓   84 [desktop] › tests-e2e/student-photo.spec.ts:20:1 › la foto mostra la provenienza delle righe e perde le regioni quando il circuito cambia (1.1s)
+web	End-to-end	2026-10-18T15:07:47.5742495Z   ✓   85 [desktop] › tests-e2e/student-board.spec.ts:39:1 › la lavagna conserva la corrente e il componente richiesti (1.0s)
+web	End-to-end	2026-10-18T15:07:47.5745710Z   -   87 [desktop] › tests-e2e/student-session-live.spec.ts:8:1 › un quaderno non catalogato si riapre attraverso il server e si salva di nuovo
+web	End-to-end	2026-10-18T15:07:47.5748834Z   -   88 [desktop] › tests-e2e/student-session-live.spec.ts:25:1 › un ritaglio reale della lavagna conserva i tratti scelti nel quaderno dopo riapertura
+web	End-to-end	2026-10-18T15:07:47.5751726Z   -   89 [desktop] › tests-e2e/student-session-live.spec.ts:87:1 › la selezione reale esporta un solo tratto e conserva il resto della scena
+web	End-to-end	2026-10-18T15:07:47.5754252Z   -   90 [desktop] › tests-e2e/student-session-live.spec.ts:121:1 › due sorgenti: la lezione servita mostra la differenza di tensione reale
+web	End-to-end	2026-10-18T15:07:47.5756636Z   -   91 [desktop] › tests-e2e/student-session-live.spec.ts:134:1 › il perimetro visibile coincide con quello dichiarato dal server
+web	End-to-end	2026-10-18T15:07:47.5758933Z   -   92 [desktop] › tests-e2e/student-session-live.spec.ts:158:1 › un valore e una KCL dello studente sono controllati fino al primo errore
+web	End-to-end	2026-10-18T15:07:47.5761116Z   -   93 [desktop] › tests-e2e/student-session-live.spec.ts:190:1 › il valore nel verso opposto dichiarato è controllato senza cambiare il circuito
+web	End-to-end	2026-10-18T15:07:47.9753608Z   ✓   86 [desktop] › tests-e2e/student-photo.spec.ts:51:1 › zone fotografiche discordanti restano confrontabili anche con testo identico (921ms)
+web	End-to-end	2026-10-18T15:07:48.2496010Z   ✓   94 [desktop] › tests-e2e/student-session.spec.ts:10:1 › il quaderno si riapre dopo un ricalcolo e conserva il tentativo (636ms)
+web	End-to-end	2026-10-18T15:07:48.7629456Z   ✓   96 [desktop] › tests-e2e/student-session.spec.ts:30:1 › un quaderno alterato è fermato prima del ricalcolo (499ms)
+web	End-to-end	2026-10-18T15:07:48.8256854Z   ✓   95 [desktop] › tests-e2e/student-photo.spec.ts:78:1 › una trascrizione senza stato di completezza non abilita il calcolo (828ms)
+web	End-to-end	2026-10-18T15:07:48.8269253Z   -   98 [desktop] › tests-e2e/student-visual-input-live.spec.ts:10:1 › foto, componenti modificabili, conferma e quaderno riaperto senza scrivere una netlist
+web	End-to-end	2026-10-18T15:07:49.4115252Z   ✓   97 [desktop] › tests-e2e/student-session.spec.ts:40:1 › la KVL della maglia arriva al controllo con nodo e versi strutturati (635ms)
+web	End-to-end	2026-10-18T15:07:49.9371624Z   ✓   99 [desktop] › tests-e2e/trasporto.spec.ts:6:1 › carico fallito poi esercizio sano: la vista sana diventa autorevole (1.1s)
+web	End-to-end	2026-10-18T15:07:50.6241136Z   ✓  100 [desktop] › tests-e2e/student-session.spec.ts:59:1 › il salvataggio attende uno snapshot attuale della lavagna libera (1.2s)
+web	End-to-end	2026-10-18T15:07:51.2977282Z   ✓  102 [desktop] › tests-e2e/student-session.spec.ts:74:1 › modificare un passaggio in attesa permette un nuovo controllo senza esiti superati (659ms)
+web	End-to-end	2026-10-18T15:07:51.4817142Z   ✓  101 [desktop] › tests-e2e/trasporto.spec.ts:32:1 › errore tardivo della vecchia richiesta non sovrascrive la sessione sana (1.5s)
+web	End-to-end	2026-10-18T15:07:51.9081699Z   ✓  103 [desktop] › tests-e2e/student-session.spec.ts:116:1 › prima del salvataggio il quaderno dichiara la fonte originale realmente inclusa (598ms)
+web	End-to-end	2026-10-18T15:07:52.1736985Z   ✓  105 [desktop] › tests-e2e/validation.spec.ts:4:1 › un link malformato apre il banco e la navigazione resta utilizzabile (249ms)
+web	End-to-end	2026-10-18T15:07:52.4369396Z   ✓  106 [desktop] › tests-e2e/validation.spec.ts:15:1 › una sessione senza claim certificato non mostra una risposta verificata (248ms)
+web	End-to-end	2026-10-18T15:07:52.4823396Z   ✓  104 [desktop] › tests-e2e/trasporto.spec.ts:57:1 › riprova dopo il guasto di trasporto, senza cambiare esercizio (984ms)
+web	End-to-end	2026-10-18T15:07:52.7703979Z   ✓  107 [desktop] › tests-e2e/validation.spec.ts:35:3 › il banco rifiuta la chiusura con verificatore assente (314ms)
+web	End-to-end	2026-10-18T15:07:53.0318007Z   ✓  108 [desktop] › tests-e2e/workbench-recovery.spec.ts:3:1 › riprova attende il catalogo corrente prima di caricare una sessione (529ms)
+web	End-to-end	2026-10-18T15:07:53.0791468Z   ✓  109 [desktop] › tests-e2e/validation.spec.ts:35:3 › il banco rifiuta la chiusura con disegno nodale vuoto (294ms)
+web	End-to-end	2026-10-18T15:07:53.4276622Z   ✓  111 [desktop] › tests-e2e/validation.spec.ts:35:3 › il banco rifiuta la chiusura con fotogramma trasformativo assente (328ms)
+web	End-to-end	2026-10-18T15:07:53.7778972Z   ✓  112 [desktop] › tests-e2e/validation.spec.ts:35:3 › il banco rifiuta la chiusura con passi riordinati (327ms)
+web	End-to-end	2026-10-18T15:07:53.7944290Z   ✓  110 [desktop] › tests-e2e/workbench-recovery.spec.ts:46:3 › clipboard negata: il link resta recuperabile e il banco utilizzabile (746ms)
+web	End-to-end	2026-10-18T15:07:54.3936765Z   ✓  114 [desktop] › tests-e2e/workbench-recovery.spec.ts:46:3 › clipboard assente: il link resta recuperabile e il banco utilizzabile (588ms)
+web	End-to-end	2026-10-18T15:07:54.8026636Z   ✓  113 [desktop] › tests-e2e/workbench.spec.ts:10:1 › scelta esercizio e navigazione della dimostrazione (997ms)
+web	End-to-end	2026-10-18T15:07:55.7792157Z   ✓  115 [desktop] › tests-e2e/workbench.spec.ts:21:1 › prima/dopo commuta il fotogramma (959ms)
+web	End-to-end	2026-10-18T15:07:56.8368767Z   ✓  117 [desktop] › tests-e2e/workbench.spec.ts:30:1 › il preservato non si teletrasporta fra prima e dopo (1.0s)
+web	End-to-end	2026-10-18T15:07:57.3570560Z   ✓  116 [mobile] › tests-e2e/evidence-component.spec.ts:37:1 › il componente attraversa closed, refusal, failure e closed senza hook o prove stantie (870ms)
+web	End-to-end	2026-10-18T15:07:57.7484326Z   ✓  118 [desktop] › tests-e2e/workbench.spec.ts:45:1 › click sull'entita' la evidenzia e la contestualizza (893ms)
+web	End-to-end	2026-10-18T15:07:57.9409691Z   ✓  119 [mobile] › tests-e2e/evidence-component.spec.ts:55:1 › il focus richiesto da un'evidenza non passa a una nuova sessione con lo stesso ID (568ms)
+web	End-to-end	2026-10-18T15:07:58.4658817Z   ✓  121 [mobile] › tests-e2e/evidence-component.spec.ts:70:1 › una sessione nuova già al target non riceve il focus richiesto dalla precedente (505ms)
+web	End-to-end	2026-10-18T15:07:58.6669311Z   ✓  120 [desktop] › tests-e2e/workbench.spec.ts:54:1 › la tastiera attraversa il flusso essenziale (902ms)
+web	End-to-end	2026-10-18T15:07:59.2488550Z   ✓  122 [mobile] › tests-e2e/evidence-navigation.spec.ts:4:1 › le evidenze conducono al passo analitico corretto anche se già corrente (761ms)
+web	End-to-end	2026-10-18T15:07:59.5033159Z   ✓  123 [desktop] › tests-e2e/workbench.spec.ts:65:1 › l'evidenza si ispeziona su richiesta (818ms)
+web	End-to-end	2026-10-18T15:07:59.8474763Z   ✓  124 [mobile] › tests-e2e/evidence-navigation.spec.ts:29:1 › una derivazione KCL mostra le equazioni proiettate dal kernel (582ms)
+web	End-to-end	2026-10-18T15:08:00.1468642Z   ✓  126 [mobile] › tests-e2e/evidence-navigation.spec.ts:44:1 › una vista legacy dichiara il collegamento non esposto senza inventare link (281ms)
+web	End-to-end	2026-10-18T15:08:00.4316793Z   ✓  127 [mobile] › tests-e2e/evidence-navigation.spec.ts:58:1 › un mapping esposto ma incoerente non mostra una risposta certificata (267ms)
+web	End-to-end	2026-10-18T15:08:00.4516519Z   ✓  125 [desktop] › tests-e2e/workbench.spec.ts:71:1 › il rifiuto e' deliberato e senza risposta (928ms)
+web	End-to-end	2026-10-18T15:08:00.9626164Z   ✓  128 [mobile] › tests-e2e/evidence-navigation.spec.ts:71:1 › la navigazione tratta come opachi gli identificatori delle derivazioni (516ms)
+web	End-to-end	2026-10-18T15:08:01.3901312Z   ✓  129 [desktop] › tests-e2e/workbench.spec.ts:82:1 › il link al passo si copia (920ms)
+web	End-to-end	2026-10-18T15:08:01.8027816Z   ✓  130 [mobile] › tests-e2e/failure.spec.ts:25:1 › il guasto si dichiara senza inventare risposte (822ms)
+web	End-to-end	2026-10-18T15:08:01.8031534Z   -  132 [mobile] › tests-e2e/fumo-pubblico.spec.ts:35:1 › pubblico: homepage e 3 successi + rifiuto
+web	End-to-end	2026-10-18T15:08:01.8033435Z   -  133 [mobile] › tests-e2e/fumo-pubblico.spec.ts:53:1 › pubblico in cornice ospite: carica, tastiera confinata, tema
+web	End-to-end	2026-10-18T15:08:02.1274947Z   ✓  131 [desktop] › tests-e2e/workbench.spec.ts:93:1 › l'esatto comanda, il decimale accompagna (724ms)
+web	End-to-end	2026-10-18T15:08:02.4875675Z   ✓  134 [mobile] › tests-e2e/integrazione.spec.ts:45:1 › incorniciato largo: invarianti d'integrazione (667ms)
+web	End-to-end	2026-10-18T15:08:02.8500936Z   ✓  136 [mobile] › tests-e2e/integrazione.spec.ts:67:1 › incorniciato stretto: resta usabile e senza trabocco (351ms)
+web	End-to-end	2026-10-18T15:08:03.2873110Z   ✓  137 [mobile] › tests-e2e/integrazione.spec.ts:78:1 › incorniciato: la tastiera resta nel contesto atteso (424ms)
+web	End-to-end	2026-10-18T15:08:03.6041433Z   ✓  138 [mobile] › tests-e2e/integrazione.spec.ts:92:1 › incorniciato origine diversa: copia-link resta onesto (308ms)
+web	End-to-end	2026-10-18T15:08:03.7484156Z   ✓  135 [desktop] › tests-e2e/workbench.spec.ts:99:1 › il refresh non perde il passo (1.6s)
+web	End-to-end	2026-10-18T15:08:04.0666273Z   ✓  139 [mobile] › tests-e2e/integrazione.spec.ts:115:1 › incorniciato stessa origine: copia-link consegna il deep link (453ms)
+web	End-to-end	2026-10-18T15:08:04.3772008Z   ✓  141 [mobile] › tests-e2e/integrazione.spec.ts:138:1 › incorniciato: il guasto di trasporto si supera senza ricaricare l'ospite (300ms)
+web	End-to-end	2026-10-18T15:08:04.7937379Z   ✓  142 [mobile] › tests-e2e/integrazione.spec.ts:168:3 › incorniciato tablet › misura intermedia: usabile e senza trabocco (408ms)
+web	End-to-end	2026-10-18T15:08:05.2723199Z   ✓  140 [desktop] › tests-e2e/workbench.spec.ts:108:1 › il tema commuta e persiste (1.5s)
+web	End-to-end	2026-10-18T15:08:06.0347944Z   ✓  143 [mobile] › tests-e2e/mobile.spec.ts:8:1 › niente scroll orizzontale e flusso a una mano (1.2s)
+web	End-to-end	2026-10-18T15:08:06.6321277Z   ✓  144 [desktop] › tests-e2e/workbench.spec.ts:117:1 › archiviazione negata: il banco resta in piedi, tema in memoria (1.3s)
+web	End-to-end	2026-10-18T15:08:07.0472200Z   ✓  145 [mobile] › tests-e2e/mobile.spec.ts:29:1 › schermata mobile per il quaderno visuale (998ms)
+web	End-to-end	2026-10-18T15:08:07.4035651Z   ✓  146 [desktop] › tests-e2e/workbench.spec.ts:141:1 › il fuoco da tastiera e' visibile (759ms)
+web	End-to-end	2026-10-18T15:08:07.8574056Z   ✓  147 [mobile] › tests-e2e/motion.spec.ts:5:1 › moto ridotto: semantica intatta, durate nulle (797ms)
+web	End-to-end	2026-10-18T15:08:08.1340560Z   ✓  148 [desktop] › tests-e2e/workbench.spec.ts:158:1 › il contrasto del testo principale regge AA (715ms)
+web	End-to-end	2026-10-18T15:08:08.7899605Z   ✓  149 [mobile] › tests-e2e/provenance-inspection.spec.ts:7:1 › la provenienza completa del catalogo è leggibile da tastiera e dopo riapertura (916ms)
+web	End-to-end	2026-10-18T15:08:09.3307297Z   ✓  150 [desktop] › tests-e2e/workbench.spec.ts:170:1 › schermate per il quaderno visuale (1.2s)
+web	End-to-end	2026-10-18T15:08:09.6740384Z   ✓  151 [mobile] › tests-e2e/provenance-inspection.spec.ts:31:1 › revisioni con lo stesso prefisso restano distinguibili e i metadati opachi sono testo (873ms)
+web	End-to-end	2026-10-18T15:08:10.1023842Z   ✓  152 [mobile] › tests-e2e/provenance-inspection.spec.ts:57:1 › la provenienza assente è dichiarata senza inventare un produttore o nascondere il Claim (406ms)
+web	End-to-end	2026-10-18T15:08:10.5461655Z   ✓  154 [mobile] › tests-e2e/provenance-inspection.spec.ts:68:1 › i campi vuoti del profilo leggibile hanno un limite esplicito (427ms)
+web	End-to-end	2026-10-18T15:08:10.9379667Z   ✓  155 [mobile] › tests-e2e/saved-notebook-offline.spec.ts:10:1 › un errore HTTP delle capability rimane visibile e non apre la copia (370ms)
+web	End-to-end	2026-10-18T15:08:11.0606299Z   ✓  153 [mobile] › tests-e2e/rail.spec.ts:10:1 › il rail non espone equazioni grezze (954ms)
+web	End-to-end	2026-10-18T15:08:11.5219036Z   ✓  156 [mobile] › tests-e2e/saved-notebook-offline.spec.ts:18:1 › chiudere la copia invalida un ricalcolo ancora in attesa (572ms)
+web	End-to-end	2026-10-18T15:08:11.9404940Z   ✓  157 [mobile] › tests-e2e/rail.spec.ts:15:1 › l'equazione lunga resta disponibile nell'ispettore (859ms)
+web	End-to-end	2026-10-18T15:08:12.8371603Z   ✓  159 [mobile] › tests-e2e/rail.spec.ts:22:1 › il rail resta contenuto nella sua colonna (881ms)
+web	End-to-end	2026-10-18T15:08:12.9962972Z   ✓  158 [mobile] › tests-e2e/saved-notebook-offline.spec.ts:37:1 › quaderno: chiusura pagina, riapertura senza rete e copia in sola lettura senza nuovi giudizi (1.5s)
+web	End-to-end	2026-10-18T15:08:13.4590625Z   ✓  161 [mobile] › tests-e2e/saved-notebook-offline.spec.ts:67:1 › l’attivazione offline non cancella la cache di un altro scope sulla stessa origine (449ms)
+web	End-to-end	2026-10-18T15:08:13.8229641Z   ✓  160 [mobile] › tests-e2e/site-host.spec.ts:84:1 › ospite desktop: cornice 720px tiene rail, palco e ispettore (939ms)
+web	End-to-end	2026-10-18T15:08:14.8745889Z   ✓  162 [mobile] › tests-e2e/state.spec.ts:9:1 › cambio rapido di esercizio non incrocia le sessioni (1.4s)
+web	End-to-end	2026-10-18T15:08:15.1486421Z   ✓  163 [mobile] › tests-e2e/site-host.spec.ts:104:1 › ospite desktop: altezze sotto 720px restano senza trabocco orizzontale (1.3s)
+web	End-to-end	2026-10-18T15:08:15.4897201Z   ✓  165 [mobile] › tests-e2e/site-host.spec.ts:124:1 › ospite desktop: tastiera resta nella cornice, l'ospite non la vede (331ms)
+web	End-to-end	2026-10-18T15:08:15.8333625Z   ✓  164 [mobile] › tests-e2e/state.spec.ts:31:1 › cambio passo non lascia selezioni stantie (946ms)
+web	End-to-end	2026-10-18T15:08:16.3559462Z   ✓  166 [mobile] › tests-e2e/site-host.spec.ts:140:1 › schermo intero nativo conserva la navigazione; il link dedicato resta iniziale (855ms)
+web	End-to-end	2026-10-18T15:08:16.6450022Z   ✓  167 [mobile] › tests-e2e/state.spec.ts:40:1 › fotogramma non disponibile si normalizza a prima (793ms)
+web	End-to-end	2026-10-18T15:08:16.8994801Z   ✓  168 [mobile] › tests-e2e/site-host.spec.ts:164:3 › alternativa assente: richiede il link iniziale e lo dichiara dopo navigazione (532ms)
+web	End-to-end	2026-10-18T15:08:17.3345657Z   ✓  170 [mobile] › tests-e2e/site-host.spec.ts:164:3 › alternativa rigetto: richiede il link iniziale e lo dichiara dopo navigazione (422ms)
+web	End-to-end	2026-10-18T15:08:17.4582355Z   ✓  169 [mobile] › tests-e2e/state.spec.ts:47:1 › passo invalido si normalizza all'apertura (797ms)
+web	End-to-end	2026-10-18T15:08:17.8950239Z   ✓  171 [mobile] › tests-e2e/site-host.spec.ts:164:3 › alternativa throw: richiede il link iniziale e lo dichiara dopo navigazione (548ms)
+web	End-to-end	2026-10-18T15:08:18.4127924Z   ✓  173 [mobile] › tests-e2e/site-host.spec.ts:191:1 › URL con query conserva gli altri parametri e apre proof, ingresso normale resta studente (503ms)
+web	End-to-end	2026-10-18T15:08:18.5420978Z   ✓  172 [mobile] › tests-e2e/state.spec.ts:54:1 › consumata nel prima non resta rivendicata nel dopo (1.1s)
+web	End-to-end	2026-10-18T15:08:18.8330327Z   ✓  174 [mobile] › tests-e2e/site-host.spec.ts:201:1 › ospite desktop: intestazione appiccicosa non copre la cornice (406ms)
+web	End-to-end	2026-10-18T15:08:19.2030159Z   ✓  176 [mobile] › tests-e2e/site-host.spec.ts:214:1 › ospite desktop: guasto di trasporto senza ricaricare l'ospite (358ms)
+web	End-to-end	2026-10-18T15:08:19.5561184Z   ✓  175 [mobile] › tests-e2e/state.spec.ts:66:1 › preservata resta selezionata fra prima e dopo (999ms)
+web	End-to-end	2026-10-18T15:08:19.8510482Z   ✓  177 [mobile] › tests-e2e/site-host.spec.ts:239:3 › ospite tablet › misura 780x700: usabile e senza trabocco (637ms)
+web	End-to-end	2026-10-18T15:08:20.1776461Z   ✓  179 [mobile] › tests-e2e/site-host.spec.ts:262:3 › ospite mobile stretto › barra iniziale del banco accessibile dopo aver portato la cornice in vista (315ms)
+web	End-to-end	2026-10-18T15:08:20.5108147Z   ✓  178 [mobile] › tests-e2e/state.spec.ts:77:1 › pre-selezione dell'evidenza nell'altro fotogramma sopravvive (941ms)
+web	End-to-end	2026-10-18T15:08:20.8078855Z   ✓  180 [mobile] › tests-e2e/site-host.spec.ts:278:3 › ospite mobile stretto › misura 360px: cornice fluida, niente trabocco, bersagli a una mano (608ms)
+web	End-to-end	2026-10-18T15:08:21.7006857Z   ✓  182 [mobile] › tests-e2e/step-justification.spec.ts:9:3 › la giustificazione canonica partitore-d1 si apre con tastiera e conserva i fotogrammi (868ms)
+web	End-to-end	2026-10-18T15:08:21.8253009Z   ✓  181 [mobile] › tests-e2e/state.spec.ts:89:1 › cronologia reale: indietro e avanti restano coerenti (1.3s)
+web	End-to-end	2026-10-18T15:08:21.8266339Z   -  184 [mobile] › tests-e2e/student-ac-live.spec.ts:12:1 › AC reale: fasori, risultato, PDF e quaderno riaperto
+web	End-to-end	2026-10-18T15:08:21.8268910Z   -  185 [mobile] › tests-e2e/student-ac-live.spec.ts:60:1 › MCP App effettiva: handshake SDK e chiamate al motore attraverso host locale di prova
+web	End-to-end	2026-10-18T15:08:21.8273892Z   -  186 [mobile] › tests-e2e/student-ac-port-live.spec.ts:12:1 › impedenza AC da componenti: algebra, PDF e quaderno riaperto
+web	End-to-end	2026-10-18T15:08:21.8275870Z   -  187 [mobile] › tests-e2e/student-ac-port-live.spec.ts:74:1 › impedenza AC nella MCP App con SDK reale e host locale di prova
+web	End-to-end	2026-10-18T15:08:21.8277541Z   -  188 [mobile] › tests-e2e/student-ac-power-live.spec.ts:12:39 › Potenza AC rms: rifiuto unspecified, S/P/Q, PDF e quaderno ricalcolato
+web	End-to-end	2026-10-18T15:08:21.8279387Z   -  189 [mobile] › tests-e2e/student-ac-power-live.spec.ts:12:39 › Potenza AC peak: rifiuto unspecified, S/P/Q, PDF e quaderno ricalcolato
+web	End-to-end	2026-10-18T15:08:21.8281701Z   -  190 [mobile] › tests-e2e/student-ac-power-live.spec.ts:75:1 › MCP App potenza peak: SDK reale e host locale di prova
+web	End-to-end	2026-10-18T15:08:22.7375377Z   ✓  183 [mobile] › tests-e2e/step-justification.spec.ts:9:3 › la giustificazione canonica due-rami-parallelo si apre con tastiera e conserva i fotogrammi (1.0s)
+web	End-to-end	2026-10-18T15:08:22.8165213Z   ✓  191 [mobile] › tests-e2e/student-board.spec.ts:29:1 › la lavagna distingue un incrocio da una giunzione confermata (966ms)
+web	End-to-end	2026-10-18T15:08:23.2923713Z   ✓  192 [mobile] › tests-e2e/step-justification.spec.ts:44:1 › il cambio fra due serie aggiorna la giustificazione e l'analitico non la eredita (539ms)
+web	End-to-end	2026-10-18T15:08:23.6774031Z   ✓  194 [mobile] › tests-e2e/step-justification.spec.ts:59:1 › il legacy esplicita il limite e mantiene risposta e derivazioni (369ms)
+web	End-to-end	2026-10-18T15:08:23.9433857Z   ✓  195 [mobile] › tests-e2e/step-justification.spec.ts:73:1 › una giustificazione incoerente viene rifiutata prima della risposta (254ms)
+web	End-to-end	2026-10-18T15:08:24.0730636Z   ✓  193 [mobile] › tests-e2e/student-board.spec.ts:34:1 › la giunzione della lavagna unisce i nodi esportati (1.2s)
+web	End-to-end	2026-10-18T15:08:24.8356143Z   ✓  196 [mobile] › tests-e2e/step-justification.spec.ts:85:1 › testo opaco lungo resta inerte e va a capo (880ms)
+web	End-to-end	2026-10-18T15:08:24.8359071Z   -  198 [mobile] › tests-e2e/student-history-live.spec.ts:30:1 › sequenza errore-correzione e illeggibile sopravvive a nuovo contesto e PDF reale
+web	End-to-end	2026-10-18T15:08:24.8362118Z   -  199 [mobile] › tests-e2e/student-history-live.spec.ts:76:1 › PDF del catalogo include i controlli via API anziche ometterli nel documento statico
+web	End-to-end	2026-10-18T15:08:24.8365658Z   -  200 [mobile] › tests-e2e/student-history-live.spec.ts:91:1 › rete assente, rifiuto e risposta superata non aggiungono tentativi
+web	End-to-end	2026-10-18T15:08:24.8367948Z   -  201 [mobile] › tests-e2e/student-laplace-live.spec.ts:17:29 › rc-step: componenti, stato iniziale, algebra, PDF e quaderno riaperto
+web	End-to-end	2026-10-18T15:08:24.8370693Z   -  202 [mobile] › tests-e2e/student-laplace-live.spec.ts:17:29 › rc-impulse: componenti, stato iniziale, algebra, PDF e quaderno riaperto
+web	End-to-end	2026-10-18T15:08:24.8373017Z   -  203 [mobile] › tests-e2e/student-laplace-live.spec.ts:17:29 › rl-free: componenti, stato iniziale, algebra, PDF e quaderno riaperto
+web	End-to-end	2026-10-18T15:08:24.8375495Z   -  204 [mobile] › tests-e2e/student-laplace-live.spec.ts:80:1 › Laplace nella MCP App con SDK reale e host locale di prova
+web	End-to-end	2026-10-18T15:08:24.8377714Z   -  205 [mobile] › tests-e2e/student-notebook-capabilities-live.spec.ts:16:1 › la prima apertura attende capabilities reali ancora in arrivo
+web	End-to-end	2026-10-18T15:08:24.8386646Z   -  206 [mobile] › tests-e2e/student-notebook-capabilities-live.spec.ts:39:1 › un server indisponibile è dichiarato e un nuovo tentativo può recuperare
+web	End-to-end	2026-10-18T15:08:24.8392920Z   -  207 [mobile] › tests-e2e/student-notebook-capabilities-live.spec.ts:55:1 › un catalogo iniziale in ritardo non sostituisce il quaderno scelto
+web	End-to-end	2026-10-18T15:08:24.8396071Z   -  208 [mobile] › tests-e2e/student-notebook-capabilities-live.spec.ts:77:48 › una nuova fonte file annulla l’apertura in attesa e libera il comando di calcolo
+web	End-to-end	2026-10-18T15:08:24.8398608Z   -  209 [mobile] › tests-e2e/student-notebook-capabilities-live.spec.ts:77:48 › una nuova fonte editor annulla l’apertura in attesa e libera il comando di calcolo
+web	End-to-end	2026-10-18T15:08:24.8400904Z   -  210 [mobile] › tests-e2e/student-ohm-live.spec.ts:7:1 › Ohm distingue riferimento e aritmetica e conserva gli operandi dopo riapertura
+web	End-to-end	2026-10-18T15:08:24.8402980Z   -  211 [mobile] › tests-e2e/student-pdf-input-live.spec.ts:7:1 › PDF multipagina, scelta locale e ritaglio conservano il file e la revisione nel quaderno
+web	End-to-end	2026-10-18T15:08:24.9721181Z   ✓  197 [mobile] › tests-e2e/student-board.spec.ts:39:1 › la lavagna conserva la corrente e il componente richiesti (879ms)
+web	End-to-end	2026-10-18T15:08:24.9745066Z   -  213 [mobile] › tests-e2e/student-session-live.spec.ts:8:1 › un quaderno non catalogato si riapre attraverso il server e si salva di nuovo
+web	End-to-end	2026-10-18T15:08:24.9787628Z   -  214 [mobile] › tests-e2e/student-session-live.spec.ts:25:1 › un ritaglio reale della lavagna conserva i tratti scelti nel quaderno dopo riapertura
+web	End-to-end	2026-10-18T15:08:24.9807344Z   -  215 [mobile] › tests-e2e/student-session-live.spec.ts:87:1 › la selezione reale esporta un solo tratto e conserva il resto della scena
+web	End-to-end	2026-10-18T15:08:24.9815173Z   -  216 [mobile] › tests-e2e/student-session-live.spec.ts:121:1 › due sorgenti: la lezione servita mostra la differenza di tensione reale
+web	End-to-end	2026-10-18T15:08:24.9817463Z   -  217 [mobile] › tests-e2e/student-session-live.spec.ts:134:1 › il perimetro visibile coincide con quello dichiarato dal server
+web	End-to-end	2026-10-18T15:08:24.9819794Z   -  218 [mobile] › tests-e2e/student-session-live.spec.ts:158:1 › un valore e una KCL dello studente sono controllati fino al primo errore
+web	End-to-end	2026-10-18T15:08:24.9821786Z   -  219 [mobile] › tests-e2e/student-session-live.spec.ts:190:1 › il valore nel verso opposto dichiarato è controllato senza cambiare il circuito
+web	End-to-end	2026-10-18T15:08:25.5346677Z   ✓  212 [mobile] › tests-e2e/student-photo.spec.ts:5:1 › una modifica semantica dopo la conferma della foto invalida il consenso (676ms)
+web	End-to-end	2026-10-18T15:08:25.5426278Z   ✓  220 [mobile] › tests-e2e/student-session.spec.ts:10:1 › il quaderno si riapre dopo un ricalcolo e conserva il tentativo (542ms)
+web	End-to-end	2026-10-18T15:08:25.9820974Z   ✓  222 [mobile] › tests-e2e/student-session.spec.ts:30:1 › un quaderno alterato è fermato prima del ricalcolo (425ms)
+web	End-to-end	2026-10-18T15:08:26.5317932Z   ✓  223 [mobile] › tests-e2e/student-session.spec.ts:40:1 › la KVL della maglia arriva al controllo con nodo e versi strutturati (535ms)
+web	End-to-end	2026-10-18T15:08:26.5597142Z   ✓  221 [mobile] › tests-e2e/student-photo.spec.ts:20:1 › la foto mostra la provenienza delle righe e perde le regioni quando il circuito cambia (1.0s)
+web	End-to-end	2026-10-18T15:08:27.4231922Z   ✓  225 [mobile] › tests-e2e/student-photo.spec.ts:51:1 › zone fotografiche discordanti restano confrontabili anche con testo identico (844ms)
+web	End-to-end	2026-10-18T15:08:27.8235014Z   ✓  224 [mobile] › tests-e2e/student-session.spec.ts:59:1 › il salvataggio attende uno snapshot attuale della lavagna libera (1.3s)
+web	End-to-end	2026-10-18T15:08:27.9778636Z   ✓  226 [mobile] › tests-e2e/student-photo.spec.ts:78:1 › una trascrizione senza stato di completezza non abilita il calcolo (542ms)
+web	End-to-end	2026-10-18T15:08:27.9780311Z   -  228 [mobile] › tests-e2e/student-visual-input-live.spec.ts:10:1 › foto, componenti modificabili, conferma e quaderno riaperto senza scrivere una netlist
+web	End-to-end	2026-10-18T15:08:28.4743791Z   ✓  227 [mobile] › tests-e2e/student-session.spec.ts:74:1 › modificare un passaggio in attesa permette un nuovo controllo senza esiti superati (632ms)
+web	End-to-end	2026-10-18T15:08:28.9584272Z   ✓  230 [mobile] › tests-e2e/student-session.spec.ts:116:1 › prima del salvataggio il quaderno dichiara la fonte originale realmente inclusa (469ms)
+web	End-to-end	2026-10-18T15:08:29.0318741Z   ✓  229 [mobile] › tests-e2e/trasporto.spec.ts:6:1 › carico fallito poi esercizio sano: la vista sana diventa autorevole (1.0s)
+web	End-to-end	2026-10-18T15:08:29.3634742Z   ✓  231 [mobile] › tests-e2e/validation.spec.ts:4:1 › un link malformato apre il banco e la navigazione resta utilizzabile (388ms)
+web	End-to-end	2026-10-18T15:08:29.6167502Z   ✓  233 [mobile] › tests-e2e/validation.spec.ts:15:1 › una sessione senza claim certificato non mostra una risposta verificata (241ms)
+web	End-to-end	2026-10-18T15:08:29.8624241Z   ✓  234 [mobile] › tests-e2e/validation.spec.ts:35:3 › il banco rifiuta la chiusura con verificatore assente (231ms)
+web	End-to-end	2026-10-18T15:08:30.1061616Z   ✓  235 [mobile] › tests-e2e/validation.spec.ts:35:3 › il banco rifiuta la chiusura con disegno nodale vuoto (232ms)
+web	End-to-end	2026-10-18T15:08:30.3493187Z   ✓  236 [mobile] › tests-e2e/validation.spec.ts:35:3 › il banco rifiuta la chiusura con fotogramma trasformativo assente (234ms)
+web	End-to-end	2026-10-18T15:08:30.5648569Z   ✓  237 [mobile] › tests-e2e/validation.spec.ts:35:3 › il banco rifiuta la chiusura con passi riordinati (203ms)
+web	End-to-end	2026-10-18T15:08:30.5652268Z   ✓  232 [mobile] › tests-e2e/trasporto.spec.ts:32:1 › errore tardivo della vecchia richiesta non sovrascrive la sessione sana (1.5s)
+web	End-to-end	2026-10-18T15:08:31.1038188Z   ✓  239 [mobile] › tests-e2e/workbench-recovery.spec.ts:3:1 › riprova attende il catalogo corrente prima di caricare una sessione (522ms)
+web	End-to-end	2026-10-18T15:08:31.4606343Z   ✓  238 [mobile] › tests-e2e/trasporto.spec.ts:57:1 › riprova dopo il guasto di trasporto, senza cambiare esercizio (877ms)
+web	End-to-end	2026-10-18T15:08:31.6351498Z   ✓  240 [mobile] › tests-e2e/workbench-recovery.spec.ts:46:3 › clipboard negata: il link resta recuperabile e il banco utilizzabile (520ms)
+web	End-to-end	2026-10-18T15:08:32.0776928Z   ✓  242 [mobile] › tests-e2e/workbench-recovery.spec.ts:46:3 › clipboard assente: il link resta recuperabile e il banco utilizzabile (430ms)
+web	End-to-end	2026-10-18T15:08:32.4029933Z   ✓  241 [mobile] › tests-e2e/workbench.spec.ts:10:1 › scelta esercizio e navigazione della dimostrazione (923ms)
+web	End-to-end	2026-10-18T15:08:33.2358819Z   ✓  243 [mobile] › tests-e2e/workbench.spec.ts:21:1 › prima/dopo commuta il fotogramma (820ms)
+web	End-to-end	2026-10-18T15:08:34.0400367Z   ✓  244 [mobile] › tests-e2e/workbench.spec.ts:30:1 › il preservato non si teletrasporta fra prima e dopo (794ms)
+web	End-to-end	2026-10-18T15:08:34.8050191Z   ✓  245 [mobile] › tests-e2e/workbench.spec.ts:45:1 › click sull'entita' la evidenzia e la contestualizza (753ms)
+web	End-to-end	2026-10-18T15:08:35.5575554Z   ✓  246 [mobile] › tests-e2e/workbench.spec.ts:54:1 › la tastiera attraversa il flusso essenziale (743ms)
+web	End-to-end	2026-10-18T15:08:36.2874691Z   ✓  247 [mobile] › tests-e2e/workbench.spec.ts:65:1 › l'evidenza si ispeziona su richiesta (718ms)
+web	End-to-end	2026-10-18T15:08:37.0831792Z   ✓  248 [mobile] › tests-e2e/workbench.spec.ts:71:1 › il rifiuto e' deliberato e senza risposta (784ms)
+web	End-to-end	2026-10-18T15:08:37.8993491Z   ✓  249 [mobile] › tests-e2e/workbench.spec.ts:82:1 › il link al passo si copia (803ms)
+web	End-to-end	2026-10-18T15:08:38.6066319Z   ✓  250 [mobile] › tests-e2e/workbench.spec.ts:93:1 › l'esatto comanda, il decimale accompagna (694ms)
+web	End-to-end	2026-10-18T15:08:40.0327489Z   ✓  251 [mobile] › tests-e2e/workbench.spec.ts:99:1 › il refresh non perde il passo (1.4s)
+web	End-to-end	2026-10-18T15:08:41.3538296Z   ✓  252 [mobile] › tests-e2e/workbench.spec.ts:108:1 › il tema commuta e persiste (1.3s)
+web	End-to-end	2026-10-18T15:08:42.6468024Z   ✓  253 [mobile] › tests-e2e/workbench.spec.ts:117:1 › archiviazione negata: il banco resta in piedi, tema in memoria (1.3s)
+web	End-to-end	2026-10-18T15:08:43.3597964Z   ✓  254 [mobile] › tests-e2e/workbench.spec.ts:141:1 › il fuoco da tastiera e' visibile (703ms)
+web	End-to-end	2026-10-18T15:08:44.0562530Z   ✓  255 [mobile] › tests-e2e/workbench.spec.ts:158:1 › il contrasto del testo principale regge AA (683ms)
+web	End-to-end	2026-10-18T15:08:45.2014939Z   ✓  256 [mobile] › tests-e2e/workbench.spec.ts:170:1 › schermate per il quaderno visuale (1.1s)
+web	End-to-end	2026-10-18T15:08:45.3176323Z 
+web	End-to-end	2026-10-18T15:08:45.3183402Z   62 skipped
+web	End-to-end	2026-10-18T15:08:45.3183882Z   194 passed (1.4m)
+web	Post Run actions/setup-node@v4	﻿2026-10-18T15:08:45.3487635Z Post job cleanup.
+web	Post Run actions/setup-node@v4	2026-10-18T15:08:45.4755911Z (node:7089) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+web	Post Run actions/setup-node@v4	2026-10-18T15:08:45.4757882Z (Use `node --trace-deprecation ...` to show where the warning was created)
+web	Post Run actions/setup-node@v4	2026-10-18T15:08:45.4760846Z Cache hit occurred on the primary key node-cache-Linux-x64-npm-56d106e00151ada5ae4e13a2f88dce9bb8d350ca98280959ebf18eab8a253525, not saving cache.
+web	Post Run actions/checkout@v4	﻿2026-10-18T15:08:45.4913340Z Post job cleanup.
+web	Post Run actions/checkout@v4	2026-10-18T15:08:45.5772883Z [command]/usr/bin/git version
+web	Post Run actions/checkout@v4	2026-10-18T15:08:45.5817499Z git version 2.55.0
+web	Post Run actions/checkout@v4	2026-10-18T15:08:45.5855395Z Temporarily overriding HOME='/home/runner/work/_temp/f1f9d288-dd4e-42c4-ad05-c704b9f50d97' before making global git config changes
+web	Post Run actions/checkout@v4	2026-10-18T15:08:45.5857099Z Adding repository directory to the temporary git global config as a safe directory
+web	Post Run actions/checkout@v4	2026-10-18T15:08:45.5862863Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/kirchhoff/kirchhoff
+web	Post Run actions/checkout@v4	2026-10-18T15:08:45.5912052Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+web	Post Run actions/checkout@v4	2026-10-18T15:08:45.5948684Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+web	Post Run actions/checkout@v4	2026-10-18T15:08:45.6205018Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+web	Post Run actions/checkout@v4	2026-10-18T15:08:45.6231351Z http.https://github.com/.extraheader
+web	Post Run actions/checkout@v4	2026-10-18T15:08:45.6243136Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+web	Post Run actions/checkout@v4	2026-10-18T15:08:45.6281512Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+web	Post Run actions/checkout@v4	2026-10-18T15:08:45.6549158Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+web	Post Run actions/checkout@v4	2026-10-18T15:08:45.6589624Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+web	Complete job	﻿2026-10-18T15:08:45.7003814Z Cleaning up orphan processes
+web	Complete job	2026-10-18T15:08:45.7338993Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-node@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

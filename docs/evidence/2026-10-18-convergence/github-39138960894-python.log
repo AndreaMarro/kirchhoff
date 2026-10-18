@@ -1,0 +1,585 @@
+test	Set up job	﻿2026-10-18T15:06:17.1759398Z Current runner version: '2.337.0'
+test	Set up job	2026-10-18T15:06:17.1784865Z ##[group]Runner Image Provisioner
+test	Set up job	2026-10-18T15:06:17.1785777Z Hosted Compute Agent
+test	Set up job	2026-10-18T15:06:17.1786401Z Version: 20261012.601
+test	Set up job	2026-10-18T15:06:17.1787037Z Commit: f3dc54e1fb89da6852db922499a0233137369e1d
+test	Set up job	2026-10-18T15:06:17.1788261Z Build Date: 2026-10-12T17:48:21Z
+test	Set up job	2026-10-18T15:06:17.1789018Z Worker ID: {ab7d0e34-8866-43ac-855e-e807d13bdc66}
+test	Set up job	2026-10-18T15:06:17.1789709Z Region: eastus
+test	Set up job	2026-10-18T15:06:17.1790363Z Cloud: Azure
+test	Set up job	2026-10-18T15:06:17.1790875Z ##[endgroup]
+test	Set up job	2026-10-18T15:06:17.1792427Z ##[group]Operating System
+test	Set up job	2026-10-18T15:06:17.1793116Z Ubuntu
+test	Set up job	2026-10-18T15:06:17.1793758Z 24.04.5
+test	Set up job	2026-10-18T15:06:17.1794345Z LTS
+test	Set up job	2026-10-18T15:06:17.1794911Z ##[endgroup]
+test	Set up job	2026-10-18T15:06:17.1795568Z ##[group]Runner Image
+test	Set up job	2026-10-18T15:06:17.1796250Z Image: ubuntu-24.04
+test	Set up job	2026-10-18T15:06:17.1796988Z Version: 20261012.334.1
+test	Set up job	2026-10-18T15:06:17.1798342Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md
+test	Set up job	2026-10-18T15:06:17.1800182Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261012.334
+test	Set up job	2026-10-18T15:06:17.1801240Z ##[endgroup]
+test	Set up job	2026-10-18T15:06:17.1802515Z ##[group]GITHUB_TOKEN Permissions
+test	Set up job	2026-10-18T15:06:17.1804690Z Contents: read
+test	Set up job	2026-10-18T15:06:17.1805447Z Metadata: read
+test	Set up job	2026-10-18T15:06:17.1806127Z ##[endgroup]
+test	Set up job	2026-10-18T15:06:17.1808439Z Secret source: Actions
+test	Set up job	2026-10-18T15:06:17.1809626Z Cache mode: write
+test	Set up job	2026-10-18T15:06:17.1810684Z Prepare workflow directory
+test	Set up job	2026-10-18T15:06:17.2140965Z Prepare all required actions
+test	Set up job	2026-10-18T15:06:17.2189068Z Getting action download info
+test	Set up job	2026-10-18T15:06:17.4339534Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+test	Set up job	2026-10-18T15:06:17.5506835Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+test	Set up job	2026-10-18T15:06:17.6842473Z Download action repository 'astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9' (SHA:c771a70e6277c0a99b617c7a806ffedaca235ff9)
+test	Set up job	2026-10-18T15:06:17.8942948Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+test	Set up job	2026-10-18T15:06:18.1267177Z Complete job name: test
+test	Run actions/checkout@v4	﻿2026-10-18T15:06:18.2051712Z ##[group]Run actions/checkout@v4
+test	Run actions/checkout@v4	2026-10-18T15:06:18.2052682Z with:
+test	Run actions/checkout@v4	2026-10-18T15:06:18.2053128Z   repository: AndreaMarro/kirchhoff
+test	Run actions/checkout@v4	2026-10-18T15:06:18.2056888Z   token: ***
+test	Run actions/checkout@v4	2026-10-18T15:06:18.2057316Z   ssh-strict: true
+test	Run actions/checkout@v4	2026-10-18T15:06:18.2057951Z   ssh-user: git
+test	Run actions/checkout@v4	2026-10-18T15:06:18.2058392Z   persist-credentials: true
+test	Run actions/checkout@v4	2026-10-18T15:06:18.2058872Z   clean: true
+test	Run actions/checkout@v4	2026-10-18T15:06:18.2059312Z   sparse-checkout-cone-mode: true
+test	Run actions/checkout@v4	2026-10-18T15:06:18.2059817Z   fetch-depth: 1
+test	Run actions/checkout@v4	2026-10-18T15:06:18.2060230Z   fetch-tags: false
+test	Run actions/checkout@v4	2026-10-18T15:06:18.2060662Z   show-progress: true
+test	Run actions/checkout@v4	2026-10-18T15:06:18.2061089Z   lfs: false
+test	Run actions/checkout@v4	2026-10-18T15:06:18.2061489Z   submodules: false
+test	Run actions/checkout@v4	2026-10-18T15:06:18.2061924Z   set-safe-directory: true
+test	Run actions/checkout@v4	2026-10-18T15:06:18.2062413Z   allow-unsafe-pr-checkout: false
+test	Run actions/checkout@v4	2026-10-18T15:06:18.2063384Z ##[endgroup]
+test	Run actions/checkout@v4	2026-10-18T15:06:18.3035906Z Syncing repository: AndreaMarro/kirchhoff
+test	Run actions/checkout@v4	2026-10-18T15:06:18.3038476Z ##[group]Getting Git version info
+test	Run actions/checkout@v4	2026-10-18T15:06:18.3039261Z Working directory is '/home/runner/work/kirchhoff/kirchhoff'
+test	Run actions/checkout@v4	2026-10-18T15:06:18.3040387Z [command]/usr/bin/git version
+test	Run actions/checkout@v4	2026-10-18T15:06:18.3134332Z git version 2.55.0
+test	Run actions/checkout@v4	2026-10-18T15:06:18.3171871Z ##[endgroup]
+test	Run actions/checkout@v4	2026-10-18T15:06:18.3181461Z Temporarily overriding HOME='/home/runner/work/_temp/65fa9616-e8f2-4700-9d93-054152e11f9e' before making global git config changes
+test	Run actions/checkout@v4	2026-10-18T15:06:18.3183997Z Adding repository directory to the temporary git global config as a safe directory
+test	Run actions/checkout@v4	2026-10-18T15:06:18.3188029Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/kirchhoff/kirchhoff
+test	Run actions/checkout@v4	2026-10-18T15:06:18.3240645Z Deleting the contents of '/home/runner/work/kirchhoff/kirchhoff'
+test	Run actions/checkout@v4	2026-10-18T15:06:18.3248072Z ##[group]Initializing the repository
+test	Run actions/checkout@v4	2026-10-18T15:06:18.3253091Z [command]/usr/bin/git init /home/runner/work/kirchhoff/kirchhoff
+test	Run actions/checkout@v4	2026-10-18T15:06:18.3380524Z hint: Using 'master' as the name for the initial branch. This default branch name
+test	Run actions/checkout@v4	2026-10-18T15:06:18.3382389Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+test	Run actions/checkout@v4	2026-10-18T15:06:18.3383952Z hint: to use in all of your new repositories, which will suppress this warning,
+test	Run actions/checkout@v4	2026-10-18T15:06:18.3385150Z hint: call:
+test	Run actions/checkout@v4	2026-10-18T15:06:18.3386137Z hint:
+test	Run actions/checkout@v4	2026-10-18T15:06:18.3386983Z hint: 	git config --global init.defaultBranch <name>
+test	Run actions/checkout@v4	2026-10-18T15:06:18.3388247Z hint:
+test	Run actions/checkout@v4	2026-10-18T15:06:18.3389177Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+test	Run actions/checkout@v4	2026-10-18T15:06:18.3390710Z hint: 'development'. The just-created branch can be renamed via this command:
+test	Run actions/checkout@v4	2026-10-18T15:06:18.3392011Z hint:
+test	Run actions/checkout@v4	2026-10-18T15:06:18.3392721Z hint: 	git branch -m <name>
+test	Run actions/checkout@v4	2026-10-18T15:06:18.3393501Z hint:
+test	Run actions/checkout@v4	2026-10-18T15:06:18.3394496Z hint: Disable this message with "git config set advice.defaultBranchName false"
+test	Run actions/checkout@v4	2026-10-18T15:06:18.3396162Z Initialized empty Git repository in /home/runner/work/kirchhoff/kirchhoff/.git/
+test	Run actions/checkout@v4	2026-10-18T15:06:18.3405265Z [command]/usr/bin/git remote add origin https://github.com/AndreaMarro/kirchhoff
+test	Run actions/checkout@v4	2026-10-18T15:06:18.3462705Z ##[endgroup]
+test	Run actions/checkout@v4	2026-10-18T15:06:18.3464054Z ##[group]Disabling automatic garbage collection
+test	Run actions/checkout@v4	2026-10-18T15:06:18.3467090Z [command]/usr/bin/git config --local gc.auto 0
+test	Run actions/checkout@v4	2026-10-18T15:06:18.3499185Z ##[endgroup]
+test	Run actions/checkout@v4	2026-10-18T15:06:18.3500479Z ##[group]Setting up auth
+test	Run actions/checkout@v4	2026-10-18T15:06:18.3506143Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+test	Run actions/checkout@v4	2026-10-18T15:06:18.3546931Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+test	Run actions/checkout@v4	2026-10-18T15:06:18.3932540Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+test	Run actions/checkout@v4	2026-10-18T15:06:18.3977942Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+test	Run actions/checkout@v4	2026-10-18T15:06:18.4263150Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+test	Run actions/checkout@v4	2026-10-18T15:06:18.4266887Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+test	Run actions/checkout@v4	2026-10-18T15:06:18.4468343Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+test	Run actions/checkout@v4	2026-10-18T15:06:18.4508055Z ##[endgroup]
+test	Run actions/checkout@v4	2026-10-18T15:06:18.4508940Z ##[group]Fetching the repository
+test	Run actions/checkout@v4	2026-10-18T15:06:18.4517859Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +e42c589e20ec6488239f6835d80c6c77820793a6:refs/remotes/origin/codex/gov-k-01-20261018
+test	Run actions/checkout@v4	2026-10-18T15:06:19.2415763Z From https://github.com/AndreaMarro/kirchhoff
+test	Run actions/checkout@v4	2026-10-18T15:06:19.2417914Z  * [new ref]         e42c589e20ec6488239f6835d80c6c77820793a6 -> origin/codex/gov-k-01-20261018
+test	Run actions/checkout@v4	2026-10-18T15:06:19.2422134Z ##[endgroup]
+test	Run actions/checkout@v4	2026-10-18T15:06:19.2423758Z ##[group]Determining the checkout info
+test	Run actions/checkout@v4	2026-10-18T15:06:19.2425539Z ##[endgroup]
+test	Run actions/checkout@v4	2026-10-18T15:06:19.2430477Z [command]/usr/bin/git sparse-checkout disable
+test	Run actions/checkout@v4	2026-10-18T15:06:19.2485383Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+test	Run actions/checkout@v4	2026-10-18T15:06:19.2525117Z ##[group]Checking out the ref
+test	Run actions/checkout@v4	2026-10-18T15:06:19.2529168Z [command]/usr/bin/git checkout --progress --force -B codex/gov-k-01-20261018 refs/remotes/origin/codex/gov-k-01-20261018
+test	Run actions/checkout@v4	2026-10-18T15:06:19.3947970Z Switched to a new branch 'codex/gov-k-01-20261018'
+test	Run actions/checkout@v4	2026-10-18T15:06:19.3953741Z branch 'codex/gov-k-01-20261018' set up to track 'origin/codex/gov-k-01-20261018'.
+test	Run actions/checkout@v4	2026-10-18T15:06:19.3965770Z ##[endgroup]
+test	Run actions/checkout@v4	2026-10-18T15:06:19.4011463Z [command]/usr/bin/git log -1 --format=%H
+test	Run actions/checkout@v4	2026-10-18T15:06:19.4038364Z e42c589e20ec6488239f6835d80c6c77820793a6
+test	Run actions/setup-python@v5	﻿2026-10-18T15:06:19.4415469Z ##[group]Run actions/setup-python@v5
+test	Run actions/setup-python@v5	2026-10-18T15:06:19.4416667Z with:
+test	Run actions/setup-python@v5	2026-10-18T15:06:19.4417657Z   python-version: 3.12
+test	Run actions/setup-python@v5	2026-10-18T15:06:19.4418604Z   check-latest: false
+test	Run actions/setup-python@v5	2026-10-18T15:06:19.4428350Z   token: ***
+test	Run actions/setup-python@v5	2026-10-18T15:06:19.4429233Z   update-environment: true
+test	Run actions/setup-python@v5	2026-10-18T15:06:19.4430245Z   allow-prereleases: false
+test	Run actions/setup-python@v5	2026-10-18T15:06:19.4431221Z   freethreaded: false
+test	Run actions/setup-python@v5	2026-10-18T15:06:19.4432095Z ##[endgroup]
+test	Run actions/setup-python@v5	2026-10-18T15:06:19.5741801Z ##[group]Installed versions
+test	Run actions/setup-python@v5	2026-10-18T15:06:19.5839813Z (node:2280) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+test	Run actions/setup-python@v5	2026-10-18T15:06:19.5843361Z (Use `node --trace-deprecation ...` to show where the warning was created)
+test	Run actions/setup-python@v5	2026-10-18T15:06:19.5845078Z Successfully set up CPython (3.12.15)
+test	Run actions/setup-python@v5	2026-10-18T15:06:19.5846781Z ##[endgroup]
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	﻿2026-10-18T15:06:19.6365532Z ##[group]Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:19.6367060Z with:
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:19.6368136Z   version: 0.11.8
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:19.6368964Z   activate-environment: false
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:19.6369890Z   no-project: false
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:19.6370913Z   working-directory: /home/runner/work/kirchhoff/kirchhoff
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:19.6380180Z   github-token: ***
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:19.6381026Z   enable-cache: auto
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:19.6383123Z   cache-dependency-glob: **/*requirements*.txt
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	**/*requirements*.in
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	**/*constraints*.txt
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	**/*constraints*.in
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	**/pyproject.toml
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	**/uv.lock
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	**/*.py.lock
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:19.6385460Z   restore-cache: true
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:19.6386333Z   save-cache: true
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:19.6387119Z   prune-cache: false
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:19.6388235Z   cache-python: false
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:19.6389328Z   ignore-nothing-to-cache: false
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:19.6390515Z   ignore-empty-workdir: false
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:19.6391512Z   download-from-astral-mirror: true
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:19.6392589Z   add-problem-matchers: true
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:19.6393487Z   quiet: false
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:19.6394262Z   resolution-strategy: highest
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:19.6395159Z env:
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:19.6396070Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:19.6397876Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib/pkgconfig
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:19.6399508Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:19.6400964Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:19.6402424Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:19.6403915Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:19.6405154Z ##[endgroup]
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:19.8208837Z Fetching manifest data from https://raw.githubusercontent.com/astral-sh/versions/main/v1/uv.ndjson ...
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:19.8894033Z Downloading uv from "https://releases.astral.sh/github/uv/releases/download/0.11.8/uv-x86_64-unknown-linux-gnu.tar.gz" ...
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:20.2713962Z [command]/usr/bin/tar xz --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/6edf0079-c732-433e-a100-14eb6909f268 -f /home/runner/work/_temp/bdb0e820-6f30-497a-8bf9-4f533f542507
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:20.7169510Z Added /home/runner/.local/bin to the path
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:20.7173975Z Added /opt/hostedtoolcache/uv/0.11.8/x86_64 to the path
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:20.7175988Z Set UV_PYTHON_INSTALL_DIR to /home/runner/work/_temp/uv-python-dir
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:20.7176790Z Added /home/runner/work/_temp/uv-python-dir to the path
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:20.7187623Z Set UV_CACHE_DIR to /home/runner/work/_temp/setup-uv-cache
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:20.7188577Z Successfully installed uv version 0.11.8
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:21.2230281Z Searching files using cache dependency glob: /home/runner/work/kirchhoff/kirchhoff/**/*requirements*.txt,/home/runner/work/kirchhoff/kirchhoff/**/*requirements*.in,/home/runner/work/kirchhoff/kirchhoff/**/*constraints*.txt,/home/runner/work/kirchhoff/kirchhoff/**/*constraints*.in,/home/runner/work/kirchhoff/kirchhoff/**/pyproject.toml,/home/runner/work/kirchhoff/kirchhoff/**/uv.lock,/home/runner/work/kirchhoff/kirchhoff/**/*.py.lock
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:21.2804796Z /home/runner/work/kirchhoff/kirchhoff/pyproject.toml
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:21.3138107Z /home/runner/work/kirchhoff/kirchhoff/uv.lock
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:21.4028925Z Found 2 files to hash.
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:21.4109563Z Trying to restore cache from GitHub Actions cache with key: setup-uv-2-x86_64-unknown-linux-gnu-ubuntu-24.04-3.12.15-646bcc9998a1a88c3370dddd255c69324db2d24eeb07bad66858c7d4b86c2717
+test	Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9	2026-10-18T15:06:21.4571489Z No GitHub Actions cache found for key: setup-uv-2-x86_64-unknown-linux-gnu-ubuntu-24.04-3.12.15-646bcc9998a1a88c3370dddd255c69324db2d24eeb07bad66858c7d4b86c2717
+test	Sync frozen environment	﻿2026-10-18T15:06:21.5741197Z ##[group]Run uv sync --frozen --extra dev --extra mcp
+test	Sync frozen environment	2026-10-18T15:06:21.5741689Z ^[[36;1muv sync --frozen --extra dev --extra mcp^[[0m
+test	Sync frozen environment	2026-10-18T15:06:21.6042231Z shell: /usr/bin/bash -e {0}
+test	Sync frozen environment	2026-10-18T15:06:21.6042569Z env:
+test	Sync frozen environment	2026-10-18T15:06:21.6042879Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Sync frozen environment	2026-10-18T15:06:21.6043410Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib/pkgconfig
+test	Sync frozen environment	2026-10-18T15:06:21.6043930Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Sync frozen environment	2026-10-18T15:06:21.6044367Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Sync frozen environment	2026-10-18T15:06:21.6044804Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Sync frozen environment	2026-10-18T15:06:21.6045279Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib
+test	Sync frozen environment	2026-10-18T15:06:21.6045737Z   UV_PYTHON_INSTALL_DIR: /home/runner/work/_temp/uv-python-dir
+test	Sync frozen environment	2026-10-18T15:06:21.6046190Z   UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
+test	Sync frozen environment	2026-10-18T15:06:21.6046532Z ##[endgroup]
+test	Sync frozen environment	2026-10-18T15:06:21.6567296Z Using CPython 3.12.15 interpreter at: /opt/hostedtoolcache/Python/3.12.15/x64/bin/python3
+test	Sync frozen environment	2026-10-18T15:06:21.6568579Z Creating virtual environment at: .venv
+test	Sync frozen environment	2026-10-18T15:06:21.6725341Z    Building kirchhoff @ file:///home/runner/work/kirchhoff/kirchhoff
+test	Sync frozen environment	2026-10-18T15:06:21.7528899Z Downloading pydantic-core (2.0MiB)
+test	Sync frozen environment	2026-10-18T15:06:21.7647748Z Downloading pygments (1.2MiB)
+test	Sync frozen environment	2026-10-18T15:06:21.7651343Z Downloading cryptography (4.5MiB)
+test	Sync frozen environment	2026-10-18T15:06:21.7659393Z Downloading pillow (6.8MiB)
+test	Sync frozen environment	2026-10-18T15:06:21.9707130Z  Downloaded pydantic-core
+test	Sync frozen environment	2026-10-18T15:06:22.0680106Z  Downloaded pillow
+test	Sync frozen environment	2026-10-18T15:06:22.0691792Z  Downloaded cryptography
+test	Sync frozen environment	2026-10-18T15:06:22.0927171Z  Downloaded pygments
+test	Sync frozen environment	2026-10-18T15:06:22.6653704Z       Built kirchhoff @ file:///home/runner/work/kirchhoff/kirchhoff
+test	Sync frozen environment	2026-10-18T15:06:22.6662154Z Prepared 38 packages in 1.00s
+test	Sync frozen environment	2026-10-18T15:06:22.6923506Z Installed 38 packages in 26ms
+test	Sync frozen environment	2026-10-18T15:06:22.6924146Z  + annotated-types==0.8.0
+test	Sync frozen environment	2026-10-18T15:06:22.6924569Z  + anyio==4.15.1
+test	Sync frozen environment	2026-10-18T15:06:22.6924969Z  + attrs==26.1.0
+test	Sync frozen environment	2026-10-18T15:06:22.6925326Z  + cffi==2.1.1
+test	Sync frozen environment	2026-10-18T15:06:22.6925676Z  + click==8.5.0
+test	Sync frozen environment	2026-10-18T15:06:22.6926094Z  + coverage==7.15.4
+test	Sync frozen environment	2026-10-18T15:06:22.6926498Z  + cryptography==50.0.2
+test	Sync frozen environment	2026-10-18T15:06:22.6926886Z  + h11==0.16.0
+test	Sync frozen environment	2026-10-18T15:06:22.6927662Z  + httpcore2==2.13.1
+test	Sync frozen environment	2026-10-18T15:06:22.6928159Z  + httpx2==2.13.1
+test	Sync frozen environment	2026-10-18T15:06:22.6928565Z  + idna==3.20
+test	Sync frozen environment	2026-10-18T15:06:22.6928955Z  + iniconfig==2.3.0
+test	Sync frozen environment	2026-10-18T15:06:22.6929380Z  + jsonschema==4.26.0
+test	Sync frozen environment	2026-10-18T15:06:22.6929850Z  + jsonschema-specifications==2025.9.1
+test	Sync frozen environment	2026-10-18T15:06:22.6930593Z  + kirchhoff==0.1.0 (from file:///home/runner/work/kirchhoff/kirchhoff)
+test	Sync frozen environment	2026-10-18T15:06:22.6931326Z  + mcp==2.2.0
+test	Sync frozen environment	2026-10-18T15:06:22.6931707Z  + mcp-types==2.2.0
+test	Sync frozen environment	2026-10-18T15:06:22.6932129Z  + opentelemetry-api==1.45.0
+test	Sync frozen environment	2026-10-18T15:06:22.6932587Z  + packaging==26.3
+test	Sync frozen environment	2026-10-18T15:06:22.6932981Z  + pillow==13.0.0
+test	Sync frozen environment	2026-10-18T15:06:22.6933347Z  + pluggy==1.6.0
+test	Sync frozen environment	2026-10-18T15:06:22.6933729Z  + pycparser==3.0
+test	Sync frozen environment	2026-10-18T15:06:22.6934163Z  + pydantic==2.13.5
+test	Sync frozen environment	2026-10-18T15:06:22.6934583Z  + pydantic-core==2.46.5
+test	Sync frozen environment	2026-10-18T15:06:22.6935057Z  + pygments==2.20.0
+test	Sync frozen environment	2026-10-18T15:06:22.6935471Z  + pyjwt==2.15.1
+test	Sync frozen environment	2026-10-18T15:06:22.6935864Z  + pypdf==6.13.3
+test	Sync frozen environment	2026-10-18T15:06:22.6936299Z  + pytest==9.1.1
+test	Sync frozen environment	2026-10-18T15:06:22.6936687Z  + pytest-cov==7.1.0
+test	Sync frozen environment	2026-10-18T15:06:22.6937656Z  + python-multipart==0.0.32
+test	Sync frozen environment	2026-10-18T15:06:22.6938140Z  + referencing==0.37.0
+test	Sync frozen environment	2026-10-18T15:06:22.6938606Z  + rpds-py==2026.6.3
+test	Sync frozen environment	2026-10-18T15:06:22.6939030Z  + sse-starlette==3.5.0
+test	Sync frozen environment	2026-10-18T15:06:22.6939458Z  + starlette==1.7.0
+test	Sync frozen environment	2026-10-18T15:06:22.6939856Z  + truststore==0.10.4
+test	Sync frozen environment	2026-10-18T15:06:22.6940097Z  + typing-extensions==4.16.0
+test	Sync frozen environment	2026-10-18T15:06:22.6940365Z  + typing-inspection==0.4.4
+test	Sync frozen environment	2026-10-18T15:06:22.6940605Z  + uvicorn==0.54.0
+test	Build reference-set	﻿2026-10-18T15:06:22.7078049Z ##[group]Run uv run --no-sync kirchhoff-eval build --n 60 --seed 1 --depth 3 --split 0.6 --out reference-set
+test	Build reference-set	2026-10-18T15:06:22.7078881Z ^[[36;1muv run --no-sync kirchhoff-eval build --n 60 --seed 1 --depth 3 --split 0.6 --out reference-set^[[0m
+test	Build reference-set	2026-10-18T15:06:22.7144570Z shell: /usr/bin/bash -e {0}
+test	Build reference-set	2026-10-18T15:06:22.7144837Z env:
+test	Build reference-set	2026-10-18T15:06:22.7145112Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Build reference-set	2026-10-18T15:06:22.7145576Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib/pkgconfig
+test	Build reference-set	2026-10-18T15:06:22.7146053Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Build reference-set	2026-10-18T15:06:22.7146454Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Build reference-set	2026-10-18T15:06:22.7146850Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Build reference-set	2026-10-18T15:06:22.7147243Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib
+test	Build reference-set	2026-10-18T15:06:22.7147940Z   UV_PYTHON_INSTALL_DIR: /home/runner/work/_temp/uv-python-dir
+test	Build reference-set	2026-10-18T15:06:22.7148339Z   UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
+test	Build reference-set	2026-10-18T15:06:22.7148672Z ##[endgroup]
+test	Build reference-set	2026-10-18T15:06:24.3828387Z {
+test	Build reference-set	2026-10-18T15:06:24.3828892Z   "ok": true,
+test	Build reference-set	2026-10-18T15:06:24.3829300Z   "generati": 60,
+test	Build reference-set	2026-10-18T15:06:24.3829795Z   "scartati_in_verifica": 0,
+test	Build reference-set	2026-10-18T15:06:24.3830245Z   "per_classe": {
+test	Build reference-set	2026-10-18T15:06:24.3830573Z     "dc_resistive": 15,
+test	Build reference-set	2026-10-18T15:06:24.3831099Z     "transient": 15,
+test	Build reference-set	2026-10-18T15:06:24.3831578Z     "ac_sinusoidal": 15,
+test	Build reference-set	2026-10-18T15:06:24.3832112Z     "three_phase": 15
+test	Build reference-set	2026-10-18T15:06:24.3832576Z   },
+test	Build reference-set	2026-10-18T15:06:24.3832977Z   "split": {
+test	Build reference-set	2026-10-18T15:06:24.3833394Z     "dev": 36,
+test	Build reference-set	2026-10-18T15:06:24.3833820Z     "holdout": 24
+test	Build reference-set	2026-10-18T15:06:24.3834106Z   },
+test	Build reference-set	2026-10-18T15:06:24.3834391Z   "out": "reference-set",
+test	Build reference-set	2026-10-18T15:06:24.3836559Z   "coverage": "PARZIALE — insieme di riferimento STRUTTURATO, quattro classi di dominio (dc_resistive, transient, ac_sinusoidal, three_phase). VSR e SER coprono la catena a valle dell'IR (solver, Trasformazioni, Verifica) e NON l'estrazione da immagine, dove nasce quasi tutto l'errore silenzioso. Non leggere questi numeri come SER complessivo."
+test	Build reference-set	2026-10-18T15:06:24.3838399Z }
+test	Run actions/setup-node@v4	﻿2026-10-18T15:06:24.4028268Z ##[group]Run actions/setup-node@v4
+test	Run actions/setup-node@v4	2026-10-18T15:06:24.4028596Z with:
+test	Run actions/setup-node@v4	2026-10-18T15:06:24.4028802Z   node-version: 22
+test	Run actions/setup-node@v4	2026-10-18T15:06:24.4029009Z   cache: npm
+test	Run actions/setup-node@v4	2026-10-18T15:06:24.4029249Z   cache-dependency-path: web/package-lock.json
+test	Run actions/setup-node@v4	2026-10-18T15:06:24.4029550Z   always-auth: false
+test	Run actions/setup-node@v4	2026-10-18T15:06:24.4029761Z   check-latest: false
+test	Run actions/setup-node@v4	2026-10-18T15:06:24.4032057Z   token: ***
+test	Run actions/setup-node@v4	2026-10-18T15:06:24.4032253Z env:
+test	Run actions/setup-node@v4	2026-10-18T15:06:24.4032513Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Run actions/setup-node@v4	2026-10-18T15:06:24.4032955Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib/pkgconfig
+test	Run actions/setup-node@v4	2026-10-18T15:06:24.4033382Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Run actions/setup-node@v4	2026-10-18T15:06:24.4033761Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Run actions/setup-node@v4	2026-10-18T15:06:24.4034132Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Run actions/setup-node@v4	2026-10-18T15:06:24.4034506Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib
+test	Run actions/setup-node@v4	2026-10-18T15:06:24.4034900Z   UV_PYTHON_INSTALL_DIR: /home/runner/work/_temp/uv-python-dir
+test	Run actions/setup-node@v4	2026-10-18T15:06:24.4035304Z   UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
+test	Run actions/setup-node@v4	2026-10-18T15:06:24.4035599Z ##[endgroup]
+test	Run actions/setup-node@v4	2026-10-18T15:06:24.5627155Z Found in cache @ /opt/hostedtoolcache/node/22.23.3/x64
+test	Run actions/setup-node@v4	2026-10-18T15:06:24.5631404Z (node:2363) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+test	Run actions/setup-node@v4	2026-10-18T15:06:24.5632624Z (Use `node --trace-deprecation ...` to show where the warning was created)
+test	Run actions/setup-node@v4	2026-10-18T15:06:24.5634175Z ##[group]Environment details
+test	Run actions/setup-node@v4	2026-10-18T15:06:26.9363027Z node: v22.23.3
+test	Run actions/setup-node@v4	2026-10-18T15:06:26.9363503Z npm: 10.9.9
+test	Run actions/setup-node@v4	2026-10-18T15:06:26.9363855Z yarn: 1.22.22
+test	Run actions/setup-node@v4	2026-10-18T15:06:26.9364715Z ##[endgroup]
+test	Run actions/setup-node@v4	2026-10-18T15:06:26.9389010Z [command]/opt/hostedtoolcache/node/22.23.3/x64/bin/npm config get cache
+test	Run actions/setup-node@v4	2026-10-18T15:06:27.1908265Z /home/runner/.npm
+test	Run actions/setup-node@v4	2026-10-18T15:06:27.2631317Z Cache hit for: node-cache-Linux-x64-npm-56d106e00151ada5ae4e13a2f88dce9bb8d350ca98280959ebf18eab8a253525
+test	Run actions/setup-node@v4	2026-10-18T15:06:27.2741319Z (node:2363) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+test	Run actions/setup-node@v4	2026-10-18T15:06:27.7255704Z Received 59478568 of 59478568 (100.0%), 139.7 MBs/sec
+test	Run actions/setup-node@v4	2026-10-18T15:06:27.7257050Z Cache Size: ~57 MB (59478568 B)
+test	Run actions/setup-node@v4	2026-10-18T15:06:27.7376571Z [command]/usr/bin/tar -xf /home/runner/work/_temp/daa1da70-38c4-4370-9d8c-c37fb9cd3062/cache.tzst -P -C /home/runner/work/kirchhoff/kirchhoff --use-compress-program unzstd
+test	Run actions/setup-node@v4	2026-10-18T15:06:27.8482320Z Cache restored successfully
+test	Run actions/setup-node@v4	2026-10-18T15:06:27.8518472Z Cache restored from key: node-cache-Linux-x64-npm-56d106e00151ada5ae4e13a2f88dce9bb8d350ca98280959ebf18eab8a253525
+test	Install locked App build dependencies	﻿2026-10-18T15:06:27.8668183Z ##[group]Run npm ci
+test	Install locked App build dependencies	2026-10-18T15:06:27.8668493Z ^[[36;1mnpm ci^[[0m
+test	Install locked App build dependencies	2026-10-18T15:06:27.8809855Z shell: /usr/bin/bash -e {0}
+test	Install locked App build dependencies	2026-10-18T15:06:27.8810134Z env:
+test	Install locked App build dependencies	2026-10-18T15:06:27.8810426Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Install locked App build dependencies	2026-10-18T15:06:27.8810881Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib/pkgconfig
+test	Install locked App build dependencies	2026-10-18T15:06:27.8811314Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Install locked App build dependencies	2026-10-18T15:06:27.8811723Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Install locked App build dependencies	2026-10-18T15:06:27.8812127Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Install locked App build dependencies	2026-10-18T15:06:27.8812519Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib
+test	Install locked App build dependencies	2026-10-18T15:06:27.8812928Z   UV_PYTHON_INSTALL_DIR: /home/runner/work/_temp/uv-python-dir
+test	Install locked App build dependencies	2026-10-18T15:06:27.8813311Z   UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
+test	Install locked App build dependencies	2026-10-18T15:06:27.8813631Z ##[endgroup]
+test	Install locked App build dependencies	2026-10-18T15:06:32.4283864Z 
+test	Install locked App build dependencies	2026-10-18T15:06:32.4292449Z added 83 packages, and audited 84 packages in 4s
+test	Install locked App build dependencies	2026-10-18T15:06:32.4292902Z 
+test	Install locked App build dependencies	2026-10-18T15:06:32.4293139Z 20 packages are looking for funding
+test	Install locked App build dependencies	2026-10-18T15:06:32.4293542Z   run `npm fund` for details
+test	Install locked App build dependencies	2026-10-18T15:06:32.4402067Z 
+test	Install locked App build dependencies	2026-10-18T15:06:32.4402546Z 3 vulnerabilities (1 moderate, 2 critical)
+test	Install locked App build dependencies	2026-10-18T15:06:32.4402932Z 
+test	Install locked App build dependencies	2026-10-18T15:06:32.4403343Z To address all issues (including breaking changes), run:
+test	Install locked App build dependencies	2026-10-18T15:06:32.4403751Z   npm audit fix --force
+test	Install locked App build dependencies	2026-10-18T15:06:32.4403908Z 
+test	Install locked App build dependencies	2026-10-18T15:06:32.4404045Z Run `npm audit` for details.
+test	Build standalone and MCP App resources	﻿2026-10-18T15:06:32.4964818Z ##[group]Run npm run build
+test	Build standalone and MCP App resources	2026-10-18T15:06:32.4965133Z ^[[36;1mnpm run build^[[0m
+test	Build standalone and MCP App resources	2026-10-18T15:06:32.5030795Z shell: /usr/bin/bash -e {0}
+test	Build standalone and MCP App resources	2026-10-18T15:06:32.5031065Z env:
+test	Build standalone and MCP App resources	2026-10-18T15:06:32.5031353Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Build standalone and MCP App resources	2026-10-18T15:06:32.5031815Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib/pkgconfig
+test	Build standalone and MCP App resources	2026-10-18T15:06:32.5032260Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Build standalone and MCP App resources	2026-10-18T15:06:32.5032663Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Build standalone and MCP App resources	2026-10-18T15:06:32.5033070Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Build standalone and MCP App resources	2026-10-18T15:06:32.5033472Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib
+test	Build standalone and MCP App resources	2026-10-18T15:06:32.5033892Z   UV_PYTHON_INSTALL_DIR: /home/runner/work/_temp/uv-python-dir
+test	Build standalone and MCP App resources	2026-10-18T15:06:32.5034300Z   UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
+test	Build standalone and MCP App resources	2026-10-18T15:06:32.5034619Z ##[endgroup]
+test	Build standalone and MCP App resources	2026-10-18T15:06:32.6037376Z 
+test	Build standalone and MCP App resources	2026-10-18T15:06:32.6038428Z > kirchhoff-proof-workbench@0.1.0 build
+test	Build standalone and MCP App resources	2026-10-18T15:06:32.6039587Z > tsc --noEmit && vite build && vite build --config vite.mcp.config.ts
+test	Build standalone and MCP App resources	2026-10-18T15:06:32.6039951Z 
+test	Build standalone and MCP App resources	2026-10-18T15:06:37.4431163Z ^[[36mvite v7.3.6 ^[[32mbuilding client environment for production...^[[36m^[[39m
+test	Build standalone and MCP App resources	2026-10-18T15:06:37.5171017Z transforming...
+test	Build standalone and MCP App resources	2026-10-18T15:06:39.8621590Z ^[[32m✓^[[39m 69 modules transformed.
+test	Build standalone and MCP App resources	2026-10-18T15:06:40.2398098Z rendering chunks...
+test	Build standalone and MCP App resources	2026-10-18T15:06:40.2981894Z computing gzip size...
+test	Build standalone and MCP App resources	2026-10-18T15:06:40.3160925Z ^[[2mdist/^[[22m^[[32mindex.html                          ^[[39m^[[1m^[[2m    0.90 kB^[[22m^[[1m^[[22m^[[2m │ gzip:   0.55 kB^[[22m
+test	Build standalone and MCP App resources	2026-10-18T15:06:40.3162433Z ^[[2mdist/^[[22m^[[32moffline-sw.js                       ^[[39m^[[1m^[[2m   27.72 kB^[[22m^[[1m^[[22m
+test	Build standalone and MCP App resources	2026-10-18T15:06:40.3163951Z ^[[2mdist/^[[22m^[[2massets/^[[22m^[[32mpdf.worker.min-Dswkl-cV.mjs  ^[[39m^[[1m^[[2m1,265.41 kB^[[22m^[[1m^[[22m
+test	Build standalone and MCP App resources	2026-10-18T15:06:40.3165843Z ^[[2mdist/^[[22m^[[2massets/^[[22m^[[35mindex-Cnbq3u_8.css           ^[[39m^[[1m^[[2m   37.43 kB^[[22m^[[1m^[[22m^[[2m │ gzip:   7.66 kB^[[22m
+test	Build standalone and MCP App resources	2026-10-18T15:06:40.3167891Z ^[[2mdist/^[[22m^[[2massets/^[[22m^[[36mindex-DroGVsfW.js            ^[[39m^[[1m^[[2m  330.13 kB^[[22m^[[1m^[[22m^[[2m │ gzip: 102.25 kB^[[22m
+test	Build standalone and MCP App resources	2026-10-18T15:06:40.3179404Z ^[[2mdist/^[[22m^[[2massets/^[[22m^[[36mpdf-CoTZ2JFh.js              ^[[39m^[[1m^[[2m  436.68 kB^[[22m^[[1m^[[22m^[[2m │ gzip: 130.66 kB^[[22m
+test	Build standalone and MCP App resources	2026-10-18T15:06:40.3180687Z ^[[32m✓ built in 2.85s^[[39m
+test	Build standalone and MCP App resources	2026-10-18T15:06:40.5589667Z ^[[36mvite v7.3.6 ^[[32mbuilding client environment for production...^[[36m^[[39m
+test	Build standalone and MCP App resources	2026-10-18T15:06:40.5978181Z transforming...
+test	Build standalone and MCP App resources	2026-10-18T15:06:40.9736407Z ^[[33mnode_modules/zod/v4/core/regexes.js (74:0): A comment
+test	Build standalone and MCP App resources	2026-10-18T15:06:40.9736951Z 
+test	Build standalone and MCP App resources	2026-10-18T15:06:40.9737858Z "/** Anchors a pattern source. The interpolation lives here rather than at the call site because
+test	Build standalone and MCP App resources	2026-10-18T15:06:40.9739064Z  * esbuild will not drop a `@__PURE__` call whose own argument interpolates a variable, but it
+test	Build standalone and MCP App resources	2026-10-18T15:06:40.9739866Z  * will drop `anchor(dateSource)`. Keeping it inline pinned `date` into every bundle. */"
+test	Build standalone and MCP App resources	2026-10-18T15:06:40.9740280Z 
+test	Build standalone and MCP App resources	2026-10-18T15:06:40.9741178Z in "node_modules/zod/v4/core/regexes.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.^[[39m
+test	Build standalone and MCP App resources	2026-10-18T15:06:40.9814976Z ^[[33mnode_modules/zod/v4/core/util.js (400:0): A comment
+test	Build standalone and MCP App resources	2026-10-18T15:06:40.9815386Z 
+test	Build standalone and MCP App resources	2026-10-18T15:06:40.9816177Z "// Wrapped in a `@__PURE__` IIFE: esbuild never tree-shakes a top-level initializer that contains a member access on `Number`, so the bare object literal survived into every bundle."
+test	Build standalone and MCP App resources	2026-10-18T15:06:40.9816830Z 
+test	Build standalone and MCP App resources	2026-10-18T15:06:40.9817998Z in "node_modules/zod/v4/core/util.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.^[[39m
+test	Build standalone and MCP App resources	2026-10-18T15:06:41.6501939Z ^[[32m✓^[[39m 160 modules transformed.
+test	Build standalone and MCP App resources	2026-10-18T15:06:41.8869578Z rendering chunks...
+test	Build standalone and MCP App resources	2026-10-18T15:06:41.8919565Z computing gzip size...
+test	Build standalone and MCP App resources	2026-10-18T15:06:41.8993840Z ^[[2mdist/mcp/^[[22m^[[36mkirchhoff-mcp-app.iife.js  ^[[39m^[[1m^[[2m241.96 kB^[[22m^[[1m^[[22m^[[2m │ gzip: 64.55 kB^[[22m
+test	Build standalone and MCP App resources	2026-10-18T15:06:41.8995355Z ^[[32m✓ built in 1.33s^[[39m
+test	pytest	﻿2026-10-18T15:06:41.9295175Z ##[group]Run uv run --no-sync python -m pytest
+test	pytest	2026-10-18T15:06:41.9295597Z ^[[36;1muv run --no-sync python -m pytest^[[0m
+test	pytest	2026-10-18T15:06:41.9359023Z shell: /usr/bin/bash -e {0}
+test	pytest	2026-10-18T15:06:41.9359292Z env:
+test	pytest	2026-10-18T15:06:41.9359574Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.15/x64
+test	pytest	2026-10-18T15:06:41.9360034Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib/pkgconfig
+test	pytest	2026-10-18T15:06:41.9360477Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+test	pytest	2026-10-18T15:06:41.9360873Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+test	pytest	2026-10-18T15:06:41.9361267Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+test	pytest	2026-10-18T15:06:41.9380701Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib
+test	pytest	2026-10-18T15:06:41.9381355Z   UV_PYTHON_INSTALL_DIR: /home/runner/work/_temp/uv-python-dir
+test	pytest	2026-10-18T15:06:41.9381973Z   UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
+test	pytest	2026-10-18T15:06:41.9382286Z ##[endgroup]
+test	pytest	2026-10-18T15:07:52.3240117Z ........................................................................ [  2%]
+test	pytest	2026-10-18T15:08:24.9939656Z ........................................................................ [  5%]
+test	pytest	2026-10-18T15:09:12.9636091Z ........................................................................ [  7%]
+test	pytest	2026-10-18T15:09:22.2434845Z ........................................................................ [ 10%]
+test	pytest	2026-10-18T15:09:27.1598809Z ............................s..................F........................ [ 13%]
+test	pytest	2026-10-18T15:11:32.4113905Z ........................................................................ [ 15%]
+test	pytest	2026-10-18T15:11:33.5765322Z ........................................................................ [ 18%]
+test	pytest	2026-10-18T15:11:33.8916964Z ........................................................................ [ 21%]
+test	pytest	2026-10-18T15:11:34.0627031Z ........................................................................ [ 23%]
+test	pytest	2026-10-18T15:11:34.2788284Z ........................................................................ [ 26%]
+test	pytest	2026-10-18T15:11:34.4464803Z ........................................................................ [ 29%]
+test	pytest	2026-10-18T15:11:35.3933498Z ........................................................................ [ 31%]
+test	pytest	2026-10-18T15:11:35.8815679Z ........................................................................ [ 34%]
+test	pytest	2026-10-18T15:11:36.0818996Z ........................................................................ [ 37%]
+test	pytest	2026-10-18T15:11:37.5126060Z ........................................................................ [ 39%]
+test	pytest	2026-10-18T15:11:37.9581223Z ........................................................................ [ 42%]
+test	pytest	2026-10-18T15:11:39.8787195Z ....................s................................................... [ 45%]
+test	pytest	2026-10-18T15:11:42.4764443Z ........................................................................ [ 47%]
+test	pytest	2026-10-18T15:12:01.7672060Z ........................................................................ [ 50%]
+test	pytest	2026-10-18T15:12:04.2153072Z ........................................................................ [ 53%]
+test	pytest	2026-10-18T15:12:11.3168668Z ........................................................................ [ 55%]
+test	pytest	2026-10-18T15:12:27.8008931Z ........................................................................ [ 58%]
+test	pytest	2026-10-18T15:12:29.3232783Z ........................................................................ [ 61%]
+test	pytest	2026-10-18T15:12:29.7071537Z ........................................................................ [ 63%]
+test	pytest	2026-10-18T15:12:30.0687065Z ........................................................................ [ 66%]
+test	pytest	2026-10-18T15:12:30.7942120Z ........................................................................ [ 69%]
+test	pytest	2026-10-18T15:12:31.3865573Z ........................................................................ [ 71%]
+test	pytest	2026-10-18T15:12:44.4470882Z ........................................................................ [ 74%]
+test	pytest	2026-10-18T15:12:52.3641441Z ......................................s................................. [ 77%]
+test	pytest	2026-10-18T15:13:56.5666696Z ........................................................................ [ 79%]
+test	pytest	2026-10-18T15:13:59.1679567Z ........................................................................ [ 82%]
+test	pytest	2026-10-18T15:13:59.3976992Z ........................................................................ [ 85%]
+test	pytest	2026-10-18T15:13:59.5426899Z ........................................................................ [ 87%]
+test	pytest	2026-10-18T15:13:59.7006562Z ........................................................................ [ 90%]
+test	pytest	2026-10-18T15:13:59.8413154Z ........................................................................ [ 93%]
+test	pytest	2026-10-18T15:14:00.0399970Z ........................................................................ [ 95%]
+test	pytest	2026-10-18T15:14:01.6964037Z ........................................................................ [ 98%]
+test	pytest	2026-10-18T15:14:08.3288978Z .........................................                                [100%]
+test	pytest	2026-10-18T15:14:08.3290006Z =================================== FAILURES ===================================
+test	pytest	2026-10-18T15:14:08.3291236Z _____________ test_sorgenti_mutate_in_corsa_invalidano_la_ricevuta _____________
+test	pytest	2026-10-18T15:14:08.3291908Z 
+test	pytest	2026-10-18T15:14:08.3292485Z modulo = <module 'codex_verify' from '/home/runner/work/kirchhoff/kirchhoff/ops/codex/verify.py'>
+test	pytest	2026-10-18T15:14:08.3293471Z repository = PosixPath('/tmp/pytest-of-runner/pytest-0/test_sorgenti_mutate_in_corsa_0/repo')
+test	pytest	2026-10-18T15:14:08.3294377Z tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-0/test_sorgenti_mutate_in_corsa_0')
+test	pytest	2026-10-18T15:14:08.3294815Z 
+test	pytest	2026-10-18T15:14:08.3295208Z     def test_sorgenti_mutate_in_corsa_invalidano_la_ricevuta(modulo, repository, tmp_path):
+test	pytest	2026-10-18T15:14:08.3295849Z         def mutazione(argv, cwd, log, timeout):
+test	pytest	2026-10-18T15:14:08.3296332Z             result = prova_verde(argv, cwd, log, timeout)
+test	pytest	2026-10-18T15:14:08.3296765Z             if 'pytest' in argv:
+test	pytest	2026-10-18T15:14:08.3297214Z                 (repository / 'source.py').write_text('VALUE = 2\n')
+test	pytest	2026-10-18T15:14:08.3298188Z             return result
+test	pytest	2026-10-18T15:14:08.3298520Z     
+test	pytest	2026-10-18T15:14:08.3299004Z         receipt = modulo.verifica(repository, tmp_path / 'run', runner=mutazione)
+test	pytest	2026-10-18T15:14:08.3299647Z         assert receipt['status'] == 'CHECKS_FAILED'
+test	pytest	2026-10-18T15:14:08.3300303Z >       assert receipt['snapshot_before']['sha256'] != receipt['snapshot_after']['sha256']
+test	pytest	2026-10-18T15:14:08.3301640Z E       AssertionError: assert 'f815c2c2198efa7d039e88ca39252a25ccf3be6e5b5f2f569493f6cd98835255' != 'f815c2c2198efa7d039e88ca39252a25ccf3be6e5b5f2f569493f6cd98835255'
+test	pytest	2026-10-18T15:14:08.3302429Z 
+test	pytest	2026-10-18T15:14:08.3302652Z tests/test_codex_verify.py:117: AssertionError
+test	pytest	2026-10-18T15:14:08.3303238Z ----------------------------- Captured stdout call -----------------------------
+test	pytest	2026-10-18T15:14:08.3303719Z Verifica: chain
+test	pytest	2026-10-18T15:14:08.3304144Z ================================ tests coverage ================================
+test	pytest	2026-10-18T15:14:08.3304789Z _______________ coverage: platform linux, python 3.12.15-final-0 _______________
+test	pytest	2026-10-18T15:14:08.3305152Z 
+test	pytest	2026-10-18T15:14:08.3305497Z Name                                                Stmts   Miss Branch BrPart  Cover   Missing
+test	pytest	2026-10-18T15:14:08.3306202Z -----------------------------------------------------------------------------------------------
+test	pytest	2026-10-18T15:14:08.3306918Z src/kirchhoff/__init__.py                               1      0      0      0   100%
+test	pytest	2026-10-18T15:14:08.3307766Z src/kirchhoff/adapters/__init__.py                      0      0      0      0   100%
+test	pytest	2026-10-18T15:14:08.3308478Z src/kirchhoff/api/__init__.py                           0      0      0      0   100%
+test	pytest	2026-10-18T15:14:08.3309227Z src/kirchhoff/api/app_resource.py                      57      3     18      1    95%   66-68
+test	pytest	2026-10-18T15:14:08.3309964Z src/kirchhoff/api/mcp_server.py                        41      0      0      0   100%
+test	pytest	2026-10-18T15:14:08.3310520Z src/kirchhoff/config.py                                41      0     12      0   100%
+test	pytest	2026-10-18T15:14:08.3311464Z src/kirchhoff/domain/__init__.py                        0      0      0      0   100%
+test	pytest	2026-10-18T15:14:08.3312041Z src/kirchhoff/domain/didactic/__init__.py              15      0      2      0   100%
+test	pytest	2026-10-18T15:14:08.3312651Z src/kirchhoff/domain/didactic/analytical.py           313      0    144      0   100%
+test	pytest	2026-10-18T15:14:08.3313285Z src/kirchhoff/domain/didactic/capabilities.py          51      0     16      0   100%
+test	pytest	2026-10-18T15:14:08.3313914Z src/kirchhoff/domain/didactic/derivation.py           138      0     70      0   100%
+test	pytest	2026-10-18T15:14:08.3314527Z src/kirchhoff/domain/didactic/execute.py              161      0     94      0   100%
+test	pytest	2026-10-18T15:14:08.3315135Z src/kirchhoff/domain/didactic/kinds.py                  8      0      0      0   100%
+test	pytest	2026-10-18T15:14:08.3315907Z src/kirchhoff/domain/didactic/observation.py          120      0     70      0   100%
+test	pytest	2026-10-18T15:14:08.3316534Z src/kirchhoff/domain/didactic/orchestrate.py          203      0    124      0   100%
+test	pytest	2026-10-18T15:14:08.3317170Z src/kirchhoff/domain/didactic/plan.py                  49      0     18      0   100%
+test	pytest	2026-10-18T15:14:08.3317933Z src/kirchhoff/domain/didactic/planner.py               42      0     12      0   100%
+test	pytest	2026-10-18T15:14:08.3318545Z src/kirchhoff/domain/didactic/request.py              111      0     52      0   100%
+test	pytest	2026-10-18T15:14:08.3319156Z src/kirchhoff/domain/didactic/solve.py                154      0     98      0   100%
+test	pytest	2026-10-18T15:14:08.3319749Z src/kirchhoff/domain/exact.py                         108      0     34      0   100%
+test	pytest	2026-10-18T15:14:08.3320323Z src/kirchhoff/domain/identity.py                       60      0     28      0   100%
+test	pytest	2026-10-18T15:14:08.3320924Z src/kirchhoff/domain/independent_dc.py                209      0    106      0   100%
+test	pytest	2026-10-18T15:14:08.3321544Z src/kirchhoff/domain/independent_phasor.py             85      0     52      0   100%
+test	pytest	2026-10-18T15:14:08.3322144Z src/kirchhoff/domain/ir/__init__.py                     3      0      0      0   100%
+test	pytest	2026-10-18T15:14:08.3322733Z src/kirchhoff/domain/ir/canonical.py                   11      0      2      0   100%
+test	pytest	2026-10-18T15:14:08.3323322Z src/kirchhoff/domain/ir/schema.py                     143      0     76      0   100%
+test	pytest	2026-10-18T15:14:08.3323905Z src/kirchhoff/domain/laplace.py                       134      0     54      0   100%
+test	pytest	2026-10-18T15:14:08.3324500Z src/kirchhoff/domain/laplace_rational.py              155      0     52      0   100%
+test	pytest	2026-10-18T15:14:08.3325081Z src/kirchhoff/domain/mna.py                           163      0    112      0   100%
+test	pytest	2026-10-18T15:14:08.3325645Z src/kirchhoff/domain/port.py                          117      0     44      0   100%
+test	pytest	2026-10-18T15:14:08.3326224Z src/kirchhoff/domain/proof/__init__.py                  2      0      0      0   100%
+test	pytest	2026-10-18T15:14:08.3326825Z src/kirchhoff/domain/proof/graph.py                    99      0     44      0   100%
+test	pytest	2026-10-18T15:14:08.3327565Z src/kirchhoff/domain/proof/session.py                 219      0    146      0   100%
+test	pytest	2026-10-18T15:14:08.3328159Z src/kirchhoff/domain/refusal.py                        24      0      8      0   100%
+test	pytest	2026-10-18T15:14:08.3328743Z src/kirchhoff/domain/student_trace.py                 216      0    114      0   100%
+test	pytest	2026-10-18T15:14:08.3329344Z src/kirchhoff/domain/transform/__init__.py              7      0      0      0   100%
+test	pytest	2026-10-18T15:14:08.3329964Z src/kirchhoff/domain/transform/applicability.py        44      0     14      0   100%
+test	pytest	2026-10-18T15:14:08.3330594Z src/kirchhoff/domain/transform/catalog.py             122      0     50      0   100%
+test	pytest	2026-10-18T15:14:08.3331213Z src/kirchhoff/domain/transform/check.py               145      0     60      0   100%
+test	pytest	2026-10-18T15:14:08.3331821Z src/kirchhoff/domain/transform/delta.py                94      0     42      0   100%
+test	pytest	2026-10-18T15:14:08.3332439Z src/kirchhoff/domain/transform/engine.py              113      0     36      0   100%
+test	pytest	2026-10-18T15:14:08.3333302Z src/kirchhoff/domain/transform/primitives.py           26      0      8      0   100%
+test	pytest	2026-10-18T15:14:08.3333953Z src/kirchhoff/domain/transform/result.py              129      0     58      0   100%
+test	pytest	2026-10-18T15:14:08.3334560Z src/kirchhoff/domain/transient.py                      22      0      6      0   100%
+test	pytest	2026-10-18T15:14:08.3335157Z src/kirchhoff/domain/truthfulness.py                  158      0     74      0   100%
+test	pytest	2026-10-18T15:14:08.3335741Z src/kirchhoff/domain/two_port.py                       97      0     46      0   100%
+test	pytest	2026-10-18T15:14:08.3336322Z src/kirchhoff/domain/validate.py                      132      0     78      0   100%
+test	pytest	2026-10-18T15:14:08.3336895Z src/kirchhoff/domain/verify.py                        167      0     92      0   100%
+test	pytest	2026-10-18T15:14:08.3337739Z src/kirchhoff/eval/__init__.py                          0      0      0      0   100%
+test	pytest	2026-10-18T15:14:08.3338516Z src/kirchhoff/eval/cli.py                              46      0      4      0   100%
+test	pytest	2026-10-18T15:14:08.3339097Z src/kirchhoff/eval/generator.py                        93      0     30      0   100%
+test	pytest	2026-10-18T15:14:08.3339686Z src/kirchhoff/eval/generator_ac.py                    104      0     34      0   100%
+test	pytest	2026-10-18T15:14:08.3340289Z src/kirchhoff/eval/generator_controlled.py             60      0     16      0   100%
+test	pytest	2026-10-18T15:14:08.3340902Z src/kirchhoff/eval/generator_three_phase.py            72      0     10      0   100%
+test	pytest	2026-10-18T15:14:08.3341515Z src/kirchhoff/eval/generator_transient.py              59      0      0      0   100%
+test	pytest	2026-10-18T15:14:08.3342109Z src/kirchhoff/eval/metrics.py                          96      0     24      0   100%
+test	pytest	2026-10-18T15:14:08.3345334Z src/kirchhoff/eval/reference_set.py                   169      0     68      0   100%
+test	pytest	2026-10-18T15:14:08.3346414Z src/kirchhoff/eval/transformations.py                   9      0      2      0   100%
+test	pytest	2026-10-18T15:14:08.3347763Z src/kirchhoff/pipeline/__init__.py                      5      0      0      0   100%
+test	pytest	2026-10-18T15:14:08.3348763Z src/kirchhoff/pipeline/capabilities.py                 18      0      2      0   100%
+test	pytest	2026-10-18T15:14:08.3349508Z src/kirchhoff/pipeline/circuitikz.py                   70      7     44      7    88%   35, 45, 47, 53, 56, 64, 66
+test	pytest	2026-10-18T15:14:08.3350348Z src/kirchhoff/pipeline/cli.py                          85     16     34      8    80%   27, 39-52, 78-79, 81-82, 95->108, 100-104, 110, 117-118, 121
+test	pytest	2026-10-18T15:14:08.3351104Z src/kirchhoff/pipeline/failure.py                      13      3      4      2    71%   25, 27, 30
+test	pytest	2026-10-18T15:14:08.3351808Z src/kirchhoff/pipeline/image_revision.py              104      5     28      4    93%   56, 89, 95-96, 98
+test	pytest	2026-10-18T15:14:08.3352481Z src/kirchhoff/pipeline/laplace_input.py               100      0     42      0   100%
+test	pytest	2026-10-18T15:14:08.3353517Z src/kirchhoff/pipeline/lesson.py                      408     28    206     26    91%   61, 69, 93, 102, 106, 115, 123, 143, 145, 160, 193, 218, 261, 298, 318-319, 349, 422, 424, 428, 433, 435, 439, 441, 541, 601, 611, 636
+test	pytest	2026-10-18T15:14:08.3354429Z src/kirchhoff/pipeline/lesson_ac.py                   233      0     94      1    99%   262->264
+test	pytest	2026-10-18T15:14:08.3355079Z src/kirchhoff/pipeline/lesson_ac_algebra.py           102      1     40      1    99%   94
+test	pytest	2026-10-18T15:14:08.3355996Z src/kirchhoff/pipeline/lesson_ac_algebra_check.py     190     19    114     19    88%   35, 46, 87, 94, 97, 102, 172, 176, 183, 189, 193, 204, 208, 213, 217, 220, 224, 235, 237
+test	pytest	2026-10-18T15:14:08.3356834Z src/kirchhoff/pipeline/lesson_ac_port.py               78      2     22      2    96%   40, 67
+test	pytest	2026-10-18T15:14:08.3357798Z src/kirchhoff/pipeline/lesson_ac_power.py              33      0     10      0   100%
+test	pytest	2026-10-18T15:14:08.3358536Z src/kirchhoff/pipeline/lesson_bridge.py               105      5     38      6    92%   44, 49, 52, 96, 103->exit, 130
+test	pytest	2026-10-18T15:14:08.3359224Z src/kirchhoff/pipeline/lesson_laplace.py               53      0     12      0   100%
+test	pytest	2026-10-18T15:14:08.3360084Z src/kirchhoff/pipeline/lesson_laplace_algebra.py       85      1     34      1    98%   87
+test	pytest	2026-10-18T15:14:08.3360789Z src/kirchhoff/pipeline/lesson_laplace_check.py        259      3    114      3    98%   93, 121, 220
+test	pytest	2026-10-18T15:14:08.3361486Z src/kirchhoff/pipeline/lesson_math.py                  81      3     40      3    95%   92, 106, 112
+test	pytest	2026-10-18T15:14:08.3362187Z src/kirchhoff/pipeline/lesson_pdf.py                  177      2     66      4    98%   78->47, 94, 104->106, 143
+test	pytest	2026-10-18T15:14:08.3362890Z src/kirchhoff/pipeline/lesson_pdf_math.py             153      1     72      2    99%   135, 186->188
+test	pytest	2026-10-18T15:14:08.3363553Z src/kirchhoff/pipeline/lesson_svg.py                  190      2     78      2    99%   91, 162
+test	pytest	2026-10-18T15:14:08.3364230Z src/kirchhoff/pipeline/netlist.py                     128      4     72      2    97%   123-124, 184, 205
+test	pytest	2026-10-18T15:14:08.3365298Z src/kirchhoff/pipeline/presentation.py                359     18    160     14    94%   76, 288, 292, 325, 346, 363, 383, 387, 395, 398, 426, 438-439, 443, 452-453, 565, 588
+test	pytest	2026-10-18T15:14:08.3366102Z src/kirchhoff/pipeline/proof_run.py                   121      0     30      0   100%
+test	pytest	2026-10-18T15:14:08.3366722Z src/kirchhoff/pipeline/proof_session.py                85      0     48      0   100%
+test	pytest	2026-10-18T15:14:08.3367638Z src/kirchhoff/pipeline/resolve.py                     120      6     40      2    95%   106-107, 141-144, 210
+test	pytest	2026-10-18T15:14:08.3368327Z src/kirchhoff/pipeline/risolvi.py                      60      0     24      0   100%
+test	pytest	2026-10-18T15:14:08.3369125Z src/kirchhoff/pipeline/spice.py                       148     16     86     16    86%   51, 59, 67, 70, 77, 79, 97, 104, 107, 115, 125, 141, 148, 157, 162, 170
+test	pytest	2026-10-18T15:14:08.3369864Z src/kirchhoff/pipeline/state_registry.py               85      0     46      0   100%
+test	pytest	2026-10-18T15:14:08.3370485Z src/kirchhoff/pipeline/student_history.py              21      0     12      0   100%
+test	pytest	2026-10-18T15:14:08.3371150Z src/kirchhoff/pipeline/student_trace.py                18      4     10      4    71%   10, 13, 15, 19
+test	pytest	2026-10-18T15:14:08.3371882Z src/kirchhoff/pipeline/vision_response.py              57      7     36      7    85%   62, 66, 80, 87, 93, 97, 106
+test	pytest	2026-10-18T15:14:08.3372528Z src/kirchhoff/ports/__init__.py                         0      0      0      0   100%
+test	pytest	2026-10-18T15:14:08.3373097Z src/kirchhoff/ports/clock.py                            5      0      0      0   100%
+test	pytest	2026-10-18T15:14:08.3373660Z src/kirchhoff/render/__init__.py                        0      0      0      0   100%
+test	pytest	2026-10-18T15:14:08.3374238Z src/kirchhoff/render/layout/__init__.py                 5      0      0      0   100%
+test	pytest	2026-10-18T15:14:08.3374839Z src/kirchhoff/render/layout/apply.py                   45      0     20      0   100%
+test	pytest	2026-10-18T15:14:08.3375489Z src/kirchhoff/render/layout/connected.py               61      1     22      2    96%   37, 49->51
+test	pytest	2026-10-18T15:14:08.3376138Z src/kirchhoff/render/layout/continuity.py              42      0     16      0   100%
+test	pytest	2026-10-18T15:14:08.3376755Z src/kirchhoff/render/layout/schema.py                  43      0     18      0   100%
+test	pytest	2026-10-18T15:14:08.3377361Z src/kirchhoff/render/layout/store.py                   51      0      8      0   100%
+test	pytest	2026-10-18T15:14:08.3378254Z src/kirchhoff/render/overlay/__init__.py                2      0      0      0   100%
+test	pytest	2026-10-18T15:14:08.3378866Z src/kirchhoff/render/overlay/schema.py                 39      0     18      0   100%
+test	pytest	2026-10-18T15:14:08.3379472Z src/kirchhoff/render/serialize/__init__.py              3      0      0      0   100%
+test	pytest	2026-10-18T15:14:08.3380461Z src/kirchhoff/render/serialize/connectivity.py        192     23    118     24    85%   29, 35, 42, 43->45, 85, 101, 106, 112, 117, 121, 125, 129, 134, 138, 142, 151, 153, 168, 176, 187, 225, 233, 236, 241
+test	pytest	2026-10-18T15:14:08.3381350Z src/kirchhoff/render/serialize/geometry.py            206      0     80      0   100%
+test	pytest	2026-10-18T15:14:08.3381968Z src/kirchhoff/render/serialize/svg.py                 236      0     48      0   100%
+test	pytest	2026-10-18T15:14:08.3382736Z src/kirchhoff/render/step/__init__.py                   3      0      0      0   100%
+test	pytest	2026-10-18T15:14:08.3383333Z src/kirchhoff/render/step/compose.py                   24      0      4      0   100%
+test	pytest	2026-10-18T15:14:08.3383929Z src/kirchhoff/render/step/schema.py                   124      0     50      0   100%
+test	pytest	2026-10-18T15:14:08.3384550Z src/kirchhoff/runtime_identity.py                      57      2     12      1    96%   61-62
+test	pytest	2026-10-18T15:14:08.3385169Z -----------------------------------------------------------------------------------------------
+test	pytest	2026-10-18T15:14:08.3385704Z TOTAL                                               10099    182   4426    164    98%
+test	pytest	2026-10-18T15:14:08.3386123Z Coverage JSON written to file coverage.json
+test	pytest	2026-10-18T15:14:08.5274878Z Required test coverage of 95% reached. Total coverage: 97.62%
+test	pytest	2026-10-18T15:14:08.5275682Z =========================== short test summary info ============================
+test	pytest	2026-10-18T15:14:08.5278035Z FAILED tests/test_codex_verify.py::test_sorgenti_mutate_in_corsa_invalidano_la_ricevuta - AssertionError: assert 'f815c2c2198efa7d039e88ca39252a25ccf3be6e5b5f2f569493f6cd98835255' != 'f815c2c2198efa7d039e88ca39252a25ccf3be6e5b5f2f569493f6cd98835255'
+test	pytest	2026-10-18T15:14:08.5279640Z 1 failed, 2701 passed, 3 skipped in 444.68s (0:07:24)
+test	pytest	2026-10-18T15:14:09.0312019Z ##[error]Process completed with exit code 1.
+test	Post Run actions/checkout@v4	﻿2026-10-18T15:14:09.0445668Z Post job cleanup.
+test	Post Run actions/checkout@v4	2026-10-18T15:14:09.1372782Z [command]/usr/bin/git version
+test	Post Run actions/checkout@v4	2026-10-18T15:14:09.1431992Z git version 2.55.0
+test	Post Run actions/checkout@v4	2026-10-18T15:14:09.1496315Z Temporarily overriding HOME='/home/runner/work/_temp/30c9b129-2e57-4deb-b8bc-93263367efea' before making global git config changes
+test	Post Run actions/checkout@v4	2026-10-18T15:14:09.1508744Z Adding repository directory to the temporary git global config as a safe directory
+test	Post Run actions/checkout@v4	2026-10-18T15:14:09.1513355Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/kirchhoff/kirchhoff
+test	Post Run actions/checkout@v4	2026-10-18T15:14:09.1570163Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+test	Post Run actions/checkout@v4	2026-10-18T15:14:09.1640436Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+test	Post Run actions/checkout@v4	2026-10-18T15:14:09.1986687Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+test	Post Run actions/checkout@v4	2026-10-18T15:14:09.2056515Z http.https://github.com/.extraheader
+test	Post Run actions/checkout@v4	2026-10-18T15:14:09.2076049Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+test	Post Run actions/checkout@v4	2026-10-18T15:14:09.2133305Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+test	Post Run actions/checkout@v4	2026-10-18T15:14:09.2636077Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+test	Post Run actions/checkout@v4	2026-10-18T15:14:09.2659091Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+test	Complete job	﻿2026-10-18T15:14:09.3103359Z Cleaning up orphan processes
+test	Complete job	2026-10-18T15:14:09.3520292Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-node@v4, actions/setup-python@v5. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

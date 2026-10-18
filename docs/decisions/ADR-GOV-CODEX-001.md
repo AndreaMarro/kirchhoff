@@ -42,6 +42,12 @@ sorgenti impediscono `CHECKS_PASSED`. Gli skip sono numeri separati. I timeout
 terminano il gruppo dei processi avviato, inclusi i figli sopravvissuti al padre.
 Le ricevute non sono firme e restano evidenza locale modificabile.
 
+La soglia di freschezza usa un marker creato esclusivamente prima di ogni
+comando e il suo timestamp sullo stesso filesystem dei report. Il confronto
+diretto col wall clock può respingere file nuovi quando i due orologi hanno
+precisione o offset diversi; non viene aggiunta una tolleranza che ammetta
+report vecchi. Clock e soglia sono registrati in ciascun esito.
+
 File di evidenza precedenti al comando, symlink e antenati symlink delle sorgenti
 vengono rifiutati prima della lettura. Un timeout controlla soltanto il gruppo
 iniziale: un figlio che crea una nuova sessione non è confinato. Questo limite è

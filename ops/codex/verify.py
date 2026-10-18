@@ -149,9 +149,15 @@ def verifica(root: Path, output: Path, *, runner=esegui, timeout: float = 900) -
     for name, argv, cwd in plan:
         log = output / (name + '.log')
         print('Verifica: ' + name, flush=True)
-        started_ns = time.time_ns()
+        # Confronta timestamp prodotti dallo stesso filesystem: il wall clock può
+        # avere precisione/offset diversi e far apparire vecchio un file nuovo.
+        marker = output / ('.' + name + '.start')
+        descriptor = os.open(marker, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        with os.fdopen(descriptor, 'wb') as stream:
+            started_ns = os.fstat(stream.fileno()).st_mtime_ns
         result = runner(argv, cwd, log, timeout)
         row = {'name': name, 'argv': argv, 'cwd': str(cwd), **result,
+               'evidence_started_ns': started_ns, 'evidence_clock': 'filesystem_marker',
                'log': str(log),
                'status': 'PASS' if result['exit_code'] == 0 and not result['timed_out'] else 'FAIL'}
         receipt['checks'].append(row)

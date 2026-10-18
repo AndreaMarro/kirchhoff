@@ -114,7 +114,17 @@ def test_sorgenti_mutate_in_corsa_invalidano_la_ricevuta(modulo, repository, tmp
 
     receipt = modulo.verifica(repository, tmp_path / 'run', runner=mutazione)
     assert receipt['status'] == 'CHECKS_FAILED'
-    assert receipt['snapshot_before']['sha256'] != receipt['snapshot_after']['sha256']
+    assert receipt['snapshot_before']['sha256'] != receipt['snapshot_after']['sha256'], receipt['checks']
+
+
+def test_freschezza_usa_orologio_del_filesystem_non_wall_clock(modulo, repository, tmp_path, monkeypatch):
+    # Il wall clock può essere avanti rispetto al timestamp pubblicato dal filesystem.
+    # Anche un report appena creato diventava allora «precedente» al comando.
+    real_clock = time.time_ns
+    monkeypatch.setattr(modulo.time, 'time_ns', lambda: real_clock() + 10_000_000_000)
+    receipt = modulo.verifica(repository, tmp_path / 'run', runner=prova_verde)
+    assert receipt['status'] == 'CHECKS_PASSED', receipt['checks']
+    assert len(receipt['checks']) == 4
 
 
 def test_skip_e_limiti_restano_espliciti(modulo, repository, tmp_path):

@@ -48,3 +48,7 @@ PY_CHECK
 
 Il manifest esclude se stesso e questo README per evitare hash autoreferenziali.
 La CI remota e lo SHA dell'head documentale sono riferiti dalla PR GitHub.
+
+## Prima CI e correzione di chiusura
+
+[Osservazione CI](ci-closeout-observation.json): web verde, copertura Python Linux sotto baseline e un run con fallimento intermittente della fixture di mutazione. I quattro log originali sono elencati nel manifest. La successiva correzione usa un marker filesystem per la freschezza e installa un vero browser per il test PDF in una fixture del layout legacy. Nessuna soglia abbassata. Esito CI finale sullo SHA della PR, separato dalle misure locali originali.
