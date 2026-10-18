@@ -48,7 +48,7 @@ function receive(raw:unknown){
  if(!data||typeof data!=='object')return;
  if(data.outcome!=='solved'){status.textContent=data.message??'Circuito non risolto: controlla i dati e le condizioni.';lesson=null;show();return;}
  if(data.schema!=='circuit-lesson.v1'||!Array.isArray(data.steps)||!data.steps.length||!data.answer){status.textContent='Risultato non interpretabile.';lesson=null;show();return;}
- lesson=data;input.value=data.netlist;position=0;status.textContent=verificationDescription(data);show();
+ lesson=data;input.value=data.netlist;position=0;status.textContent='Spiegazioni DRAFT: revisione docente non disponibile. '+verificationDescription(data);show();
 }
 function fromResult(result:{isError?:boolean;structuredContent?:unknown;content?:Array<{type:string;text?:string}>}){
  if(result.isError){status.textContent=result.content?.find(c=>c.type==='text')?.text??'Il motore ha rifiutato il circuito.';return;}

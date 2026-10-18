@@ -9,9 +9,9 @@ from __future__ import annotations
 import base64
 from hashlib import sha256
 import hmac
+from io import BytesIO
 import json
 import re
-import struct
 import time
 
 MAX_IMAGE_BYTES = 2_000_000
@@ -20,35 +20,68 @@ TOKEN_LIFETIME_SECONDS = 3600
 _DATA_URL = re.compile(r"^data:image/(png|jpeg|webp);base64,([A-Za-z0-9+/=]+)$")
 
 
-def _dimensions(kind: str, data: bytes) -> tuple[int, int]:
-    if kind == "png" and data.startswith(b"\x89PNG\r\n\x1a\n") and len(data) >= 24 and data[12:16] == b"IHDR":
-        return struct.unpack(">II", data[16:24])
-    if kind == "webp" and data.startswith(b"RIFF") and data[8:12] == b"WEBP" and len(data) >= 30:
-        if data[12:16] == b"VP8X":
-            return (1 + int.from_bytes(data[24:27], "little"), 1 + int.from_bytes(data[27:30], "little"))
-        if data[12:16] == b"VP8 " and data[23:26] == b"\x9d\x01\x2a":
-            return (int.from_bytes(data[26:28], "little") & 0x3fff,
-                    int.from_bytes(data[28:30], "little") & 0x3fff)
+def image_decoder_available() -> bool:
+    """L'extra media è opzionale per il motore e per l'ingresso manuale."""
+    try:
+        from PIL import Image
+    except ImportError:
+        return False
+    return True
+
+
+def _check_dimensions(width: int, height: int) -> None:
+    if not 0 < width <= 10_000 or not 0 < height <= 10_000 or width * height > MAX_IMAGE_PIXELS:
+        raise ValueError("Dimensioni dell'immagine non supportate.")
+
+
+def _webp_preflight(data: bytes) -> None:
+    """Solo bounds: libwebp può allocare il canvas già in Image.open.
+
+    Non attesta validità: dopo questi header serve sempre il decoder reale.
+    I tre header di immagine ammessi sono VP8X, VP8 e VP8L.
+    """
+    if len(data) >= 25 and data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+        if data[12:16] == b"VP8X" and len(data) >= 30:
+            _check_dimensions(1 + int.from_bytes(data[24:27], "little"),
+                              1 + int.from_bytes(data[27:30], "little"))
+            return
+        if data[12:16] == b"VP8 " and len(data) >= 30 and data[23:26] == b"\x9d\x01\x2a":
+            _check_dimensions(int.from_bytes(data[26:28], "little") & 0x3fff,
+                              int.from_bytes(data[28:30], "little") & 0x3fff)
+            return
         if data[12:16] == b"VP8L" and data[20] == 0x2f:
             packed = int.from_bytes(data[21:25], "little")
-            return ((packed & 0x3fff) + 1, ((packed >> 14) & 0x3fff) + 1)
-    if kind == "jpeg" and data.startswith(b"\xff\xd8\xff"):
-        offset = 2
-        while offset + 4 <= len(data):
-            if data[offset] != 0xff:
-                break
-            marker = data[offset + 1]
-            if marker in {0xd8, 0xd9}:
-                offset += 2
-                continue
-            length = int.from_bytes(data[offset + 2:offset + 4], "big")
-            if length < 2 or offset + 2 + length > len(data):
-                break
-            if marker in {0xc0, 0xc1, 0xc2, 0xc3, 0xc5, 0xc6, 0xc7, 0xc9, 0xca, 0xcb, 0xcd, 0xce, 0xcf} and length >= 7:
-                return (int.from_bytes(data[offset + 7:offset + 9], "big"),
-                        int.from_bytes(data[offset + 5:offset + 7], "big"))
-            offset += 2 + length
-    raise ValueError("Immagine non leggibile o formato dichiarato diverso dal contenuto.")
+            _check_dimensions((packed & 0x3fff) + 1, ((packed >> 14) & 0x3fff) + 1)
+            return
+    raise ValueError("Immagine WebP non leggibile.")
+
+
+def _dimensions(kind: str, data: bytes) -> tuple[int, int]:
+    """Decodifica una foto statica entro i limiti, senza riscriverne i byte.
+
+    L'orientamento EXIF resta nell'originale: qui non si normalizza la proiezione
+    né il digest. Apertura e dimensioni precedono il caricamento dei pixel;
+    verify controlla la struttura, load verifica anche lo stream compresso.
+    """
+    expected = {"png": "PNG", "jpeg": "JPEG", "webp": "WEBP"}[kind]
+    if kind == "webp":
+        _webp_preflight(data)
+    try:
+        from PIL import Image, UnidentifiedImageError
+    except ImportError:
+        raise ValueError("Verifica foto non disponibile su questo server. Usa l'ingresso manuale del circuito.") from None
+    try:
+        with Image.open(BytesIO(data), formats=[expected]) as image:
+            width, height = image.size
+            _check_dimensions(width, height)
+            if getattr(image, "is_animated", False):
+                raise ValueError("Usa una foto statica, non un'immagine animata.")
+            image.verify()
+        with Image.open(BytesIO(data), formats=[expected]) as image:
+            image.load()
+    except (UnidentifiedImageError, OSError, SyntaxError, Image.DecompressionBombError):
+        raise ValueError("Immagine non leggibile o formato dichiarato diverso dal contenuto.") from None
+    return width, height
 
 
 def image_digest(image: str) -> str:
@@ -63,9 +96,7 @@ def image_digest(image: str) -> str:
         raise ValueError("Immagine base64 non valida.") from exc
     if not 0 < len(data) <= MAX_IMAGE_BYTES:
         raise ValueError("Usa PNG, JPEG o WebP entro 2 MB.")
-    width, height = _dimensions(match.group(1), data)
-    if not 0 < width <= 10_000 or not 0 < height <= 10_000 or width * height > MAX_IMAGE_PIXELS:
-        raise ValueError("Dimensioni dell'immagine non supportate.")
+    _dimensions(match.group(1), data)
     return sha256(data).hexdigest()
 
 

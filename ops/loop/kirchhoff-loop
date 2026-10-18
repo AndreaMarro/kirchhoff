@@ -29,6 +29,8 @@ uso: kirchhoff-loop <comando> [argomenti]
 
   doctor              verifica che si possa lavorare. Nessun token speso.
   status              stato ricostruito da disco e da git. Sola lettura.
+  verify --output DIR gate locali con ricevute in una nuova directory esterna.
+                      Usa il venv frozen; nessun modello, commit o promozione.
   dry-run <storia>    piano del prossimo giro: classe di rischio, modelli,
                       confini di processo. Nessun token speso.
   run [--iterazioni N] esegue lo scheduler seriale.
@@ -43,6 +45,14 @@ comando="${1:-}"
 [ $# -gt 0 ] && shift
 
 case "$comando" in
+
+  verify)
+    if [ ! -x "$REPO/.venv/bin/python" ]; then
+      printf 'verify: ambiente assente; eseguire prima uv sync --frozen --extra dev --extra mcp.\n' >&2
+      exit 11
+    fi
+    exec "$REPO/.venv/bin/python" "$REPO/ops/codex/verify.py" "$@"
+    ;;
 
   doctor)
     printf '\n\033[1mPrecondizioni\033[0m\n'

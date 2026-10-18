@@ -1,0 +1,13 @@
+{
+  "schema": "kirchhoff-coverage-baseline.v1",
+  "metric": "covered_lines_plus_covered_branches / statements_plus_branches",
+  "covered": 14179,
+  "total": 14516,
+  "source_sha": "c1cf22d1a8956552e9b07418a8382210d6af3a39",
+  "source_report_sha256": "6791b9288120c05aed23282301a56ae213dcb2b09651396f29f20ae9439cc5f3",
+  "source_report_timestamp": "2026-10-18T12:28:26.018824",
+  "coverage_version": "7.15.4",
+  "python": "3.12",
+  "environment": "local macOS arm64; remote CI not yet run",
+  "decision": "docs/decisions/2026-10-18-coverage-ratchet.md"
+}

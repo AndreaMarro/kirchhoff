@@ -1,0 +1,49 @@
+{
+  "schema": "local-review-disposition.v1",
+  "reviewer": "/root/review_neutral_verifier",
+  "original_verdict": "REQUEST_CHANGES",
+  "independent_family_quorum": false,
+  "findings": [
+    {
+      "id": "K05a-R1",
+      "priority": 2,
+      "issue": "HTTP capability failure treated as API absence",
+      "disposition": "Fixed; actual 500 JSON browser regression observed failing. Network, 404 and successful static HTML fallback are API absence; HTTP errors preserved."
+    },
+    {
+      "id": "K05a-R2",
+      "priority": 2,
+      "issue": "Closing saved reader does not invalidate pending recalc",
+      "disposition": "Fixed with request generation invalidation and busy reset; browser regression observed failing."
+    },
+    {
+      "id": "K05a-R3",
+      "priority": 2,
+      "issue": "Global cache cleanup deletes sibling scope",
+      "disposition": "Fixed with encoded registration scope namespace; real browser sentinel case observed failing."
+    },
+    {
+      "id": "K05a-R4",
+      "priority": 3,
+      "issue": "Public asset content omitted from cache revision",
+      "disposition": "Fixed by hashing public file bytes and paths, plus build bytes. Same filename fixture regression observed failing before fix."
+    }
+  ],
+  "additional_scope": "Canonical catalog regenerated with mathematical bodies unchanged; CLI harness fixture transport corrected after an independent stdin-hang reproducer. Author-tested additions are outside the initial independent review. Remote CI and independent-family quorum remain absent.",
+  "final_browser_stats": {
+    "startTime": "2026-10-18T14:46:51.337Z",
+    "duration": 332356.621,
+    "expected": 252,
+    "skipped": 4,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "author_validation": {
+    "status": "ALL_LOCAL_CHECKS_PASSED",
+    "source_sha256": "76c5e638a5b00320dbd34f7cf59df749648016b96f413189dcffb31b4f1ab22b",
+    "commit": "a7890f9f29c31bc56272cecba8ceec6f403a6131",
+    "original_verdict_remains": "REQUEST_CHANGES",
+    "findings_addressed_by_author_tests": true,
+    "not_a_new_reviewer_approval": true
+  }
+}

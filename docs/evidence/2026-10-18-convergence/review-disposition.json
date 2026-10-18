@@ -1,0 +1,34 @@
+{
+  "base_sha": "58fd56703e2c741c207fc01d9523bc18bbfab9a5",
+  "reviewer": "collaboration/review_neutral_verifier; same Codex family, distinct context",
+  "original_verdict": "REQUEST_CHANGES",
+  "author_fix_verification": "14 focused tests and final full 2702-test run passed; unchanged source digest through local commit",
+  "findings": [
+    {
+      "severity": "P1",
+      "finding": "Tracked source behind ancestor symlink can escape lexical holdout exclusion",
+      "disposition": "FIXED_IN_CANDIDATE",
+      "proof": "test_antenato_symlink_non_puo_far_leggere_byte_esterni observed failing before fix and passing after",
+      "destination": "N/A"
+    },
+    {
+      "severity": "P2",
+      "finding": "Symlinked old coverage/JUnit report could count as fresh evidence",
+      "disposition": "FIXED_IN_CANDIDATE",
+      "proof": "Both target symlink cases observed failing before fix and passing after; aged report also rejected",
+      "destination": "N/A"
+    },
+    {
+      "severity": "P2",
+      "finding": "Independently daemonized children escape initial process group",
+      "disposition": "DEFERRED",
+      "proof": "Reviewer reproduced new-session child writing after timeout. Receipt/ADR now state process_tree_isolation=false; no arbitrary worker/sandbox support claimed.",
+      "destination": "GOV-K-01/worker-isolation"
+    }
+  ],
+  "p0": "none",
+  "p1_remaining": "none after local falsifying tests; no new independent approval verdict inferred",
+  "quorum": "NOT_SATISFIED",
+  "exact_sha_ci": "NOT_RUN",
+  "candidate_commit": "89cc7bcba93cb12922ad7fd864feec206ff68dfa"
+}

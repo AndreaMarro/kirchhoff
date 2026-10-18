@@ -136,6 +136,12 @@ e verifica dopo il push che il conteggio remoto coincida col locale.
 
 ## Fatti che il blocco gestito non conosce ancora
 
+- **Soglia di copertura, decisione delegata del 18 ottobre 2026.** Per la verifica corrente:
+  globale >=95% e nessun calo dalla baseline versionata, `domain/` al 100% righe e rami.
+  Autorità e motivazione: `docs/decisions/2026-10-18-coverage-ratchet.md`.
+  Dopo la suite completa eseguire `scripts/check_domain_coverage.py`: verifica entrambi i gate
+  sul nuovo `coverage.json`. Non rigenerare né abbassare la baseline per ottenere un verde.
+
 - **Visibilità da riattestare prima del push.** Il controllo GitHub del 16 ottobre 2026
   restituisce `public`. Questa nota resta fuori dal blocco generato perché un refresh del
   contesto non ripristini l'assunzione storica di repository privato. Non modifica la

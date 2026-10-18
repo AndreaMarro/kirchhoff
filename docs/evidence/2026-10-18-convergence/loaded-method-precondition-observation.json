@@ -1,0 +1,86 @@
+{
+  "at": "2026-10-18T14:01:51.067245+00:00",
+  "scope": "Read-only existing-method probe, not a new implementation or teaching approval",
+  "cases": [
+    {
+      "name": "explicit_invalid_series",
+      "steps": [
+        {
+          "transcription": "Caso sintetico originale",
+          "operation": "serie",
+          "first": "R1",
+          "second": "R2",
+          "claimed_value": "3000",
+          "reading": "clear"
+        }
+      ],
+      "diagnosis": {
+        "schema": "student-diagnosis.v1",
+        "step": 1,
+        "circuit_fingerprint": "2dcef50d4c6ed91d1495e607ab45d5494dd0d4db14235669f0058407deff5ff0",
+        "focus": [
+          "R1",
+          "R2"
+        ],
+        "outcome": "first_invalid",
+        "category": "topology",
+        "message": "il nodo out ha grado 3 (R1, R2, RL): in serie ci stanno due componenti soli, altrimenti la corrente si divide e la somma delle resistenze non e' l'equivalente."
+      }
+    },
+    {
+      "name": "unreadable_series",
+      "steps": [
+        {
+          "transcription": "Caso sintetico originale",
+          "operation": "serie",
+          "first": "R1",
+          "second": "R2",
+          "claimed_value": "3000",
+          "reading": "unreadable"
+        }
+      ],
+      "diagnosis": {
+        "schema": "student-diagnosis.v1",
+        "step": 1,
+        "circuit_fingerprint": "2dcef50d4c6ed91d1495e607ab45d5494dd0d4db14235669f0058407deff5ff0",
+        "focus": [
+          "R1",
+          "R2"
+        ],
+        "outcome": "not_assessable",
+        "category": "unreadable",
+        "message": "Non riesco a leggere con sicurezza questo passaggio; chiariscilo prima del controllo."
+      }
+    },
+    {
+      "name": "valid_loaded_reduction",
+      "steps": [
+        {
+          "transcription": "Caso sintetico originale",
+          "operation": "parallelo",
+          "first": "R2",
+          "second": "RL",
+          "claimed_value": "500",
+          "reading": "clear"
+        },
+        {
+          "transcription": "Caso sintetico originale",
+          "operation": "tensione",
+          "first": "R2",
+          "second": "",
+          "claimed_value": "12/5",
+          "reading": "clear"
+        }
+      ],
+      "diagnosis": {
+        "schema": "student-diagnosis.v1",
+        "outcome": "valid_so_far",
+        "step": null,
+        "category": null,
+        "focus": [],
+        "circuit_fingerprint": "2dcef50d4c6ed91d1495e607ab45d5494dd0d4db14235669f0058407deff5ff0",
+        "message": "I passaggi controllati sono validi fin qui; il procedimento completo resta da verificare."
+      }
+    }
+  ]
+}

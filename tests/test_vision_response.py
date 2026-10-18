@@ -107,7 +107,7 @@ def test_http_recognizer_uses_strict_schema_and_does_not_send_invalid_image(monk
 
     monkeypatch.setattr(server, "urlopen", fake_urlopen)
     image = ("data:image/png;base64,"
-             "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9b4wAAAABJRU5ErkJggg==")
+             "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4//8/AAX+Av4N70a4AAAAAElFTkSuQmCC")
     result = server.recognize(image, "test-key", "configured-model")
     assert result["netlist"] == NETLIST and result["source_sha256"]
     assert len(sent) == 3
@@ -141,7 +141,7 @@ def test_recognizer_disagreement_stays_incomplete_and_keeps_alternatives(monkeyp
 
     monkeypatch.setattr(server, "urlopen", fake_urlopen)
     image = ("data:image/png;base64,"
-             "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9b4wAAAABJRU5ErkJggg==")
+             "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4//8/AAX+Av4N70a4AAAAAElFTkSuQmCC")
     result = server.recognize(image, "test-key", "configured-model")
     assert result["model_reported_complete"] is False
     assert len(result["candidates"]) == 2
@@ -168,7 +168,7 @@ def test_recognizer_does_not_hide_disagreement_about_source_regions(monkeypatch)
 
     monkeypatch.setattr(server, "urlopen", lambda _request, timeout: FakeHTTP(readings.pop(0)))
     image = ("data:image/png;base64,"
-             "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9b4wAAAABJRU5ErkJggg==")
+             "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4//8/AAX+Av4N70a4AAAAAElFTkSuQmCC")
     result = server.recognize(image, "test-key", "configured-model")
     assert result["model_reported_complete"] is False
     assert [candidate["netlist"] for candidate in result["candidates"]] == [NETLIST, NETLIST]
@@ -184,7 +184,7 @@ def test_recognizer_requires_protected_pass_count_before_network(monkeypatch):
     monkeypatch.delenv("KIRCHHOFF_EXTRACTION_PASSES", raising=False)
     monkeypatch.setattr(server, "urlopen", lambda *_args, **_kwargs: pytest.fail("network called"))
     image = ("data:image/png;base64,"
-             "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9b4wAAAABJRU5ErkJggg==")
+             "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4//8/AAX+Av4N70a4AAAAAElFTkSuQmCC")
     with pytest.raises(ValueError, match="KIRCHHOFF_EXTRACTION_PASSES"):
         server.recognize(image, "test-key", "configured-model")
     assert server.vision_ready() is False
@@ -215,7 +215,7 @@ def test_provider_schema_rejection_is_reported_as_operational_failure(monkeypatc
     thread = Thread(target=server.serve_forever, daemon=True)
     thread.start()
     image = ("data:image/png;base64,"
-             "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9b4wAAAABJRU5ErkJggg==")
+             "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4//8/AAX+Av4N70a4AAAAAElFTkSuQmCC")
     request = Request(f"http://127.0.0.1:{server.server_port}/api/recognize",
                       data=json.dumps({"image": image}).encode(),
                       headers={"Content-Type": "application/json"})

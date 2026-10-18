@@ -40,9 +40,25 @@ jobs:
       - name: Build standalone and MCP App resources
         run: npm run build
         working-directory: web
+      # La baseline comprende il test PDF reale. Il CLI storico cerca solo il
+      # layout cache macOS: la fixture esplicita lo riproduce su Linux, senza
+      # attribuire al CLI un discovery multipiattaforma che non implementa.
+      - name: Browser reale per il test PDF del CLI
+        working-directory: web
+        run: |
+          npx playwright install --with-deps chromium-headless-shell
+          python3 - <<'PY_BROWSER'
+          from pathlib import Path
+          cache = Path.home() / '.cache/ms-playwright'
+          browsers = sorted(cache.glob('chromium_headless_shell-*/**/chrome-headless-shell'))
+          assert browsers, 'Playwright non ha installato il browser richiesto dal test PDF'
+          fixture = Path.home() / 'Library/Caches/ms-playwright/chromium_headless_shell-ci'
+          fixture.mkdir(parents=True, exist_ok=False)
+          (fixture / 'chrome-headless-shell').symlink_to(browsers[-1])
+          PY_BROWSER
       - name: pytest
         run: uv run --no-sync python -m pytest
-      - name: domain coverage
+      - name: coverage (no regression + domain 100%)
         run: uv run --no-sync python scripts/check_domain_coverage.py
       - name: boundaries
         run: uv run --no-sync python scripts/check_boundaries.py

@@ -1,0 +1,398 @@
+{
+  "schema": "kirchhoff-convergence-public-handoff.v1",
+  "generated_at": "2026-10-18T15:04:01.021247+00:00",
+  "repository": "https://github.com/AndreaMarro/kirchhoff",
+  "branch": "codex/gov-k-01-20261018",
+  "base_sha": "b35a8b5da0616f00a7764397bda0e6b95aca3c95",
+  "tested_application_sha": "a7890f9f29c31bc56272cecba8ceec6f403a6131",
+  "tested_source_sha256": "76c5e638a5b00320dbd34f7cf59df749648016b96f413189dcffb31b4f1ab22b",
+  "local_validation": {
+    "python": {
+      "passed": 2705,
+      "skipped": 0,
+      "failed": 0
+    },
+    "coverage": {
+      "covered_lines": 9924,
+      "num_statements": 10099,
+      "percent_covered": 97.67986230636834,
+      "percent_covered_display": "98",
+      "missing_lines": 175,
+      "excluded_lines": 22,
+      "percent_statements_covered": 98.26715516387762,
+      "percent_statements_covered_display": "98",
+      "num_branches": 4426,
+      "num_partial_branches": 162,
+      "covered_branches": 4264,
+      "missing_branches": 162,
+      "percent_branches_covered": 96.33981021238138,
+      "percent_branches_covered_display": "96"
+    },
+    "domain_lines_and_branches_percent": 100,
+    "web_unit_passed": 396,
+    "both_web_builds_exit_code": 0,
+    "chromium": {
+      "passed": 252,
+      "skipped": 4,
+      "failed": 0,
+      "flaky": 0,
+      "retries": 0
+    },
+    "source_binding": "three suites before/after and explicit committed-byte identity; later handoff/evidence are not covered as a new local full-suite run"
+  },
+  "original_review_verdict": "REQUEST_CHANGES",
+  "findings_fixed_by_author_tests": true,
+  "independent_family_quorum": "NOT_SATISFIED",
+  "remote_ci": "READ_EXACT_SHA_GITHUB_CHECKS_AFTER_PUBLICATION",
+  "full_plan_done": false,
+  "flow_done": false,
+  "science_done": false,
+  "product_ready": false,
+  "teacher_approved": false,
+  "owner_request": "Finish work already started, detailed handoff, publish to GitHub, then stop goal. No automatic continuation.",
+  "goal_status_at_packaging": "ACTIVE_UNTIL_PUBLICATION_THEN_OWNER_REQUESTED_PAUSE",
+  "document_checkpoint": {
+    "files": 18,
+    "all_unchanged": true,
+    "at": "2026-10-18T14:59:49.035475+00:00",
+    "scope": "Full byte/text acquisition; analytical reading earlier in session. Private originals not published."
+  },
+  "open_work": [
+    "Bounded preview tied to board scene; not started",
+    "Structured loaded-divider UI journey",
+    "Teacher-signed content",
+    "Governance dual-runs, isolation and adoption",
+    "Independent exact-SHA review quorum",
+    "Ardesia runtime/build audit",
+    "REA A/B and JEV validation",
+    "Medicina scope and current normative sources"
+  ],
+  "provenance": "Source receipts copied with local path redaction only; original hashes preserved. Synthetic divider captures predate final catalog/harness checks; timestamps and engine revisions retained. Receipts are not signatures.",
+  "files": [
+    {
+      "path": "offline-verification-transport/receipt.json",
+      "bytes": 8338,
+      "sha256": "13c087a3f61570e9cf9d7b73cc62955f433f3b8bf3d5f36595e143a357d6098e",
+      "original_sha256": "0b909c113781a039becda768530a862ba5af5ff05643097d874eebf57ae508c1",
+      "local_paths_redacted": true
+    },
+    {
+      "path": "offline-verification-transport/pytest.xml",
+      "bytes": 372629,
+      "sha256": "c8f6fee5b7617f2f6b2f114a553f8ee2b695e987accc2d0f59d8507b98891d63",
+      "original_sha256": "c8f6fee5b7617f2f6b2f114a553f8ee2b695e987accc2d0f59d8507b98891d63",
+      "local_paths_redacted": false
+    },
+    {
+      "path": "offline-verification-transport/coverage.json",
+      "bytes": 991070,
+      "sha256": "d155a5860f432916c227c3765e75e8eee4f4bbee3c930860cb3ecf38a31a869b",
+      "original_sha256": "d155a5860f432916c227c3765e75e8eee4f4bbee3c930860cb3ecf38a31a869b",
+      "local_paths_redacted": false
+    },
+    {
+      "path": "offline-verification-transport/chain.log",
+      "bytes": 545,
+      "sha256": "84c165b98aa11fa5467e9ebc92475b77fb7d509519a462c6ccb9ce0b66347642",
+      "original_sha256": "84c165b98aa11fa5467e9ebc92475b77fb7d509519a462c6ccb9ce0b66347642",
+      "local_paths_redacted": false
+    },
+    {
+      "path": "offline-verification-transport/pytest.log",
+      "bytes": 14024,
+      "sha256": "3020dd153643f9ecd4a567bb4571b23fcba5f1cbd3cae142f71c75a580e2a0c1",
+      "original_sha256": "a0263e0f59f49cf14979fc80385dddc9ce4e665df73b6cc5f2d5f90df3442826",
+      "local_paths_redacted": true
+    },
+    {
+      "path": "offline-verification-transport/coverage.log",
+      "bytes": 76,
+      "sha256": "175f3429cbe80c4b35cb0e6e9cf780b5c0733064bd3460ba34e67905c4944d4a",
+      "original_sha256": "175f3429cbe80c4b35cb0e6e9cf780b5c0733064bd3460ba34e67905c4944d4a",
+      "local_paths_redacted": false
+    },
+    {
+      "path": "offline-verification-transport/boundaries.log",
+      "bytes": 96,
+      "sha256": "798db3b185fd064976d1b7e7f386b0eee24f21867f9f48f3154a3fec30beaf28",
+      "original_sha256": "798db3b185fd064976d1b7e7f386b0eee24f21867f9f48f3154a3fec30beaf28",
+      "local_paths_redacted": false
+    },
+    {
+      "path": "offline-transport-web-source-binding.json",
+      "bytes": 6051,
+      "sha256": "a5d005cf65f732fc49797f31ea8317fa34e19f8e0d892f2dc53be49144ec6b9a",
+      "original_sha256": "cd02e78535ee2833eee56fbdf2d6e368fce97e5d13763b0442e4f55a5f5f00e4",
+      "local_paths_redacted": true
+    },
+    {
+      "path": "offline-browser-source-binding.json",
+      "bytes": 5794,
+      "sha256": "aef937f703f8d433899968e3c8f4193709ad0ae635bbfb53fd0e636398461e52",
+      "original_sha256": "aef937f703f8d433899968e3c8f4193709ad0ae635bbfb53fd0e636398461e52",
+      "local_paths_redacted": false
+    },
+    {
+      "path": "offline-verified-commit-binding.json",
+      "bytes": 845,
+      "sha256": "9f0c74c4317c36457d0e025ea6081c2addc54d2d70a03d723281cd9b4ff5edbe",
+      "original_sha256": "9f0c74c4317c36457d0e025ea6081c2addc54d2d70a03d723281cd9b4ff5edbe",
+      "local_paths_redacted": false
+    },
+    {
+      "path": "offline-review-disposition.json",
+      "bytes": 2079,
+      "sha256": "88cb9f52b6780ead85600cb5f6be90f038ce9b7fc73e336c98ec14748be39386",
+      "original_sha256": "88cb9f52b6780ead85600cb5f6be90f038ce9b7fc73e336c98ec14748be39386",
+      "local_paths_redacted": false
+    },
+    {
+      "path": "review-disposition.json",
+      "bytes": 1596,
+      "sha256": "db692ae18671b7b933bcb4ea59847c73e1280683d9e06f3a0f7294e7891da8c2",
+      "original_sha256": "db692ae18671b7b933bcb4ea59847c73e1280683d9e06f3a0f7294e7891da8c2",
+      "local_paths_redacted": false
+    },
+    {
+      "path": "offline-unit.json",
+      "bytes": 1750,
+      "sha256": "36b8b2c4993c4c8453d42a06f803cc61f9f8a39ecbb715dc517c5eb2e246a921",
+      "original_sha256": "36b8b2c4993c4c8453d42a06f803cc61f9f8a39ecbb715dc517c5eb2e246a921",
+      "local_paths_redacted": false
+    },
+    {
+      "path": "offline-cleanup.json",
+      "bytes": 573,
+      "sha256": "b86f3773e07ea0e42e9b69d571f2acf478739ef9dbb47633a1eac5b8c1ff2a7b",
+      "original_sha256": "a66c7daa9b9e7fe084bdd300fa8a65c55f63e1e603b27490adf51f525f2df513",
+      "local_paths_redacted": true
+    },
+    {
+      "path": "input-boundaries-http.json",
+      "bytes": 1142,
+      "sha256": "2aebcdefb29953c34a30f1e3401033ae4e1d8b9ef1bd10693d3c5d8838a758b2",
+      "original_sha256": "2aebcdefb29953c34a30f1e3401033ae4e1d8b9ef1bd10693d3c5d8838a758b2",
+      "local_paths_redacted": false
+    },
+    {
+      "path": "catalog-regeneration-receipt.json",
+      "bytes": 13378,
+      "sha256": "672a3dee2f7858e5adb50c9f1d27cbf6c78fc7c6c93475e46e58b0b16d934a35",
+      "original_sha256": "672a3dee2f7858e5adb50c9f1d27cbf6c78fc7c6c93475e46e58b0b16d934a35",
+      "local_paths_redacted": false
+    },
+    {
+      "path": "loaded-method-precondition-observation.json",
+      "bytes": 2600,
+      "sha256": "9d03d298a878448520eacc21aec5c86b35f73aa3ad157e405a32125b46d5e600",
+      "original_sha256": "9d03d298a878448520eacc21aec5c86b35f73aa3ad157e405a32125b46d5e600",
+      "local_paths_redacted": false
+    },
+    {
+      "path": "offline-transport-final-web-build.log",
+      "bytes": 1826,
+      "sha256": "6079fb64e09286704585b73b7c2568fb7ad7196dbc0e3720d4a603b5ba1f7fa5",
+      "original_sha256": "6079fb64e09286704585b73b7c2568fb7ad7196dbc0e3720d4a603b5ba1f7fa5",
+      "local_paths_redacted": false
+    },
+    {
+      "path": "offline-transport-final-web-unit.log",
+      "bytes": 6969,
+      "sha256": "8001dc4c51261222db6e0126cf7fe4b0743ffeb409b11060d9de786f658bc17a",
+      "original_sha256": "c22670934b3423e014bc1c3cc10b471d69744a427b9499f3b7d986456e2f0869",
+      "local_paths_redacted": true
+    },
+    {
+      "path": "offline-catalog-full-e2e.log",
+      "bytes": 36978,
+      "sha256": "a270b1ca2a44fbffa9c8aa3fa1aaf335ba7a776ee5804ef4d337e9187b9569c4",
+      "original_sha256": "a270b1ca2a44fbffa9c8aa3fa1aaf335ba7a776ee5804ef4d337e9187b9569c4",
+      "local_paths_redacted": false
+    },
+    {
+      "path": "playwright.offline-catalog.config.mjs",
+      "bytes": 749,
+      "sha256": "59d17abf33430b0866353860ab61fdb35058ff565ab3f8ae7d4d4c0f0610748d",
+      "original_sha256": "00fac6ea860d1fe08ef884874e7e3bc98d7fc29878e44985c1a2026b76b99094",
+      "local_paths_redacted": true
+    },
+    {
+      "path": "divider-offline-flow/receipt.json",
+      "bytes": 10151,
+      "sha256": "3c9c9a36e3aaa3ab3a2be754a43ac139657e798855074cbe9cd457b686e053eb",
+      "original_sha256": "3c9c9a36e3aaa3ab3a2be754a43ac139657e798855074cbe9cd457b686e053eb",
+      "local_paths_redacted": false
+    },
+    {
+      "path": "divider-offline-flow/visual-check.json",
+      "bytes": 358,
+      "sha256": "c86a20586154ff5d19ba2c87f114270b957514c72818fb63e3d2d047e31f5b7f",
+      "original_sha256": "c86a20586154ff5d19ba2c87f114270b957514c72818fb63e3d2d047e31f5b7f",
+      "local_paths_redacted": false
+    },
+    {
+      "path": "divider-offline-flow/quaderno.json",
+      "bytes": 32597,
+      "sha256": "4b3440ddd26b866071edb291d27f69b227ea8c6ed0338c773af45dcd12ad3461",
+      "original_sha256": "4b3440ddd26b866071edb291d27f69b227ea8c6ed0338c773af45dcd12ad3461",
+      "local_paths_redacted": false
+    },
+    {
+      "path": "divider-offline-flow/lezione.pdf",
+      "bytes": 107173,
+      "sha256": "edd8a022dea6d5954925381801280602ec19372948ed7c93d801066304c0bf0e",
+      "original_sha256": "edd8a022dea6d5954925381801280602ec19372948ed7c93d801066304c0bf0e",
+      "local_paths_redacted": false
+    },
+    {
+      "path": "divider-offline-flow/desktop-correct.png",
+      "bytes": 350997,
+      "sha256": "91ffb5fce3b04b12227ee08f7fbb5ced496ff1138344b7485fbac9cd6d48792f",
+      "original_sha256": "91ffb5fce3b04b12227ee08f7fbb5ced496ff1138344b7485fbac9cd6d48792f",
+      "local_paths_redacted": false
+    },
+    {
+      "path": "divider-offline-flow/desktop-wrong.png",
+      "bytes": 338950,
+      "sha256": "dc6f4f9612c5ef22160146e4d0c17ce4bd9e97f2268c4873c76110e8299402e2",
+      "original_sha256": "dc6f4f9612c5ef22160146e4d0c17ce4bd9e97f2268c4873c76110e8299402e2",
+      "local_paths_redacted": false
+    },
+    {
+      "path": "divider-offline-flow/cold-reopen.png",
+      "bytes": 343903,
+      "sha256": "6e21552f30488f33f3cbda66797357d410b53944dcf140789a3102870f351bd6",
+      "original_sha256": "6e21552f30488f33f3cbda66797357d410b53944dcf140789a3102870f351bd6",
+      "local_paths_redacted": false
+    },
+    {
+      "path": "divider-offline-flow/mobile-entry.png",
+      "bytes": 236400,
+      "sha256": "4f1e5e254d220420c32c5da2383cd0f8b5ed1a3504074ba3eae22673c25c386b",
+      "original_sha256": "4f1e5e254d220420c32c5da2383cd0f8b5ed1a3504074ba3eae22673c25c386b",
+      "local_paths_redacted": false
+    },
+    {
+      "path": "divider-offline-flow/offline-cold-reopen.png",
+      "bytes": 176066,
+      "sha256": "e22e4d1f66877babf03807616cbc08cd0fd2db1d1d2c9cdd38486e717f5900e5",
+      "original_sha256": "e22e4d1f66877babf03807616cbc08cd0fd2db1d1d2c9cdd38486e717f5900e5",
+      "local_paths_redacted": false
+    },
+    {
+      "path": "divider-offline-flow/pdf-pages/contact.png",
+      "bytes": 448936,
+      "sha256": "6f92a0a3173d1c485f283ab40d69f192f4d90c522aeda7a64061cd0d18051b90",
+      "original_sha256": "6f92a0a3173d1c485f283ab40d69f192f4d90c522aeda7a64061cd0d18051b90",
+      "local_paths_redacted": false
+    },
+    {
+      "path": "github-39138973716-python.log",
+      "bytes": 69044,
+      "sha256": "32a947f048989f081d3fb9e2372e7aea03a9ecb88dac7296aeeaa470956e0efa",
+      "original_sha256": "32a947f048989f081d3fb9e2372e7aea03a9ecb88dac7296aeeaa470956e0efa",
+      "local_paths_redacted": false
+    },
+    {
+      "path": "github-39138960894-python.log",
+      "bytes": 68353,
+      "sha256": "abe31b3be9cad58ba1a6b48177f4b2adc8f14a470352aa284a42d852675f7cca",
+      "original_sha256": "abe31b3be9cad58ba1a6b48177f4b2adc8f14a470352aa284a42d852675f7cca",
+      "local_paths_redacted": false
+    },
+    {
+      "path": "github-39138973717-web.log",
+      "bytes": 107253,
+      "sha256": "993622eac68ce52d0bd2d6287a306c952c5102ce1ee77dd725f9c7966ebc2ffe",
+      "original_sha256": "993622eac68ce52d0bd2d6287a306c952c5102ce1ee77dd725f9c7966ebc2ffe",
+      "local_paths_redacted": false
+    },
+    {
+      "path": "github-39138960906-web.log",
+      "bytes": 106723,
+      "sha256": "28b4505e9ada595e5b473bfde6556d166841ca45c920070171492187a881c024",
+      "original_sha256": "28b4505e9ada595e5b473bfde6556d166841ca45c920070171492187a881c024",
+      "local_paths_redacted": false
+    },
+    {
+      "path": "ci-closeout-observation.json",
+      "bytes": 2627,
+      "sha256": "b9dec2ce36d6e327339019de4b71c8ac23a8b0f01427982290ccbb1a3a8d1104",
+      "original_sha256": "b9dec2ce36d6e327339019de4b71c8ac23a8b0f01427982290ccbb1a3a8d1104",
+      "local_paths_redacted": false
+    }
+  ],
+  "post_publication_ci": {
+    "schema": "kirchhoff-ci-closeout-observation.v1",
+    "at": "2026-10-18T15:19:49.007000+00:00",
+    "first_published_head": "e42c589e20ec6488239f6835d80c6c77820793a6",
+    "initial_runs": [
+      {
+        "conclusion": "success",
+        "databaseId": 39138973717,
+        "event": "pull_request",
+        "headSha": "e42c589e20ec6488239f6835d80c6c77820793a6",
+        "name": "web",
+        "status": "completed",
+        "url": "https://github.com/AndreaMarro/kirchhoff/actions/runs/39138973717"
+      },
+      {
+        "conclusion": "failure",
+        "databaseId": 39138973716,
+        "event": "pull_request",
+        "headSha": "e42c589e20ec6488239f6835d80c6c77820793a6",
+        "name": "test",
+        "status": "completed",
+        "url": "https://github.com/AndreaMarro/kirchhoff/actions/runs/39138973716"
+      },
+      {
+        "conclusion": "success",
+        "databaseId": 39138960906,
+        "event": "push",
+        "headSha": "e42c589e20ec6488239f6835d80c6c77820793a6",
+        "name": "web",
+        "status": "completed",
+        "url": "https://github.com/AndreaMarro/kirchhoff/actions/runs/39138960906"
+      },
+      {
+        "conclusion": "failure",
+        "databaseId": 39138960894,
+        "event": "push",
+        "headSha": "e42c589e20ec6488239f6835d80c6c77820793a6",
+        "name": "test",
+        "status": "completed",
+        "url": "https://github.com/AndreaMarro/kirchhoff/actions/runs/39138960894"
+      }
+    ],
+    "python_pr": {
+      "passed": 2702,
+      "skipped": 3,
+      "test_failures": 0,
+      "coverage_gate": "FAIL",
+      "coverage_combined_percent": 97.6179,
+      "baseline_percent": 97.6784238082
+    },
+    "python_push": {
+      "passed": 2701,
+      "skipped": 3,
+      "test_failures": 1,
+      "test": "test_sorgenti_mutate_in_corsa_invalidano_la_ricevuta",
+      "observed": "only chain gate reached; source mutation fixture never called",
+      "root_cause_of_that_single_run": "INFERENCE clock mismatch; receipt details not exposed by original assertion"
+    },
+    "web_each": {
+      "unit_passed": 396,
+      "browser_passed": 194,
+      "browser_skipped": 62
+    },
+    "clock_regression": {
+      "test": "test_freschezza_usa_orologio_del_filesystem_non_wall_clock",
+      "observed_red": true,
+      "red_exit": 1,
+      "green_exit": 0,
+      "scope": "wall clock +10s relative to filesystem timestamps; all15 verifier tests pass after per-command filesystem marker fix; stale/symlink tests preserved"
+    },
+    "coverage_diagnosis": "Entire measured local/CI difference is pipeline/cli.py. CI did not install the real browser used by PDF integration. Prepare a real browser in explicit legacy-cache fixture; no threshold change.",
+    "final_ci": "READ_EXACT_HEAD_PR_CHECKS_AFTER_FIX"
+  }
+}

@@ -26,7 +26,7 @@ from kirchhoff.pipeline.lesson import create_lesson
 from kirchhoff.pipeline.capabilities import product_capabilities
 from kirchhoff.pipeline.lesson_pdf import export_pdf
 from kirchhoff.pipeline.student_trace import diagnose_payload
-from kirchhoff.pipeline.image_revision import source_receipt, confirm_revision, verify_revision
+from kirchhoff.pipeline.image_revision import source_receipt, confirm_revision, verify_revision, image_decoder_available
 from kirchhoff.pipeline.spice import import_spice, export_spice, SCHEMA as SPICE_SCHEMA
 from kirchhoff.pipeline.circuitikz import export_circuitikz, SCHEMA as CIRCUITIKZ_SCHEMA
 from kirchhoff.pipeline.vision_response import VISION_SCHEMA, parse_vision_response
@@ -86,6 +86,8 @@ def photo_passes():
 
 def vision_ready():
     if not os.environ.get('OPENAI_API_KEY') or not os.environ.get('KIRCHHOFF_VISION_MODEL'):
+        return False
+    if not image_decoder_available():
         return False
     try:
         photo_passes()

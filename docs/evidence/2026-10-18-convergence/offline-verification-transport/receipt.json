@@ -1,0 +1,106 @@
+{
+  "schema": "kirchhoff-local-checks.v1",
+  "started_at": "2026-10-18T14:30:01.964176+00:00",
+  "snapshot_before": {
+    "head": "89cc7bcba93cb12922ad7fd864feec206ff68dfa",
+    "sha256": "76c5e638a5b00320dbd34f7cf59df749648016b96f413189dcffb31b4f1ab22b",
+    "holdout_excluded": 0,
+    "worktree_status": " M src/kirchhoff/pipeline/lesson.py\n M src/kirchhoff/pipeline/lesson_pdf.py\n M web/public/lessons/corrente-paralleli-auto.json\n M web/public/lessons/corrente-paralleli-auto.pdf\n M web/public/lessons/corrente-paralleli-millman.json\n M web/public/lessons/corrente-paralleli-millman.pdf\n M web/public/lessons/corrente-paralleli-nodal.json\n M web/public/lessons/corrente-paralleli-nodal.pdf\n M web/public/lessons/corrente-paralleli-superposition.json\n M web/public/lessons/corrente-paralleli-superposition.pdf\n M web/public/lessons/corrente-paralleli-thevenin.json\n M web/public/lessons/corrente-paralleli-thevenin.pdf\n M web/public/lessons/due-generatori-auto.json\n M web/public/lessons/due-generatori-auto.pdf\n M web/public/lessons/due-generatori-millman.json\n M web/public/lessons/due-generatori-millman.pdf\n M web/public/lessons/due-generatori-nodal.json\n M web/public/lessons/due-generatori-nodal.pdf\n M web/public/lessons/due-generatori-norton.json\n M web/public/lessons/due-generatori-norton.pdf\n M web/public/lessons/due-generatori-superposition.json\n M web/public/lessons/due-generatori-superposition.pdf\n M web/public/lessons/due-generatori-thevenin.json\n M web/public/lessons/due-generatori-thevenin.pdf\n M web/public/lessons/partitore-d1-auto.json\n M web/public/lessons/partitore-d1-auto.pdf\n M web/public/lessons/partitore-d1-millman.json\n M web/public/lessons/partitore-d1-millman.pdf\n M web/public/lessons/partitore-d1-nodal.json\n M web/public/lessons/partitore-d1-nodal.pdf\n M web/public/lessons/partitore-d1-superposition.json\n M web/public/lessons/partitore-d1-superposition.pdf\n M web/public/lessons/ponte-nodale-auto.json\n M web/public/lessons/ponte-nodale-auto.pdf\n M web/public/lessons/ponte-nodale-nodal.json\n M web/public/lessons/ponte-nodale-nodal.pdf\n M web/public/lessons/ponte-nodale-star_delta.json\n M web/public/lessons/ponte-nodale-star_delta.pdf\n M web/src/mcp-app.ts\n M web/src/student/StudentApp.tsx\n M web/src/student/sessionBundle.ts\n M web/tests-e2e/student-notebook-capabilities-live.spec.ts\n M web/tests/justification-contract.test.ts\n M web/vite.config.ts\n?? docs/decisions/ADR-K05A-OFFLINE-READER.md\n?? tests/test_lesson_editorial_status.py\n?? web/src/student/SavedNotebook.tsx\n?? web/src/student/offlineReader.ts\n?? web/tests-e2e/saved-notebook-offline.spec.ts\n?? web/tests/offline-worker.test.ts\n?? web/tests/saved-lesson.test.ts\n"
+  },
+  "python": "3.12.12 (main, Oct 28 2025, 11:52:25) [Clang 20.1.4 ]",
+  "checks": [
+    {
+      "name": "chain",
+      "argv": [
+        "${REPO_ROOT}/.venv/bin/python",
+        "${REPO_ROOT}/scripts/bmad_chain.py",
+        "verifica",
+        "--con-loop"
+      ],
+      "cwd": "${REPO_ROOT}",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_seconds": 0.082752,
+      "log": "${EVIDENCE_ROOT}/offline-verification-transport/chain.log",
+      "status": "PASS",
+      "log_sha256": "84c165b98aa11fa5467e9ebc92475b77fb7d509519a462c6ccb9ce0b66347642"
+    },
+    {
+      "name": "pytest",
+      "argv": [
+        "${REPO_ROOT}/.venv/bin/python",
+        "-m",
+        "pytest",
+        "tests",
+        "--junitxml=${EVIDENCE_ROOT}/offline-verification-transport/pytest.xml",
+        "--cov-report=json:${EVIDENCE_ROOT}/offline-verification-transport/coverage.json"
+      ],
+      "cwd": "${REPO_ROOT}",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_seconds": 880.97256,
+      "log": "${EVIDENCE_ROOT}/offline-verification-transport/pytest.log",
+      "status": "PASS",
+      "log_sha256": "a0263e0f59f49cf14979fc80385dddc9ce4e665df73b6cc5f2d5f90df3442826",
+      "coverage_sha256": "d155a5860f432916c227c3765e75e8eee4f4bbee3c930860cb3ecf38a31a869b",
+      "junit_sha256": "c8f6fee5b7617f2f6b2f114a553f8ee2b695e987accc2d0f59d8507b98891d63"
+    },
+    {
+      "name": "coverage",
+      "argv": [
+        "${REPO_ROOT}/.venv/bin/python",
+        "${REPO_ROOT}/scripts/check_domain_coverage.py",
+        "--baseline",
+        "${REPO_ROOT}/docs/quality/coverage-baseline.json"
+      ],
+      "cwd": "${EVIDENCE_ROOT}/offline-verification-transport",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_seconds": 0.078352,
+      "log": "${EVIDENCE_ROOT}/offline-verification-transport/coverage.log",
+      "status": "PASS",
+      "log_sha256": "175f3429cbe80c4b35cb0e6e9cf780b5c0733064bd3460ba34e67905c4944d4a"
+    },
+    {
+      "name": "boundaries",
+      "argv": [
+        "${REPO_ROOT}/.venv/bin/python",
+        "${REPO_ROOT}/scripts/check_boundaries.py"
+      ],
+      "cwd": "${REPO_ROOT}",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_seconds": 0.338906,
+      "log": "${EVIDENCE_ROOT}/offline-verification-transport/boundaries.log",
+      "status": "PASS",
+      "log_sha256": "798db3b185fd064976d1b7e7f386b0eee24f21867f9f48f3154a3fec30beaf28"
+    }
+  ],
+  "tests": {
+    "total": 2705,
+    "skipped": 0,
+    "failed": 0,
+    "errors": 0,
+    "passed": 2705
+  },
+  "status": "CHECKS_PASSED",
+  "product_ready": false,
+  "process_tree_isolation": false,
+  "timeout_scope": "initial_process_group_only; independently daemonized children are not contained",
+  "not_tested": [
+    "independent_review",
+    "exact_sha_remote_ci",
+    "browser_flow",
+    "teacher_content_approval",
+    "hardware",
+    "legacy_retirement"
+  ],
+  "snapshot_after": {
+    "head": "89cc7bcba93cb12922ad7fd864feec206ff68dfa",
+    "sha256": "76c5e638a5b00320dbd34f7cf59df749648016b96f413189dcffb31b4f1ab22b",
+    "holdout_excluded": 0,
+    "worktree_status": " M src/kirchhoff/pipeline/lesson.py\n M src/kirchhoff/pipeline/lesson_pdf.py\n M web/public/lessons/corrente-paralleli-auto.json\n M web/public/lessons/corrente-paralleli-auto.pdf\n M web/public/lessons/corrente-paralleli-millman.json\n M web/public/lessons/corrente-paralleli-millman.pdf\n M web/public/lessons/corrente-paralleli-nodal.json\n M web/public/lessons/corrente-paralleli-nodal.pdf\n M web/public/lessons/corrente-paralleli-superposition.json\n M web/public/lessons/corrente-paralleli-superposition.pdf\n M web/public/lessons/corrente-paralleli-thevenin.json\n M web/public/lessons/corrente-paralleli-thevenin.pdf\n M web/public/lessons/due-generatori-auto.json\n M web/public/lessons/due-generatori-auto.pdf\n M web/public/lessons/due-generatori-millman.json\n M web/public/lessons/due-generatori-millman.pdf\n M web/public/lessons/due-generatori-nodal.json\n M web/public/lessons/due-generatori-nodal.pdf\n M web/public/lessons/due-generatori-norton.json\n M web/public/lessons/due-generatori-norton.pdf\n M web/public/lessons/due-generatori-superposition.json\n M web/public/lessons/due-generatori-superposition.pdf\n M web/public/lessons/due-generatori-thevenin.json\n M web/public/lessons/due-generatori-thevenin.pdf\n M web/public/lessons/partitore-d1-auto.json\n M web/public/lessons/partitore-d1-auto.pdf\n M web/public/lessons/partitore-d1-millman.json\n M web/public/lessons/partitore-d1-millman.pdf\n M web/public/lessons/partitore-d1-nodal.json\n M web/public/lessons/partitore-d1-nodal.pdf\n M web/public/lessons/partitore-d1-superposition.json\n M web/public/lessons/partitore-d1-superposition.pdf\n M web/public/lessons/ponte-nodale-auto.json\n M web/public/lessons/ponte-nodale-auto.pdf\n M web/public/lessons/ponte-nodale-nodal.json\n M web/public/lessons/ponte-nodale-nodal.pdf\n M web/public/lessons/ponte-nodale-star_delta.json\n M web/public/lessons/ponte-nodale-star_delta.pdf\n M web/src/mcp-app.ts\n M web/src/student/StudentApp.tsx\n M web/src/student/sessionBundle.ts\n M web/tests-e2e/student-notebook-capabilities-live.spec.ts\n M web/tests/justification-contract.test.ts\n M web/vite.config.ts\n?? docs/decisions/ADR-K05A-OFFLINE-READER.md\n?? tests/test_lesson_editorial_status.py\n?? web/src/student/SavedNotebook.tsx\n?? web/src/student/offlineReader.ts\n?? web/tests-e2e/saved-notebook-offline.spec.ts\n?? web/tests/offline-worker.test.ts\n?? web/tests/saved-lesson.test.ts\n"
+  },
+  "source_unchanged": true,
+  "finished_at": "2026-10-18T14:44:43.807940+00:00"
+}

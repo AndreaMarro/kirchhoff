@@ -5,8 +5,10 @@ import {StudentTracePanel,blankTraceStep} from './StudentTracePanel.tsx';
 import type {TraceStep} from './StudentTracePanel.tsx';
 import {checkTrace,storedTraceHistory} from './traceHistory.ts';
 import type {TraceAttempt} from './traceHistory.ts';
-import {boardSceneSha256,makeSessionBundle,readSessionBundle,MAX_SESSION_BYTES} from './sessionBundle.ts';
-import type {BoardSourceRecord} from './sessionBundle.ts';
+import {boardSceneSha256,makeSessionBundle,makeSavedLesson,readSessionBundle,MAX_SESSION_BYTES} from './sessionBundle.ts';
+import type {BoardSourceRecord,SessionBundle,SavedLesson} from './sessionBundle.ts';
+import {SavedNotebook} from './SavedNotebook.tsx';
+import {prepareOfflineReader} from './offlineReader.ts';
 import './student.css';
 import {prepareCircuitImage} from './imageInput.ts';
 import {makeSourceArtifact,preserveImageFile} from './sourceArtifact.ts';
@@ -46,6 +48,8 @@ function parseLesson(value:unknown):Lesson {
  return x;
 }
 export function StudentApp(){
+ const [savedNotebook,setSavedNotebook]=useState<(SessionBundle&{savedLesson:SavedLesson})|null>(null);
+ const [offlineReaderReady,setOfflineReaderReady]=useState(false);
  const [examples,setExamples]=useState<Example[]>([]),[example,setExample]=useState(''),[lesson,setLesson]=useState<Lesson|null>(null);
  const [step,setStep]=useState(0),[showOriginal,setShowOriginal]=useState(false),[method,setMethod]=useState('auto'),[expanded,setExpanded]=useState(false),[compare,setCompare]=useState(false),[zoom,setZoom]=useState(100);
  const [netlist,setNetlist]=useState(''),[draft,setDraft]=useState(''),[panel,setPanel]=useState(false),[tab,setTab]=useState('text');
@@ -78,14 +82,16 @@ export function StudentApp(){
  const visibleBoardSource=lesson&&boardSourceOwner.current&&boardSourceOwner.current.fingerprint===lesson.fingerprint?boardSourceOwner.current.source:null;
  const notebookSource=lesson&&sourceOwner.current?.fingerprint===lesson.fingerprint?sourceOwner.current.artifact:null;
  const onlyRegionDisagreement=candidates.length>1&&candidates.every(candidate=>candidate.netlist===candidates[0].netlist);
+ useEffect(()=>{let alive=true;void prepareOfflineReader().then(ready=>{if(alive)setOfflineReaderReady(ready);});return()=>{alive=false;};},[]);
  function replaceInput():number{request.current++;setBusy(false);return request.current;}
  function checkCapabilities():Promise<boolean>{
   if(capabilityRequest.current)return capabilityRequest.current;
   setApiStatus('pending');
-  const pending=fetch('api/capabilities').then(r=>r.ok?r.json():null).then(v=>{
+  const pending=fetch('api/capabilities').catch(()=>null).then(r=>!r||r.status===404||r.ok&&r.headers.get('Content-Type')?.includes('text/html')?null:response(r)).then(value=>{
+   const v=value as {solve?:boolean;vision?:boolean;scope?:string}|null;
    const available=Boolean(v?.solve);setApiStatus(available?'available':'unavailable');
    setVision(Boolean(v?.vision));setScope(typeof v?.scope==='string'?v.scope:'');return available;
-  }).catch(()=>{setApiStatus('unavailable');setVision(false);return false;}).finally(()=>{
+  }).catch(e=>{setApiStatus('unavailable');setVision(false);throw e;}).finally(()=>{
    if(capabilityRequest.current===pending)capabilityRequest.current=null;
   });
   capabilityRequest.current=pending;return pending;
@@ -110,7 +116,7 @@ export function StudentApp(){
  },[]);
  useEffect(()=>{
   const initialRequest=request.current;
-  void checkCapabilities();
+  void checkCapabilities().catch(()=>{});
   fetch('lessons/index.json').then(response).then(v=>{
    const list=v as Example[];setExamples(list);
    if(request.current!==initialRequest)return;
@@ -278,8 +284,9 @@ export function StudentApp(){
      throw new Error('La lavagna è cambiata dopo il ritaglio: usa di nuovo i tratti scelti e conferma il circuito prima di salvare.');
     scene=original;
    }
-   const bundle=await makeSessionBundle({netlist:lesson.netlist,method,answerExact:lesson.answer.exact,
-    engineRevision:lesson.lesson_build??lesson.source_sha,selectedStep:step,showOriginal,boardScene:scene,
+   const context={netlist:lesson.netlist,method,answerExact:lesson.answer.exact,engineRevision:lesson.lesson_build??lesson.source_sha};
+   const savedLesson=await makeSavedLesson(lesson,context);
+   const bundle=await makeSessionBundle({...context,savedLesson,selectedStep:step,showOriginal,boardScene:scene,
     traceSteps:traceState.fingerprint===lesson.fingerprint?traceState.steps:[blankTraceStep()],
     traceHistory:traceState.fingerprint===lesson.fingerprint?storedTraceHistory(traceState.history):[],
     priorImageSha256:lesson.input_provenance?.source_sha256??(historicalImageDigest.current?.fingerprint===lesson.fingerprint?historicalImageDigest.current.sha256:null),
@@ -291,18 +298,29 @@ export function StudentApp(){
    if(n!==request.current)return;
    const url=URL.createObjectURL(new Blob([data],{type:'application/json'})),a=document.createElement('a');
    a.href=url;a.download='quaderno-kirchhoff.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);
-   setNotice('Quaderno salvato sul tuo dispositivo. Alla riapertura la soluzione sarà ricalcolata.');
+   setNotice('Quaderno salvato con una copia consultabile dei passaggi. Con il server la soluzione viene ricalcolata; senza server puoi leggere la copia in sola lettura.');
   }catch(e){if(n===request.current)setError(e instanceof Error?e.message:String(e));}finally{if(n===request.current)setBusy(false);}
  }
  async function openSession(file:File|undefined){
   if(!file)return;const n=++request.current;setBusy(true);setError('');setNotice('');
   try{
-   if(!api&&!await checkCapabilities())throw new Error('Per riaprire un quaderno serve il server Kirchhoff.');
-   if(n!==request.current)return;
    if(file.size>MAX_SESSION_BYTES)throw new Error('Il quaderno supera 42 MB.');
    const bundle=await readSessionBundle(await file.text());if(n!==request.current)return;
-   const value=parseLesson(await response(await fetch('api/solve',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({netlist:bundle.netlist,method:bundle.method,source_kind:'netlist'})})));
+   function savedCopy():boolean{
+    if(!bundle.savedLesson)return false;
+    setSavedNotebook({...bundle,savedLesson:bundle.savedLesson!});return true;
+   }
+   if(!api&&!await checkCapabilities()){
+    if(n!==request.current)return;
+    if(savedCopy())return;
+    throw new Error('Per riaprire un quaderno serve il server Kirchhoff.');
+   }
+   if(n!==request.current)return;
+   let solved:Response;
+   try{solved=await fetch('api/solve',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({netlist:bundle.netlist,method:bundle.method,source_kind:'netlist'})});}
+   catch(e){if(n!==request.current)return;if(savedCopy())return;throw e;}
+   const value=parseLesson(await response(solved));
    if(n!==request.current)return;
    if(value.fingerprint!==bundle.circuitFingerprint||value.answer.exact!==bundle.answerExact)
     throw new Error('Il risultato salvato non coincide con la nuova verifica: il quaderno resta chiuso.');
@@ -321,6 +339,7 @@ export function StudentApp(){
    setPickedFile(null);setBoardEpoch(x=>x+1);setBoardOpened(false);
    setTraceState({fingerprint:value.fingerprint,steps:bundle.traceSteps,history});setSessionEpoch(x=>x+1);
    setLesson(value);setLessonImage(bundle.sourceArtifact?.prepared.dataURL??null);setPhotoConfirmationToken(null);setImage(bundle.sourceArtifact?.prepared.dataURL??null);setImageFromBoard(bundle.sourceArtifact?.kind==='board');setConfirmed(false);setUncertainties([]);setObservations([]);setCandidates([]);setModelReportedComplete(null);
+   setSavedNotebook(null);
    setExample('');setNetlist(bundle.netlist);setDraft(bundle.netlist);setMethod(bundle.method);setStep(Math.min(bundle.selectedStep,value.steps.length-1));
    setShowOriginal(bundle.showOriginal);setCompare(false);setZoom(100);setPanel(false);
    const revisionNotice=bundle.engineRevision!==(value.lesson_build??value.source_sha)?' Il motore è cambiato; la soluzione mostrata è quella appena ricalcolata.':'';
@@ -328,13 +347,16 @@ export function StudentApp(){
   }catch(e){if(n===request.current)setError(e instanceof Error?e.message:String(e));}finally{if(n===request.current)setBusy(false);}
  }
  function navigate(n:number){setStep(n);setShowOriginal(false);}
+ if(savedNotebook)return <SavedNotebook bundle={savedNotebook} methodLabel={names[savedNotebook.savedLesson.view.method]??savedNotebook.savedLesson.view.method} error={error} busy={busy} onClose={()=>{replaceInput();setSavedNotebook(null);setError('');}} onRecalculate={()=>void openSession(new File([JSON.stringify(savedNotebook)],'quaderno.json',{type:'application/json'}))}/>;
  return <div className="student-app">
   <header className="student-header"><a href="#" className="student-brand">Kirchhoff<span>con Andrea Marro</span></a><span className="student-tag">Capire il circuito, un passaggio alla volta</span><button onClick={()=>{setTab('photo');setPanel(true);setError('');}}>Il tuo circuito <span aria-hidden="true">＋</span></button></header>
   <main className="student-main">
    <div className="student-heading"><div><p className="student-eyebrow">Il laboratorio dei circuiti</p><h1>Il circuito, passo per passo.</h1></div><p>Scegli una strada. Segui i disegni. Torna all’originale quando serve.</p></div>
+   <p className="student-note">Spiegazioni DRAFT: revisione docente non ancora disponibile. I controlli del calcolo sono distinti dall’approvazione del testo.</p>
    <div className="student-toolbar student-picker"><label>Esercizio <select aria-label="Scegli un circuito" value={example} disabled={busy} onChange={e=>{const ex=examples.find(x=>x.id===e.target.value);if(ex){boardSourceCandidate.current=null;boardSourceOwner.current=null;setMethod('auto');setExample(ex.id);setNetlist(ex.netlist);setDraft(ex.netlist);setImage(null);setImageFromBoard(false);setLessonImage(null);setPhotoConfirmationToken(null);}}}>{!example?<option value="">Il tuo circuito</option>:null}{examples.map(e=><option key={e.id} value={e.id}>{e.title}</option>)}</select></label><label>Metodo <select aria-label="Scegli il metodo" value={method} disabled={busy||!lesson} onChange={e=>{if(example)setMethod(e.target.value);else void solve(netlist,e.target.value,lessonImage,photoConfirmationToken);}}>{(lesson?.available??['auto']).map(m=><option key={m} value={m}>{names[m]}</option>)}</select></label><button disabled={busy||!lesson||!api||!supportsDcTools(lesson)} onClick={()=>void circuitikz()}>Scarica CircuitikZ ↓</button><button disabled={busy||!lesson||!api||!supportsDcTools(lesson)} onClick={()=>void spice()}>Scarica SPICE ↓</button><button disabled={busy||traceChecking||!lesson} onClick={()=>void pdf()}>Scarica PDF ↓</button></div>
    <div className="student-toolbar student-session-actions"><button disabled={busy||traceChecking||!lesson} aria-describedby="student-notebook-contents" onClick={()=>void saveSession()}>Salva quaderno ↓</button><button disabled={busy||traceChecking} onClick={()=>sessionInput.current?.click()}>Apri quaderno ↑</button><input ref={sessionInput} type="file" accept=".json,application/json" hidden onChange={e=>{void openSession(e.target.files?.[0]);e.target.value='';}}/></div>
    <p id="student-notebook-contents" style={{overflowWrap:'anywhere'}}>Il quaderno include circuito, procedimento, tentativi controllati e contenuti della lavagna.{notebookSource?.original?<> Include anche il file originale «{notebookSource.original.name}» e l’immagine della fonte usata.</>:notebookSource?<> Include anche l’immagine della fonte usata.</>:null} Chi riceve il quaderno può leggere questi contenuti. Il PDF include soluzione e controlli completati; le bozze non controllate restano nel quaderno.</p>
+   {offlineReaderReady?<p>Consultazione offline pronta in questo browser. I nuovi calcoli richiedono il server.</p>:null}
    {error?<div className="student-error" role="alert">{error}</div>:null}
    {notice?<p role="status">{notice}</p>:null}
    {lesson&&current?<section className={`student-lesson ${expanded?"is-expanded":""}`} aria-busy={busy}>

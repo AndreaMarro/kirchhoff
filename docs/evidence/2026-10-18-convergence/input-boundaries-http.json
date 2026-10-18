@@ -1,0 +1,34 @@
+{
+  "observed_at": "2026-10-18T13:05:46.927955+00:00",
+  "fixture_rights": "Original synthetic bytes/netlists; no OCR/model call",
+  "checks": [
+    {
+      "case": "K00a zero denominator",
+      "status": 422,
+      "message": "riga 2: '1/0' non e' un numero. Le frazioni si scrivono esatte — «1/3», non «0.333»: l'aritmetica di questo prodotto e' esatta e un decimale troncato la sporca."
+    },
+    {
+      "case": "K00b PNG24",
+      "status": 422,
+      "source_token_issued": false,
+      "message": "Immagine non leggibile o formato dichiarato diverso dal contenuto."
+    },
+    {
+      "case": "original valid PNG",
+      "status": 200,
+      "source_token_issued": true,
+      "bytes_sha256": "e56d54b889f8dae0b9bacf8e3cb38cbaa134cc92c7176b70c405fc4c10aed5ad"
+    },
+    {
+      "case": "confirmed exact revision",
+      "status": 200,
+      "answer": "12/5"
+    },
+    {
+      "case": "confirmation reused on changed revision",
+      "status": 422,
+      "message": "Il circuito è cambiato dopo la conferma: controlla e conferma di nuovo."
+    }
+  ],
+  "tokens": "Ephemeral source/confirmation tokens deliberately omitted"
+}

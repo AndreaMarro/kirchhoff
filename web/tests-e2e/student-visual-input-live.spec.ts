@@ -5,7 +5,7 @@ import {createHash} from 'node:crypto';
 const base=process.env.KIRCHHOFF_LIVE_BASE_URL;
 test.skip(!base,'Richiede il vero server Kirchhoff locale.');
 // A tiny image exercises the upload/byte contract; this is not an OCR or physical-pen acceptance.
-const bytes=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9b4wAAAABJRU5ErkJggg==','base64');
+const bytes=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4//8/AAX+Av4N70a4AAAAAElFTkSuQmCC','base64');
 
 test('foto, componenti modificabili, conferma e quaderno riaperto senza scrivere una netlist',async({page,browser})=>{
  await page.goto(base!);

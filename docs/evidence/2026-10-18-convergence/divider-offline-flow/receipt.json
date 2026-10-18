@@ -1,0 +1,402 @@
+{
+  "schema": "kirchhoff-divider-observation.v1",
+  "started_at": "2026-10-18T13:36:48.555Z",
+  "browser_plugin": "ABSENT: regular Playwright per frontend-testing-debugging",
+  "base": "http://127.0.0.1:43921/",
+  "oracle": "Independent scalar rational formulas: Rlow=1/(1/1000+1/1000)=500; Vout=12*500/(2000+500)=12/5. Unloaded=12*1000/3000=4. Reference inversion=-12/5. No solver/tableau used in these expected values.",
+  "http": [
+    {
+      "name": "unloaded",
+      "method": "auto",
+      "status": 200,
+      "answer": {
+        "exact": "4",
+        "decimal": "4",
+        "unit": "V",
+        "reference": "out → 0"
+      },
+      "available": [
+        "auto",
+        "nodal",
+        "millman",
+        "superposition"
+      ],
+      "message": null
+    },
+    {
+      "name": "unloaded",
+      "method": "nodal",
+      "status": 200,
+      "answer": {
+        "exact": "4",
+        "decimal": "4",
+        "unit": "V",
+        "reference": "out → 0"
+      },
+      "available": [
+        "auto",
+        "nodal",
+        "millman",
+        "superposition"
+      ],
+      "message": null
+    },
+    {
+      "name": "unloaded",
+      "method": "millman",
+      "status": 200,
+      "answer": {
+        "exact": "4",
+        "decimal": "4",
+        "unit": "V",
+        "reference": "out → 0"
+      },
+      "available": [
+        "auto",
+        "nodal",
+        "millman",
+        "superposition"
+      ],
+      "message": null
+    },
+    {
+      "name": "unloaded",
+      "method": "superposition",
+      "status": 200,
+      "answer": {
+        "exact": "4",
+        "decimal": "4",
+        "unit": "V",
+        "reference": "out → 0"
+      },
+      "available": [
+        "auto",
+        "nodal",
+        "millman",
+        "superposition"
+      ],
+      "message": null
+    },
+    {
+      "name": "unloaded",
+      "method": "thevenin",
+      "status": 422,
+      "answer": null,
+      "available": null,
+      "message": "Il metodo selezionato non è applicabile a questa topologia e a questa domanda."
+    },
+    {
+      "name": "loaded",
+      "method": "auto",
+      "status": 200,
+      "answer": {
+        "exact": "12/5",
+        "decimal": "2.4",
+        "unit": "V",
+        "reference": "out → 0"
+      },
+      "available": [
+        "auto",
+        "nodal",
+        "millman",
+        "superposition",
+        "norton",
+        "thevenin"
+      ],
+      "message": null
+    },
+    {
+      "name": "loaded",
+      "method": "nodal",
+      "status": 200,
+      "answer": {
+        "exact": "12/5",
+        "decimal": "2.4",
+        "unit": "V",
+        "reference": "out → 0"
+      },
+      "available": [
+        "auto",
+        "nodal",
+        "millman",
+        "superposition",
+        "norton",
+        "thevenin"
+      ],
+      "message": null
+    },
+    {
+      "name": "loaded",
+      "method": "millman",
+      "status": 200,
+      "answer": {
+        "exact": "12/5",
+        "decimal": "2.4",
+        "unit": "V",
+        "reference": "out → 0"
+      },
+      "available": [
+        "auto",
+        "nodal",
+        "millman",
+        "superposition",
+        "norton",
+        "thevenin"
+      ],
+      "message": null
+    },
+    {
+      "name": "loaded",
+      "method": "superposition",
+      "status": 200,
+      "answer": {
+        "exact": "12/5",
+        "decimal": "2.4",
+        "unit": "V",
+        "reference": "out → 0"
+      },
+      "available": [
+        "auto",
+        "nodal",
+        "millman",
+        "superposition",
+        "norton",
+        "thevenin"
+      ],
+      "message": null
+    },
+    {
+      "name": "loaded",
+      "method": "thevenin",
+      "status": 200,
+      "answer": {
+        "exact": "12/5",
+        "decimal": "2.4",
+        "unit": "V",
+        "reference": "out → 0"
+      },
+      "available": [
+        "auto",
+        "nodal",
+        "millman",
+        "superposition",
+        "norton",
+        "thevenin"
+      ],
+      "message": null
+    },
+    {
+      "name": "reversed",
+      "method": "auto",
+      "status": 200,
+      "answer": {
+        "exact": "-12/5",
+        "decimal": "-2.4",
+        "unit": "V",
+        "reference": "0 → out"
+      },
+      "available": [
+        "auto",
+        "nodal",
+        "millman",
+        "superposition",
+        "norton",
+        "thevenin"
+      ],
+      "message": null
+    },
+    {
+      "name": "reversed",
+      "method": "nodal",
+      "status": 200,
+      "answer": {
+        "exact": "-12/5",
+        "decimal": "-2.4",
+        "unit": "V",
+        "reference": "0 → out"
+      },
+      "available": [
+        "auto",
+        "nodal",
+        "millman",
+        "superposition",
+        "norton",
+        "thevenin"
+      ],
+      "message": null
+    },
+    {
+      "name": "reversed",
+      "method": "millman",
+      "status": 200,
+      "answer": {
+        "exact": "-12/5",
+        "decimal": "-2.4",
+        "unit": "V",
+        "reference": "0 → out"
+      },
+      "available": [
+        "auto",
+        "nodal",
+        "millman",
+        "superposition",
+        "norton",
+        "thevenin"
+      ],
+      "message": null
+    },
+    {
+      "name": "reversed",
+      "method": "superposition",
+      "status": 200,
+      "answer": {
+        "exact": "-12/5",
+        "decimal": "-2.4",
+        "unit": "V",
+        "reference": "0 → out"
+      },
+      "available": [
+        "auto",
+        "nodal",
+        "millman",
+        "superposition",
+        "norton",
+        "thevenin"
+      ],
+      "message": null
+    },
+    {
+      "name": "reversed",
+      "method": "thevenin",
+      "status": 200,
+      "answer": {
+        "exact": "-12/5",
+        "decimal": "-2.4",
+        "unit": "V",
+        "reference": "0 → out"
+      },
+      "available": [
+        "auto",
+        "nodal",
+        "millman",
+        "superposition",
+        "norton",
+        "thevenin"
+      ],
+      "message": null
+    }
+  ],
+  "interactions": [
+    {
+      "value": "4",
+      "reading": "clear",
+      "reference": "",
+      "diagnosis": {
+        "schema": "student-diagnosis.v1",
+        "step": 1,
+        "circuit_fingerprint": "2dcef50d4c6ed91d1495e607ab45d5494dd0d4db14235669f0058407deff5ff0",
+        "focus": [
+          "R2"
+        ],
+        "outcome": "first_invalid",
+        "category": "value",
+        "message": "Per R2, tensione orientata out → 0: 12/5 V, non 4 V. Il metodo scritto non è giudicato da questo controllo.",
+        "engine_revision": "89cc7bcba93cb12922ad7fd864feec206ff68dfa"
+      },
+      "visible": "Il primo passaggio va rivisto. Qui cambia il ragionamento.\n\nPer R2, tensione orientata out → 0: 12/5 V, non 4 V. Il metodo scritto non è giudicato da questo controllo.\n\nElementi da rivedere sul circuito: R2"
+    },
+    {
+      "value": "4",
+      "reading": "unreadable",
+      "reference": "",
+      "diagnosis": {
+        "schema": "student-diagnosis.v1",
+        "step": 1,
+        "circuit_fingerprint": "2dcef50d4c6ed91d1495e607ab45d5494dd0d4db14235669f0058407deff5ff0",
+        "focus": [
+          "R2",
+          ""
+        ],
+        "outcome": "not_assessable",
+        "category": "unreadable",
+        "message": "Non riesco a leggere con sicurezza questo passaggio; chiariscilo prima del controllo.",
+        "engine_revision": "89cc7bcba93cb12922ad7fd864feec206ff68dfa"
+      },
+      "visible": "Non posso stabilire se questo passaggio è errato.\n\nNon riesco a leggere con sicurezza questo passaggio; chiariscilo prima del controllo.\n\nElementi da rivedere sul circuito: R2"
+    },
+    {
+      "value": "12/5",
+      "reading": "clear",
+      "reference": "",
+      "diagnosis": {
+        "schema": "student-diagnosis.v1",
+        "outcome": "valid_so_far",
+        "step": null,
+        "category": null,
+        "focus": [],
+        "circuit_fingerprint": "2dcef50d4c6ed91d1495e607ab45d5494dd0d4db14235669f0058407deff5ff0",
+        "message": "I passaggi controllati sono validi fin qui; il procedimento completo resta da verificare.",
+        "engine_revision": "89cc7bcba93cb12922ad7fd864feec206ff68dfa"
+      },
+      "visible": "Passaggi controllati validi fin qui.\n\nI passaggi controllati sono validi fin qui; il procedimento completo resta da verificare."
+    },
+    {
+      "value": "-12/5",
+      "reading": "clear",
+      "reference": "0,out",
+      "diagnosis": {
+        "schema": "student-diagnosis.v1",
+        "outcome": "valid_so_far",
+        "step": null,
+        "category": null,
+        "focus": [],
+        "circuit_fingerprint": "2dcef50d4c6ed91d1495e607ab45d5494dd0d4db14235669f0058407deff5ff0",
+        "message": "I passaggi controllati sono validi fin qui; il procedimento completo resta da verificare.",
+        "engine_revision": "89cc7bcba93cb12922ad7fd864feec206ff68dfa"
+      },
+      "visible": "Passaggi controllati validi fin qui.\n\nI passaggi controllati sono validi fin qui; il procedimento completo resta da verificare."
+    }
+  ],
+  "console": [],
+  "not_tested": [
+    "teacher_content_approval",
+    "Pencil",
+    "real_photo_OCR",
+    "learning_transfer",
+    "independent_review_quorum"
+  ],
+  "flow_done": false,
+  "product_ready": false,
+  "identity": {
+    "url": "http://127.0.0.1:43921/",
+    "title": "Kirchhoff — Circuiti passo per passo"
+  },
+  "bundle": {
+    "schema": "kirchhoff-portable-session.v3",
+    "sha256": "4b3440ddd26b866071edb291d27f69b227ea8c6ed0338c773af45dcd12ad3461",
+    "attempts": 4
+  },
+  "pdf": {
+    "bytes": 107173,
+    "sha256": "edd8a022dea6d5954925381801280602ec19372948ed7c93d801066304c0bf0e"
+  },
+  "cold_reopen_online": "PASS",
+  "offline_reopen": {
+    "status": "PASS_READ_ONLY",
+    "actual_page_closed": true,
+    "offline_new_page_loaded": true,
+    "attempts": 4,
+    "api_solve_requests": 0,
+    "reexport": "SAME_JSON",
+    "editorial_status": "DRAFT"
+  },
+  "mobile": {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "horizontal_overflow": false
+  },
+  "demonstrated": "Loaded divider numerical/diagnosis/export/online-cold-reopen and offline read-only cold reopen path; teacher approval and offline board rendering absent; FLOW_DONE not claimed.",
+  "finished_at": "2026-10-18T13:38:19.718Z"
+}

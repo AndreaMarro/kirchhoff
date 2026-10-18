@@ -1,0 +1,17 @@
+{
+  "schema": "verified-tree-commit-binding.v1",
+  "observed_at": "2026-10-18T14:53:32.458116+00:00",
+  "tested_base_head": "89cc7bcba93cb12922ad7fd864feec206ff68dfa",
+  "committed_head": "a7890f9f29c31bc56272cecba8ceec6f403a6131",
+  "tested_source_sha256": "76c5e638a5b00320dbd34f7cf59df749648016b96f413189dcffb31b4f1ab22b",
+  "committed_source_sha256": "76c5e638a5b00320dbd34f7cf59df749648016b96f413189dcffb31b4f1ab22b",
+  "byte_identity_verified": true,
+  "worktree_clean": true,
+  "remote_exact_sha_ci": "NOT_RUN",
+  "receipts": [
+    "offline-verification-transport/receipt.json",
+    "offline-transport-web-source-binding.json",
+    "offline-browser-source-binding.json"
+  ],
+  "note": "All tests ran against this source tree before commit. Explicitly matched committed source bytes; no remote CI or independent-family quorum inferred."
+}
