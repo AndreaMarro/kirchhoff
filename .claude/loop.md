@@ -394,9 +394,16 @@ uv run kirchhoff-eval build --n 60 --out reference-set
 uv run kirchhoff-eval report --root reference-set --split dev
 ```
 
-Fatto significa, tutto insieme: ogni criterio ha un test che passa · suite verde · **copertura non
-scende rispetto all'iterazione precedente** — il pavimento è 100%, non 95% · `domain/` al 100% righe
-e rami · confini puliti · **catena BMAD coerente** · SER non sale, mai.
+Fatto significa, tutto insieme: ogni criterio ha un test che passa · suite verde · **copertura
+globale almeno 95% e mai sotto la baseline fissata** in `docs/quality/coverage-baseline.json` ·
+`domain/` al 100% righe e rami · confini puliti · **catena BMAD coerente** · SER non sale, mai.
+
+Emendamento del 18/10/2026: il proprietario ha delegato la scelta della soglia alla valutazione
+ingegneristica nella sessione corrente. La decisione motivata è in
+`docs/decisions/2026-10-18-coverage-ratchet.md`; sostituisce il precedente minimo globale 100%.
+Il gate usa i conteggi esatti di righe e rami, senza arrotondare il confronto. La baseline non
+si aggiorna durante i test e non può essere abbassata da un agente; ogni revisione richiede
+misura completa, review e decisione owner secondo i confini esistenti.
 
 Leggi gli exit code senza pipe: `cmd > file 2>&1; echo $?`.
 

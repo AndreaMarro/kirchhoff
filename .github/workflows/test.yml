@@ -42,7 +42,7 @@ jobs:
         working-directory: web
       - name: pytest
         run: uv run --no-sync python -m pytest
-      - name: domain coverage
+      - name: coverage (no regression + domain 100%)
         run: uv run --no-sync python scripts/check_domain_coverage.py
       - name: boundaries
         run: uv run --no-sync python scripts/check_boundaries.py
