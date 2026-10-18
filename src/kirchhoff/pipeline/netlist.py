@@ -76,6 +76,10 @@ _PHASE = re.compile(r"^([+-]?\d+)deg$")
 AMPLITUDE_CONVENTIONS = frozenset({'rms', 'peak', 'unspecified'})
 
 
+class NetlistInputError(ValueError):
+    """Magnitudine non leggibile: errore dell'ingresso, non del solutore."""
+
+
 def _nodo(nodi: list[str], n: str) -> None:
     if n not in nodi:
         nodi.append(n)
@@ -163,8 +167,8 @@ def leggi_con_convenzioni(testo: str) -> tuple[IR, str]:
             unita = pezzi[6] if len(pezzi) == 7 else "dimensionless"
             try:
                 quanto = Fraction(valore)
-            except ValueError:
-                raise ValueError(
+            except (ValueError, ZeroDivisionError):
+                raise NetlistInputError(
                     f"riga {numero}: {valore!r} non e' un numero. Le frazioni si "
                     "scrivono esatte — «1/3», non «0.333»: l'aritmetica di questo "
                     "prodotto e' esatta e un decimale troncato la sporca.") from None
@@ -184,8 +188,8 @@ def leggi_con_convenzioni(testo: str) -> tuple[IR, str]:
             unita = pezzi[6] if len(pezzi) == 7 else "siemens"
             try:
                 quanto = Fraction(valore)
-            except ValueError:
-                raise ValueError(
+            except (ValueError, ZeroDivisionError):
+                raise NetlistInputError(
                     f"riga {numero}: {valore!r} non e' un numero. Le frazioni si "
                     "scrivono esatte — «1/3», non «0.333»: l'aritmetica di questo "
                     "prodotto e' esatta e un decimale troncato la sporca.") from None
@@ -232,8 +236,8 @@ def leggi_con_convenzioni(testo: str) -> tuple[IR, str]:
             tipo = "voltage_source_ac" if iniziale == "V" else "current_source_ac"
         try:
             quanto = Fraction(valore)
-        except ValueError:
-            raise ValueError(
+        except (ValueError, ZeroDivisionError):
+            raise NetlistInputError(
                 f"riga {numero}: {valore!r} non e' un numero. Le frazioni si "
                 "scrivono esatte — «1/3», non «0.333»: l'aritmetica di questo "
                 "prodotto e' esatta e un decimale troncato la sporca.") from None

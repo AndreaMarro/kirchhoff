@@ -11,9 +11,11 @@ from typing import Any
 
 from mcp.server import MCPServer
 from mcp.server.apps import Apps
+from mcp.server.mcpserver.exceptions import ToolError
 
 from kirchhoff.api.app_resource import load_app_html
 from kirchhoff.pipeline.lesson import create_lesson
+from kirchhoff.pipeline.netlist import NetlistInputError
 from kirchhoff.pipeline.capabilities import product_capabilities, SOLVE_DESCRIPTION
 from kirchhoff.pipeline.student_trace import diagnose_payload
 from kirchhoff.pipeline.spice import import_spice, export_spice, SCHEMA as SPICE_SCHEMA
@@ -35,7 +37,10 @@ def build_server() -> MCPServer:
                  description=SOLVE_DESCRIPTION,
                  structured_output=True)
     def solve_circuit(netlist: str, method: str = "auto") -> dict[str, Any]:
-        return create_lesson(netlist, method)
+        try:
+            return create_lesson(netlist, method)
+        except NetlistInputError as exc:
+            raise ToolError(str(exc)) from None
 
     @server.tool(name="diagnose_steps", description="Trova il primo errore dimostrabile in riduzioni semantiche dello studente; altri metodi restano non valutabili.", structured_output=True)
     def diagnose_steps(netlist: str, trace: dict[str, Any]) -> dict[str, Any]:
