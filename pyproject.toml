@@ -7,9 +7,13 @@ dependencies = []
 
 [project.optional-dependencies]
 dev = [
+    "pillow==13.0.0",
     "pypdf==6.13.3",
     "pytest>=8",
     "pytest-cov>=5",
+]
+media = [
+    "pillow==13.0.0",
 ]
 mcp = [
     "mcp==2.2.0",

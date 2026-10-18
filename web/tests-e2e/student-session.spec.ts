@@ -126,7 +126,7 @@ test('prima del salvataggio il quaderno dichiara la fonte originale realmente in
  const plainDownload=page.waitForEvent('download');await save.click();
  const plain=JSON.parse(await readFile(await (await plainDownload).path(),'utf8'));
  expect(plain.sourceArtifact??null).toBeNull();
- const bytes=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9b4wAAAABJRU5ErkJggg==','base64');
+ const bytes=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4//8/AAX+Av4N70a4AAAAAElFTkSuQmCC','base64');
  const sha256=createHash('sha256').update(bytes).digest('hex');
  const dataURL='data:image/png;base64,'+bytes.toString('base64');
  const sourceArtifact={schema:'kirchhoff-source.v1',kind:'image',

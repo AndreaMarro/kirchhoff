@@ -12,7 +12,7 @@ import pytest
 
 from kirchhoff.pipeline.image_revision import source_receipt, confirm_revision, verify_revision
 
-IMAGE = "data:image/png;base64," + "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9b4wAAAABJRU5ErkJggg=="
+IMAGE = "data:image/png;base64," + "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4//8/AAX+Av4N70a4AAAAAElFTkSuQmCC"
 NETLIST = "V1 b 0 12 volt\nR1 b a 100 ohm\nR2 a 0 220 ohm\n? voltage R2"
 SECRET = b"test-secret-only-not-a-production-key"
 

@@ -34,7 +34,7 @@ delle 21 famiglie e i debiti storici: 15 PARTIAL, 6 NOT_SUPPORTED, 0 COMPLETE.
 ## Avvio locale dello studente
 
 ```bash
-uv sync --frozen
+uv sync --frozen --extra media
 cd web && npm ci && npm run build && cd ..
 uv run --no-sync python scripts/serve_student.py --port 43921
 ```
@@ -52,6 +52,11 @@ server convalida l'immagine, firma una ricevuta temporanea e lega la conferma
 all'impronta esatta del circuito. Una modifica successiva richiede una nuova
 conferma; foto e chiavi non sono salvate dal server. La ricevuta non dimostra
 la fedelta' della trascrizione e scade dopo un'ora o al riavvio del server.
+L'extra `media` installa Pillow per decodificare PNG/JPEG/WebP statiche entro
+2 MB e 40 milioni di pixel prima della ricevuta. Il digest conserva i byte
+originali, compresi i metadati EXIF; la verifica non normalizza l'orientamento.
+Senza questo extra restano disponibili il motore e l'ingresso manuale testuale;
+le foto vengono rifiutate prima di qualsiasi invio al provider.
 
 Per il banco tecnico statico: `cd web && npm run dev`, poi `/?view=proof`.
 Le sue sessioni versionate si rigenerano con

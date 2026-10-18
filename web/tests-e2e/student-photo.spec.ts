@@ -1,6 +1,6 @@
 import {expect,test} from '@playwright/test';
 
-const image=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9b4wAAAABJRU5ErkJggg==','base64');
+const image=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4//8/AAX+Av4N70a4AAAAAElFTkSuQmCC','base64');
 
 test('una modifica semantica dopo la conferma della foto invalida il consenso',async({page})=>{
  await page.goto('/');
